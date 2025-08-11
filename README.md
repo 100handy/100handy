@@ -198,8 +198,8 @@ pnpm ui:add input
 
 **Usage:**
 ```tsx
-import { Button } from '@acme/ui/components/button'
-import { Card } from '@acme/ui/components/card'
+import { Button } from '@100handy/ui/components/button'
+import { Card } from '@100handy/ui/components/card'
 
 // Use in both web and mobile apps
 ```
@@ -236,7 +236,7 @@ pnpm ui:add input
 # Add to specific app/package
 pnpm add <package> --filter=web
 pnpm add <package> --filter=mobile
-pnpm add <package> --filter=@acme/ui
+pnpm add <package> --filter=@100handy/ui
 
 # Add dev dependency
 pnpm add -D <package> --filter=web
@@ -249,7 +249,7 @@ Use `workspace:*` for internal package dependencies:
 ```json
 {
   "dependencies": {
-    "@acme/ui": "workspace:*"
+    "@100handy/ui": "workspace:*"
   }
 }
 ```
@@ -276,7 +276,7 @@ cd packages/ui
 pnpm ui:add <component-name>
 
 # Use in apps
-import { Component } from '@acme/ui/components/component'
+import { Component } from '@100handy/ui/components/component'
 ```
 
 ### 3. Environment Variables

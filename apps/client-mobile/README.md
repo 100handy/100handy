@@ -1,4 +1,4 @@
-# Acme Mobile App
+# 100handy Mobile App
 
 A modern Expo 53 React Native application with NativeWind v4, Gluestack UI components, and TypeScript. Built for cross-platform mobile development.
 
@@ -74,7 +74,7 @@ export default function Component() {
   return (
     <View className="flex-1 items-center justify-center bg-white">
       <Text className="text-xl font-bold text-gray-900">
-        Welcome to Acme
+        Welcome to 100handy
       </Text>
     </View>
   )
@@ -113,8 +113,8 @@ export default function Component() {
 // app.json
 {
   "expo": {
-    "name": "acme",
-    "slug": "acme-mobile",
+    "name": "100handy",
+    "slug": "100handy-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -226,8 +226,8 @@ pnpm ui:add input
 ### Using Shared UI Components
 
 ```tsx
-import { Button } from '@acme/ui/components/button'
-import { Card } from '@acme/ui/components/card'
+import { Button } from '@100handy/ui/components/button'
+import { Card } from '@100handy/ui/components/card'
 
 // Use shared components from the monorepo
 ```
@@ -267,7 +267,7 @@ Create a `.env` file for environment variables:
 ```bash
 # .env
 EXPO_PUBLIC_API_URL=http://localhost:3001
-EXPO_PUBLIC_APP_NAME=Acme
+EXPO_PUBLIC_APP_NAME=100handy
 ```
 
 ## 🚀 Deployment

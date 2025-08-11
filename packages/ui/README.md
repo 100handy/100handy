@@ -1,6 +1,6 @@
-# Acme UI Package
+# 100handy UI Package
 
-A shared UI component library for the Acme monorepo. Built with shadcn/ui, Radix UI, and Tailwind CSS for consistent design across web and mobile applications.
+A shared UI component library for the 100handy monorepo. Built with shadcn/ui, Radix UI, and Tailwind CSS for consistent design across web and mobile applications.
 
 ## 🚀 Quick Start
 
@@ -17,12 +17,12 @@ The UI package is automatically available in the monorepo workspace:
 
 ```tsx
 // In web app (apps/web/)
-import { Button } from '@acme/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@acme/ui/components/card'
+import { Button } from '@100handy/ui/components/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@100handy/ui/components/card'
 
 // In mobile app (apps/mobile/)
-import { Button } from '@acme/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@acme/ui/components/card'
+import { Button } from '@100handy/ui/components/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@100handy/ui/components/card'
 ```
 
 ## 🛠️ Tech Stack
@@ -60,25 +60,25 @@ packages/ui/
 
 | Component | Description | Usage |
 |-----------|-------------|-------|
-| `Button` | Versatile button component with variants | `import { Button } from '@acme/ui/components/button'` |
-| `Card` | Container component for content | `import { Card, CardContent, CardHeader, CardTitle } from '@acme/ui/components/card'` |
-| `Input` | Form input component | `import { Input } from '@acme/ui/components/input'` |
-| `Badge` | Small status indicator | `import { Badge } from '@acme/ui/components/badge'` |
+| `Button` | Versatile button component with variants | `import { Button } from '@100handy/ui/components/button'` |
+| `Card` | Container component for content | `import { Card, CardContent, CardHeader, CardTitle } from '@100handy/ui/components/card'` |
+| `Input` | Form input component | `import { Input } from '@100handy/ui/components/input'` |
+| `Badge` | Small status indicator | `import { Badge } from '@100handy/ui/components/badge'` |
 
 ### Form Components
 
 | Component | Description | Usage |
 |-----------|-------------|-------|
-| `Label` | Form label component | `import { Label } from '@acme/ui/components/label'` |
-| `Textarea` | Multi-line text input | `import { Textarea } from '@acme/ui/components/textarea'` |
-| `Select` | Dropdown selection | `import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@acme/ui/components/select'` |
+| `Label` | Form label component | `import { Label } from '@100handy/ui/components/label'` |
+| `Textarea` | Multi-line text input | `import { Textarea } from '@100handy/ui/components/textarea'` |
+| `Select` | Dropdown selection | `import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@100handy/ui/components/select'` |
 
 ### Layout Components
 
 | Component | Description | Usage |
 |-----------|-------------|-------|
-| `Separator` | Visual divider | `import { Separator } from '@acme/ui/components/separator'` |
-| `AspectRatio` | Maintain aspect ratio | `import { AspectRatio } from '@acme/ui/components/aspect-ratio'` |
+| `Separator` | Visual divider | `import { Separator } from '@100handy/ui/components/separator'` |
+| `AspectRatio` | Maintain aspect ratio | `import { AspectRatio } from '@100handy/ui/components/aspect-ratio'` |
 
 ## 🔧 Adding New Components
 
@@ -311,7 +311,7 @@ touch src/components/new-component.tsx
 
 ```tsx
 // Test component in web app
-import { NewComponent } from '@acme/ui/components/new-component'
+import { NewComponent } from '@100handy/ui/components/new-component'
 
 export default function TestPage() {
   return (
@@ -326,7 +326,7 @@ export default function TestPage() {
 
 ```bash
 # Build the package
-pnpm build --filter=@acme/ui
+pnpm build --filter=@100handy/ui
 
 # The changes are automatically available in the monorepo
 ```
@@ -371,7 +371,7 @@ Button.displayName = "Button"
 **Component not found:**
 ```bash
 # Rebuild the package
-pnpm build --filter=@acme/ui
+pnpm build --filter=@100handy/ui
 
 # Clear node_modules and reinstall
 pnpm clean
@@ -381,13 +381,13 @@ pnpm install
 **Styling issues:**
 ```bash
 # Ensure globals.css is imported
-import '@acme/ui/globals.css'
+import '@100handy/ui/globals.css'
 ```
 
 **TypeScript errors:**
 ```bash
 # Check types
-pnpm check-types --filter=@acme/ui
+pnpm check-types --filter=@100handy/ui
 ```
 
 ## 📚 Resources
@@ -408,4 +408,4 @@ pnpm check-types --filter=@acme/ui
 
 ---
 
-Built with ❤️ using shadcn/ui, Radix UI, and Tailwind CSS 
+Built with ❤️ using shadcn/ui, Radix UI, and Tailwind CSS

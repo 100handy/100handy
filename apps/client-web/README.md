@@ -1,4 +1,4 @@
-# Acme Web App
+# 100handy Web App
 
 A modern Next.js 15 web application with Tailwind CSS v4, shadcn/ui components, and TypeScript. 
 
@@ -82,7 +82,7 @@ export default function Page() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome to Acme</CardTitle>
+        <CardTitle>Welcome to 100handy</CardTitle>
       </CardHeader>
       <CardContent>
         <Button>Get Started</Button>
@@ -205,8 +205,8 @@ pnpm ui:add dialog
 ### Using Shared UI Components
 
 ```tsx
-import { Button } from '@acme/ui/components/button'
-import { Card } from '@acme/ui/components/card'
+import { Button } from '@100handy/ui/components/button'
+import { Card } from '@100handy/ui/components/card'
 
 // Use shared components from the monorepo
 ```
@@ -228,7 +228,7 @@ Create a `.env.local` file for local environment variables:
 ```bash
 # .env.local
 NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_APP_NAME=Acme
+NEXT_PUBLIC_APP_NAME=100handy
 ```
 
 ## 🚀 Deployment
