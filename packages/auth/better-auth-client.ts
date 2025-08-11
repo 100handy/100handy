@@ -1,4 +1,4 @@
-import { createAuthClient } from "better-auth/react";
-import { toNextJsHandler } from "better-auth/next-js";
+// Re-export from dummy implementation
+import { createAuthClient, toNextJsHandler } from "./dummy-auth-client";
 
 export { createAuthClient, toNextJsHandler };

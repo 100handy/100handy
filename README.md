@@ -1,10 +1,10 @@
-# expo-nextjs-monorepo - A Monorepo Skeleton
+# 100handy - A Modern Web & Mobile Monorepo
 
 A modern monorepo skeleton for building with web and mobile applications. Built with the latest technologies and best practices.
 
 ## 🚀 Features
 
-- **🔐 Authentication**: Powered by [Better Auth](https://www.better-auth.com/) for secure, cross-platform sign-in/sign-up
+- **🔐 Authentication**: Dummy authentication system (to be replaced with Supabase)
 - **📱 Cross-Platform**: Web (Next.js 15) + Mobile (Expo 53)
 - **🎨 Modern UI**: shadcn/ui components + Tailwind CSS v4 (web) + NativeWind v4 (mobile)
 - **⚡ Fast Development**: Turborepo for blazing-fast builds and caching
@@ -34,20 +34,21 @@ A modern monorepo skeleton for building with web and mobile applications. Built 
 ## 📁 Project Structure
 
 ```
-expo-nextjs-monorepo/
+100handy/
 ├── apps/
-│   ├── web/                 # Next.js 15 web application
+│   ├── client-web/         # Next.js 15 web application
 │   │   ├── app/            # App Router pages
-│   │   ├── api/            # API routes (including Better Auth backend)
+│   │   ├── api/            # API routes (including auth backend)
 │   │   ├── components/     # Web-specific components
 │   │   └── package.json
-│   └── mobile/             # Expo 53 React Native app
+│   └── client-mobile/      # Expo 53 React Native app
 │       ├── app/            # File-based routing
-│       │   └── api/        # API routes (including Better Auth backend for web)
-│       ├── lib/            # Auth client config (Better Auth for mobile)
+│       │   └── api/        # API routes (including auth backend for web)
+│       ├── lib/            # Auth client config
 │       ├── components/     # Mobile-specific components
 │       └── package.json
 ├── packages/
+│   ├── auth/               # Shared authentication package
 │   └── ui/                 # Shared UI component library
 │       ├── src/
 │       │   ├── components/ # Reusable components
@@ -62,14 +63,11 @@ expo-nextjs-monorepo/
 └── pnpm-workspace.yaml     # pnpm workspace configuration
 ```
 
-> **Note:** Better Auth authentication logic and configuration can be found in:
-> - `apps/web/app/api/auth/` (Next.js API routes for auth backend)
-> - `apps/mobile/app/api/auth/` (Expo API routes for web auth)
-> - `apps/mobile/lib/auth/auth-client.ts` (Better Auth client config for mobile)
+> **Note:** Authentication is currently implemented with dummy functions and will be replaced with Supabase.
 
 ## 🚀 Quick Start
 
-> **Note:** Authentication is powered by [Better Auth](https://www.better-auth.com/) and works across both web and mobile (see details below).
+> **Note:** A dummy authentication system is implemented and will be replaced with Supabase.
 
 ### Prerequisites
 
@@ -157,28 +155,28 @@ pnpm dev --filter=mobile -- --android
 pnpm dev --filter=mobile -- --web
 ```
 
-## 🔐 Authentication (Better Auth)
+## 🔐 Authentication
 
-This monorepo uses [Better Auth](https://www.better-auth.com/) for secure, production-ready authentication across both web (Next.js) and mobile (Expo).
+This monorepo currently uses a dummy authentication system that will be replaced with Supabase.
 
 ### Overview
 
 - **Web (Next.js):**  
-  Better Auth is fully integrated via API routes. Sign in and sign up are supported out of the box.
+  Basic sign in and sign up functionality is implemented with dummy functions.
 
 - **Mobile (Expo):**  
-  - For native mobile, the auth client is configured to point to your deployed or local Next.js API backend (using your computer’s LAN IP for local development).
+  - For native mobile, the auth client is configured to point to your deployed or local Next.js API backend.
   - Make sure your device and computer are on the same Wi-Fi network for local testing.
   - Expo API routes are available for web, but native mobile must use a real backend server.
 
-- **Production Ready:**
-  - The authentication flow is stable and ready for production use on both platforms.
-  - Supports secure session management, social login, and more (see Better Auth docs).
+- **Future Implementation:**
+  - The authentication system will be replaced with Supabase for production use.
+  - Will support secure session management, social login, and more.
 
 ### References
 
-- [Better Auth Expo Integration Guide](https://www.better-auth.com/docs/integrations/expo)
-- [Expo API Routes Limitations](https://docs.expo.dev/router/reference/api-routes/)
+- [Expo API Routes Documentation](https://docs.expo.dev/router/reference/api-routes/)
+- [Supabase Documentation](https://supabase.com/docs)
 
 ---
 
@@ -355,7 +353,7 @@ pnpm turbo clean
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+5. Open a Pull Request to [100handy](https://github.com/dipaktomar/100handy)
 
 ## 📄 License
 
@@ -372,8 +370,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 - 📖 [Documentation](./docs)
-- 💬 [Discussions](https://github.com/your-username/expo-nextjs-monorepo/discussions)
-- 🐛 [Issues](https://github.com/your-username/expo-nextjs-monorepo/issues)
+- 💬 [Discussions](https://github.com/dipaktomar/100handy/discussions)
+- 🐛 [Issues](https://github.com/dipaktomar/100handy/issues)
 
 ---
 

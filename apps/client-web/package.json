@@ -8,8 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
-    "check-types": "tsc --noEmit",
-    "db:generate": "npx @better-auth/cli generate --output ../../packages/db/src/migration.sql"
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@100handy/auth": "workspace:*",
