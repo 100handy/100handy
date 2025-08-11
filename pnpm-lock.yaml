@@ -18,7 +18,7 @@ importers:
         specifier: 5.8.3
         version: 5.8.3
 
-  apps/mobile:
+  apps/client-mobile:
     dependencies:
       '@acme/auth':
         specifier: workspace:*
@@ -169,7 +169,7 @@ importers:
         specifier: ~5.8.3
         version: 5.8.3
 
-  apps/web:
+  apps/client-web:
     dependencies:
       '@acme/auth':
         specifier: workspace:*
