@@ -168,11 +168,17 @@ module.exports = {
           info: 'rgb(var(--color-indicator-info)/<alpha-value>)',
           error: 'rgb(var(--color-indicator-error)/<alpha-value>)',
         },
+        clayOrange: '#D9896C',
+        sageGreen: '#A3B899',
+        warmTaupe: '#BFA28D',
+        themeBackground: '#F6E4D8',
+        themeFont: '#333A31',
       },
       fontFamily: {
+        display: 'Futura-Medium',
+        mono: 'SourceCodeProVariable',
         heading: undefined,
         body: undefined,
-        mono: undefined,
         roboto: ['Roboto', 'sans-serif'],
       },
       fontWeight: {
