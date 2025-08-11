@@ -1,5 +1,5 @@
 {
-  "name": "acme",
+  "name": "100handy",
   "private": true,
   "scripts": {
     "build": "turbo run build",

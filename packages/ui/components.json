@@ -10,10 +10,10 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@acme/components",
-    "utils": "@acme/utils",
-    "ui": "@acme/components",
-    "lib": "@acme/utils"
+    "components": "@100handy/components",
+  "utils": "@100handy/utils",
+  "ui": "@100handy/components",
+  "lib": "@100handy/utils"
   },
   "iconLibrary": "lucide"
 }

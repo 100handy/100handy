@@ -1,9 +1,9 @@
 {
-  "extends": "@acme/typescript/react-library.json",
+  "extends": "@100handy/typescript/react-library.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@acme/*": [
+      "@100handy/*": [
         "./src/*"
       ]
     },

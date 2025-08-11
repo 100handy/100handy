@@ -1,4 +1,4 @@
-import { createAuthClient } from "@acme/auth/better-auth-client";
+import { createAuthClient } from "@100handy/auth/better-auth-client";
 
 export const authClient: ReturnType<typeof createAuthClient> = createAuthClient(
   {

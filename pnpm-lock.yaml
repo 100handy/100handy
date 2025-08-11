@@ -20,7 +20,7 @@ importers:
 
   apps/client-mobile:
     dependencies:
-      '@acme/auth':
+      '@100handy/auth':
         specifier: workspace:*
         version: link:../../packages/auth
       '@better-auth/expo':
@@ -171,13 +171,13 @@ importers:
 
   apps/client-web:
     dependencies:
-      '@acme/auth':
+      '@100handy/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@acme/tailwind':
+      '@100handy/tailwind':
         specifier: workspace:*
         version: link:../../tooling/tailwind
-      '@acme/ui':
+      '@100handy/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@types/pg':
@@ -199,10 +199,10 @@ importers:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
     devDependencies:
-      '@acme/eslint':
+      '@100handy/eslint':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/typescript':
+      '@100handy/typescript':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':
@@ -233,10 +233,10 @@ importers:
         specifier: ^8.16.3
         version: 8.16.3
     devDependencies:
-      '@acme/eslint':
+      '@100handy/eslint':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/typescript':
+      '@100handy/typescript':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':
@@ -248,7 +248,7 @@ importers:
 
   packages/db:
     devDependencies:
-      '@acme/eslint':
+      '@100handy/eslint':
         specifier: workspace:*
         version: link:../../tooling/eslint
 
@@ -288,10 +288,10 @@ importers:
         specifier: ^1.3.5
         version: 1.3.5
     devDependencies:
-      '@acme/eslint':
+      '@100handy/eslint':
         specifier: workspace:*
         version: link:../../tooling/eslint
-      '@acme/typescript':
+      '@100handy/typescript':
         specifier: workspace:*
         version: link:../../tooling/typescript
       '@types/node':

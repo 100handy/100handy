@@ -1,5 +1,5 @@
 {
-  "extends": "@acme/typescript/nextjs.json",
+  "extends": "@100handy/typescript/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
