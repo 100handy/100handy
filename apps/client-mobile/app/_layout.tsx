@@ -49,10 +49,10 @@ export default function RootLayout() {
           }}
         />
         <Tabs.Screen
-          name="jobs"
+          name="tasks"
           options={{
             tabBarIcon: ({ color, size }) => <Briefcase color={color} size={size} />,
-            title: "Jobs",
+            title: "Tasks",
           }}
         />
         <Tabs.Screen
@@ -73,6 +73,7 @@ export default function RootLayout() {
         <Tabs.Screen name="sign-in" options={{ href: null }} />
         <Tabs.Screen name="sign-up" options={{ href: null }} />
         <Tabs.Screen name="verify-otp" options={{ href: null }} />
+         <Tabs.Screen name="task-details" options={{ href: null }} />
       </Tabs>
     </GluestackUIProvider>
   );

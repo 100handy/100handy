@@ -23,6 +23,9 @@ import {
   CarIcon,
   SparklesIcon,
 } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import SelectDateTimeModal from '@/components/modals/SelectDateTimeModal';
+
 
 // Brand colors
 const colors = {
@@ -41,9 +44,11 @@ interface CategoryCardProps {
 }
 
 function CategoryCard({ bg, icon: Icon, title, subtitle }: CategoryCardProps) {
+    const router = useRouter()
   return (
     <VStack style={{ width: 160, height: 120 }}>
       <Pressable
+        onPress={() => router.push('/available-professionals')}
         className="rounded-xl p-4 flex-1 justify-between"
         style={{
           backgroundColor: bg,
@@ -207,6 +212,8 @@ export default function ServicesHomeScreen() {
             </VStack>
 
           </VStack>
+
+          {/* <SelectDateTimeModal isOpen={true} onClose={() => {}}  /> */}
         </ScrollView>
       </Box>
     </SafeAreaView>
