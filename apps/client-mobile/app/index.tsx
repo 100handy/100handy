@@ -31,7 +31,8 @@ export default function Index() {
   };
 
   const handleSignUp = () => {
-    router.push('/sign-up');
+    // router.push('/sign-up');
+    router.push('/home');
   };
 
   return (

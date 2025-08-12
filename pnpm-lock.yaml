@@ -59,6 +59,9 @@ importers:
       '@gluestack-ui/overlay':
         specifier: ^0.1.22
         version: 0.1.22(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/pressable':
+        specifier: ^0.1.23
+        version: 0.1.23(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@gluestack-ui/select':
         specifier: ^0.1.31
         version: 0.1.31(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -1129,6 +1132,12 @@ packages:
 
   '@gluestack-ui/overlay@0.1.22':
     resolution: {integrity: sha512-ttlSjO/ysN9NuTq5JPoVwOAU8aKMaj738xTCxOVgBRr1+kbBUVpmBnygVlC6PvHvJF1A00a0ZTzw48CIVL5aNw==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+
+  '@gluestack-ui/pressable@0.1.23':
+    resolution: {integrity: sha512-y7Sqwwe4+nIM5pECr3UT9qx7MMyuJHt1od6dfB/K+S2X91uZgTJEw7PUQgvOW6Jr8dBrStxFiTWfHmDqX/FVOQ==}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
@@ -6884,6 +6893,16 @@ snapshots:
       '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@react-native-aria/interactions': 0.2.16(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@react-native-aria/overlays': 0.3.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    transitivePeerDependencies:
+      - react-native
+
+  '@gluestack-ui/pressable@0.1.23(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@gluestack-ui/utils': 0.1.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/interactions': 0.2.16(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
     transitivePeerDependencies:
