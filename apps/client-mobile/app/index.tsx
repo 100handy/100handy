@@ -2,6 +2,9 @@ import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { View, Image } from "react-native";
 import { Pressable } from "react-native";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { signInWithProvider } from "@shared/supabase/auth";
 
 import TaskHelperLogo from "../assets/images/task-helper-logo.svg";
 import GoogleLogo from "../assets/images/google-logo.svg";
@@ -9,6 +12,28 @@ import AppleLogo from "../assets/images/apple-logo.svg";
 import FacebookLogo from "../assets/images/facebook-logo.svg";
 
 export default function Index() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const handleSocialLogin = async (provider: 'google' | 'apple' | 'facebook') => {
+    try {
+      setLoading(true);
+      await signInWithProvider(provider);
+      // The redirect will be handled by Supabase OAuth flow
+    } catch (error) {
+      console.error('Social login error:', error);
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = () => {
+    router.push('/sign-in');
+  };
+
+  const handleSignUp = () => {
+    router.push('/sign-up');
+  };
+
   return (
     <View className="flex-1 justify-center items-center bg-background p-6">
       <View className="items-center mb-10">
@@ -22,12 +47,20 @@ export default function Index() {
       </View>
 
       <View className="w-full mb-6">
-        <Pressable className="bg-clayOrange p-4 rounded-xl mb-4">
+        <Pressable 
+          className={`bg-clayOrange p-4 rounded-xl mb-4 ${loading ? 'opacity-50' : ''}`} 
+          onPress={handleLogin}
+          disabled={loading}
+        >
           <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white text-center font-bold text-lg">
             Log in
           </Text>
         </Pressable>
-        <Pressable className="bg-sageGreen p-4 rounded-xl">
+        <Pressable 
+          className={`bg-sageGreen p-4 rounded-xl ${loading ? 'opacity-50' : ''}`} 
+          onPress={handleSignUp}
+          disabled={loading}
+        >
           <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white text-center font-bold text-lg">
             Sign up
           </Text>
@@ -37,19 +70,31 @@ export default function Index() {
       <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-font mb-4">or continue with</Text>
 
       <View className="w-full">
-        <Pressable className="flex-row items-center justify-center bg-white p-4 rounded-xl mb-4 border border-gray-200">
+        <Pressable 
+          className={`flex-row items-center justify-center bg-white p-4 rounded-xl mb-4 border border-gray-200 ${loading ? 'opacity-50' : ''}`}
+          onPress={() => handleSocialLogin('google')}
+          disabled={loading}
+        >
           <GoogleLogo width={24} height={24} className="mr-2" />
           <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-font font-bold text-base">
             Continue with Google
           </Text>
         </Pressable>
-        <Pressable className="flex-row items-center justify-center bg-black p-4 rounded-xl mb-4">
+        <Pressable 
+          className={`flex-row items-center justify-center bg-black p-4 rounded-xl mb-4 ${loading ? 'opacity-50' : ''}`}
+          onPress={() => handleSocialLogin('apple')}
+          disabled={loading}
+        >
           <AppleLogo width={24} height={24} className="mr-2" />
           <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white font-bold text-base">
             Continue with Apple
           </Text>
         </Pressable>
-        <Pressable className="flex-row items-center justify-center bg-blue-600 p-4 rounded-xl">
+        <Pressable 
+          className={`flex-row items-center justify-center bg-blue-600 p-4 rounded-xl ${loading ? 'opacity-50' : ''}`}
+          onPress={() => handleSocialLogin('facebook')}
+          disabled={loading}
+        >
           <FacebookLogo width={24} height={24} className="mr-2" />
           <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white font-bold text-base">
             Continue with Facebook

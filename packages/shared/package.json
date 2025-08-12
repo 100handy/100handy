@@ -1,0 +1,21 @@
+{
+  "name": "@shared/supabase",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@react-native-async-storage/async-storage": "^1.19.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    }
+  }
+}

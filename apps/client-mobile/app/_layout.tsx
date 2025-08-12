@@ -4,6 +4,8 @@ import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { SplashScreen } from "expo-router";
+import * as Linking from "expo-linking";
+import { supabase } from "@shared/supabase/supabaseClient";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -20,6 +22,15 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    const sub = Linking.addEventListener('url', async ({ url }) => {
+      // supabase-js v2 in RN will parse the url if you call this:
+      await supabase.auth.startAutoRefresh();
+      // navigate as needed
+    });
+    return () => sub.remove();
+  }, []);
 
   // Prevent rendering until the font has loaded or an error was returned
   if (!fontsLoaded && !fontError) {

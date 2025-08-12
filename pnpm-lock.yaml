@@ -29,9 +29,15 @@ importers:
       '@expo/vector-icons':
         specifier: ^14.1.0
         version: 14.1.0(expo-font@13.3.2(expo@53.0.19(@babel/core@7.28.0)(@expo/metro-runtime@5.0.4(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/actionsheet':
+        specifier: ^0.2.53
+        version: 0.2.53(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@gluestack-ui/button':
         specifier: ^1.0.14
         version: 1.0.14(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/checkbox':
+        specifier: ^0.1.39
+        version: 0.1.39(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@gluestack-ui/divider':
         specifier: ^0.1.10
         version: 0.1.10(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -41,6 +47,9 @@ importers:
       '@gluestack-ui/image':
         specifier: ^0.1.17
         version: 0.1.17(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/input':
+        specifier: ^0.1.38
+        version: 0.1.38(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@gluestack-ui/link':
         specifier: ^0.1.29
         version: 0.1.29(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -50,9 +59,18 @@ importers:
       '@gluestack-ui/overlay':
         specifier: ^0.1.22
         version: 0.1.22(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/select':
+        specifier: ^0.1.31
+        version: 0.1.31(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@gluestack-ui/toast':
         specifier: ^1.0.9
         version: 1.0.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@legendapp/motion':
+        specifier: ^2.4.0
+        version: 2.4.0(nativewind@4.1.23(react-native-reanimated@3.17.5(@babel/core@7.28.0)(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-svg@15.12.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-async-storage/async-storage':
+        specifier: ^2.2.0
+        version: 2.2.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))
       '@react-navigation/bottom-tabs':
         specifier: ^7.3.10
         version: 7.4.2(@react-navigation/native@7.1.14(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-screens@4.11.1(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -62,6 +80,9 @@ importers:
       '@react-navigation/native':
         specifier: ^7.1.6
         version: 7.1.14(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.54.0
       '@types/pg':
         specifier: ^8.15.4
         version: 8.15.4
@@ -110,6 +131,9 @@ importers:
       expo-web-browser:
         specifier: ~14.2.0
         version: 14.2.0(expo@53.0.19(@babel/core@7.28.0)(@expo/metro-runtime@5.0.4(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))
+      lucide-react-native:
+        specifier: ^0.539.0
+        version: 0.539.0(react-native-svg@15.12.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       nativewind:
         specifier: ~4.1.23
         version: 4.1.23(react-native-reanimated@3.17.5(@babel/core@7.28.0)(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-svg@15.12.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17)
@@ -248,6 +272,22 @@ importers:
       '@100handy/eslint':
         specifier: workspace:*
         version: link:../../tooling/eslint
+
+  packages/shared:
+    dependencies:
+      '@react-native-async-storage/async-storage':
+        specifier: ^1.19.0
+        version: 1.24.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.23)(react@19.0.0))
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.54.0
+    devDependencies:
+      '@types/react':
+        specifier: ^18.2.0
+        version: 18.3.23
+      typescript:
+        specifier: ^5.0.0
+        version: 5.8.3
 
   packages/ui:
     dependencies:
@@ -1021,14 +1061,32 @@ packages:
   '@formatjs/intl-localematcher@0.6.1':
     resolution: {integrity: sha512-ePEgLgVCqi2BBFnTMWPfIghu6FkbZnnBVhO2sSxvLfrdFw7wCHAHiDoM2h4NRgjbaY7+B7HgOLZGkK187pZTZg==}
 
+  '@gluestack-ui/actionsheet@0.2.53':
+    resolution: {integrity: sha512-93qHvq6BHezJ7wt2lce4OQ38wXCGsDtglj5nlmwo2T41vj4ubOtDVoSUhXT+hfH0EmRr0TxFNeFqIgesO46qVw==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+
   '@gluestack-ui/button@1.0.14':
     resolution: {integrity: sha512-Rqv5PY18jzeVACBwsVxXlyDbHjBiSXGVqY29VO6KHZGMMokCPW6MXYXT8ZpriLxMc1DRkgTtpTVYZCJBFaYTbg==}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
 
+  '@gluestack-ui/checkbox@0.1.39':
+    resolution: {integrity: sha512-CPL9+g9qIFuGGQAQuFySATTxrqGMhIx/ASpBdl/YC50Ec/d7gMZlnKww3N1og3a6JqMG8yeWwbH+GH3z07XsfA==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+
   '@gluestack-ui/divider@0.1.10':
     resolution: {integrity: sha512-/hZx1Rmy4Pgln9AwAprAEQcxYPEHjHSNF4xCUWlK/q0peyiMT5Nagt54VnxykVn5A0b2zg5QKP0pOqOF9xeE6w==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+
+  '@gluestack-ui/form-control@0.1.19':
+    resolution: {integrity: sha512-6YbPbi/RZrXc5DyVPbxPV17FYaBoEl1yAdSwut8iE6n+yQekjluINrh2q5ZPWF2SGmyo7VSNcL85yeU5I97xHg==}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
@@ -1047,6 +1105,12 @@ packages:
 
   '@gluestack-ui/image@0.1.17':
     resolution: {integrity: sha512-hcyTVBUw55bSjEpyynIZJVm3Ff6lcjKXFT55f890oy2PNGyFdsKr6V+t/jy5n/2fwbv1eR2KU0uDDiI2vmBh+A==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+
+  '@gluestack-ui/input@0.1.38':
+    resolution: {integrity: sha512-NzwDOXkkMYzBQ0h7UnhKA2h54/qlxDxMFGXykkmYOl7mc7QJc1aJaveo4yMHtpYvcQG17xLyD+Z+5CQYA76nvw==}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
@@ -1077,6 +1141,12 @@ packages:
 
   '@gluestack-ui/react-native-aria@0.1.7':
     resolution: {integrity: sha512-mdK/M6RQafAYiHyJnDNjaE9+ttr9eg48f2InmO3rvcrjsdaLcu/vwHlwrO9N3xYcb3wb9z2+YZ4OIgtymFNTOw==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+
+  '@gluestack-ui/select@0.1.31':
+    resolution: {integrity: sha512-d8vfdCK4VFBYEDYMCTRYcZCWvYaf7UWMJGg2uMnutHA8Y4sDXjKR5P821xKdh75QVkmZRZm1MdzSWFvXUzAlgg==}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
@@ -1250,6 +1320,9 @@ packages:
   '@internationalized/number@3.6.3':
     resolution: {integrity: sha512-p+Zh1sb6EfrfVaS86jlHGQ9HA66fJhV9x5LiE5vCbZtXEHAuhcmUZUdZ4WrFpUBfNalr2OkAJI5AcKEQF+Lebw==}
 
+  '@internationalized/number@3.6.4':
+    resolution: {integrity: sha512-P+/h+RDaiX8EGt3shB9AYM1+QgkvHmJ5rKi4/59k4sg9g58k9rqsRW0WxRO7jCoHyvVbFRRFKmVTdFYdehrxHg==}
+
   '@internationalized/string@3.2.7':
     resolution: {integrity: sha512-D4OHBjrinH+PFZPvfCXvG28n2LSykWcJ7GIioQL+ok0LON15SdfoUssoHzzOUmVZLbRoREsQXVzA6r8JKsbP6A==}
 
@@ -1312,6 +1385,21 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.29':
     resolution: {integrity: sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ==}
+
+  '@legendapp/motion@2.4.0':
+    resolution: {integrity: sha512-AAYpRLGvxGD5hIGl9sVHyoUufr66zoH82PuxYcKiPSMdCBI3jwZFWh6CuHjV1leRKVIRk2py1rSvIVabG8eqcw==}
+    peerDependencies:
+      nativewind: '*'
+      react: '>=16'
+      react-native: '*'
+
+  '@legendapp/tools@2.0.1':
+    resolution: {integrity: sha512-Kxt0HWvWElRK6oybHRzcYxdgaKGwuaiRNreS7usW7QuHXRIHaH4yMcW2YNRG4DHE5fpefv+Bno/BohQcCE4FaA==}
+    peerDependencies:
+      react: '>=16'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -1526,8 +1614,25 @@ packages:
       '@types/react':
         optional: true
 
+  '@react-aria/checkbox@3.2.1':
+    resolution: {integrity: sha512-XnypnlVIfhB3CD7eSjSds8hNkzHgnhu0t48I1D0jYdL1O6tQC4UytPdIqlemRYBVHDloZkWerbjenpHnxhv8iA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1
+
+  '@react-aria/dialog@3.5.28':
+    resolution: {integrity: sha512-S9dgdFBQc9LbhyBiHwGPSATwtvsIl6h+UnxDJ4oKBSse+wxdAyshbZv2tyO5RFbe3k73SAgU7yKocfg7YyRM0A==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-aria/focus@3.20.5':
     resolution: {integrity: sha512-JpFtXmWQ0Oca7FcvkqgjSyo6xEP7v3oQOLUId6o0xTvm4AD5W0mU2r3lYrbhsJ+XxdUUX4AVR5473sZZ85kU4A==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-aria/focus@3.21.0':
+    resolution: {integrity: sha512-7NEGtTPsBy52EZ/ToVKCu0HSelE3kq9qeis+2eEq90XSuJOMaDHUQrA7RC2Y89tlEwQB31bud/kKRi9Qme1dkA==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
@@ -1538,8 +1643,26 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
+  '@react-aria/i18n@3.12.11':
+    resolution: {integrity: sha512-1mxUinHbGJ6nJ/uSl62dl48vdZfWTBZePNF/wWQy98gR0qNFXLeusd7CsEmJT1971CR5i/WNYUo1ezNlIJnu6A==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-aria/interactions@3.25.3':
     resolution: {integrity: sha512-J1bhlrNtjPS/fe5uJQ+0c7/jiXniwa4RQlP+Emjfc/iuqpW2RhbF9ou5vROcLzWIyaW8tVMZ468J68rAs/aZ5A==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-aria/interactions@3.25.4':
+    resolution: {integrity: sha512-HBQMxgUPHrW8V63u9uGgBymkMfj6vdWbB0GgUJY49K9mBKMsypcHeWkWM6+bF7kxRO728/IK8bWDV6whDbqjHg==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-aria/label@3.7.20':
+    resolution: {integrity: sha512-Hw7OsC2GBnjptyW1lC1+SNoSIZA0eIh02QnNDr1XX2S+BPfn958NxoI7sJIstO/TUpQVNqdjEN/NI6+cyuJE6g==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
@@ -1550,14 +1673,38 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
+  '@react-aria/overlays@3.28.0':
+    resolution: {integrity: sha512-qaHahAXTmxXULgg2/UfWEIwfgdKsn27XYryXAWWDu2CAZTcbI+5mGwYrQZSDWraM6v5PUUepzOVvm7hjTqiMFw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-aria/ssr@3.9.10':
+    resolution: {integrity: sha512-hvTm77Pf+pMBhuBm760Li0BVIO38jv1IBws1xFm1NoL26PU+fe+FMW5+VZWyANR6nYL65joaJKZqOdTQMkO9IQ==}
+    engines: {node: '>= 12'}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-aria/ssr@3.9.9':
     resolution: {integrity: sha512-2P5thfjfPy/np18e5wD4WPt8ydNXhij1jwA8oehxZTFqlgVMGXzcWKxTb4RtJrLFsqPO7RUQTiY8QJk0M4Vy2g==}
     engines: {node: '>= 12'}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
+  '@react-aria/toggle@3.12.0':
+    resolution: {integrity: sha512-JfcrF8xUEa2CbbUXp+WQiTBVwSM/dm21v5kueQlksvLfXG6DGE8/zjM6tJFErrFypAasc1JXyrI4dspLOWCfRA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-aria/utils@3.29.1':
     resolution: {integrity: sha512-yXMFVJ73rbQ/yYE/49n5Uidjw7kh192WNN9PNQGV0Xoc7EJUlSOxqhnpHmYTyO0EotJ8fdM1fMH8durHjUSI8g==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-aria/utils@3.30.0':
+    resolution: {integrity: sha512-ydA6y5G1+gbem3Va2nczj/0G0W7/jUVo/cbN10WA5IizzWIwMP5qhFr7macgbKfHMkZ+YZC3oXnt2NNre5odKw==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
@@ -1567,6 +1714,24 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-aria/visually-hidden@3.8.26':
+    resolution: {integrity: sha512-Lz36lTVaQbv5Kn74sPv0l9SnLQ5XHKCoq2zilP14Eb4QixDIqR7Ovj43m+6wi9pynf29jtOb/8D/9jrTjbmmgw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-native-aria/checkbox@0.2.10':
+    resolution: {integrity: sha512-SpjAHmu+NmoztkHggtlBsygOapszjomjo8PtbGxP7rV+3b5iWhmrD2Ztf3Vc4tZMBl/GFslLA3NXp5h47T9Utg==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
+  '@react-native-aria/dialog@0.0.5':
+    resolution: {integrity: sha512-ZThiWyymf3WiA2EdjStV32pTL3RjAb7H/CL0Zsd1wKNuw1lU9HX6h4UIUpt0MZhcFCUnZjCovNtU9IRwbbdj/Q==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   '@react-native-aria/focus@0.2.9':
     resolution: {integrity: sha512-zVgOIzKwnsyyurUxlZnzUKB2ekK/cmK64sQJIKKUlkJKVxd2EAFf7Sjz/NVEoMhTODN3qGRASTv9bMk/pBzzVA==}
@@ -1587,11 +1752,27 @@ packages:
       react-dom: '*'
       react-native: '*'
 
+  '@react-native-aria/toggle@0.2.11':
+    resolution: {integrity: sha512-oEmcHDp9dXJ8QM8BYILmvry9m1OB9prsIJJnmRjedSVMHRgeuH7CCPcJ1PUIsy56EvtAo6JbKvLTX5HUTQ/RHg==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
   '@react-native-aria/utils@0.2.12':
     resolution: {integrity: sha512-752/tQ5fjDdc/3Gw8cKqml4NucfiFrO8wPmlg0bBgaCvfQDJaUMi4grme3/fBPCUoK2wk9/yJHfwkv45Gi5Eew==}
     peerDependencies:
       react: '*'
       react-native: '*'
+
+  '@react-native-async-storage/async-storage@1.24.0':
+    resolution: {integrity: sha512-W4/vbwUOYOjco0x3toB8QCr7EjIP6nE9G7o8PMguvvjYT5Awg09lyV4enACRx4s++PPulBiBSjL0KTFx2u0Z/g==}
+    peerDependencies:
+      react-native: ^0.0.0-0 || >=0.60 <1.0
+
+  '@react-native-async-storage/async-storage@2.2.0':
+    resolution: {integrity: sha512-gvRvjR5JAaUZF8tv2Kcq/Gbt3JHwbKFYfmb445rhOj6NUMx3qPLixmDx5pZAyb9at1bYvJ4/eTUipU5aki45xw==}
+    peerDependencies:
+      react-native: ^0.0.0-0 || >=0.65 <1.0
 
   '@react-native/assets-registry@0.79.5':
     resolution: {integrity: sha512-N4Kt1cKxO5zgM/BLiyzuuDNquZPiIgfktEQ6TqJ/4nKA8zr4e8KJgU6Tb2eleihDO4E24HmkvGc73naybKRz/w==}
@@ -1699,11 +1880,31 @@ packages:
   '@react-navigation/routers@7.4.1':
     resolution: {integrity: sha512-42mZrMzQ0LfKxUb5OHIurYrPYyRsXFLolucILrvm21f0O40Sw0Ufh1bnn/jRqnxZZu7wvpUGIGYM8nS9zVE1Aw==}
 
+  '@react-stately/checkbox@3.7.0':
+    resolution: {integrity: sha512-opViVhNvxFVHjXhM4nA/E03uvbLazsIKloXX9JtyBCZAQRUag17dpmkekfIkHvP4o7z7AWFoibD8JBFV1IrMcQ==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-stately/flags@3.1.2':
     resolution: {integrity: sha512-2HjFcZx1MyQXoPqcBGALwWWmgFVUk2TuKVIQxCbRq7fPyWXIl6VHcakCLurdtYC2Iks7zizvz0Idv48MQ38DWg==}
 
+  '@react-stately/form@3.2.0':
+    resolution: {integrity: sha512-PfefxvT7/BIhAGpD4oQpdcxnL8cfN0ZTQxQq+Wmb9z3YzK1oM8GFxb8eGdDRG71JeF8WUNMAQVZFhgl00Z/YKg==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-stately/overlays@3.6.17':
     resolution: {integrity: sha512-bkGYU4NPC/LgX9OGHLG8hpf9QDoazlb6fKfD+b5o7GtOdctBqCR287T/IBOQyvHqpySqrQ8XlyaGxJPGIcCiZw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-stately/overlays@3.6.18':
+    resolution: {integrity: sha512-g8n2FtDCxIg2wQ09R7lrM2niuxMPCdP17bxsPV9hyYnN6m42aAKGOhzWrFOK+3phQKgk/E1JQZEvKw1cyyGo1A==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-stately/toggle@3.9.0':
+    resolution: {integrity: sha512-1URd97R5nbFF9Hc1nQBhvln55EnOkLNz6pjtXU7TCnV4tYVbe+tc++hgr5XRt6KAfmuXxVDujlzRc6QjfCn0cQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
@@ -1712,8 +1913,28 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
+  '@react-stately/utils@3.10.8':
+    resolution: {integrity: sha512-SN3/h7SzRsusVQjQ4v10LaVsDc81jyyR0DD5HnsQitm/I5WDpaSr2nRHtyloPFU48jlql1XX/S04T2DLQM7Y3g==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-types/button@3.12.2':
     resolution: {integrity: sha512-QLoSCX8E7NFIdkVMa65TPieve0rKeltfcIxiMtrphjfNn+83L0IHMcbhjf4r4W19c/zqGbw3E53Hx8mNukoTUw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-types/button@3.13.0':
+    resolution: {integrity: sha512-hwvcNnBjDeNvWheWfBhmkJSzC48ub5rZq0DnpemB3XKOvv5WcF9p6rrQZsQ3egNGkh0Z+bKfr2QfotgOkccHSw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-types/checkbox@3.10.0':
+    resolution: {integrity: sha512-DJ84ilBDvZddE/Sul97Otee4M6psrPRaJm2a1Bc7M3Y5UKo6d6RGXdcDarRRpbnS7BeAbVanKiMS2ygI9QHh9g==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-types/dialog@3.5.20':
+    resolution: {integrity: sha512-ebn8jW/xW/nmRATaWIPHVBIpIFWSaqjrAxa58f5TXer5FtCD9pUuzAQDmy/o22ucB0yvn6Kl+fjb3SMbMdALZQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
@@ -1722,8 +1943,18 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
+  '@react-types/overlays@3.9.0':
+    resolution: {integrity: sha512-T2DqMcDN5p8vb4vu2igoLrAtuewaNImLS8jsK7th7OjwQZfIWJn5Y45jSxHtXJUddEg1LkUjXYPSXCMerMcULw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
   '@react-types/shared@3.30.0':
     resolution: {integrity: sha512-COIazDAx1ncDg046cTJ8SFYsX8aS3lB/08LDnbkH/SkdYrFPWDlXMrO/sUam8j1WWM+PJ+4d1mj7tODIKNiFog==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
+
+  '@react-types/shared@3.31.0':
+    resolution: {integrity: sha512-ua5U6V66gDcbLZe4P2QeyNgPp4YWD1ymGA6j3n+s8CGExtrCPe64v+g4mvpT8Bnb985R96e4zFT61+m0YCwqMg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
@@ -1738,6 +1969,28 @@ packages:
 
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
+
+  '@supabase/auth-js@2.71.1':
+    resolution: {integrity: sha512-mMIQHBRc+SKpZFRB2qtupuzulaUhFYupNyxqDj5Jp/LyPvcWvjaJzZzObv6URtL/O6lPxkanASnotGtNpS3H2Q==}
+
+  '@supabase/functions-js@2.4.5':
+    resolution: {integrity: sha512-v5GSqb9zbosquTo6gBwIiq7W9eQ7rE5QazsK/ezNiQXdCbY+bH8D9qEaBIkhVvX4ZRW5rP03gEfw5yw9tiq4EQ==}
+
+  '@supabase/node-fetch@2.6.15':
+    resolution: {integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==}
+    engines: {node: 4.x || >=6.0.0}
+
+  '@supabase/postgrest-js@1.19.4':
+    resolution: {integrity: sha512-O4soKqKtZIW3olqmbXXbKugUtByD2jPa8kL2m2c1oozAO11uCcGrRhkZL0kVxjBLrXHE0mdSkFsMj7jDSfyNpw==}
+
+  '@supabase/realtime-js@2.15.0':
+    resolution: {integrity: sha512-SEIWApsxyoAe68WU2/5PCCuBwa11LL4Bb8K3r2FHCt3ROpaTthmDiWEhnLMGayP05N4QeYrMk0kyTZOwid/Hjw==}
+
+  '@supabase/storage-js@2.10.4':
+    resolution: {integrity: sha512-cvL02GarJVFcNoWe36VBybQqTVRq6wQSOCvTS64C+eyuxOruFIm1utZAY0xi2qKtHJO3EjKaj8iWJKySusDmAQ==}
+
+  '@supabase/supabase-js@2.54.0':
+    resolution: {integrity: sha512-DLw83YwBfAaFiL3oWV26+sHRdeCGtxmIKccjh/Pndze3BWM4fZghzYKhk3ElOQU8Bluq4AkkCJ5bM5Szl/sfRg==}
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
     resolution: {integrity: sha512-b9MIk7yhdS1pMCZM8VeNfUlSKVRhsHZNMl5O9SfaX0l0t5wjdgu4IDzGB8bpnGBBOjGST3rRFVsaaEtI4W6f7g==}
@@ -1959,10 +2212,19 @@ packages:
   '@types/pg@8.15.4':
     resolution: {integrity: sha512-I6UNVBAoYbvuWkkU3oosC8yxqH21f4/Jc4DK71JLG3dT2mdlGe1z+ep/LQGXaKaOgcvUrsQoPRqfgtMcvZiJhg==}
 
+  '@types/phoenix@1.6.6':
+    resolution: {integrity: sha512-PIzZZlEppgrpoT2QgbnDU+MMzuR6BbCjllj0bM70lWoejMeNJAxCchxnv7J3XFkI8MpygtRpzXrIlmWUBclP5A==}
+
+  '@types/prop-types@15.7.15':
+    resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
+
   '@types/react-dom@19.0.6':
     resolution: {integrity: sha512-lo6MuY+rFr8kIiFnr+7TzO+Av0wUPcEcepiPV4epGP0eTQpkDfp9czudg73isV8UxKauCUNlL1N8fXhcnx4iBw==}
     peerDependencies:
       '@types/react': ^19.0.0
+
+  '@types/react@18.3.23':
+    resolution: {integrity: sha512-/LDXMQh55EzZQ0uVAZmKKhfENivEvWz6E+EYzh+/MCjMhNsotd+ZHhBGIjFDTi6+fz0OhQQQLbTgdQIxxCsC0w==}
 
   '@types/react@19.0.14':
     resolution: {integrity: sha512-ixLZ7zG7j1fM0DijL9hDArwhwcCb4vqmePgwtV0GfnkHRSCUEv4LvzarcTdhoqgyMznUx/EhoTUv31CKZzkQlw==}
@@ -1975,6 +2237,9 @@ packages:
 
   '@types/strip-json-comments@0.0.30':
     resolution: {integrity: sha512-7NQmHra/JILCd1QqpSzl8+mJRc8ZHz3uDm8YV1Ks9IhK0epEiTw8aIErbvH9PI+6XbqhyIQy3462nEsn7UVzjQ==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -3557,6 +3822,10 @@ packages:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
 
+  is-plain-obj@2.1.0:
+    resolution: {integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==}
+    engines: {node: '>=8'}
+
   is-regex@1.2.1:
     resolution: {integrity: sha512-MjYsKHO5O7mCsmRGxWcLWheFqN9DJ/2TmngvjKXihe6efViPqc274+Fx/4fYj/r03+ESvBdTXK0V6tA3rgez1g==}
     engines: {node: '>= 0.4'}
@@ -3928,6 +4197,13 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
+  lucide-react-native@0.539.0:
+    resolution: {integrity: sha512-8VZxqhFCagFIlWURJE9JXwB+ApXDhbfj5J5XwL2IFd8BdrVvyL41VvzRvNKrxSDJMKxnFqIZwBjXTp2qB0w3yQ==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-native: '*'
+      react-native-svg: ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0
+
   lucide-react@0.525.0:
     resolution: {integrity: sha512-Tm1txJ2OkymCGkvwoHt33Y2JpN5xucVq1slHcgE6Lk0WjDfjgKWor5CdVER8U6DvcfMwh4M8XxmpTiyzfmfDYQ==}
     peerDependencies:
@@ -3960,6 +4236,10 @@ packages:
 
   memoize-one@6.0.0:
     resolution: {integrity: sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==}
+
+  merge-options@3.0.4:
+    resolution: {integrity: sha512-2Sug1+knBjkaMsMgf1ctR1Ujx+Ayku4EdJN4Z+C2+JzoeF7A3OZ9KM2GY0CpQS51NR61LTurMJrRKPhSs3ZRTQ==}
+    engines: {node: '>=10'}
 
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
@@ -6490,6 +6770,20 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@gluestack-ui/actionsheet@0.2.53(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@gluestack-ui/hooks': 0.1.13(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/overlay': 0.1.22(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/transitions': 0.1.11(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/utils': 0.1.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/dialog': 0.0.5(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/interactions': 0.2.16(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    transitivePeerDependencies:
+      - react-native
+
   '@gluestack-ui/button@1.0.14(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@gluestack-ui/utils': 0.1.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -6500,10 +6794,34 @@ snapshots:
     transitivePeerDependencies:
       - react-native
 
+  '@gluestack-ui/checkbox@0.1.39(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@gluestack-ui/form-control': 0.1.19(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/utils': 0.1.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-aria/visually-hidden': 3.8.25(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/checkbox': 0.2.10(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/interactions': 0.2.16(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/utils': 0.2.12(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-stately/checkbox': 3.7.0(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    transitivePeerDependencies:
+      - react-native
+
   '@gluestack-ui/divider@0.1.10(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
+
+  '@gluestack-ui/form-control@0.1.19(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@gluestack-ui/utils': 0.1.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    transitivePeerDependencies:
+      - react-native
 
   '@gluestack-ui/hooks@0.1.13(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
@@ -6522,6 +6840,17 @@ snapshots:
 
   '@gluestack-ui/image@0.1.17(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
+      '@gluestack-ui/utils': 0.1.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/interactions': 0.2.16(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    transitivePeerDependencies:
+      - react-native
+
+  '@gluestack-ui/input@0.1.38(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@gluestack-ui/form-control': 0.1.19(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@gluestack-ui/utils': 0.1.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@react-native-aria/interactions': 0.2.16(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -6572,6 +6901,17 @@ snapshots:
 
   '@gluestack-ui/react-native-aria@0.1.7(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
+      '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    transitivePeerDependencies:
+      - react-native
+
+  '@gluestack-ui/select@0.1.31(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@gluestack-ui/form-control': 0.1.19(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/hooks': 0.1.13(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@gluestack-ui/utils': 0.1.15(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@react-native-aria/focus': 0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
@@ -6721,6 +7061,10 @@ snapshots:
     dependencies:
       '@swc/helpers': 0.5.17
 
+  '@internationalized/number@3.6.4':
+    dependencies:
+      '@swc/helpers': 0.5.17
+
   '@internationalized/string@3.2.7':
     dependencies:
       '@swc/helpers': 0.5.17
@@ -6821,6 +7165,17 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.4
+
+  '@legendapp/motion@2.4.0(nativewind@4.1.23(react-native-reanimated@3.17.5(@babel/core@7.28.0)(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-svg@15.12.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@legendapp/tools': 2.0.1(react@19.0.0)
+      nativewind: 4.1.23(react-native-reanimated@3.17.5(@babel/core@7.28.0)(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-svg@15.12.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17)
+      react: 19.0.0
+      react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
+
+  '@legendapp/tools@2.0.1(react@19.0.0)':
+    optionalDependencies:
+      react: 19.0.0
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -6982,11 +7337,45 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.14
 
+  '@react-aria/checkbox@3.2.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@babel/runtime': 7.27.6
+      '@react-aria/label': 3.7.20(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/toggle': 3.12.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/utils': 3.29.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-stately/checkbox': 3.7.0(react@19.0.0)
+      '@react-stately/toggle': 3.9.0(react@19.0.0)
+      '@react-types/checkbox': 3.10.0(react@19.0.0)
+      react: 19.0.0
+    transitivePeerDependencies:
+      - react-dom
+
+  '@react-aria/dialog@3.5.28(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/interactions': 3.25.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/overlays': 3.28.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-types/dialog': 3.5.20(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
   '@react-aria/focus@3.20.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@react-aria/interactions': 3.25.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@react-aria/utils': 3.29.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@react-types/shared': 3.30.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      clsx: 2.1.1
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
+  '@react-aria/focus@3.21.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/interactions': 3.25.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
       '@swc/helpers': 0.5.17
       clsx: 2.1.1
       react: 19.0.0
@@ -7005,12 +7394,43 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
+  '@react-aria/i18n@3.12.11(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@internationalized/date': 3.8.2
+      '@internationalized/message': 3.1.8
+      '@internationalized/number': 3.6.4
+      '@internationalized/string': 3.2.7
+      '@react-aria/ssr': 3.9.10(react@19.0.0)
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
   '@react-aria/interactions@3.25.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@react-aria/ssr': 3.9.9(react@19.0.0)
       '@react-aria/utils': 3.29.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@react-stately/flags': 3.1.2
       '@react-types/shared': 3.30.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
+  '@react-aria/interactions@3.25.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/ssr': 3.9.10(react@19.0.0)
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-stately/flags': 3.1.2
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
+  '@react-aria/label@3.7.20(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
       '@swc/helpers': 0.5.17
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
@@ -7031,10 +7451,42 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
+  '@react-aria/overlays@3.28.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/focus': 3.21.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/i18n': 3.12.11(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/interactions': 3.25.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/ssr': 3.9.10(react@19.0.0)
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/visually-hidden': 3.8.26(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-stately/overlays': 3.6.18(react@19.0.0)
+      '@react-types/button': 3.13.0(react@19.0.0)
+      '@react-types/overlays': 3.9.0(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
+  '@react-aria/ssr@3.9.10(react@19.0.0)':
+    dependencies:
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+
   '@react-aria/ssr@3.9.9(react@19.0.0)':
     dependencies:
       '@swc/helpers': 0.5.17
       react: 19.0.0
+
+  '@react-aria/toggle@3.12.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/interactions': 3.25.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-stately/toggle': 3.9.0(react@19.0.0)
+      '@react-types/checkbox': 3.10.0(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   '@react-aria/utils@3.29.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
@@ -7042,6 +7494,17 @@ snapshots:
       '@react-stately/flags': 3.1.2
       '@react-stately/utils': 3.10.7(react@19.0.0)
       '@react-types/shared': 3.30.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      clsx: 2.1.1
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
+  '@react-aria/utils@3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/ssr': 3.9.10(react@19.0.0)
+      '@react-stately/flags': 3.1.2
+      '@react-stately/utils': 3.10.8(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
       '@swc/helpers': 0.5.17
       clsx: 2.1.1
       react: 19.0.0
@@ -7056,6 +7519,38 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
+  '@react-aria/visually-hidden@3.8.26(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/interactions': 3.25.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
+  '@react-native-aria/checkbox@0.2.10(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/checkbox': 3.2.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/utils': 3.29.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/toggle': 0.2.11(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/utils': 0.2.12(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-stately/toggle': 3.9.0(react@19.0.0)
+      react: 19.0.0
+      react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
+    transitivePeerDependencies:
+      - react-dom
+
+  '@react-native-aria/dialog@0.0.5(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/dialog': 3.5.28(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/utils': 0.2.12(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-types/dialog': 3.5.20(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      react: 19.0.0
+      react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
+    transitivePeerDependencies:
+      - react-dom
+
   '@react-native-aria/focus@0.2.9(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@react-aria/focus': 3.20.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -7066,8 +7561,8 @@ snapshots:
 
   '@react-native-aria/interactions@0.2.16(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
-      '@react-aria/interactions': 3.25.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      '@react-aria/utils': 3.29.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/interactions': 3.25.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/utils': 3.30.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@react-native-aria/utils': 0.2.12(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react: 19.0.0
       react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
@@ -7086,6 +7581,19 @@ snapshots:
       react-dom: 19.0.0(react@19.0.0)
       react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
 
+  '@react-native-aria/toggle@0.2.11(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@react-aria/focus': 3.20.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-aria/utils': 3.29.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/interactions': 0.2.16(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-native-aria/utils': 0.2.12(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      '@react-stately/toggle': 3.9.0(react@19.0.0)
+      '@react-types/checkbox': 3.10.0(react@19.0.0)
+      react: 19.0.0
+      react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
+    transitivePeerDependencies:
+      - react-dom
+
   '@react-native-aria/utils@0.2.12(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@react-aria/ssr': 3.9.9(react@19.0.0)
@@ -7094,6 +7602,16 @@ snapshots:
       react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
     transitivePeerDependencies:
       - react-dom
+
+  '@react-native-async-storage/async-storage@1.24.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.23)(react@19.0.0))':
+    dependencies:
+      merge-options: 3.0.4
+      react-native: 0.79.5(@babel/core@7.28.0)(@types/react@18.3.23)(react@19.0.0)
+
+  '@react-native-async-storage/async-storage@2.2.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))':
+    dependencies:
+      merge-options: 3.0.4
+      react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
 
   '@react-native/assets-registry@0.79.5': {}
 
@@ -7207,6 +7725,15 @@ snapshots:
 
   '@react-native/normalize-colors@0.79.5': {}
 
+  '@react-native/virtualized-lists@0.79.5(@types/react@18.3.23)(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.23)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      invariant: 2.2.4
+      nullthrows: 1.1.1
+      react: 19.0.0
+      react-native: 0.79.5(@babel/core@7.28.0)(@types/react@18.3.23)(react@19.0.0)
+    optionalDependencies:
+      '@types/react': 18.3.23
+
   '@react-native/virtualized-lists@0.79.5(@types/react@19.0.14)(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
       invariant: 2.2.4
@@ -7275,9 +7802,24 @@ snapshots:
     dependencies:
       nanoid: 3.3.11
 
+  '@react-stately/checkbox@3.7.0(react@19.0.0)':
+    dependencies:
+      '@react-stately/form': 3.2.0(react@19.0.0)
+      '@react-stately/utils': 3.10.8(react@19.0.0)
+      '@react-types/checkbox': 3.10.0(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+
   '@react-stately/flags@3.1.2':
     dependencies:
       '@swc/helpers': 0.5.17
+
+  '@react-stately/form@3.2.0(react@19.0.0)':
+    dependencies:
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
 
   '@react-stately/overlays@3.6.17(react@19.0.0)':
     dependencies:
@@ -7286,7 +7828,27 @@ snapshots:
       '@swc/helpers': 0.5.17
       react: 19.0.0
 
+  '@react-stately/overlays@3.6.18(react@19.0.0)':
+    dependencies:
+      '@react-stately/utils': 3.10.8(react@19.0.0)
+      '@react-types/overlays': 3.9.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+
+  '@react-stately/toggle@3.9.0(react@19.0.0)':
+    dependencies:
+      '@react-stately/utils': 3.10.8(react@19.0.0)
+      '@react-types/checkbox': 3.10.0(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+
   '@react-stately/utils@3.10.7(react@19.0.0)':
+    dependencies:
+      '@swc/helpers': 0.5.17
+      react: 19.0.0
+
+  '@react-stately/utils@3.10.8(react@19.0.0)':
     dependencies:
       '@swc/helpers': 0.5.17
       react: 19.0.0
@@ -7296,12 +7858,37 @@ snapshots:
       '@react-types/shared': 3.30.0(react@19.0.0)
       react: 19.0.0
 
+  '@react-types/button@3.13.0(react@19.0.0)':
+    dependencies:
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      react: 19.0.0
+
+  '@react-types/checkbox@3.10.0(react@19.0.0)':
+    dependencies:
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      react: 19.0.0
+
+  '@react-types/dialog@3.5.20(react@19.0.0)':
+    dependencies:
+      '@react-types/overlays': 3.9.0(react@19.0.0)
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      react: 19.0.0
+
   '@react-types/overlays@3.8.16(react@19.0.0)':
     dependencies:
       '@react-types/shared': 3.30.0(react@19.0.0)
       react: 19.0.0
 
+  '@react-types/overlays@3.9.0(react@19.0.0)':
+    dependencies:
+      '@react-types/shared': 3.31.0(react@19.0.0)
+      react: 19.0.0
+
   '@react-types/shared@3.30.0(react@19.0.0)':
+    dependencies:
+      react: 19.0.0
+
+  '@react-types/shared@3.31.0(react@19.0.0)':
     dependencies:
       react: 19.0.0
 
@@ -7316,6 +7903,48 @@ snapshots:
   '@sinonjs/fake-timers@10.3.0':
     dependencies:
       '@sinonjs/commons': 3.0.1
+
+  '@supabase/auth-js@2.71.1':
+    dependencies:
+      '@supabase/node-fetch': 2.6.15
+
+  '@supabase/functions-js@2.4.5':
+    dependencies:
+      '@supabase/node-fetch': 2.6.15
+
+  '@supabase/node-fetch@2.6.15':
+    dependencies:
+      whatwg-url: 5.0.0
+
+  '@supabase/postgrest-js@1.19.4':
+    dependencies:
+      '@supabase/node-fetch': 2.6.15
+
+  '@supabase/realtime-js@2.15.0':
+    dependencies:
+      '@supabase/node-fetch': 2.6.15
+      '@types/phoenix': 1.6.6
+      '@types/ws': 8.18.1
+      ws: 8.18.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@supabase/storage-js@2.10.4':
+    dependencies:
+      '@supabase/node-fetch': 2.6.15
+
+  '@supabase/supabase-js@2.54.0':
+    dependencies:
+      '@supabase/auth-js': 2.71.1
+      '@supabase/functions-js': 2.4.5
+      '@supabase/node-fetch': 2.6.15
+      '@supabase/postgrest-js': 1.19.4
+      '@supabase/realtime-js': 2.15.0
+      '@supabase/storage-js': 2.10.4
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0(@babel/core@7.28.0)':
     dependencies:
@@ -7538,9 +8167,18 @@ snapshots:
       pg-protocol: 1.10.3
       pg-types: 2.2.0
 
+  '@types/phoenix@1.6.6': {}
+
+  '@types/prop-types@15.7.15': {}
+
   '@types/react-dom@19.0.6(@types/react@19.0.14)':
     dependencies:
       '@types/react': 19.0.14
+
+  '@types/react@18.3.23':
+    dependencies:
+      '@types/prop-types': 15.7.15
+      csstype: 3.1.3
 
   '@types/react@19.0.14':
     dependencies:
@@ -7551,6 +8189,10 @@ snapshots:
   '@types/strip-bom@3.0.0': {}
 
   '@types/strip-json-comments@0.0.30': {}
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 22.16.3
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -9393,6 +10035,8 @@ snapshots:
 
   is-number@7.0.0: {}
 
+  is-plain-obj@2.1.0: {}
+
   is-regex@1.2.1:
     dependencies:
       call-bound: 1.0.4
@@ -9760,6 +10404,12 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
+  lucide-react-native@0.539.0(react-native-svg@15.12.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
+      react-native-svg: 15.12.0(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+
   lucide-react@0.525.0(react@19.0.0):
     dependencies:
       react: 19.0.0
@@ -9785,6 +10435,10 @@ snapshots:
   memoize-one@5.2.1: {}
 
   memoize-one@6.0.0: {}
+
+  merge-options@3.0.4:
+    dependencies:
+      is-plain-obj: 2.1.0
 
   merge-stream@2.0.0: {}
 
@@ -10606,6 +11260,54 @@ snapshots:
       invariant: 2.2.4
       react: 19.0.0
       react-native: 0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0)
+
+  react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.23)(react@19.0.0):
+    dependencies:
+      '@jest/create-cache-key-function': 29.7.0
+      '@react-native/assets-registry': 0.79.5
+      '@react-native/codegen': 0.79.5(@babel/core@7.28.0)
+      '@react-native/community-cli-plugin': 0.79.5
+      '@react-native/gradle-plugin': 0.79.5
+      '@react-native/js-polyfills': 0.79.5
+      '@react-native/normalize-colors': 0.79.5
+      '@react-native/virtualized-lists': 0.79.5(@types/react@18.3.23)(react-native@0.79.5(@babel/core@7.28.0)(@types/react@18.3.23)(react@19.0.0))(react@19.0.0)
+      abort-controller: 3.0.0
+      anser: 1.4.10
+      ansi-regex: 5.0.1
+      babel-jest: 29.7.0(@babel/core@7.28.0)
+      babel-plugin-syntax-hermes-parser: 0.25.1
+      base64-js: 1.5.1
+      chalk: 4.1.2
+      commander: 12.1.0
+      event-target-shim: 5.0.1
+      flow-enums-runtime: 0.0.6
+      glob: 7.2.3
+      invariant: 2.2.4
+      jest-environment-node: 29.7.0
+      memoize-one: 5.2.1
+      metro-runtime: 0.82.5
+      metro-source-map: 0.82.5
+      nullthrows: 1.1.1
+      pretty-format: 29.7.0
+      promise: 8.3.0
+      react: 19.0.0
+      react-devtools-core: 6.1.5
+      react-refresh: 0.14.2
+      regenerator-runtime: 0.13.11
+      scheduler: 0.25.0
+      semver: 7.7.2
+      stacktrace-parser: 0.1.11
+      whatwg-fetch: 3.6.20
+      ws: 6.2.3
+      yargs: 17.7.2
+    optionalDependencies:
+      '@types/react': 18.3.23
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@react-native-community/cli'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
 
   react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0):
     dependencies:

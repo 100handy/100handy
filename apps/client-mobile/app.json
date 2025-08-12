@@ -1,22 +1,25 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "100Handy",
+    "slug": "handy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "handy",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourco.handy",
+      "associatedDomains": ["applinks:auth.yourdomain.com"]
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.yourco.handy"
     },
     "web": {
       "bundler": "metro",
