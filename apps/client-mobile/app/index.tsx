@@ -1,55 +1,85 @@
-import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
-import { HStack } from "@/components/ui/hstack";
-import { Image } from "@/components/ui/image";
-import { Link, LinkText } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
-import { Icon, ArrowRightIcon } from "@/components/ui/icon";
-import { View } from "react-native";
-import SignUp from "./sign-up";
-import SignIn from "./sign-in";
+import { View, Image } from "react-native";
+import { Pressable } from "react-native";
+
+import TaskHelperLogo from "../assets/images/task-helper-logo.svg";
+import GoogleLogo from "../assets/images/google-logo.svg";
+import AppleLogo from "../assets/images/apple-logo.svg";
+import FacebookLogo from "../assets/images/facebook-logo.svg";
 
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Card className="p-5 rounded-lg max-w-[360px] m-3">
-        <Image
-          source={{
-            uri: "https://gluestack.github.io/public-blog-video-assets/yoga.png",
-          }}
-          className="mb-6 h-[240px] w-full rounded-md aspect-[263/240]"
-          alt="image"
-        />
-        <Text className="text-sm font-normal mb-2 text-typography-700">
-          May 15, 2023
-        </Text>
-        <Heading size="md" className="mb-4">
-          The Power of Positive Thinking
+    <View className="flex-1 justify-center items-center bg-background p-6">
+      <View className="items-center mb-10">
+        <TaskHelperLogo width={80} height={80} className="mb-4" />
+        <Heading style={{ fontFamily: "Futura-Medium" }} className="text-3xl text-font mb-2">
+          TaskHelper
         </Heading>
-        <Link href="https://gluestack.io/" isExternal>
-          <HStack className="items-center">
-            <LinkText
-              size="sm"
-              className="font-semibold text-info-600 no-underline"
-            >
-              Read Blog
-            </LinkText>
-            <Icon
-              as={ArrowRightIcon}
-              size="sm"
-              className="text-info-600 mt-0.5 ml-0.5"
-            />
-          </HStack>
-        </Link>
-      </Card>
-      <SignUp />
-      <SignIn />
+        <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-center text-font text-base">
+          Get help with home tasks fast and trusted
+        </Text>
+      </View>
+
+      <View className="w-full mb-6">
+        <Pressable className="bg-clayOrange p-4 rounded-xl mb-4">
+          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white text-center font-bold text-lg">
+            Log in
+          </Text>
+        </Pressable>
+        <Pressable className="bg-sageGreen p-4 rounded-xl">
+          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white text-center font-bold text-lg">
+            Sign up
+          </Text>
+        </Pressable>
+      </View>
+
+      <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-font mb-4">or continue with</Text>
+
+      <View className="w-full">
+        <Pressable className="flex-row items-center justify-center bg-white p-4 rounded-xl mb-4 border border-gray-200">
+          <GoogleLogo width={24} height={24} className="mr-2" />
+          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-font font-bold text-base">
+            Continue with Google
+          </Text>
+        </Pressable>
+        <Pressable className="flex-row items-center justify-center bg-black p-4 rounded-xl mb-4">
+          <AppleLogo width={24} height={24} className="mr-2" />
+          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white font-bold text-base">
+            Continue with Apple
+          </Text>
+        </Pressable>
+        <Pressable className="flex-row items-center justify-center bg-blue-600 p-4 rounded-xl">
+          <FacebookLogo width={24} height={24} className="mr-2" />
+          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white font-bold text-base">
+            Continue with Facebook
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={{ width: 342, height: 72 }}>
+        <Text style={{
+          fontFamily: 'Inter',
+          fontWeight: '400',
+          fontSize: 12,
+          lineHeight: 20,
+          color: '#000000',
+          textAlign: 'center',
+          marginBottom: 14
+        }}>
+          By continuing, you agree to our Terms of Service and Privacy Policy
+        </Text>
+        <Text style={{
+          fontFamily: 'Inter',
+          fontWeight: '400',
+          fontSize: 12,
+          lineHeight: 16,
+          color: '#000000',
+          textAlign: 'center'
+        }}>
+          Need help? Contact Support
+        </Text>
+      </View>
     </View>
   );
 }
