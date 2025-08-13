@@ -1,7 +1,9 @@
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
-import { View, Image } from "react-native";
-import { Pressable } from "react-native";
+import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
+import { Pressable } from "@/components/ui/pressable";
+import { Link, LinkText } from "@/components/ui/link";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { signInWithProvider } from "@shared/supabase/auth";
@@ -10,6 +12,7 @@ import TaskHelperLogo from "../assets/images/task-helper-logo.svg";
 import GoogleLogo from "../assets/images/google-logo.svg";
 import AppleLogo from "../assets/images/apple-logo.svg";
 import FacebookLogo from "../assets/images/facebook-logo.svg";
+import { SafeAreaView, StatusBar } from "react-native";
 
 export default function Index() {
   const router = useRouter();
@@ -36,96 +39,92 @@ export default function Index() {
   };
 
   return (
-    <View className="flex-1 justify-center items-center bg-background p-6">
-      <View className="items-center mb-10">
-        <TaskHelperLogo width={80} height={80} className="mb-4" />
-        <Heading style={{ fontFamily: "Futura-Medium" }} className="text-3xl text-font mb-2">
-          TaskHelper
-        </Heading>
-        <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-center text-font text-base">
-          Get help with home tasks fast and trusted
-        </Text>
-      </View>
+    <SafeAreaView className="flex-1 bg-themeBackground">
+      <StatusBar barStyle="dark-content" />
+      <VStack className="flex-1 justify-center items-center p-6">
+        <VStack className="items-center mb-10">
+          <Box className="w-20 h-20 bg-white rounded-2xl shadow-lg justify-center items-center mb-4">
+            <TaskHelperLogo width={40} height={40} />
+          </Box>
+          <Heading className="font-worksans-bold text-2xl text-typography-900 mb-2">
+            TaskHelper
+          </Heading>
+          <Text className="font-worksans text-center text-typography-600 text-base">
+            Get help with home tasks fast and trusted
+          </Text>
+        </VStack>
 
-      <View className="w-full mb-6">
-        <Pressable 
-          className={`bg-clayOrange p-4 rounded-xl mb-4 ${loading ? 'opacity-50' : ''}`} 
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white text-center font-bold text-lg">
-            Log in
-          </Text>
-        </Pressable>
-        <Pressable 
-          className={`bg-sageGreen p-4 rounded-xl ${loading ? 'opacity-50' : ''}`} 
-          onPress={handleSignUp}
-          disabled={loading}
-        >
-          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white text-center font-bold text-lg">
-            Sign up
-          </Text>
-        </Pressable>
-      </View>
+        <VStack className="w-full mb-6">
+          <Pressable
+            className={`bg-clayOrange p-4 rounded-xl mb-4 shadow-md ${loading ? 'opacity-50' : ''}`}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            <Text className="font-worksans-bold text-typography-white text-center font-bold text-lg">
+              Log in
+            </Text>
+          </Pressable>
+          <Pressable
+            className={`bg-sageGreen p-4 rounded-xl shadow-md ${loading ? 'opacity-50' : ''}`}
+            onPress={handleSignUp}
+            disabled={loading}
+          >
+            <Text className="font-worksans-bold text-typography-white text-center font-bold text-lg">
+              Sign up
+            </Text>
+          </Pressable>
+        </VStack>
 
-      <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-font mb-4">or continue with</Text>
+        <Box className="flex-row items-center w-full mb-4">
+          <Box className="flex-1 h-px bg-outline-300" />
+          <Text className="font-worksans text-typography-500 mx-4 text-sm">or continue with</Text>
+          <Box className="flex-1 h-px bg-outline-300" />
+        </Box>
 
-      <View className="w-full">
-        <Pressable 
-          className={`flex-row items-center justify-center bg-white p-4 rounded-xl mb-4 border border-gray-200 ${loading ? 'opacity-50' : ''}`}
-          onPress={() => handleSocialLogin('google')}
-          disabled={loading}
-        >
-          <GoogleLogo width={24} height={24} className="mr-2" />
-          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-font font-bold text-base">
-            Continue with Google
-          </Text>
-        </Pressable>
-        <Pressable 
-          className={`flex-row items-center justify-center bg-black p-4 rounded-xl mb-4 ${loading ? 'opacity-50' : ''}`}
-          onPress={() => handleSocialLogin('apple')}
-          disabled={loading}
-        >
-          <AppleLogo width={24} height={24} className="mr-2" />
-          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white font-bold text-base">
-            Continue with Apple
-          </Text>
-        </Pressable>
-        <Pressable 
-          className={`flex-row items-center justify-center bg-blue-600 p-4 rounded-xl ${loading ? 'opacity-50' : ''}`}
-          onPress={() => handleSocialLogin('facebook')}
-          disabled={loading}
-        >
-          <FacebookLogo width={24} height={24} className="mr-2" />
-          <Text style={{ fontFamily: "SourceCodeProVariable" }} className="text-white font-bold text-base">
-            Continue with Facebook
-          </Text>
-        </Pressable>
-      </View>
+        <VStack className="w-full">
+          <Pressable
+            className={`flex-row items-center justify-center bg-typography-white p-4 rounded-xl mb-4 border border-outline-200 shadow-sm ${loading ? 'opacity-50' : ''}`}
+            onPress={() => handleSocialLogin('google')}
+            disabled={loading}
+          >
+            <GoogleLogo width={24} height={24} className="mr-3" />
+            <Text className="font-worksans-bold text-typography-900 font-bold text-base">
+              Continue with Google
+            </Text>
+          </Pressable>
+          <Pressable
+            className={`flex-row items-center justify-center bg-typography-black p-4 rounded-xl mb-4 shadow-sm ${loading ? 'opacity-50' : ''}`}
+            onPress={() => handleSocialLogin('apple')}
+            disabled={loading}
+          >
+            <AppleLogo width={24} height={24} className="mr-3" />
+            <Text className="font-worksans-bold text-typography-white font-bold text-base">
+              Continue with Apple
+            </Text>
+          </Pressable>
+          <Pressable
+            className={`flex-row items-center justify-center bg-info-600 p-4 rounded-xl shadow-sm ${loading ? 'opacity-50' : ''}`}
+            onPress={() => handleSocialLogin('facebook')}
+            disabled={loading}
+          >
+            <FacebookLogo width={24} height={24} className="mr-3" />
+            <Text className="font-worksans-bold text-typography-white font-bold text-base">
+              Continue with Facebook
+            </Text>
+          </Pressable>
+        </VStack>
 
-      <View style={{ width: 342, height: 72 }}>
-        <Text style={{
-          fontFamily: 'Inter',
-          fontWeight: '400',
-          fontSize: 12,
-          lineHeight: 20,
-          color: '#000000',
-          textAlign: 'center',
-          marginBottom: 14
-        }}>
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </Text>
-        <Text style={{
-          fontFamily: 'Inter',
-          fontWeight: '400',
-          fontSize: 12,
-          lineHeight: 16,
-          color: '#000000',
-          textAlign: 'center'
-        }}>
-          Need help? Contact Support
-        </Text>
-      </View>
-    </View>
+        <VStack className="mt-8 w-full items-center">
+          <Text className="font-worksans text-center text-xs text-typography-500 leading-5">
+            By continuing, you agree to our <Link href="#"><LinkText underline>Terms of Service</LinkText></Link> and <Link href="#"><LinkText underline>Privacy Policy</LinkText></Link>
+          </Text>
+          <Link href="#" className="mt-4">
+            <LinkText className="font-worksans text-center text-xs text-typography-500 leading-4" underline>
+              Need help? Contact Support
+            </LinkText>
+          </Link>
+        </VStack>
+      </VStack>
+    </SafeAreaView>
   );
 }

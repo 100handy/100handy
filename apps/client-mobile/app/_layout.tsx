@@ -15,6 +15,15 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     "Futura-Medium": require("../assets/fonts/futura-medium.ttf"),
     "SourceCodeProVariable": require("../assets/fonts/SourceCodePro-Regular.ttf"),
+    // WorkSans font family
+    "WorkSans-Regular": require("../assets/fonts/WorkSans-Regular.ttf"),
+    "WorkSans-Medium": require("../assets/fonts/WorkSans-Medium.ttf"),
+    "WorkSans-SemiBold": require("../assets/fonts/WorkSans-SemiBold.ttf"),
+    "WorkSans-Bold": require("../assets/fonts/WorkSans-Bold.ttf"),
+    // Cardo font family
+    "Cardo-Regular": require("../assets/fonts/Cardo-Regular.ttf"),
+    "Cardo-Bold": require("../assets/fonts/Cardo-Bold.ttf"),
+    "Cardo-Italic": require("../assets/fonts/Cardo-Italic.ttf"),
   });
 
   useEffect(() => {

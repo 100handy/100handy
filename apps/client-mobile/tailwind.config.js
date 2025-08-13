@@ -180,6 +180,13 @@ module.exports = {
         heading: undefined,
         body: undefined,
         roboto: ['Roboto', 'sans-serif'],
+        'cardo': ['Cardo-Regular', 'serif'],
+        'cardo-bold': ['Cardo-Bold', 'serif'],
+        'cardo-italic': ['Cardo-Italic', 'serif'],
+        'worksans': ['WorkSans-Regular', 'sans-serif'],
+        'worksans-medium': ['WorkSans-Medium', 'sans-serif'],
+        'worksans-semibold': ['WorkSans-SemiBold', 'sans-serif'],
+        'worksans-bold': ['WorkSans-Bold', 'sans-serif'],
       },
       fontWeight: {
         extrablack: '950',
