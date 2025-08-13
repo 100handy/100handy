@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { SplashScreen } from "expo-router";
 import * as Linking from "expo-linking";
 import { supabase } from "@shared/supabase/supabaseClient";
+import { AuthWrapper } from "@/components/AuthWrapper";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -39,11 +40,13 @@ export default function RootLayout() {
 
   return (
     <GluestackUIProvider mode="light">
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
+      <AuthWrapper>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </AuthWrapper>
     </GluestackUIProvider>
   );
 }

@@ -6,16 +6,20 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { EyeIcon, EyeOffIcon } from 'lucide-react-native';
 import { signIn } from '@shared/supabase/auth';
+import { useAuthStore } from '@shared/supabase';
 import { useRouter } from 'expo-router';
+import { Loader } from '@/components/ui/loader';
 import TaskHelperLogo from "../../assets/images/task-helper-logo.svg";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const router = useRouter();
+  const { setSession } = useAuthStore();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -28,13 +32,23 @@ export default function SignIn() {
     }
 
     try {
+      setIsLoading(true);
       const data = await signIn(formData.email, formData.password);
+      
+      // Update the auth store with the new session
+      if (data.session) {
+        setSession(data.session);
+      }
       
       Alert.alert('Success', 'Logged in successfully!');
       console.log('Sign in successful:', data);
+      
+      // AuthWrapper will handle navigation automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to sign in');
       console.error('Sign in error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,6 +57,10 @@ export default function SignIn() {
   const handleSignUp = () => {
     router.push('./sign-up');
   };
+
+  if (isLoading) {
+    return <Loader text="Signing in..." />;
+  }
 
   return (
     <ScrollView>
@@ -117,6 +135,7 @@ export default function SignIn() {
                 size="xl"
                 className="bg-clayOrange rounded-xl h-[58px] mb-4"
                 onPress={handleSignIn}
+                disabled={isLoading}
               >
                 <ButtonText style={{ fontFamily: "SourceCodeProVariable" }} className="text-white font-bold text-lg">
                   Log in

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { Heading } from '@/components/ui/heading';
 import { Image } from '@/components/ui/image';
 import { Pressable } from '@/components/ui/pressable';
 import { Icon } from '@/components/ui/icon';
+import { Loader } from '@/components/ui/loader';
 
 // Import lucide-react-native icons
 import {
@@ -30,6 +31,7 @@ import {
   ClipboardList,
   User,
 } from 'lucide-react-native';
+import { useProfileStore, useAuthStore } from '@shared/supabase';
 import Header from '@/components/Header';
 import { useRouter } from 'expo-router';
 
@@ -90,7 +92,51 @@ const settingsItems = [
 
 
 export default function ProfileScreen() {
-  const router = useRouter()
+  const router = useRouter();
+  const { profile, isLoading, error, fetchProfile } = useProfileStore();
+  const { signOut, user } = useAuthStore();
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user, fetchProfile]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.replace('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+        <Header title="Profile" onBackPress={() => router.back()} showBellIcon={false}/>
+        <Box className="flex-1 justify-center items-center">
+          <Loader size="large" />
+          <Text className="mt-4 text-gray-600">Loading profile...</Text>
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+        <Header title="Profile" onBackPress={() => router.back()} showBellIcon={false}/>
+        <Box className="flex-1 justify-center items-center p-6">
+          <Text className="text-red-500 text-center mb-4">{error}</Text>
+          <Pressable onPress={fetchProfile} className="bg-blue-500 px-4 py-2 rounded">
+            <Text className="text-white">Retry</Text>
+          </Pressable>
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <Box className="flex-1 bg-[#F7F8FA]">
@@ -103,18 +149,21 @@ export default function ProfileScreen() {
             <Box className="bg-white rounded-2xl p-4 mb-4">
               <HStack className="items-center">
                 <Image
-                  source={{ uri: 'https://i.pravatar.cc/150?u=sarahjohnson' }}
-                  alt="User Avatar"
-                  className="w-16 h-16 rounded-full"
-                />
-                <VStack className="flex-1 ml-4">
-                  <Heading size="lg">Sarah Johnson</Heading>
-                  <Text size="sm" className="text-gray-500 mt-1">sarah.johnson@email.com</Text>
-                  <Text size="xs" className="text-gray-400 mt-1">Member since Dec 2023</Text>
-                </VStack>
-                <Pressable className="bg-[#FEF6F5] py-2 px-4 rounded-full">
-                  <Text className="text-[#F56565] font-semibold text-sm">Edit</Text>
-                </Pressable>
+                   source={{ uri: profile?.avatar_url || 'https://i.pravatar.cc/150?u=default' }}
+                   alt="User Avatar"
+                   className="w-16 h-16 rounded-full"
+                 />
+                 <VStack className="flex-1 ml-4">
+                   <Heading size="lg">{profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : profile?.first_name || profile?.last_name || user?.email || 'User'}</Heading>
+                   <Text size="sm" className="text-gray-500 mt-1">{profile?.email || user?.email || 'No email'}</Text>
+                   <Text size="xs" className="text-gray-400 mt-1">Member since {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently'}</Text>
+                 </VStack>
+                <Pressable 
+                   onPress={() => router.push('/profile/edit')}
+                   className="bg-[#FEF6F5] py-2 px-4 rounded-full"
+                 >
+                   <Text className="text-[#F56565] font-semibold text-sm">Edit</Text>
+                 </Pressable>
               </HStack>
               
               {/* Stats Section */}
@@ -149,7 +198,7 @@ export default function ProfileScreen() {
             ))}
 
             {/* Sign Out Button */}
-            <Pressable className="flex-row items-center justify-center bg-red-50 p-4 rounded-xl mt-2">
+            <Pressable onPress={handleSignOut} className="flex-row items-center justify-center bg-red-50 p-4 rounded-xl mt-2">
               <Icon as={LogOut} size="lg" color="#EF4444" />
               <Text className="text-red-600 font-semibold ml-2">Sign Out</Text>
             </Pressable>

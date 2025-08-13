@@ -1,11 +1,29 @@
 // packages/shared/supabase/auth.ts
-import { supabase } from './supabaseClient';
+import { supabase } from './supabaseClient.native';
 
-export async function signUp({ email, password, role, name }: { email: string; password: string; role: 'customer' | 'handy', name: string }) {
+export interface SignUpData {
+  email: string;
+  password: string;
+  role: 'customer' | 'handy';
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  postcode?: string;
+}
+
+export async function signUp({ email, password, role, first_name, last_name, phone, postcode }: SignUpData) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { role, name } }
+    options: { 
+      data: { 
+        role, 
+        first_name, 
+        last_name, 
+        phone, 
+        postcode 
+      } 
+    }
   });
   if (error) throw error;
   return data;

@@ -7,20 +7,27 @@ import { Text } from '@/components/ui/text';
 import { Checkbox, CheckboxIndicator, CheckboxIcon, CheckboxLabel } from '@/components/ui/checkbox';
 import { Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectItem } from '@/components/ui/select';
 import { EyeIcon, EyeOffIcon, CheckIcon, ChevronDownIcon } from 'lucide-react-native';
-import { signUp } from '@shared/supabase/auth';
+import { signUp, SignUpData } from '@shared/supabase/auth';
+import { useAuthStore } from '@shared/supabase';
+import { useRouter } from 'expo-router';
+import { Loader } from '@/components/ui/loader';
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [marketingAccepted, setMarketingAccepted] = useState(false);
   const [countryCode, setCountryCode] = useState('+44');
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     password: '',
     postCode: '',
   });
+  const router = useRouter();
+  const { setSession } = useAuthStore();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -32,27 +39,45 @@ export default function Signup() {
       return;
     }
 
-    if (!formData.name || !formData.email || !formData.password) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
     try {
+      setIsLoading(true);
       const fullPhoneNumber = `${countryCode}${formData.phone}`;
-      const data = await signUp({
+      const signUpData: SignUpData = {
         email: formData.email,
         password: formData.password,
         role: 'customer',
-        name: formData.name,
-      });
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: fullPhoneNumber,
+        postcode: formData.postCode,
+      };
+      const data = await signUp(signUpData);
+      
+      // Update the auth store with the new session
+      if (data.session) {
+        setSession(data.session);
+      }
       
       Alert.alert('Success', 'Account created successfully!');
       console.log('Signup successful:', data);
+      
+      // AuthWrapper will handle navigation automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create account');
       console.error('Signup error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return <Loader text="Creating account..." />;
+  }
 
   return (
     <ScrollView>
@@ -69,16 +94,30 @@ export default function Signup() {
             {/* Form Container */}
             <Box className="px-6 pb-6">
               <View className="space-y-4">
-                {/* First & Last Name */}
+                {/* First Name */}
                 <Input
                   variant="outline"
                   size="xl"
                   className="h-[58px] bg-white border-gray-200 rounded-xl my-2"
                 >
                   <InputField
-                    placeholder="First & Last Name"
-                    value={formData.name}
-                    onChangeText={(value) => handleInputChange('name', value)}
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChangeText={(value) => handleInputChange('firstName', value)}
+                    className="text-base text-black placeholder-gray-400"
+                  />
+                </Input>
+
+                {/* Last Name */}
+                <Input
+                  variant="outline"
+                  size="xl"
+                  className="h-[58px] bg-white border-gray-200 rounded-xl my-2"
+                >
+                  <InputField
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChangeText={(value) => handleInputChange('lastName', value)}
                     className="text-base text-black placeholder-gray-400"
                   />
                 </Input>
@@ -233,6 +272,7 @@ export default function Signup() {
                 size="xl"
                 className="h-[60px] bg-sageGreen rounded-xl mt-8 shadow-lg"
                 onPress={handleSignUp}
+                disabled={isLoading}
               >
                 <ButtonText className="text-white text-lg font-bold">
                   Sign up

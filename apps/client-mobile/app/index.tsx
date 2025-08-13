@@ -32,7 +32,7 @@ export default function Index() {
 
   const handleSignUp = () => {
     // router.push('/(auth)/sign-up');
-    router.push('/(tabs)/home');
+    router.push('/(auth)/sign-up');
   };
 
   return (
