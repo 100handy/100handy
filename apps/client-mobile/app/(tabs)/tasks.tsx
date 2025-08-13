@@ -147,9 +147,9 @@ function TaskCard({
 
           <VStack className="items-end">
             <StatusPill label={statusLabel} tone={statusTone} />
-            <Pressable className="mt-2" onPress={() => router.push('/task-details')}>
+            <Pressable className="mt-2" onPress={() => router.push('/tasks/details')}>
               <Text className="text-sm font-medium" style={{ color: colors.clayOrange }}>
-                View details
+                View Details
               </Text>
             </Pressable>
           </VStack>

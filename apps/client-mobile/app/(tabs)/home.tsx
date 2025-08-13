@@ -48,7 +48,7 @@ function CategoryCard({ bg, icon: Icon, title, subtitle }: CategoryCardProps) {
   return (
     <VStack style={{ width: 160, height: 120 }}>
       <Pressable
-        onPress={() => router.push('/available-professionals')}
+        onPress={() => router.push('/professionals/available')}
         className="rounded-xl p-4 flex-1 justify-between"
         style={{
           backgroundColor: bg,

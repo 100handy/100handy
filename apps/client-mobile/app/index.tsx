@@ -27,12 +27,12 @@ export default function Index() {
   };
 
   const handleLogin = () => {
-    router.push('/sign-in');
+    router.push('/(auth)/sign-in');
   };
 
   const handleSignUp = () => {
-    // router.push('/sign-up');
-    router.push('/home');
+    // router.push('/(auth)/sign-up');
+    router.push('/(tabs)/home');
   };
 
   return (

@@ -7,7 +7,7 @@ import { Text } from '@/components/ui/text';
 import { EyeIcon, EyeOffIcon } from 'lucide-react-native';
 import { signIn } from '@shared/supabase/auth';
 import { useRouter } from 'expo-router';
-import TaskHelperLogo from "../assets/images/task-helper-logo.svg";
+import TaskHelperLogo from "../../assets/images/task-helper-logo.svg";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +41,7 @@ export default function SignIn() {
 
 
   const handleSignUp = () => {
-    router.push('/sign-up');
+    router.push('./sign-up');
   };
 
   return (
