@@ -173,6 +173,22 @@ module.exports = {
         warmTaupe: '#BFA28D',
         themeBackground: '#F6E4D8',
         themeFont: '#333A31',
+        // Custom color palette from Figma
+        'sage': {
+          DEFAULT: '#A3B899',  // Primary green
+          light: '#B5C6AD',
+          dark: '#8FA082'
+        },
+        'emerald-custom': '#10B981',  // Secondary green for tags
+        'gray-custom': {
+          900: '#111827',  // Darkest - headings
+          600: '#4B5563',  // Medium - body text
+          500: '#6B7280',  // Navigation inactive
+          400: '#9CA3AF',  // Placeholder text
+          200: '#E5E7EB',  // Borders
+          100: '#F3F4F6',  // Light backgrounds
+          50: '#F9FAFB'    // Page background
+        }
       },
       fontFamily: {
         display: 'Futura-Medium',
@@ -187,12 +203,19 @@ module.exports = {
         'worksans-medium': ['WorkSans-Medium', 'sans-serif'],
         'worksans-semibold': ['WorkSans-SemiBold', 'sans-serif'],
         'worksans-bold': ['WorkSans-Bold', 'sans-serif'],
+        // Custom font families from Figma
+        'work-sans': ['WorkSans-Regular', 'sans-serif'],
       },
       fontWeight: {
         extrablack: '950',
       },
       fontSize: {
         '2xs': '10px',
+        // Custom font sizes from Figma
+        'xs': '12px',    // Tags, ratings
+        'sm': '14px',    // Body text, buttons
+        'base': '16px',  // Names, prices
+        'lg': '18px'     // Header title
       },
       boxShadow: {
         'hard-1': '-2px 2px 8px 0px rgba(38, 38, 38, 0.20)',

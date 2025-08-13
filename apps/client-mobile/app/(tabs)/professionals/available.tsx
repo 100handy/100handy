@@ -1,8 +1,6 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-// Import gluestack-ui components
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
@@ -12,22 +10,12 @@ import { Image } from '@/components/ui/image';
 import { Pressable } from '@/components/ui/pressable';
 import { Icon } from '@/components/ui/icon';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
-
-// Import Header component
+import { Home, Search, Heart, User, Star } from 'lucide-react-native';
 import Header from '@/components/Header';
-
-// Import all necessary lucide-react-native icons
-import {
-  Search,
-  Star,
-  Home,
-  Heart, // Correct icon for "Saved"
-  User,
-} from 'lucide-react-native';
+import { SearchAndFilters, ProfessionalCard } from '@/components/available';
 import { useRouter } from 'expo-router';
 
 
-// --- Data with Category for color-coding ---
 const professionalsData = [
   {
     name: 'Michael Rodriguez',
@@ -59,15 +47,14 @@ const professionalsData = [
       tags: ['Electrical', 'Smart Home', 'Certified'],
       category: 'electrical'
   }
-  // ... Add other professionals as needed
 ];
 
 // --- Color mapping for dynamic tag colors ---
 const tagColors: { [key: string]: { bg: string; text: string } } = {
-    plumbing:    { bg: '#FFE5E5', text: '#C53030' },
-    cleaning:    { bg: '#F0FFF4', text: '#2F855A' },
-    electrical:  { bg: '#EBF8FF', text: '#2B6CB0' },
-    handyman:    { bg: '#FFF7ED', text: '#C2410C' },
+    plumbing:    { bg: 'rgba(163, 184, 153, 0.1)', text: '#A3B899' }, // sage/10 background
+    cleaning:    { bg: 'rgba(16, 185, 129, 0.1)', text: '#10B981' }, // emerald-custom/10 background
+    electrical:  { bg: 'rgba(163, 184, 153, 0.1)', text: '#A3B899' }, // sage/10 background
+    handyman:    { bg: 'rgba(16, 185, 129, 0.1)', text: '#10B981' }, // emerald-custom/10 background
 };
 
 const filterChips = ['All', 'Highest Rated', 'Lowest Price', 'Nearest'];
@@ -104,7 +91,7 @@ export default function AvailableProfessionalsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <Box className="flex-1 bg-gray-50">
+      <Box className="flex-1 bg-gray-custom-50">
         {/* Header */}
         <Header 
           title="Available Professionals"
@@ -115,12 +102,12 @@ export default function AvailableProfessionalsScreen() {
         />
 
         {/* Search and Filters */}
-        <VStack className="bg-white pt-2 pb-4 px-4 border-b border-gray-200">
-            <Input className="bg-gray-100 rounded-lg border-0 mb-4">
+        <VStack className="bg-white pt-2 pb-4 px-4 border-b border-gray-custom-200">
+            <Input className="bg-gray-custom-100 rounded-lg border-0 mb-4">
                 <InputSlot className="pl-3">
                     <Icon as={Search} size="lg" color="#9CA3AF" />
                 </InputSlot>
-                <InputField placeholder="Search professionals..." />
+                <InputField placeholder="Search professionals..." className="font-work-sans text-sm text-gray-custom-400" />
             </Input>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <HStack className="space-x-2">
@@ -128,15 +115,14 @@ export default function AvailableProfessionalsScreen() {
                         <Pressable 
                             key={chip}
                             onPress={() => setActiveFilter(chip)}
-                            // CORRECTED: Using inline style to force the correct background color
                             style={{
-                                backgroundColor: activeFilter === chip ? '#4A5568' : '#F3F4F6'
+                                backgroundColor: activeFilter === chip ? '#A3B899' : '#F3F4F6'
                             }}
                             className="py-2 px-4 rounded-full"
                         >
                             <Text 
-                                className="font-medium"
-                                style={{ color: activeFilter === chip ? '#FFFFFF' : '#374151' }}
+                                className="font-work-sans font-medium text-sm"
+                                style={{ color: activeFilter === chip ? '#FFFFFF' : '#4B5563' }}
                             >
                                 {chip}
                             </Text>
@@ -150,26 +136,25 @@ export default function AvailableProfessionalsScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
           <VStack className="p-4">
             {professionalsData.map((prof) => (
-              // CORRECTED: Added a stronger shadow to the card
-              <Box key={prof.name} className="bg-white rounded-xl p-4 mb-4 shadow-md">
+              <Box key={prof.name} className="bg-white rounded-lg border border-gray-custom-200 shadow-sm p-4 mb-4">
                 <HStack>
-                  <Image source={{ uri: prof.avatarUrl }} alt={prof.name} className="w-14 h-14 rounded-full" />
+                  <Image source={{ uri: prof.avatarUrl }} alt={prof.name} className="w-16 h-16 rounded-full object-cover" />
                   <VStack className="flex-1 ml-4">
-                    <Heading size="sm">{prof.name}</Heading>
+                    <Heading className="font-cardo font-semibold text-base text-gray-custom-900">{prof.name}</Heading>
                     <HStack className="items-center mt-1">
                       <StarRating rating={prof.rating} />
-                      <Text size="sm" className="text-gray-500 ml-2">{`${prof.rating.toFixed(1)} (${prof.reviews} reviews)`}</Text>
+                      <Text className="font-work-sans text-xs text-gray-custom-600 ml-2">{`${prof.rating.toFixed(1)} (${prof.reviews} reviews)`}</Text>
                     </HStack>
                   </VStack>
-                  <Heading size="sm" className="text-gray-800">{`$${prof.price}/hr`}</Heading>
+                  <Heading className="font-cardo font-semibold text-base text-sage">{`$${prof.price}/hr`}</Heading>
                 </HStack>
-                <Text className="my-3 text-gray-600 text-sm leading-5">{prof.description}</Text>
+                <Text className="my-3 font-work-sans text-sm text-gray-custom-600 leading-relaxed">{prof.description}</Text>
                 <HStack className="flex-wrap">
                   {prof.tags.map(tag => {
                     const colors = tagColors[prof.category] || tagColors.handyman;
                     return (
                         <Box key={tag} style={{backgroundColor: colors.bg}} className="rounded-full py-1 px-3 mr-2 mb-2">
-                            <Text size="xs" style={{color: colors.text}} className="font-medium">{tag}</Text>
+                            <Text style={{color: colors.text}} className="font-work-sans font-medium text-xs">{tag}</Text>
                         </Box>
                     )
                   })}
