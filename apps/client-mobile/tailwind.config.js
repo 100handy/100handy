@@ -168,12 +168,31 @@ module.exports = {
           info: 'rgb(var(--color-indicator-info)/<alpha-value>)',
           error: 'rgb(var(--color-indicator-error)/<alpha-value>)',
         },
+        // Design system colors
         clayOrange: '#D9896C',
-        sageGreen: '#A3B899',
+        sageGreen: '#A3B899', 
         warmTaupe: '#BFA28D',
         themeBackground: '#F6E4D8',
         themeFont: '#333A31',
-        // Custom color palette from Figma
+        
+        // Updated design tokens
+        'primary-brand': '#D9896C',
+        'primary-text': '#333A31',
+        'secondary-text': '#4B5563',
+        'tertiary-text': '#6B7280',
+        'inactive-text': '#9CA3AF',
+        'success-color': '#A3B899',
+        'success-bg': 'rgba(163, 184, 153, 0.1)',
+        'warning-color': '#A16207',
+        'warning-bg': '#FEF9C3',
+        'info-color': '#3B82F6',
+        'info-bg': 'rgba(59, 130, 246, 0.1)',
+        'primary-bg': '#FFFFFF',
+        'secondary-bg': '#F9FAFB',
+        'border-color': '#E5E7EB',
+         'border-accent': '#CED4DA',
+         'primary-bg-10': 'rgba(217, 137, 108, 0.1)',
+         // Custom color palette from Figma
         'sage': {
           DEFAULT: '#A3B899',  // Primary green
           light: '#B5C6AD',
@@ -203,8 +222,8 @@ module.exports = {
         'worksans-medium': ['WorkSans-Medium', 'sans-serif'],
         'worksans-semibold': ['WorkSans-SemiBold', 'sans-serif'],
         'worksans-bold': ['WorkSans-Bold', 'sans-serif'],
-        // Custom font families from Figma
-        'work-sans': ['WorkSans-Regular', 'sans-serif'],
+        // Work Sans font family for design system
+        'work-sans': ['Work Sans', 'sans-serif'],
       },
       fontWeight: {
         extrablack: '950',
