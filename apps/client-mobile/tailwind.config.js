@@ -175,7 +175,7 @@ module.exports = {
         themeBackground: '#F6E4D8',
         themeFont: '#333A31',
         
-        // Updated design tokens
+        // Consolidated design tokens (removing duplicates)
         'primary-brand': '#D9896C',
         'primary-text': '#333A31',
         'secondary-text': '#4B5563',
@@ -190,8 +190,25 @@ module.exports = {
         'primary-bg': '#FFFFFF',
         'secondary-bg': '#F9FAFB',
         'border-color': '#E5E7EB',
-         'border-accent': '#CED4DA',
-         'primary-bg-10': 'rgba(217, 137, 108, 0.1)',
+        'border-accent': '#CED4DA',
+        'primary-bg-10': 'rgba(217, 137, 108, 0.1)',
+        
+        // Profile-specific colors (unique to profile context)
+        'profile-danger': '#DC2626',
+        'profile-danger-bg': '#FEF2F2',
+        'profile-danger-border': '#FECACA',
+        'profile-green': '#22C55E',
+        'profile-green-bg': 'rgba(34, 197, 94, 0.1)',
+        'profile-purple': '#A855F7',
+        'profile-purple-bg': 'rgba(168, 85, 247, 0.1)',
+        'profile-orange': '#F97316',
+        'profile-orange-bg': 'rgba(249, 115, 22, 0.1)',
+        'profile-red': '#EF4444',
+        'profile-red-bg': 'rgba(239, 68, 68, 0.1)',
+        'profile-yellow': '#EAB308',
+        'profile-yellow-bg': 'rgba(234, 179, 8, 0.1)',
+        'profile-gray-bg': 'rgba(107, 114, 128, 0.1)',
+        'profile-border-light': '#F3F4F6',
          // Custom color palette from Figma
         'sage': {
           DEFAULT: '#A3B899',  // Primary green
@@ -244,11 +261,21 @@ module.exports = {
       spacing: {
         '17': '17px',    // From design tokens
         '25': '25px',    // From design tokens
-        '26': '26px'     // From design tokens
+        '26': '26px',    // From design tokens
+        // Profile design spacing
+        'profile-xs': '4px',
+        'profile-sm': '8px',
+        'profile-md': '16px',
+        'profile-lg': '17px',
+        'profile-xl': '24px',
+        'profile-xxl': '32px'
       },
       borderRadius: {
         'detail-small': '4px',
-        'detail-medium': '8px'
+        'detail-medium': '8px',
+        // Profile design border radius
+        'profile-small': '8px',
+        'profile-full': '9999px'
       },
       boxShadow: {
         'hard-1': '-2px 2px 8px 0px rgba(38, 38, 38, 0.20)',

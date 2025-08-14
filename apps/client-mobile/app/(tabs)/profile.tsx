@@ -15,8 +15,6 @@ import { Loader } from '@/components/ui/loader';
 
 // Import lucide-react-native icons
 import {
-  ChevronLeft,
-  MoreVertical,
   Settings,
   Shield,
   CreditCard,
@@ -26,10 +24,6 @@ import {
   Info,
   LogOut,
   ChevronRight,
-  Home,
-  Search,
-  ClipboardList,
-  User,
 } from 'lucide-react-native';
 import { useProfileStore, useAuthStore } from '@shared/supabase';
 import Header from '@/components/Header';
@@ -39,50 +33,50 @@ import { useRouter } from 'expo-router';
 const settingsItems = [
   {
     icon: Settings,
-    bgColor: '#EBF5FF',
-    color: '#3B82F6',
+    bgColorClass: 'bg-info-bg',
+    colorClass: 'text-info-color',
     title: 'Account Settings',
     subtitle: 'Manage your account preferences',
   },
   {
     icon: Shield,
-    bgColor: '#E6F7F0',
-    color: '#10B981',
+    bgColorClass: 'bg-profile-green-bg',
+    colorClass: 'text-profile-green',
     title: 'Account Security',
     subtitle: 'Password and security settings',
   },
   {
     icon: CreditCard,
-    bgColor: '#F4F0FE',
-    color: '#8B5CF6',
+    bgColorClass: 'bg-profile-purple-bg',
+    colorClass: 'text-profile-purple',
     title: 'Payments',
     subtitle: 'Payment methods and billing',
   },
   {
     icon: Bell,
-    bgColor: '#FFF5EB',
-    color: '#F97316',
+    bgColorClass: 'bg-profile-orange-bg',
+    colorClass: 'text-profile-orange',
     title: 'Notifications',
     subtitle: 'Manage notification preferences',
   },
   {
     icon: Lock,
-    bgColor: '#FEF6F5',
-    color: '#EF4444',
+    bgColorClass: 'bg-profile-red-bg',
+    colorClass: 'text-profile-red',
     title: 'Privacy Settings',
     subtitle: 'Control your privacy options',
   },
   {
     icon: Headphones,
-    bgColor: '#FEFBEB',
-    color: '#F59E0B',
+    bgColorClass: 'bg-profile-yellow-bg',
+    colorClass: 'text-profile-yellow',
     title: 'Support',
     subtitle: 'Get help and contact us',
   },
   {
     icon: Info,
-    bgColor: '#F3F4F6',
-    color: '#6B7280',
+    bgColorClass: 'bg-profile-gray-bg',
+    colorClass: 'text-tertiary-text',
     title: 'About',
     subtitle: 'App info and legal terms',
   },
@@ -113,11 +107,11 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+      <SafeAreaView className="flex-1 bg-primary-bg">
         <Header title="Profile" onBackPress={() => router.back()} showBellIcon={false}/>
         <Box className="flex-1 justify-center items-center">
           <Loader size="large" />
-          <Text className="mt-4 text-gray-600">Loading profile...</Text>
+          <Text className="mt-4 text-secondary-text font-worksans">Loading profile...</Text>
         </Box>
       </SafeAreaView>
     );
@@ -125,12 +119,12 @@ export default function ProfileScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+      <SafeAreaView className="flex-1 bg-primary-bg">
         <Header title="Profile" onBackPress={() => router.back()} showBellIcon={false}/>
         <Box className="flex-1 justify-center items-center p-6">
-          <Text className="text-red-500 text-center mb-4">{error}</Text>
-          <Pressable onPress={fetchProfile} className="bg-blue-500 px-4 py-2 rounded">
-            <Text className="text-white">Retry</Text>
+          <Text className="text-profile-danger text-center mb-4 font-worksans">{error}</Text>
+          <Pressable onPress={fetchProfile} className="bg-info-color px-4 py-2 rounded-profile-small">
+            <Text className="text-primary-bg font-worksans-medium">Retry</Text>
           </Pressable>
         </Box>
       </SafeAreaView>
@@ -138,69 +132,69 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <Box className="flex-1 bg-[#F7F8FA]">
+    <SafeAreaView className="flex-1 bg-primary-bg">
+      <Box className="flex-1 bg-secondary-bg">
         {/* Header */}
        <Header title="Profile" onBackPress={() => router.back()} showBellIcon={false}/>
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <VStack className="p-4">
+          <VStack className="p-profile-md">
             {/* Profile Info Card */}
-            <Box className="bg-white rounded-2xl p-4 mb-4">
+            <Box className="bg-primary-bg rounded-2xl p-profile-md mb-profile-md">
               <HStack className="items-center">
                 <Image
                    source={{ uri: profile?.avatar_url || 'https://i.pravatar.cc/150?u=default' }}
                    alt="User Avatar"
-                   className="w-16 h-16 rounded-full"
+                   className="w-16 h-16 rounded-profile-full"
                  />
                  <VStack className="flex-1 ml-4">
-                   <Heading size="lg">{profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : profile?.first_name || profile?.last_name || user?.email || 'User'}</Heading>
-                   <Text size="sm" className="text-gray-500 mt-1">{profile?.email || user?.email || 'No email'}</Text>
-                   <Text size="xs" className="text-gray-400 mt-1">Member since {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently'}</Text>
+                   <Heading className="font-worksans-semibold text-lg text-primary-text">{profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : profile?.first_name || profile?.last_name || user?.email || 'User'}</Heading>
+          <Text className="font-worksans text-sm text-secondary-text mt-1">{profile?.email || user?.email || 'No email'}</Text>
+          <Text className="font-worksans text-xs text-tertiary-text mt-1">Member since {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently'}</Text>
                  </VStack>
                 <Pressable 
                    onPress={() => router.push('/profile/edit')}
-                   className="bg-[#FEF6F5] py-2 px-4 rounded-full"
+                   className="bg-primary-bg-10 py-2 px-4 rounded-profile-full"
                  >
-                   <Text className="text-[#F56565] font-semibold text-sm">Edit</Text>
+                   <Text className="text-primary-brand font-worksans-medium text-xs">Edit</Text>
                  </Pressable>
               </HStack>
               
               {/* Stats Section */}
-              <HStack className="justify-around mt-5 pt-5 border-t border-gray-100">
+              <HStack className="justify-around mt-5 pt-5 border-t border-profile-border-light">
                 <VStack className="items-center">
-                  <Heading size="lg">12</Heading>
-                  <Text size="sm" className="text-gray-500 mt-1">Completed</Text>
+                  <Heading className="font-worksans-semibold text-lg text-primary-text">12</Heading>
+            <Text className="font-worksans text-xs text-tertiary-text mt-1">Completed</Text>
                 </VStack>
                 <VStack className="items-center">
-                  <Heading size="lg">4.8</Heading>
-                  <Text size="sm" className="text-gray-500 mt-1">Rating</Text>
+                  <Heading className="font-worksans-semibold text-lg text-primary-text">4.8</Heading>
+            <Text className="font-worksans text-xs text-tertiary-text mt-1">Rating</Text>
                 </VStack>
                 <VStack className="items-center">
-                  <Heading size="lg">£240</Heading>
-                  <Text size="sm" className="text-gray-500 mt-1">Saved</Text>
+                  <Heading className="font-worksans-semibold text-lg text-primary-text">£240</Heading>
+            <Text className="font-worksans text-xs text-tertiary-text mt-1">Saved</Text>
                 </VStack>
               </HStack>
             </Box>
 
             {/* Settings List */}
             {settingsItems.map((item, index) => (
-              <Pressable key={index} className="flex-row items-center bg-white p-4 rounded-xl mb-3">
-                <Box className="w-10 h-10 rounded-xl items-center justify-center" style={{ backgroundColor: item.bgColor }}>
-                  <Icon as={item.icon} size="lg" style={{ color: item.color }} />
+              <Pressable key={index} className="flex-row items-center bg-primary-bg p-profile-lg rounded-profile-small mb-3">
+                <Box className={`w-10 h-10 rounded-profile-small items-center justify-center ${item.bgColorClass}`}>
+                  <Icon as={item.icon} size="lg" className={item.colorClass} />
                 </Box>
                 <VStack className="flex-1 ml-4">
-                  <Text className="font-semibold text-base text-gray-800">{item.title}</Text>
-                  <Text className="text-sm text-gray-500 mt-px">{item.subtitle}</Text>
+                  <Text className="font-worksans-medium text-sm text-primary-text">{item.title}</Text>
+            <Text className="font-worksans text-xs text-tertiary-text mt-px">{item.subtitle}</Text>
                 </VStack>
-                <Icon as={ChevronRight} size="lg" color="#9CA3AF" />
+                <Icon as={ChevronRight} size="lg" className="text-inactive-text" />
               </Pressable>
             ))}
 
             {/* Sign Out Button */}
-            <Pressable onPress={handleSignOut} className="flex-row items-center justify-center bg-red-50 p-4 rounded-xl mt-2">
-              <Icon as={LogOut} size="lg" color="#EF4444" />
-              <Text className="text-red-600 font-semibold ml-2">Sign Out</Text>
+            <Pressable onPress={handleSignOut} className="flex-row items-center justify-center bg-profile-danger-bg p-profile-md rounded-profile-small mt-2">
+              <Icon as={LogOut} size="lg" className="text-profile-danger" />
+              <Text className="text-profile-danger font-worksans-medium ml-2">Sign Out</Text>
             </Pressable>
           </VStack>
         </ScrollView>
