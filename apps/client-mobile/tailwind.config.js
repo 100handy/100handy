@@ -207,7 +207,12 @@ module.exports = {
           200: '#E5E7EB',  // Borders
           100: '#F3F4F6',  // Light backgrounds
           50: '#F9FAFB'    // Page background
-        }
+        },
+        // Additional design tokens from task-detail.json
+        'placeholder-text': '#ADAEBC',
+        'input-border': '#D1D5DB',
+        'highlight-background': '#F6E4D8',
+        'highlight-border': '#BFA28D'
       },
       fontFamily: {
         display: 'Futura-Medium',
@@ -235,6 +240,15 @@ module.exports = {
         'sm': '14px',    // Body text, buttons
         'base': '16px',  // Names, prices
         'lg': '18px'     // Header title
+      },
+      spacing: {
+        '17': '17px',    // From design tokens
+        '25': '25px',    // From design tokens
+        '26': '26px'     // From design tokens
+      },
+      borderRadius: {
+        'detail-small': '4px',
+        'detail-medium': '8px'
       },
       boxShadow: {
         'hard-1': '-2px 2px 8px 0px rgba(38, 38, 38, 0.20)',
