@@ -22,7 +22,8 @@ export async function signUp({ email, password, role, first_name, last_name, pho
         last_name, 
         phone, 
         postcode 
-      } 
+      },
+      emailRedirectTo: getRedirectUrl()
     }
   });
   if (error) throw error;
@@ -48,9 +49,24 @@ export async function getSession() {
   return supabase.auth.getSession();
 }
 
+/**
+ * Get the redirect URL for email confirmations and OAuth callbacks
+ * 
+ * For production: Set NEXT_PUBLIC_SITE_URL (web) or EXPO_PUBLIC_SITE_URL (mobile)
+ * For development: Uses localhost automatically
+ * 
+ * Example: NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+ */
 function getRedirectUrl() {
-  // Web: your site; Mobile: your custom scheme
-  if (typeof window !== 'undefined') return `${window.location.origin}/auth/callback`;
+  // Web: use environment variable for production, fallback to current origin for development
+  if (typeof window !== 'undefined') {
+    const productionUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.EXPO_PUBLIC_SITE_URL;
+    if (productionUrl) {
+      return `${productionUrl}/auth/callback`;
+    }
+    return `${window.location.origin}/auth/callback`;
+  }
+  // Mobile: your custom scheme
   return 'handy://auth/callback';
 }
 
