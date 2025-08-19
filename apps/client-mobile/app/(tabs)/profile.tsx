@@ -185,6 +185,8 @@ export default function ProfileScreen() {
                 onPress={() => {
                   if (item.title === 'Notifications') {
                     router.push('/profile/notifications');
+                  } else if (item.title === 'Account Security') {
+                    router.push('/profile/account-security');
                   }
                   // Add other navigation handlers here as needed
                 }}
