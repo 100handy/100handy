@@ -187,6 +187,8 @@ export default function ProfileScreen() {
                     router.push('/profile/notifications');
                   } else if (item.title === 'Account Security') {
                     router.push('/profile/account-security');
+                  } else if (item.title === 'Payments') {
+                    router.push('/profile/payments');
                   }
                   // Add other navigation handlers here as needed
                 }}

@@ -207,6 +207,7 @@ module.exports = {
         'status': {
           success: '#A3B899',
           'success-bg': 'rgba(163, 184, 153, 0.1)',
+          'success-light': '#22C55E',
           warning: '#A16207',
           'warning-bg': '#FEF9C3',
           info: '#3B82F6',
