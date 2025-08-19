@@ -85,7 +85,7 @@ export function ServicesHomeScreen() {
 
   return (
     <ScreenWrapper>
-    <ScrollView className="flex-1 bg-themeBackground" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 bg-theme-background" showsVerticalScrollIndicator={false}>
       <VStack className="pt-4">
           <HStack className="items-center justify-between mb-4">
               <Pressable className="w-10 h-10 rounded-full items-center justify-center shadow-sm"

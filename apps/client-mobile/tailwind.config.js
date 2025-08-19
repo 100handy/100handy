@@ -168,68 +168,87 @@ module.exports = {
           info: 'rgb(var(--color-indicator-info)/<alpha-value>)',
           error: 'rgb(var(--color-indicator-error)/<alpha-value>)',
         },
-        // Design system colors
-        clayOrange: '#D9896C',
-        sageGreen: '#A3B899', 
-        warmTaupe: '#BFA28D',
-        themeBackground: '#F6E4D8',
-        themeFont: '#333A31',
-        
-        // Consolidated design tokens (removing duplicates)
-        'primary-brand': '#D9896C',
-        'primary-text': '#333A31',
-        'secondary-text': '#4B5563',
-        'tertiary-text': '#6B7280',
-        'inactive-text': '#9CA3AF',
-        'success-color': '#A3B899',
-        'success-bg': 'rgba(163, 184, 153, 0.1)',
-        'warning-color': '#A16207',
-        'warning-bg': '#FEF9C3',
-        'info-color': '#3B82F6',
-        'info-bg': 'rgba(59, 130, 246, 0.1)',
-        'primary-bg': '#FFFFFF',
-        'secondary-bg': '#F9FAFB',
-        'border-color': '#E5E7EB',
-        'border-accent': '#CED4DA',
-        'primary-bg-10': 'rgba(217, 137, 108, 0.1)',
-        
-        // Profile-specific colors (unique to profile context)
-        'profile-danger': '#DC2626',
-        'profile-danger-bg': '#FEF2F2',
-        'profile-danger-border': '#FECACA',
-        'profile-green': '#22C55E',
-        'profile-green-bg': 'rgba(34, 197, 94, 0.1)',
-        'profile-purple': '#A855F7',
-        'profile-purple-bg': 'rgba(168, 85, 247, 0.1)',
-        'profile-orange': '#F97316',
-        'profile-orange-bg': 'rgba(249, 115, 22, 0.1)',
-        'profile-red': '#EF4444',
-        'profile-red-bg': 'rgba(239, 68, 68, 0.1)',
-        'profile-yellow': '#EAB308',
-        'profile-yellow-bg': 'rgba(234, 179, 8, 0.1)',
-        'profile-gray-bg': 'rgba(107, 114, 128, 0.1)',
-        'profile-border-light': '#F3F4F6',
-         // Custom color palette from Figma
+        // Core brand colors
+        'clay-orange': '#D9896C',
+        'sage-green': '#A3B899',
+        'warm-taupe': '#BFA28D',
+        'theme-background': '#F6E4D8',
+        'theme-font': '#333A31',
+
+        // Text colors
+        'text': {
+          primary: '#333A31',
+          secondary: '#4B5563',
+          tertiary: '#6B7280',
+          inactive: '#9CA3AF',
+          placeholder: '#ADAEBC'
+        },
+
+        // Background colors
+        'bg': {
+          primary: '#FFFFFF',
+          secondary: '#F9FAFB',
+          light: '#F3F4F6',
+          highlight: '#F6E4D8',
+          'clay-orange-10': 'rgba(217, 137, 108, 0.1)',
+          'sage-green-10': 'rgba(163, 184, 153, 0.1)'
+        },
+
+        // Border colors
+        'border': {
+          DEFAULT: '#E5E7EB',
+          accent: '#CED4DA',
+          input: '#D1D5DB',
+          highlight: '#BFA28D',
+          light: '#F3F4F6'
+        },
+
+        // Status colors with backgrounds
+        'status': {
+          success: '#A3B899',
+          'success-bg': 'rgba(163, 184, 153, 0.1)',
+          warning: '#A16207',
+          'warning-bg': '#FEF9C3',
+          info: '#3B82F6',
+          'info-bg': 'rgba(59, 130, 246, 0.1)',
+          danger: '#DC2626',
+          'danger-bg': '#FEF2F2',
+          'danger-border': '#FECACA'
+        },
+
+        // Profile-specific accent colors
+        'accent': {
+          green: '#22C55E',
+          'green-bg': 'rgba(34, 197, 94, 0.1)',
+          purple: '#A855F7',
+          'purple-bg': 'rgba(168, 85, 247, 0.1)',
+          orange: '#F97316',
+          'orange-bg': 'rgba(249, 115, 22, 0.1)',
+          red: '#EF4444',
+          'red-bg': 'rgba(239, 68, 68, 0.1)',
+          yellow: '#EAB308',
+          'yellow-bg': 'rgba(234, 179, 8, 0.1)',
+          emerald: '#10B981',
+          'gray-bg': 'rgba(107, 114, 128, 0.1)'
+        },
+
+        // Sage color palette
         'sage': {
-          DEFAULT: '#A3B899',  // Primary green
+          DEFAULT: '#A3B899',
           light: '#B5C6AD',
           dark: '#8FA082'
         },
-        'emerald-custom': '#10B981',  // Secondary green for tags
-        'gray-custom': {
-          900: '#111827',  // Darkest - headings
-          600: '#4B5563',  // Medium - body text
-          500: '#6B7280',  // Navigation inactive
-          400: '#9CA3AF',  // Placeholder text
-          200: '#E5E7EB',  // Borders
-          100: '#F3F4F6',  // Light backgrounds
-          50: '#F9FAFB'    // Page background
-        },
-        // Additional design tokens from task-detail.json
-        'placeholder-text': '#ADAEBC',
-        'input-border': '#D1D5DB',
-        'highlight-background': '#F6E4D8',
-        'highlight-border': '#BFA28D'
+
+        // Gray scale (consolidated)
+        'gray': {
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          400: '#9CA3AF',
+          500: '#6B7280',
+          600: '#4B5563',
+          900: '#111827'
+        }
       },
       fontFamily: {
         display: 'Futura-Medium',

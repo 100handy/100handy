@@ -31,19 +31,19 @@ const tagColors: { [key: string]: { bg: string; text: string } } = {
 
 export const ProfessionalCard = ({ professional }: ProfessionalCardProps) => {
   return (
-    <Box className="bg-white rounded-lg border border-gray-custom-200 shadow-sm p-4 mb-4">
+    <Box className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4">
       <HStack>
         <Image source={{ uri: professional.avatarUrl }} alt={professional.name} className="w-16 h-16 rounded-full object-cover" />
         <VStack className="flex-1 ml-4">
-          <Heading className="font-cardo font-semibold text-base text-gray-custom-900">{professional.name}</Heading>
+          <Heading className="font-cardo font-semibold text-base text-gray-900">{professional.name}</Heading>
           <HStack className="items-center mt-1">
             <StarRating rating={professional.rating} />
-            <Text className="font-work-sans text-xs text-gray-custom-600 ml-2">{`${professional.rating.toFixed(1)} (${professional.reviews} reviews)`}</Text>
+            <Text className="font-work-sans text-xs text-gray-600 ml-2">{`${professional.rating.toFixed(1)} (${professional.reviews} reviews)`}</Text>
           </HStack>
         </VStack>
         <Heading className="font-cardo font-semibold text-base text-sage">{`$${professional.price}/hr`}</Heading>
       </HStack>
-      <Text className="my-3 font-work-sans text-sm text-gray-custom-600 leading-relaxed">{professional.description}</Text>
+      <Text className="my-3 font-work-sans text-sm text-gray-600 leading-relaxed">{professional.description}</Text>
       <HStack className="flex-wrap">
         {professional.tags.map(tag => {
           const colors = tagColors[professional.category] || tagColors.handyman;

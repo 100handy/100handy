@@ -27,17 +27,17 @@ export default function Header({
   onFilterPress,
 }: HeaderProps) {
   return (
-    <HStack className="items-center justify-between px-4 py-4 bg-primary-bg">
+    <HStack className="items-center justify-between px-4 py-4 bg-bg-primary">
       <HStack className="items-center space-x-3">
         {showBackButton && (
           <ArrowLeft size={18} color="#333A31" onPress={onBackPress || (() => {})} />
         )}
-        <Text className="text-lg font-work-sans font-semibold ml-2 text-primary-text leading-7">
+        <Text className="text-lg font-work-sans font-semibold ml-2 text-text-primary leading-7">
           {title}
         </Text>
       </HStack>
       {showBellIcon && (
-        <Pressable className="w-8 h-8 rounded-full items-center justify-center bg-primary-bg">
+        <Pressable className="w-8 h-8 rounded-full items-center justify-center bg-bg-primary">
           <BellIcon size={15} color="#333A31" onPress={onBellPress || (() => {})} />
         </Pressable>
       )}

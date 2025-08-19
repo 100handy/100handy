@@ -81,12 +81,12 @@ export default function Signup() {
 
   return (
     <ScrollView>
-      <Box className="flex-1 bg-themeBackground min-h-full">
+      <Box className="flex-1 bg-theme-background min-h-full">
         <Box className="flex-1 justify-center items-center p-4">
-          <Box className="w-full max-w-[390px] bg-themeBackground">
+          <Box className="w-full max-w-[390px] bg-theme-background">
             {/* Header */}
             <Box className="pt-24 pb-8 px-6">
-              <Text className="text-center text-xl font-worksans-semibold text-themeFont leading-7">
+              <Text className="text-center text-xl font-worksans-semibold text-theme-font leading-7">
                 Create your account
               </Text>
             </Box>

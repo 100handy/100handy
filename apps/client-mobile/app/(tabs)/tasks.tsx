@@ -21,7 +21,7 @@ export default function TasksScreen() {
 
 
   return (
-    <SafeAreaView className="flex-1 bg-secondary-bg">
+    <SafeAreaView className="flex-1 bg-bg-secondary">
       <Box className="flex-1">
         {/* Top App Bar */}
         <Header 
@@ -32,16 +32,16 @@ export default function TasksScreen() {
           showBellIcon={true}
         />
 
-        <Divider className="h-px bg-border-color opacity-80" />
+        <Divider className="h-px bg-border opacity-80" />
 
         {/* Segmented Tabs */}
-        <HStack className="bg-primary-bg">
+        <HStack className="bg-bg-primary">
           <Tab id="upcoming" label="Upcoming" active={activeTab === 'upcoming'} onPress={setActiveTab} />
           <Tab id="past" label="Past" active={activeTab === 'past'} onPress={setActiveTab} />
           <Tab id="cancelled" label="Cancelled" active={activeTab === 'cancelled'} onPress={setActiveTab} />
         </HStack>
 
-        <Divider className="h-px bg-border-color opacity-80" />
+        <Divider className="h-px bg-border opacity-80" />
 
         {/* Content */}
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
@@ -72,7 +72,7 @@ export default function TasksScreen() {
 
             {/* Empty-state helper */}
             <HStack className="justify-center pt-6">
-              <Text className="text-xs font-work-sans text-tertiary-text leading-4">
+              <Text className="text-xs font-work-sans text-text-tertiary leading-4">
                 Tap to view details
               </Text>
             </HStack>

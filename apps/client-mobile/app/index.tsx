@@ -39,7 +39,7 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-themeBackground">
+    <SafeAreaView className="flex-1 bg-theme-background">
       <StatusBar barStyle="dark-content" />
       <VStack className="flex-1 justify-center items-center p-6">
         <VStack className="items-center mb-10">

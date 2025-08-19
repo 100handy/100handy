@@ -11,11 +11,11 @@ export function StatusPill({ label, tone = 'neutral' }: StatusPillProps) {
   const getStatusClasses = (tone: 'scheduled' | 'progress' | 'neutral') => {
     switch (tone) {
       case 'scheduled':
-        return 'bg-success-bg text-primary-text';
+        return 'bg-status-success-bg text-text-primary';
       case 'progress':
-        return 'bg-warning-bg text-warning-color';
+        return 'bg-status-warning-bg text-status-warning';
       default:
-        return 'bg-gray-100 text-primary-text';
+        return 'bg-gray-100 text-text-primary';
     }
   };
 

@@ -11,7 +11,7 @@ interface ScreenWrapperProps {
 
 const ScreenWrapper: React.FC<ScreenWrapperProps> = ({ children, scrollable = false }) => {
   return (
-    <SafeAreaView className="flex-1 bg-themeBackground">
+    <SafeAreaView className="flex-1 bg-theme-background">
       <StatusBar barStyle="dark-content" />
       {scrollable ? (
         <ScrollView className="flex-grow">

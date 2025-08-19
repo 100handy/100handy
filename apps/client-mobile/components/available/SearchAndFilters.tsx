@@ -17,12 +17,12 @@ const filterChips = ['All', 'Highest Rated', 'Lowest Price', 'Nearest'];
 
 export const SearchAndFilters = ({ activeFilter, onFilterChange }: SearchAndFiltersProps) => {
   return (
-    <VStack className="bg-white pt-2 pb-4 px-4 border-b border-gray-custom-200">
-      <Input className="bg-gray-custom-100 rounded-lg border-0 mb-4">
+    <VStack className="bg-white pt-2 pb-4 px-4 border-b border-gray-200">
+      <Input className="bg-gray-100 rounded-lg border-0 mb-4">
         <InputSlot className="pl-3">
           <Icon as={Search} size="lg" color="#9CA3AF" />
         </InputSlot>
-        <InputField placeholder="Search professionals..." className="font-work-sans text-sm text-gray-custom-400" />
+        <InputField placeholder="Search professionals..." className="font-work-sans text-sm text-gray-400" />
       </Input>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <HStack className="space-x-2">

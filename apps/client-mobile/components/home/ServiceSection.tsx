@@ -31,7 +31,7 @@ export function ServiceSection({ title, services }: ServiceSectionProps) {
 
   return (
     <VStack className="mb-6">
-      <Heading size="lg" className="text-[20px] text-themeFont text-center mb-4 font-worksans-bold">
+      <Heading size="lg" className="text-[20px] text-theme-font text-center mb-4 font-worksans-bold">
         {title}
       </Heading>
       <ScrollView 

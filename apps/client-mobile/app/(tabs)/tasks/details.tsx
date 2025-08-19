@@ -47,7 +47,7 @@ export default function TaskDetailsScreen() {
             {/* Task Description Card */}
             <VStack className="space-y-2 bg-white p-4 rounded-xl">
               <HStack className="items-center">
-                <Text size="sm" className="font-semibold text-primary-text">
+                <Text size="sm" className="font-semibold text-text-primary">
                   Task Description
                 </Text>
                 <Text className="text-red-500 ml-1">*</Text>
@@ -60,7 +60,7 @@ export default function TaskDetailsScreen() {
                   maxLength={500}
                   multiline
                   textAlignVertical="top"
-                  className="flex-1 text-sm text-tertiary-text leading-5"
+                  className="flex-1 text-sm text-text-tertiary leading-5"
                 />
               </Box>
               <Text className="text-xs text-right text-gray-custom-400">
@@ -73,10 +73,10 @@ export default function TaskDetailsScreen() {
               {/* Date & Time */}
               <HStack className="items-center justify-between">
                 <VStack>
-                  <Text className="text-sm text-secondary-text mb-1">
+                  <Text className="text-sm text-text-secondary mb-1">
                     Date & Time
                   </Text>
-                  <Text className="text-sm font-semibold text-primary-text">
+                  <Text className="text-sm font-semibold text-text-primary">
                     Tomorrow, 2:00 PM - 4:00 PM
                   </Text>
                 </VStack>
@@ -94,10 +94,10 @@ export default function TaskDetailsScreen() {
                 <HStack className="items-center space-x-3">
                   <MapPinIcon size={20} className="text-black" />
                   <VStack>
-                    <Text className="text-sm text-secondary-text mb-1">
+                    <Text className="text-sm text-text-secondary mb-1">
                       Address
                     </Text>
-                    <Text className="text-sm font-semibold text-primary-text leading-5">
+                    <Text className="text-sm font-semibold text-text-primary leading-5">
                       123 Main Street{'\n'}London SW1A 1AA
                     </Text>
                   </VStack>
@@ -115,13 +115,13 @@ export default function TaskDetailsScreen() {
               {/* Payment Method */}
               <HStack className="items-center justify-between">
                 <VStack>
-                  <Text className="text-sm text-secondary-text mb-1">
+                  <Text className="text-sm text-text-secondary mb-1">
                     Payment Method
                   </Text>
                   <HStack className="w-full justify-between space-x-3 my-2">
                     <HStack>
                       <VisaIcon />
-                    <Text className="text-sm font-semibold text-primary-text tracking-widest ml-2">
+                    <Text className="text-sm font-semibold text-text-primary tracking-widest ml-2">
                       •••• 4242
                     </Text>
                     </HStack>
@@ -144,7 +144,7 @@ export default function TaskDetailsScreen() {
                     placeholder="Promo code"
                     value={promoCode}
                     onChangeText={setPromoCode}
-                    className="text-primary-text text-sm p-3"
+                    className="text-text-primary text-sm p-3"
                   />
                 </Input>
                 <Button
@@ -159,16 +159,16 @@ export default function TaskDetailsScreen() {
             </VStack>
 
             {/* Estimated Total */}
-            <VStack className="bg-highlight-background p-4 rounded-xl space-y-1 border-highlight-border border-2">
+            <VStack className="bg-bg-highlight p-4 rounded-xl space-y-1 border-border-highlight border-2">
               <HStack className="items-center justify-between w-full">
-                <Text size="md" className="font-semibold text-primary-text">
+                <Text size="md" className="font-semibold text-text-primary">
                   Estimated Total
                 </Text>
-                <Text className="text-xl font-bold text-primary-text">
+                <Text className="text-xl font-bold text-text-primary">
                   £45.00
                 </Text>
               </HStack>
-              <Text className="text-xs text-secondary-text">
+              <Text className="text-xs text-text-secondary">
                 Final price may vary based on actual time spent
               </Text>
             </VStack>

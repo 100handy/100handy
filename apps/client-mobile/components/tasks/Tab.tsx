@@ -17,14 +17,14 @@ export function Tab({ id, label, active, onPress }: TabProps) {
       <VStack className="items-center">
         <Text
           className={`text-sm font-work-sans font-medium leading-4 ${
-            active ? 'text-primary-brand' : 'text-tertiary-text'
+            active ? 'text-clay-orange' : 'text-text-tertiary'
           }`}
         >
           {label}
         </Text>
         <Box
           className={`mt-2 h-0.5 ${
-            active ? 'w-4/5 bg-primary-brand' : 'w-0 bg-transparent'
+            active ? 'w-4/5 bg-clay-orange' : 'w-0 bg-transparent'
           }`}
         />
       </VStack>

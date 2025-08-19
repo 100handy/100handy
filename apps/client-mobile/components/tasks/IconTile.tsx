@@ -10,11 +10,11 @@ export function IconTile({ tone = 'sage', children }: IconTileProps) {
   const getBgClass = (tone: 'sage' | 'orange' | 'taupe') => {
     switch (tone) {
       case 'orange':
-        return 'bg-primary-bg-10';
+        return 'bg-bg-clay-orange-10';
       case 'taupe':
         return 'bg-gray-200';
       default:
-        return 'bg-success-bg';
+        return 'bg-status-success-bg';
     }
   };
 

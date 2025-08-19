@@ -36,15 +36,15 @@ export default function SignIn() {
     try {
       setIsLoading(true);
       const data = await signIn(formData.email, formData.password);
-      
+
       // Update the auth store with the new session
       if (data.session) {
         setSession(data.session);
       }
-      
+
       Alert.alert('Success', 'Logged in successfully!');
       console.log('Sign in successful:', data);
-      
+
       // AuthWrapper will handle navigation automatically
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to sign in');
@@ -66,19 +66,19 @@ export default function SignIn() {
 
   return (
     <ScreenWrapper scrollable>
-      <Box className="w-full max-w-[342px]">
+      <Box className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl px-4 sm:px-6 md:px-8">
         {/* Logo and Brand */}
-        <Box className="items-center mb-10">
-          <Box className="w-20 h-20 bg-white rounded-2xl items-center justify-center shadow-lg mb-5">
-            <TaskHelperLogo width={40} height={40} />
+        <Box className="items-center mb-8 sm:mb-10 md:mb-12">
+          <Box className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white rounded-2xl items-center justify-center shadow-lg mb-4 sm:mb-5 md:mb-6">
+            <TaskHelperLogo width={32} height={32} />
           </Box>
-          <Text className="font-cardo-bold text-2xl text-typography-900 mb-2">
+          <Text className="font-cardo-bold text-xl sm:text-2xl md:text-3xl text-typography-900 mb-2">
             TaskHelper
           </Text>
-          <Text className="font-worksans text-center text-typography-600 text-base mb-8">
+          <Text className="font-worksans text-center text-typography-600 text-sm sm:text-base md:text-lg mb-6 sm:mb-8">
             Get help with home tasks fast and trusted
           </Text>
-          <Text className="font-worksans-semibold text-center text-typography-900 text-xl">
+          <Text className="font-worksans-semibold text-center text-typography-900 text-lg sm:text-xl md:text-2xl">
             Welcome back
           </Text>
         </Box>
@@ -90,14 +90,14 @@ export default function SignIn() {
             <Input
               variant="outline"
               size="xl"
-              className="h-[58px] bg-white border-outline-200 rounded-xl"
+              className="h-12 sm:h-[58px] md:h-16 bg-white border-outline-200 rounded-xl"
             >
               <InputField
                 placeholder="Email or phone number"
                 value={formData.email}
                 onChangeText={(value) => handleInputChange('email', value)}
                 keyboardType="email-address"
-                className="font-worksans text-base text-typography-black placeholder-typography-400"
+                className="font-worksans text-sm sm:text-base md:text-lg text-typography-black placeholder-typography-400"
               />
             </Input>
 
@@ -105,14 +105,14 @@ export default function SignIn() {
             <Input
               variant="outline"
               size="xl"
-              className="h-[58px] bg-white border-outline-200 rounded-xl mt-2"
+              className="h-12 sm:h-[58px] md:h-16 bg-white border-outline-200 rounded-xl mt-2"
             >
               <InputField
                 secureTextEntry={!showPassword}
                 placeholder="Password"
                 value={formData.password}
                 onChangeText={(value) => handleInputChange('password', value)}
-                className="font-worksans text-base text-typography-black placeholder-typography-400"
+                className="font-worksans text-sm sm:text-base md:text-lg text-typography-black placeholder-typography-400"
               />
               <InputSlot className="pr-3" onPress={() => setShowPassword(!showPassword)}>
                 <InputIcon
@@ -135,22 +135,22 @@ export default function SignIn() {
           {/* Login Button */}
           <Button
             size="xl"
-            className="bg-clayOrange rounded-xl h-[60px] mb-6 shadow-lg"
+            className="bg-clayOrange rounded-xl h-12 sm:h-[60px] md:h-16 mb-4 sm:mb-6 shadow-lg"
             onPress={handleSignIn}
             disabled={isLoading}
           >
-            <ButtonText className="font-worksans-bold text-white text-lg">
+            <ButtonText className="font-worksans-bold text-white text-base sm:text-lg md:text-xl">
               Log in
             </ButtonText>
           </Button>
 
           {/* Sign Up Link */}
-          <Box className="flex-row justify-center items-center mb-8">
-            <Text className="font-worksans text-typography-black text-sm">
+          <Box className="flex-row justify-center items-center mb-6 sm:mb-8">
+            <Text className="font-worksans text-typography-black text-xs sm:text-sm md:text-base">
               Don't have an account?{' '}
             </Text>
             <Link href="./sign-up">
-              <Text className="font-worksans-semibold text-typography-black text-sm">
+              <Text className="font-worksans-semibold text-typography-black text-xs sm:text-sm md:text-base">
                 Sign up
               </Text>
             </Link>

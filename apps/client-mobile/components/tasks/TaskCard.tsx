@@ -34,7 +34,7 @@ export function TaskCard({
   return (
     <Pressable
       onPress={onPress}
-      className="bg-primary-bg border border-border-color rounded-lg mx-4 my-2 shadow-sm"
+      className="bg-bg-primary border border-border rounded-lg mx-4 my-2 shadow-sm"
     >
       <VStack className="p-4">
         <HStack className="items-start justify-between">
@@ -44,14 +44,14 @@ export function TaskCard({
             </IconTile>
 
             <VStack className="flex-1 ml-3">
-              <Text className="text-sm font-work-sans font-medium mb-1 text-primary-text leading-5">
+              <Text className="text-sm font-work-sans font-medium mb-1 text-text-primary leading-5">
                 {title}
               </Text>
 
-              <Text className="text-xs font-work-sans text-secondary-text leading-4 mb-0.5">
+              <Text className="text-xs font-work-sans text-text-secondary leading-4 mb-0.5">
                 {timeLine1}
               </Text>
-              <Text className="text-xs font-work-sans text-tertiary-text leading-4">
+              <Text className="text-xs font-work-sans text-text-tertiary leading-4">
                 {timeLine2}
               </Text>
             </VStack>
@@ -60,7 +60,7 @@ export function TaskCard({
           <VStack className="items-end">
             <StatusPill label={statusLabel} tone={statusTone} />
             <Pressable className="mt-2" onPress={() => router.push('/tasks/details')}>
-              <Text className="text-xs font-work-sans font-medium text-primary-brand leading-4">
+              <Text className="text-xs font-work-sans font-medium text-clay-orange leading-4">
                 View Details
               </Text>
             </Pressable>
