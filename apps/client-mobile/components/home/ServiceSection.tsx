@@ -39,7 +39,7 @@ export function ServiceSection({ title, services }: ServiceSectionProps) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={contentContainerStyle}
         className="mb-4"
-        scrollEnabled={!shouldFillSpace}
+        scrollEnabled={true}
       >
         {services.map((service, index) => (
           <CategoryCard

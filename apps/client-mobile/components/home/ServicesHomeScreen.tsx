@@ -43,12 +43,46 @@ const categoryIcons: { [key: string]: any } = {
   'TV Mounting': CarIcon,
 };
 
-// Background colors for variety
-const backgroundColors = ['bg-sageGreen', 'bg-warmTaupe', 'bg-clayOrange'];
+// Color mapping based on Figma design
+const getCategoryColor = (categoryName: string): string => {
+  const colorMap: { [key: string]: string } = {
+    // Sage Green (#A3B899)
+    'Handyman': 'bg-sage-green',
+    'Plumbing': 'bg-sage-green',
+    'Electrical': 'bg-sage-green',
+    'Pest Control': 'bg-sage-green',
+    'Appliance Repair': 'bg-sage-green',
+    'Digital Marketing': 'bg-sage-green',
+    'Legal Services': 'bg-sage-green',
+    'Graphic Design': 'bg-sage-green',
+    'Auto Repair': 'bg-sage-green',
+    'Towing': 'bg-sage-green',
+    
+    // Warm Taupe (#BFA28D)
+    'Cleaning': 'bg-warm-taupe',
+    'Painting': 'bg-warm-taupe',
+    'Carpentry': 'bg-warm-taupe',
+    'Gardening': 'bg-warm-taupe',
+    'Massage Therapy': 'bg-warm-taupe',
+    'Nutrition': 'bg-warm-taupe',
+    'Beauty Services': 'bg-warm-taupe',
+    'Yoga': 'bg-warm-taupe',
+    'Car Detailing': 'bg-warm-taupe',
+    
+    // Clay Orange (#D9896C)
+    'Accounting': 'bg-clay-orange',
+    'Web Development': 'bg-clay-orange',
+    'Business Consulting': 'bg-clay-orange',
+    'Personal Training': 'bg-clay-orange',
+    'Mental Health': 'bg-clay-orange',
+  };
+  
+  return colorMap[categoryName] || 'bg-sage-green'; // Default to sage green
+};
 
 // Helper function to convert category to service format
-const categoryToService = (category: Category, index: number) => ({
-  bg: backgroundColors[index % backgroundColors.length],
+const categoryToService = (category: Category) => ({
+  bg: getCategoryColor(category.name),
   icon: categoryIcons[category.name] || WrenchIcon,
   title: category.name,
   subtitle: category.description || `Professional ${category.name.toLowerCase()} services`,
