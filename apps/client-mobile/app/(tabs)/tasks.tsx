@@ -182,7 +182,7 @@ export default function TasksScreen() {
             <VStack className="space-y-2">
               {getCurrentTaskCards().map((taskCardProps, index) => (
                 <TaskCard
-                  key={taskCardProps.bookingId || taskCardProps.id || index}
+                  key={`${activeTab}-${taskCardProps.bookingId || taskCardProps.id || index}`}
                   {...taskCardProps}
                   onPress={() => {}}
                 />
