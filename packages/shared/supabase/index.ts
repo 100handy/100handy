@@ -2,4 +2,5 @@
 export * from './supabaseClient.native';
 export * from './auth';
 export * from './profile';
+export * from './bookings';
 export * from '../store';

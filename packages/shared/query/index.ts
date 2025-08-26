@@ -10,3 +10,14 @@ export {
   categoryKeys,
   type Category,
 } from './hooks/useCategories';
+
+// Booking hooks and utilities
+export {
+  useUpcomingBookings,
+  usePastBookings,
+  useCancelledBookings,
+  useBookingById,
+  useUserBookings,
+  useInvalidateBookings,
+  bookingKeys,
+} from './hooks/useBookings';

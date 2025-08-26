@@ -15,7 +15,8 @@ interface TaskCardProps {
   timeLine2: string;
   statusLabel: string;
   statusTone?: 'scheduled' | 'progress' | 'neutral';
-  onPress: () => void;
+  bookingId?: number;
+  onPress?: () => void;
 }
 
 export function TaskCard({
@@ -26,6 +27,7 @@ export function TaskCard({
   timeLine2,
   statusLabel,
   statusTone,
+  bookingId,
   onPress,
 }: TaskCardProps) {
   const IconComp = icon;
