@@ -270,7 +270,7 @@ export default function Signup() {
               {/* Sign Up Button */}
               <Button
                 size="xl"
-                className="h-[60px] bg-sageGreen rounded-xl mt-8 shadow-lg"
+                className="h-[60px] bg-sage-green rounded-xl mt-8 shadow-lg"
                 onPress={handleSignUp}
                 disabled={isLoading}
               >

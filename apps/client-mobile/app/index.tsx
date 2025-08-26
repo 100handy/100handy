@@ -56,7 +56,7 @@ export default function Index() {
 
         <VStack className="w-full mb-6">
           <Pressable
-            className={`bg-clayOrange p-4 rounded-xl mb-4 shadow-md ${loading ? 'opacity-50' : ''}`}
+            className={`bg-clay-orange p-4 rounded-xl mb-4 shadow-md ${loading ? 'opacity-50' : ''}`}
             onPress={handleLogin}
             disabled={loading}
           >
@@ -65,7 +65,7 @@ export default function Index() {
             </Text>
           </Pressable>
           <Pressable
-            className={`bg-sageGreen p-4 rounded-xl shadow-md ${loading ? 'opacity-50' : ''}`}
+            className={`bg-sage-green p-4 rounded-xl shadow-md ${loading ? 'opacity-50' : ''}`}
             onPress={handleSignUp}
             disabled={loading}
           >

@@ -135,7 +135,7 @@ export default function SignIn() {
           {/* Login Button */}
           <Button
             size="xl"
-            className="bg-clayOrange rounded-xl h-12 sm:h-[60px] md:h-16 mb-4 sm:mb-6 shadow-lg"
+            className="bg-clay-orange rounded-xl h-12 sm:h-[60px] md:h-16 mb-4 sm:mb-6 shadow-lg"
             onPress={handleSignIn}
             disabled={isLoading}
           >
