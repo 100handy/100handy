@@ -30,12 +30,11 @@ export default function Index() {
   };
 
   const handleLogin = () => {
-    router.push('/(auth)/sign-in');
+    router.push('/(auth)/role-selection');
   };
 
   const handleSignUp = () => {
-    // router.push('/(auth)/sign-up');
-    router.push('/(auth)/sign-up');
+    router.push('/(auth)/role-selection');
   };
 
   return (

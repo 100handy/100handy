@@ -27,12 +27,13 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
 
     if (isAuthenticated) {
       if (inAuthGroup || isOnIndex) {
-        router.replace('/(tabs)/home');
+        // Default to client for now - can be enhanced with role detection
+        router.replace('/(client)/(tabs)/home');
       }
     } else {
       // User is not authenticated
       if (inTabsGroup) {
-        router.replace('/(auth)/sign-in');
+        router.replace('/(auth)/role-selection');
       }
     }
   }, [isAuthenticated, isLoading, segments, router]);
