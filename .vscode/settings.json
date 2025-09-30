@@ -3,5 +3,11 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "kiroAgent.configureMCP": "Enabled",
+  "deno.enable": true,
+  "deno.enablePaths": ["./supabase/functions"],
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
 }

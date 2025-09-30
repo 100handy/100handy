@@ -1,12 +1,13 @@
 import "@/globals.css";
-import { Tabs } from "expo-router";
+import { Stack } from "expo-router";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { SplashScreen } from "expo-router";
 import * as Linking from "expo-linking";
 import { supabase } from "@shared/supabase/supabaseClient";
-import { Home, Briefcase, Heart, User } from "lucide-react-native";
+import { AuthWrapper } from "@/components/AuthWrapper";
+import { QueryProvider } from "@/components/providers";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -15,6 +16,15 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     "Futura-Medium": require("../assets/fonts/futura-medium.ttf"),
     "SourceCodeProVariable": require("../assets/fonts/SourceCodePro-Regular.ttf"),
+    // WorkSans font family
+    "WorkSans-Regular": require("../assets/fonts/WorkSans-Regular.ttf"),
+    "WorkSans-Medium": require("../assets/fonts/WorkSans-Medium.ttf"),
+    "WorkSans-SemiBold": require("../assets/fonts/WorkSans-SemiBold.ttf"),
+    "WorkSans-Bold": require("../assets/fonts/WorkSans-Bold.ttf"),
+    // Cardo font family
+    "Cardo-Regular": require("../assets/fonts/Cardo-Regular.ttf"),
+    "Cardo-Bold": require("../assets/fonts/Cardo-Bold.ttf"),
+    "Cardo-Italic": require("../assets/fonts/Cardo-Italic.ttf"),
   });
 
   useEffect(() => {
@@ -39,41 +49,17 @@ export default function RootLayout() {
   }
 
   return (
-    <GluestackUIProvider mode="light">
-      <Tabs screenOptions={{ headerShown: false }}>
-        <Tabs.Screen
-          name="home"
-          options={{
-            tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
-            title: "Home",
-          }}
-        />
-        <Tabs.Screen
-          name="jobs"
-          options={{
-            tabBarIcon: ({ color, size }) => <Briefcase color={color} size={size} />,
-            title: "Jobs",
-          }}
-        />
-        <Tabs.Screen
-          name="handy"
-          options={{
-            tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
-            title: "Handy",
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
-            title: "Profile",
-          }}
-        />
-        <Tabs.Screen name="index" options={{ href: null }} />
-        <Tabs.Screen name="sign-in" options={{ href: null }} />
-        <Tabs.Screen name="sign-up" options={{ href: null }} />
-        <Tabs.Screen name="verify-otp" options={{ href: null }} />
-      </Tabs>
-    </GluestackUIProvider>
+    <QueryProvider>
+      <GluestackUIProvider mode="light">
+        <AuthWrapper>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(client)" />
+            <Stack.Screen name="(professional)" />
+          </Stack>
+        </AuthWrapper>
+      </GluestackUIProvider>
+    </QueryProvider>
   );
 }

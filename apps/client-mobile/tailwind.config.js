@@ -168,11 +168,88 @@ module.exports = {
           info: 'rgb(var(--color-indicator-info)/<alpha-value>)',
           error: 'rgb(var(--color-indicator-error)/<alpha-value>)',
         },
-        clayOrange: '#D9896C',
-        sageGreen: '#A3B899',
-        warmTaupe: '#BFA28D',
-        themeBackground: '#F6E4D8',
-        themeFont: '#333A31',
+        // Core brand colors
+        'clay-orange': '#D9896C',
+        'sage-green': '#A3B899',
+        'warm-taupe': '#BFA28D',
+        'theme-background': '#F6E4D8',
+        'theme-font': '#333A31',
+
+        // Text colors
+        'text': {
+          primary: '#333A31',
+          secondary: '#4B5563',
+          tertiary: '#6B7280',
+          inactive: '#9CA3AF',
+          placeholder: '#ADAEBC'
+        },
+
+        // Background colors
+        'bg': {
+          primary: '#FFFFFF',
+          secondary: '#F9FAFB',
+          light: '#F3F4F6',
+          highlight: '#F6E4D8',
+          'clay-orange-10': 'rgba(217, 137, 108, 0.1)',
+          'sage-green-10': 'rgba(163, 184, 153, 0.1)'
+        },
+
+        // Border colors
+        'border': {
+          DEFAULT: '#E5E7EB',
+          accent: '#CED4DA',
+          input: '#D1D5DB',
+          highlight: '#BFA28D',
+          light: '#F3F4F6'
+        },
+
+        // Status colors with backgrounds
+        'status': {
+          success: '#A3B899',
+          'success-bg': 'rgba(163, 184, 153, 0.1)',
+          'success-light': '#22C55E',
+          warning: '#A16207',
+          'warning-bg': '#FEF9C3',
+          info: '#3B82F6',
+          'info-bg': 'rgba(59, 130, 246, 0.1)',
+          danger: '#DC2626',
+          'danger-bg': '#FEF2F2',
+          'danger-border': '#FECACA'
+        },
+
+        // Profile-specific accent colors
+        'accent': {
+          green: '#22C55E',
+          'green-bg': 'rgba(34, 197, 94, 0.1)',
+          purple: '#A855F7',
+          'purple-bg': 'rgba(168, 85, 247, 0.1)',
+          orange: '#F97316',
+          'orange-bg': 'rgba(249, 115, 22, 0.1)',
+          red: '#EF4444',
+          'red-bg': 'rgba(239, 68, 68, 0.1)',
+          yellow: '#EAB308',
+          'yellow-bg': 'rgba(234, 179, 8, 0.1)',
+          emerald: '#10B981',
+          'gray-bg': 'rgba(107, 114, 128, 0.1)'
+        },
+
+        // Sage color palette
+        'sage': {
+          DEFAULT: '#A3B899',
+          light: '#B5C6AD',
+          dark: '#8FA082'
+        },
+
+        // Gray scale (consolidated)
+        'gray': {
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          400: '#9CA3AF',
+          500: '#6B7280',
+          600: '#4B5563',
+          900: '#111827'
+        }
       },
       fontFamily: {
         display: 'Futura-Medium',
@@ -180,12 +257,45 @@ module.exports = {
         heading: undefined,
         body: undefined,
         roboto: ['Roboto', 'sans-serif'],
+        'cardo': ['Cardo-Regular', 'serif'],
+        'cardo-bold': ['Cardo-Bold', 'serif'],
+        'cardo-italic': ['Cardo-Italic', 'serif'],
+        'worksans': ['WorkSans-Regular', 'sans-serif'],
+        'worksans-medium': ['WorkSans-Medium', 'sans-serif'],
+        'worksans-semibold': ['WorkSans-SemiBold', 'sans-serif'],
+        'worksans-bold': ['WorkSans-Bold', 'sans-serif'],
+        // Work Sans font family for design system
+        'work-sans': ['Work Sans', 'sans-serif'],
       },
       fontWeight: {
         extrablack: '950',
       },
       fontSize: {
         '2xs': '10px',
+        // Custom font sizes from Figma
+        'xs': '12px',    // Tags, ratings
+        'sm': '14px',    // Body text, buttons
+        'base': '16px',  // Names, prices
+        'lg': '18px'     // Header title
+      },
+      spacing: {
+        '17': '17px',    // From design tokens
+        '25': '25px',    // From design tokens
+        '26': '26px',    // From design tokens
+        // Profile design spacing
+        'profile-xs': '4px',
+        'profile-sm': '8px',
+        'profile-md': '16px',
+        'profile-lg': '17px',
+        'profile-xl': '24px',
+        'profile-xxl': '32px'
+      },
+      borderRadius: {
+        'detail-small': '4px',
+        'detail-medium': '8px',
+        // Profile design border radius
+        'profile-small': '8px',
+        'profile-full': '9999px'
       },
       boxShadow: {
         'hard-1': '-2px 2px 8px 0px rgba(38, 38, 38, 0.20)',

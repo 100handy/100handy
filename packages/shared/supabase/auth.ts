@@ -1,11 +1,30 @@
 // packages/shared/supabase/auth.ts
-import { supabase } from './supabaseClient';
+import { supabase } from './supabaseClient.native';
 
-export async function signUp({ email, password, role, name }: { email: string; password: string; role: 'customer' | 'handy', name: string }) {
+export interface SignUpData {
+  email: string;
+  password: string;
+  role: 'customer' | 'handy';
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  postcode?: string;
+}
+
+export async function signUp({ email, password, role, first_name, last_name, phone, postcode }: SignUpData) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { role, name } }
+    options: { 
+      data: { 
+        role, 
+        first_name, 
+        last_name, 
+        phone, 
+        postcode 
+      },
+      emailRedirectTo: getRedirectUrl()
+    }
   });
   if (error) throw error;
   return data;
@@ -30,9 +49,24 @@ export async function getSession() {
   return supabase.auth.getSession();
 }
 
+/**
+ * Get the redirect URL for email confirmations and OAuth callbacks
+ * 
+ * For production: Set NEXT_PUBLIC_SITE_URL (web) or EXPO_PUBLIC_SITE_URL (mobile)
+ * For development: Uses localhost automatically
+ * 
+ * Example: NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+ */
 function getRedirectUrl() {
-  // Web: your site; Mobile: your custom scheme
-  if (typeof window !== 'undefined') return `${window.location.origin}/auth/callback`;
+  // Web: use environment variable for production, fallback to current origin for development
+  if (typeof window !== 'undefined') {
+    const productionUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.EXPO_PUBLIC_SITE_URL;
+    if (productionUrl) {
+      return `${productionUrl}/auth/callback`;
+    }
+    return `${window.location.origin}/auth/callback`;
+  }
+  // Mobile: your custom scheme
   return 'handy://auth/callback';
 }
 
