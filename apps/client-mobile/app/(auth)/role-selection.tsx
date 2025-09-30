@@ -14,11 +14,11 @@ export default function AuthRoleSelectionScreen() {
   const router = useRouter();
 
   const handleClientAuth = (): void => {
-    router.push('/(auth)/(client)/sign-in');
+    router.push('/(auth)/(client)');
   };
 
   const handleProfessionalAuth = (): void => {
-    router.push('/(auth)/(professional)/sign-in');
+    router.push('/(auth)/(professional)');
   };
 
   return (
