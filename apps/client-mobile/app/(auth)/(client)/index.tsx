@@ -17,7 +17,7 @@ export default function ClientWelcome() {
   };
 
   const handleGetStarted = (): void => {
-    router.push('/(auth)/(client)/sign-in');
+    router.push('/(auth)/(client)/onboarding');
   };
 
   return (
