@@ -249,7 +249,7 @@ export default function ClientOnboarding() {
       setCurrentStep(nextIndex);
     } else {
       // Last screen, go to sign in
-      router.push('/(auth)/(client)/sign-in');
+      router.push('/(auth)/(client)/terms-and-privacy');
     }
   };
 

@@ -4,8 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
@@ -13,13 +11,14 @@ import { router } from 'expo-router';
 import { type SignUpData } from '@shared/supabase/auth';
 import SignUpForm from '@/components/auth/SignUpForm';
 
-export default function ProfessionalSignUp() {
+export default function ClientSignUp() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignUp = async (data: SignUpData): Promise<void> => {
     // Navigate to verify info screen
-    console.log('SignUp data:', data);
-    router.push('/(auth)/(professional)/verify-info');
+    console.log('Client SignUp data:', data);
+    // You can add client-specific logic here, e.g., navigating to a different screen
+    router.push('/(auth)/(client)/onboarding');
   };
 
   return (
@@ -74,7 +73,7 @@ export default function ProfessionalSignUp() {
           <SignUpForm
             onSubmit={handleSignUp}
             isLoading={isLoading}
-            userRole="professional"
+            userRole="client"
           />
         </VStack>
         </ScrollView>

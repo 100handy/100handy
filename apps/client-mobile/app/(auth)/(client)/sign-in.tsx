@@ -1,167 +1,78 @@
-import React, { JSX, useState } from 'react';
-import { Alert } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@/components/ui/box';
-import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
+import { VStack } from '@/components/ui/vstack';
+import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
-import { EyeIcon, EyeOffIcon } from 'lucide-react-native';
+import { Pressable } from '@/components/ui/pressable';
+import { ChevronLeft } from 'lucide-react-native';
+import { router } from 'expo-router';
+import SignInForm from '@/components/auth/SignInForm';
 import { signIn } from '@shared/supabase/auth';
-import { useAuthStore } from '@shared/supabase';
-import { useRouter } from 'expo-router';
-import { Loader } from '@/components/ui/loader';
-import TaskHelperLogo from "../../../assets/images/task-helper-logo.svg";
-import { Link } from '@/components/ui/link';
-import ScreenWrapper from '@/components/ui/ScreenWrapper';
+import AuthFooter from '@/components/auth/AuthFooter';
 
-export default function ClientSignIn(): JSX.Element {
-  const [showPassword, setShowPassword] = useState(false);
+export default function ClientSignIn() {
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const router = useRouter();
-  const { setSession } = useAuthStore();
 
-  const handleInputChange = (field: string, value: string): void => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSignIn = async (): Promise<void> => {
-    if (!formData.email || !formData.password) {
-      Alert.alert('Error', 'Please fill in all required fields');
-      return;
-    }
-
+  const handleSignIn = async (data: { email: string, password: string }): Promise<void> => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const data = await signIn(formData.email, formData.password);
-
-      // Update the auth store with the new session
-      if (data.session) {
-        setSession(data.session);
-      }
-
-      Alert.alert('Success', 'Logged in successfully!');
-      console.log('Sign in successful:', data);
-
-      // AuthWrapper will handle navigation automatically
+      await signIn(data.email, data.password);
+      // Navigate to the client's dashboard or home screen upon successful sign-in
+      router.replace('/(tabs)/home');
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to sign in');
       console.error('Sign in error:', error);
+      // You can add more specific error handling here, like showing an alert
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignUp = (): void => {
-    router.push('./sign-up');
-  };
-
-  if (isLoading) {
-    return <Loader text="Signing in..." />;
-  }
-
   return (
-    <ScreenWrapper scrollable>
-      <Box className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl px-4 sm:px-6 md:px-8">
-        {/* Logo and Brand */}
-        <Box className="items-center mb-8 sm:mb-10 md:mb-12">
-          <Box className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white rounded-2xl items-center justify-center shadow-lg mb-4 sm:mb-5 md:mb-6">
-            <TaskHelperLogo width={32} height={32} />
-          </Box>
-          <Text className="font-cardo-bold text-xl sm:text-2xl md:text-3xl text-typography-900 mb-2">
-            TaskHelper
-          </Text>
-          <Text className="font-worksans text-center text-typography-600 text-sm sm:text-base md:text-lg mb-6 sm:mb-8">
-            Get help with home tasks fast and trusted
-          </Text>
-          <Text className="font-worksans-semibold text-center text-typography-900 text-lg sm:text-xl md:text-2xl">
-            Welcome back
-          </Text>
-        </Box>
+    <Box className="flex-1 bg-white">
+      <SafeAreaView className="flex-1">
+        <ScrollView 
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <VStack className="flex-1 justify-between">
+            <Box>
+              {/* Header */}
+              <HStack className="items-center justify-between px-5 pt-2 pb-4">
+                <Pressable onPress={() => router.back()}>
+                  <ChevronLeft size={24} color="#333A31" />
+                </Pressable>
+                <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
+                  Log in
+                </Text>
+                <Box className="w-6" />
+              </HStack>
 
-        {/* Form Container */}
-        <Box>
-          <Box className="space-y-4">
-            {/* Email/Phone Input */}
-            <Input
-              variant="outline"
-              size="xl"
-              className="h-12 sm:h-[58px] md:h-16 bg-white border-outline-200 rounded-xl"
-            >
-              <InputField
-                placeholder="Email or phone number"
-                value={formData.email}
-                onChangeText={(value) => handleInputChange('email', value)}
-                keyboardType="email-address"
-                className="font-worksans text-sm sm:text-base md:text-lg text-typography-black placeholder-typography-400"
+              {/* Logo */}
+              <Box className="items-center my-12">
+                <VStack className="items-center">
+                  <Text className="text-5xl font-cardo-regular tracking-widest" style={{ color: '#30352D' }}>
+                    100
+                  </Text>
+                  <Text className="text-5xl font-cardo-bold tracking-widest" style={{ color: '#30352D' }}>
+                    HANDY
+                  </Text>
+                </VStack>
+              </Box>
+
+              {/* Form Container */}
+              <SignInForm
+                onSubmit={handleSignIn}
+                isLoading={isLoading}
+                userRole="client"
               />
-            </Input>
-
-            {/* Password Input */}
-            <Input
-              variant="outline"
-              size="xl"
-              className="h-12 sm:h-[58px] md:h-16 bg-white border-outline-200 rounded-xl mt-2"
-            >
-              <InputField
-                secureTextEntry={!showPassword}
-                placeholder="Password"
-                value={formData.password}
-                onChangeText={(value) => handleInputChange('password', value)}
-                className="font-worksans text-sm sm:text-base md:text-lg text-typography-black placeholder-typography-400"
-              />
-              <InputSlot className="pr-3" onPress={() => setShowPassword(!showPassword)}>
-                <InputIcon
-                  as={showPassword ? EyeOffIcon : EyeIcon}
-                  className="text-typography-500 w-5 h-5"
-                />
-              </InputSlot>
-            </Input>
-          </Box>
-
-          {/* Forgot Password */}
-          <Box className="mt-4 mb-6 items-end">
-            <Link href="./forgot-password">
-              <Text className="font-worksans-medium text-clayOrange text-sm">
-                Forgot password?
-              </Text>
-            </Link>
-          </Box>
-
-          {/* Login Button */}
-          <Button
-            size="xl"
-            className="bg-clay-orange rounded-xl h-12 sm:h-[60px] md:h-16 mb-4 sm:mb-6 shadow-lg"
-            onPress={handleSignIn}
-            disabled={isLoading}
-          >
-            <ButtonText className="font-worksans-bold text-white text-base sm:text-lg md:text-xl">
-              Log in
-            </ButtonText>
-          </Button>
-
-          {/* Sign Up Link */}
-          <Box className="flex-row justify-center items-center mb-6 sm:mb-8">
-            <Text className="font-worksans text-typography-black text-xs sm:text-sm md:text-base">
-              Don't have an account?{' '}
-            </Text>
-            <Link href="./sign-up">
-              <Text className="font-worksans-semibold text-typography-black text-xs sm:text-sm md:text-base">
-                Sign up
-              </Text>
-            </Link>
-          </Box>
-
-          {/* Terms and Support */}
-          <Box className="items-center">
-            <Text className="font-worksans text-typography-black text-xs text-center leading-5">
-              By continuing you agree to our Terms & Privacy
-            </Text>
-          </Box>
-        </Box>
-      </Box>
-    </ScreenWrapper>
+            </Box>
+            <AuthFooter />
+          </VStack>
+        </ScrollView>
+      </SafeAreaView>
+    </Box>
   );
 }

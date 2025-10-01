@@ -4,27 +4,27 @@ import { supabase } from './supabaseClient.native';
 export interface SignUpData {
   email: string;
   password: string;
-  role: 'customer' | 'handy';
-  first_name: string;
-  last_name: string;
   phone?: string;
-  postcode?: string;
+  options?: {
+    data: {
+      role: 'customer' | 'handy';
+      first_name: string;
+      last_name: string;
+      full_name: string;
+      postcode?: string;
+    };
+  };
 }
 
-export async function signUp({ email, password, role, first_name, last_name, phone, postcode }: SignUpData) {
+export async function signUp(signUpData: SignUpData) {
+  const { email, password, options } = signUpData;
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { 
-      data: { 
-        role, 
-        first_name, 
-        last_name, 
-        phone, 
-        postcode 
-      },
-      emailRedirectTo: getRedirectUrl()
-    }
+    options: {
+      data: options?.data,
+      emailRedirectTo: getRedirectUrl(),
+    },
   });
   if (error) throw error;
   return data;
