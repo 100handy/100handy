@@ -12,9 +12,11 @@ import TaskHelperLogo from '../../assets/images/task-helper-logo.svg';
 
 export default function AuthRoleSelectionScreen() {
   const router = useRouter();
+  
 
   const handleClientAuth = (): void => {
-    router.push('/(auth)/(client)');
+  
+  router.replace('/(client)/(tabs)/home');
   };
 
   const handleProfessionalAuth = (): void => {
