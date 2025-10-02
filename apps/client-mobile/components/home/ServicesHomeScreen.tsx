@@ -18,6 +18,7 @@ import { HStack } from '../ui/hstack';
 import { Pressable } from '../ui/pressable';
 import { Input, InputField, InputSlot, InputIcon } from '../ui/input';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 // Service chip data for horizontal scrollable rows
 const serviceChips = [
@@ -43,6 +44,14 @@ const serviceCards = [
 
 export function ServicesHomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  const handleServicePress = (serviceName: string) => {
+    router.push({
+      pathname: '/(client)/select-tasker',
+      params: { service: serviceName },
+    });
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -109,6 +118,7 @@ export function ServicesHomeScreen() {
                     borderWidth: 1.5,
                     borderColor: '#ffffff'
                   }}
+                  onPress={() => handleServicePress(service)}
                 >
                   <Text className="text-white text-sm" style={{ fontWeight: '500' }}>
                     {service}
@@ -145,6 +155,7 @@ export function ServicesHomeScreen() {
                         height: 140,
                         padding: 16
                       }}
+                      onPress={() => handleServicePress(service.title)}
                     >
                       <VStack className="items-center gap-2">
                         <Icon size={36} color="white" strokeWidth={1.5} />
