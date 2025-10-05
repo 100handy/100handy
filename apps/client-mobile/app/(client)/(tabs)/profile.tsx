@@ -25,6 +25,7 @@ import {
   Gift,
   Megaphone,
   Globe,
+  BarChart3,
 } from 'lucide-react-native';
 import { useProfileStore, useAuthStore } from '@shared/supabase';
 import { useRouter } from 'expo-router';
@@ -35,6 +36,7 @@ const menuItems = [
   { icon: Shield, title: 'Account Security' },
   { icon: Lock, title: 'Change Password' },
   { icon: CreditCard, title: 'Payment' },
+  { icon: BarChart3, title: 'Analytics' },
   { icon: Megaphone, title: 'Promos' },
   { icon: Bell, title: 'Notifications' },
   { icon: HelpCircle, title: 'Privacy settings' },
@@ -151,6 +153,8 @@ export default function ProfileScreen() {
                   router.push('/profile/promotions');
                 } else if (item.title === 'Payment') {
                   router.push('/profile/payments');
+                } else if (item.title === 'Analytics') {
+                  router.push('/(client)/profile/analytics' as any);
                 }
               }}
             >
