@@ -1,5 +1,31 @@
 import type { Metadata } from "next";
-import "@100handy/ui/globals.css";
+import localFont from "next/font/local";
+import "./globals.css";
+
+const workSans = localFont({
+  src: [
+    { path: "../public/fonts/WorkSans-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../public/fonts/WorkSans-Medium.ttf", weight: "500", style: "normal" },
+    { path: "../public/fonts/WorkSans-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "../public/fonts/WorkSans-Bold.ttf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-work-sans",
+});
+
+const cardo = localFont({
+  src: [
+    { path: "../public/fonts/Cardo-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../public/fonts/Cardo-Bold.ttf", weight: "700", style: "normal" },
+    { path: "../public/fonts/Cardo-Italic.ttf", weight: "400", style: "italic" },
+  ],
+  variable: "--font-cardo",
+});
+
+const futura = localFont({
+  src: "../public/fonts/futura-medium.ttf",
+  variable: "--font-futura",
+  weight: "500",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -10,10 +36,12 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>): React.JSX.Element {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${workSans.variable} ${cardo.variable} ${futura.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }

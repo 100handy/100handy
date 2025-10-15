@@ -234,6 +234,12 @@ importers:
       '@types/pg':
         specifier: ^8.15.4
         version: 8.15.4
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       lucide-react:
         specifier: ^0.525.0
         version: 0.525.0(react@19.0.0)
@@ -249,6 +255,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
+      tailwind-merge:
+        specifier: ^3.3.1
+        version: 3.3.1
     devDependencies:
       '@100handy/eslint':
         specifier: workspace:*
@@ -268,6 +277,9 @@ importers:
       eslint:
         specifier: ^9.30.0
         version: 9.31.0(jiti@2.4.2)
+      tailwindcss:
+        specifier: ^4.1.11
+        version: 4.1.11
       typescript:
         specifier: 5.8.2
         version: 5.8.2
