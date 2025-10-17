@@ -1,38 +1,53 @@
-import { Search } from "lucide-react";
-import Image from "next/image";
+import Link from "next/link";
 
 interface HeaderProps {
-  showSearch?: boolean;
+  currentPage?: "get-10" | "book-task" | "my-tasks" | "account";
 }
 
-export default function Header({ showSearch = true }: HeaderProps) {
+export default function Header({ currentPage }: HeaderProps) {
   return (
-    <header className="bg-brand-dark border-b border-gray-500 border-opacity-20">
-      <div className="max-w-[1920px] mx-auto px-8">
+    <header className="bg-white border-b border-gray-200">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-8">
         <div className="flex items-center justify-between h-[70px]">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2">
-              <Image 
-                src="/logo-100-handy.svg" 
-                alt="100 HANDY" 
-                width={24} 
-                height={24}
-                className="text-white"
-              />
-              <div className="text-white font-bold text-base font-display">100 HANDY</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-12">
-            <button className="text-white font-bold text-base hover:text-brand-terracotta transition-colors">
-              Submit a request
-            </button>
-            <button className="text-white font-bold text-base hover:text-brand-terracotta transition-colors">
-              Sign in
-            </button>
-            {showSearch && (
-              <Search className="w-[14.56px] h-[14.56px] text-white" />
-            )}
-          </div>
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-brand-dark-alt font-bold text-lg sm:text-xl font-display">
+              100<span className="font-normal">HANDY</span>
+            </span>
+          </Link>
+          <nav className="flex items-center gap-6 lg:gap-8">
+            <Link
+              href="/get-10"
+              className={`font-bold hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
+                currentPage === "get-10" ? "text-brand-terracotta" : "text-brand-dark"
+              }`}
+            >
+              Get £10
+            </Link>
+            <Link
+              href="/book-task"
+              className={`font-bold hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
+                currentPage === "book-task" ? "text-brand-terracotta" : "text-brand-dark"
+              }`}
+            >
+              Book a Task
+            </Link>
+            <Link
+              href="/my-tasks"
+              className={`font-bold hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
+                currentPage === "my-tasks" ? "text-brand-terracotta" : "text-brand-dark"
+              }`}
+            >
+              My Tasks
+            </Link>
+            <Link
+              href="/account"
+              className={`font-bold hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
+                currentPage === "account" ? "text-brand-terracotta" : "text-brand-dark"
+              }`}
+            >
+              Account
+            </Link>
+          </nav>
         </div>
       </div>
     </header>
