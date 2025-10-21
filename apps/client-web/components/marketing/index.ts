@@ -1,0 +1,10 @@
+export { Header } from "./header";
+export { Hero } from "./hero";
+export { Services } from "./services";
+export { Stats } from "./stats";
+export { PopularProjects } from "./popular-projects";
+export { Testimonials } from "./testimonials";
+export { Guarantees } from "./guarantees";
+export { HowItWorks } from "./how-it-works";
+export { GetHelpToday } from "./get-help-today";
+export { Footer } from "./footer";

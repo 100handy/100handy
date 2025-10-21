@@ -1,0 +1,30 @@
+import React from "react";
+
+export function PeaceOfMindCard() {
+  return (
+    <div className="bg-white rounded-lg p-4 flex items-start gap-3 border border-gray-200">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-6 w-6 text-orange-500"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={1.5}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+        />
+      </svg>
+      <div>
+        <p className="text-[#30352D] text-sm leading-relaxed">
+          Always have peace of mind. All Taskers undergo ID checks.
+        </p>
+        <button className="text-[#C1856A] text-sm font-medium mt-1 hover:underline">
+          Learn More
+        </button>
+      </div>
+    </div>
+  );
+}

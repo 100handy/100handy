@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 interface HeaderProps {
-  currentPage?: "get-10" | "book-task" | "my-tasks" | "account";
+  currentPage?: "become-tasker" | "services" | "sign-up";
 }
 
 export default function Header({ currentPage }: HeaderProps) {
@@ -16,36 +16,28 @@ export default function Header({ currentPage }: HeaderProps) {
           </Link>
           <nav className="flex items-center gap-6 lg:gap-8">
             <Link
-              href="/get-10"
+              href="/become-tasker"
               className={`font-bold hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
-                currentPage === "get-10" ? "text-brand-terracotta" : "text-brand-dark"
+                currentPage === "become-tasker" ? "text-brand-terracotta" : "text-brand-dark"
               }`}
             >
-              Get £10
+              Become a Tasker
             </Link>
             <Link
-              href="/book-task"
+              href="/services"
               className={`font-bold hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
-                currentPage === "book-task" ? "text-brand-terracotta" : "text-brand-dark"
+                currentPage === "services" ? "text-brand-terracotta" : "text-brand-dark"
               }`}
             >
-              Book a Task
+              Services
             </Link>
             <Link
-              href="/my-tasks"
+              href="/sign-up"
               className={`font-bold hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
-                currentPage === "my-tasks" ? "text-brand-terracotta" : "text-brand-dark"
+                currentPage === "sign-up" ? "text-brand-terracotta" : "text-brand-dark"
               }`}
             >
-              My Tasks
-            </Link>
-            <Link
-              href="/account"
-              className={`font-bold hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
-                currentPage === "account" ? "text-brand-terracotta" : "text-brand-dark"
-              }`}
-            >
-              Account
+              Sign up / Log in
             </Link>
           </nav>
         </div>
