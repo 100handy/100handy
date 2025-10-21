@@ -14,7 +14,7 @@ import { Label } from "@100handy/ui/components/label";
 import { useState } from "react";
 import Image from "next/image";
 import { Loader2, X } from "lucide-react";
-import { authClient } from "../../lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 export default function SignUp() {

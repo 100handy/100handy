@@ -13,7 +13,7 @@ import { Label } from "@100handy/ui/components/label";
 import { Checkbox } from "@100handy/ui/components/checkbox";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { authClient } from "../lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 
 export default function SignIn() {
