@@ -36,7 +36,7 @@ export default function SignIn() {
           alert(ctx.error.message || "Failed to sign in");
         },
         onSuccess: async () => {
-          router.push("/dashboard");
+          router.push("/");
         },
       }
     );

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Loader2, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -19,13 +20,22 @@ export default function ForgotPassword() {
     
     setLoading(true);
     
-    // Simulate password reset API call
-    setTimeout(() => {
+    try {
+      // Use Supabase auth through authClient wrapper
+      await authClient.resetPassword.email(email, {
+        onSuccess: () => {
+          setSubmitted(true);
+        },
+        onError: (ctx) => {
+          console.error("Password reset error:", ctx.error.message);
+          alert(ctx.error.message || "Failed to send reset email");
+        },
+      });
+    } catch (error) {
+      console.error("Password reset error:", error);
+    } finally {
       setLoading(false);
-      setSubmitted(true);
-      // Handle password reset logic here
-      console.log("Password reset email sent to:", email);
-    }, 1500);
+    }
   };
 
   return (

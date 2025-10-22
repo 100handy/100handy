@@ -3,7 +3,9 @@
 import { Mail, Phone, Home, User, Menu, ShieldCheck, Check, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -21,6 +23,7 @@ import {
 } from "@/components/ui/select";
 
 export default function AccountPage() {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState("profile");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isEditingVat, setIsEditingVat] = useState(false);
@@ -69,6 +72,22 @@ export default function AccountPage() {
         [type]: !prev[category][type],
       },
     }));
+  };
+
+  const handleLogOut = async () => {
+    try {
+      await authClient.signOut({
+        onSuccess: () => {
+          router.push("/sign-in");
+        },
+        onError: (ctx) => {
+          console.error("Sign out error:", ctx.error.message);
+          alert(ctx.error.message || "Failed to sign out");
+        },
+      });
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
   };
 
   const CheckboxIcon = ({ checked }: { checked: boolean }) => (
@@ -149,6 +168,7 @@ export default function AccountPage() {
                   <div className="pt-2 sm:pt-4">
                     <Button
                       variant="outline"
+                      onClick={handleLogOut}
                       className="text-brand-dark border-gray-300 hover:bg-gray-50 w-full sm:w-auto"
                     >
                       Log Out

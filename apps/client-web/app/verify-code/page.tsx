@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Loader2, ChevronLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 
 export default function VerifyCode() {
   const [code, setCode] = useState("");
@@ -20,19 +21,37 @@ export default function VerifyCode() {
     
     setLoading(true);
     
-    // Simulate verification API call
-    setTimeout(() => {
+    try {
+      await authClient.verifyOTP(phoneNumber, code, {
+        onSuccess: () => {
+          router.push("/dashboard");
+        },
+        onError: (ctx) => {
+          console.error("OTP verification error:", ctx.error.message);
+          alert(ctx.error.message || "Failed to verify code");
+        },
+      });
+    } catch (error) {
+      console.error("OTP verification error:", error);
+    } finally {
       setLoading(false);
-      // Handle verification logic here
-      console.log("Verification code:", code);
-      // router.push("/dashboard");
-    }, 1500);
+    }
   };
 
-  const handleResendCode = () => {
-    // Handle resend code logic
-    console.log("Resending code...");
-    alert("Verification code resent!");
+  const handleResendCode = async () => {
+    try {
+      await authClient.resendOTP(phoneNumber, {
+        onSuccess: () => {
+          alert("Verification code resent!");
+        },
+        onError: (ctx) => {
+          console.error("Resend OTP error:", ctx.error.message);
+          alert(ctx.error.message || "Failed to resend code");
+        },
+      });
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+    }
   };
 
   return (

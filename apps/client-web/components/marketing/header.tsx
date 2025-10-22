@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { UserMenu } from "@/components/auth/user-menu";
 
 export function Header() {
   return (
@@ -22,20 +23,15 @@ export function Header() {
             Services
           </Link>
           <Link
-            href="/sign-in"
+            href="/become-tasker"
             className="text-[16px] font-bold text-[#30352D] transition-colors hover:text-brand-terracotta"
           >
-            Sign up / Log in
+            Become a Tasker
           </Link>
         </nav>
 
-        {/* Become a Tasker Button */}
-        <Link
-          href="/become-tasker"
-          className="rounded-md border-2 border-brand-terracotta bg-white px-6 py-2 text-[16px] font-bold text-brand-terracotta transition-colors hover:bg-brand-terracotta/5"
-        >
-          Become a Tasker
-        </Link>
+        {/* User Menu - Shows Sign In/Up or User Profile */}
+        <UserMenu />
       </div>
     </header>
   );

@@ -9,6 +9,13 @@ import { Loader2, ChevronDown } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
@@ -16,9 +23,11 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [countryCode, setCountryCode] = useState("+44");
   const [postCode, setPostCode] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const router = useRouter();
 
@@ -48,7 +57,8 @@ export default function SignUp() {
           alert(ctx.error.message || "Failed to create account");
         },
         onSuccess: async () => {
-          router.push("/dashboard");
+          // Show confirmation message instead of redirecting
+          setShowConfirmation(true);
         },
       }
     );
@@ -72,6 +82,64 @@ export default function SignUp() {
       {/* Centered Form Card */}
       <div className="relative z-10 w-full max-w-[560px] px-4 py-8">
         <div className="bg-white rounded-[12px] shadow-2xl px-12 py-8">
+          {showConfirmation ? (
+            <>
+              {/* Email Confirmation Message */}
+              <div className="text-center py-8">
+                {/* Success Icon */}
+                <div className="mb-6 flex justify-center">
+                  <div className="w-16 h-16 bg-[#C1856A]/10 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-8 h-8 text-[#C1856A]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                <h2 className="text-[24px] font-semibold text-[#30352d] mb-3">
+                  Check your email
+                </h2>
+                <p className="text-[15px] text-[#30352d]/80 leading-relaxed mb-4">
+                  We've sent a confirmation link to
+                </p>
+                <p className="text-[15px] font-semibold text-[#30352d] mb-6">
+                  {email}
+                </p>
+                <p className="text-[15px] text-[#30352d]/80 leading-relaxed mb-8">
+                  Click the link in the email to activate your account.
+                  <br />
+                  If you don't see it, check your spam folder.
+                </p>
+
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => router.push("/sign-in")}
+                    className="w-full h-12 bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90 text-[18px] font-bold rounded-md shadow-sm"
+                    variant="outline"
+                  >
+                    Go to Sign In
+                  </Button>
+                  <button
+                    onClick={() => setShowConfirmation(false)}
+                    className="w-full text-[#30352d] text-[14px] hover:underline"
+                  >
+                    Resend confirmation email
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
             {/* Logo */}
             <div className="text-center mb-6">
               <h1 className="text-[40px] text-[#30352d]">
@@ -163,15 +231,30 @@ export default function SignUp() {
                   Phone Number
                 </label>
                 <div className="flex items-center gap-2 border-0 border-b border-gray-300 pb-1">
-                  <Image
-                    src="/images/uk-flag.png"
-                    alt="UK"
-                    width={28}
-                    height={17}
-                    className="flex-shrink-0"
-                  />
-                  <span className="text-[15px] font-bold text-[#30352d]">+ 44</span>
-                  <ChevronDown className="w-4 h-4 text-[#30352d]" />
+                  <Select value={countryCode} onValueChange={setCountryCode}>
+                    <SelectTrigger className="w-[100px] border-0 shadow-none focus:ring-0 h-auto p-0">
+                      <SelectValue>
+                        <div className="flex items-center gap-1">
+                          <span className="text-lg">{countryCode === "+44" ? "🇬🇧" : "🇮🇳"}</span>
+                          <span className="text-[15px] font-bold text-[#30352d]">{countryCode}</span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="+44">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🇬🇧</span>
+                          <span>+44 (UK)</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="+91">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🇮🇳</span>
+                          <span>+91 (India)</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Input
                     id="phone"
                     type="tel"
@@ -270,6 +353,8 @@ export default function SignUp() {
                 </Link>
               </p>
             </div>
+          </>
+          )}
           </div>
         </div>
       </div>
