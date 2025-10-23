@@ -7,6 +7,8 @@ import { Link, LinkText } from "@/components/ui/link";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { signInWithProvider } from "@shared/supabase/auth";
+import { useToast } from "@/components/ui/toast";
+import * as WebBrowser from "expo-web-browser";
 
 import TaskHelperLogo from "../assets/images/task-helper-logo.svg";
 import GoogleLogo from "../assets/images/google-logo.svg";
@@ -14,17 +16,40 @@ import AppleLogo from "../assets/images/apple-logo.svg";
 import FacebookLogo from "../assets/images/facebook-logo.svg";
 import { SafeAreaView, StatusBar } from "react-native";
 
+// Ensure the browser session completes properly
+WebBrowser.maybeCompleteAuthSession();
+
 export default function Index() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   const handleSocialLogin = async (provider: 'google' | 'apple' | 'facebook') => {
     try {
       setLoading(true);
-      await signInWithProvider(provider);
-      // The redirect will be handled by Supabase OAuth flow
+      
+      // Get OAuth URL from Supabase
+      const { url } = await signInWithProvider(provider);
+      
+      if (!url) {
+        throw new Error('No OAuth URL returned from Supabase');
+      }
+
+      // Open OAuth flow in browser - on mobile this returns the URL for manual handling
+      const result = await WebBrowser.openAuthSessionAsync(
+        url,
+        'handy://auth/callback',
+        { showInRecents: true }
+      );
+
+      console.log('OAuth result:', result);
+
+      // The auth callback route will handle the session
+      // No need to do anything here as AuthWrapper will detect the session change
     } catch (error) {
       console.error('Social login error:', error);
+      toast.error('Sign in failed', error instanceof Error ? error.message : `Failed to sign in with ${provider}`);
+    } finally {
       setLoading(false);
     }
   };

@@ -1,13 +1,39 @@
-// packages/shared/supabase/auth.ts - UPDATED
-// Auto-detect platform and import correct client
-let supabase: any;
-if (typeof window !== 'undefined') {
-  // Web environment
-  supabase = require('./supabaseClient').supabase;
-} else {
-  // Native environment
-  supabase = require('./supabaseClient.native').supabase;
-}
+// packages/shared/supabase/auth.ts
+/**
+ * Cross-Platform Authentication Functions
+ * 
+ * This module provides authentication functions that work across both web and mobile platforms.
+ * The Supabase client is automatically resolved based on platform:
+ *   - Mobile: supabaseClient.native.ts (uses AsyncStorage)
+ *   - Web: supabaseClient.ts (uses browser storage)
+ * 
+ * CROSS-PLATFORM FUNCTIONS (work on both web and mobile):
+ *   ✅ signUp() - Email/password registration
+ *   ✅ signIn() - Email/password login
+ *   ✅ sendMagicLink() - Passwordless login via email
+ *   ✅ resetPasswordForEmail() - Request password reset
+ *   ✅ updatePassword() - Set new password
+ *   ✅ signOut() - Log out user
+ *   ✅ getSession() - Get current session
+ *   ✅ signUpWithPhone() - Phone number registration (requires SMS provider)
+ *   ✅ verifyOTP() - Verify phone OTP
+ *   ✅ resendOTP() - Resend phone OTP
+ * 
+ * PLATFORM-AWARE FUNCTIONS (behave differently per platform):
+ *   ⚙️ signInWithProvider() - OAuth login
+ *      - Web: Auto-redirects in browser
+ *      - Mobile: Returns URL for manual handling with expo-web-browser
+ * 
+ * PLATFORM DETECTION:
+ *   Uses `typeof window.document === 'undefined'` to detect React Native
+ *   React Native has window but not window.document
+ * 
+ * IMPORTANT NOTES:
+ *   - OAuth on mobile requires expo-web-browser for proper handling
+ *   - Deep links configured in apps/client-mobile/app.json (scheme: "handy")
+ *   - Redirect URLs configured in supabase/config.toml
+ */
+import { supabase } from './supabaseClient';
 
 export interface SignUpData {
   email: string;
@@ -31,7 +57,7 @@ export async function signUp(signUpData: SignUpData) {
     password,
     options: {
       data: options?.data,
-      emailRedirectTo: `${getRedirectUrl()}/auth/callback`,
+      emailRedirectTo: getRedirectUrl(),
     },
   });
   if (error) throw error;
@@ -47,7 +73,7 @@ export async function signIn(email: string, password: string) {
 export async function sendMagicLink(email: string) {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${getRedirectUrl()}/auth/callback` }
+    options: { emailRedirectTo: getRedirectUrl() }
   });
   if (error) throw error;
   return data;
@@ -60,7 +86,7 @@ export async function getSession() {
 // ✅ NEW: Forgot Password
 export async function resetPasswordForEmail(email: string) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${getRedirectUrl()}/auth/callback?next=/reset-password`,
+    redirectTo: getRedirectUrl(),
   });
   if (error) throw error;
   return data;
@@ -113,32 +139,81 @@ export async function resendOTP(phone: string) {
 }
 
 /**
- * Get the base URL for redirects
+ * Get the platform-appropriate redirect URL for auth callbacks
  * 
- * For production: Set NEXT_PUBLIC_SITE_URL (web) or EXPO_PUBLIC_SITE_URL (mobile)
- * For development: Uses localhost automatically
+ * PLATFORM-AWARE: Automatically detects web vs mobile and returns the correct URL
  * 
- * Example: NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+ * Mobile (React Native):
+ *   - Returns: 'handy://auth/callback' (deep link)
+ *   - Configured in: apps/client-mobile/app.json (scheme)
+ *   - Handled by: apps/client-mobile/app/auth/callback.tsx
+ * 
+ * Web (Next.js):
+ *   - Production: Uses NEXT_PUBLIC_SITE_URL environment variable
+ *   - Development: Uses current window.location.origin
+ *   - Handled by: apps/client-web/app/auth/callback route
+ * 
+ * Environment Variables:
+ *   - NEXT_PUBLIC_SITE_URL=https://yourdomain.com (web production)
+ *   - No env var needed for mobile (uses scheme from app.json)
+ * 
+ * @returns {string} Platform-appropriate callback URL
  */
 function getRedirectUrl() {
+  // Platform detection: React Native has window but not window.document
+  const isReactNative = typeof window !== 'undefined' && typeof window.document === 'undefined';
+  
+  if (isReactNative) {
+    // Mobile: use deep link scheme defined in app.json
+    return 'handy://auth/callback';
+  }
+  
   // Web: use environment variable for production, fallback to current origin for development
   if (typeof window !== 'undefined') {
-    const productionUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.EXPO_PUBLIC_SITE_URL;
+    const productionUrl = process.env.NEXT_PUBLIC_SITE_URL;
     if (productionUrl) {
-      return productionUrl;
+      return `${productionUrl}/auth/callback`;
     }
-    return window.location.origin;
+    return `${window.location.origin}/auth/callback`;
   }
-  // Mobile: your custom scheme (base URL without path)
-  return 'handy://';
+  
+  // Fallback for SSR (shouldn't reach here in normal flow)
+  return 'http://localhost:3000/auth/callback';
 }
 
+/**
+ * Sign in with OAuth provider (Google, Apple, Facebook)
+ * 
+ * PLATFORM-AWARE:
+ * - Web: Automatically redirects in browser (skipBrowserRedirect: false)
+ * - Mobile: Returns URL for manual handling (skipBrowserRedirect: true)
+ * 
+ * @example Mobile usage:
+ * ```typescript
+ * const data = await signInWithProvider('google');
+ * if (data.url) {
+ *   // Mobile: Open URL with expo-web-browser
+ *   await WebBrowser.openAuthSessionAsync(data.url, 'handy://auth/callback');
+ * }
+ * ```
+ * 
+ * @example Web usage:
+ * ```typescript
+ * await signInWithProvider('google');
+ * // Browser automatically redirects, no additional handling needed
+ * ```
+ */
 export async function signInWithProvider(provider: 'google' | 'apple' | 'facebook') {
+  // Platform detection: React Native has window but not window.document
+  const isReactNative = typeof window !== 'undefined' && typeof window.document === 'undefined';
+  
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${getRedirectUrl()}/auth/callback`,
-      skipBrowserRedirect: false,
+      redirectTo: getRedirectUrl(),
+      // Mobile needs the URL returned for manual handling
+      // Web can auto-redirect in the browser
+      skipBrowserRedirect: isReactNative,
     }
   });
   if (error) throw error;

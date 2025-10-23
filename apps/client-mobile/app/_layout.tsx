@@ -4,6 +4,7 @@ import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { SplashScreen } from "expo-router";
+import { AppState } from "react-native";
 import * as Linking from "expo-linking";
 import { supabase } from "@shared/supabase/supabaseClient";
 import { AuthWrapper } from "@/components/AuthWrapper";
@@ -34,13 +35,36 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
+  // AppState listener for token auto-refresh
+  // This tells Supabase Auth to continuously refresh the session automatically if
+  // the app is in the foreground. When this is added, you will continue to receive
+  // `onAuthStateChange` events with the `TOKEN_REFRESHED` or `SIGNED_OUT` event
+  // if the user's session is terminated. This should only be registered once.
   useEffect(() => {
-    const sub = Linking.addEventListener('url', async ({ url }) => {
-      // supabase-js v2 in RN will parse the url if you call this:
-      await supabase.auth.startAutoRefresh();
-      // navigate as needed
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        supabase.auth.startAutoRefresh();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
     });
-    return () => sub.remove();
+
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
+
+  // Deep link listener for auth callbacks (email verification, password reset, OAuth)
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', async ({ url }) => {
+      console.log('Deep link received:', url);
+      // Expo Router will automatically handle the routing to /auth/callback
+      // which will be created next
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   // Prevent rendering until the font has loaded or an error was returned

@@ -10,20 +10,22 @@ import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import SignInForm from '@/components/auth/SignInForm';
 import { signIn } from '@shared/supabase/auth';
+import { type SignInFormData } from '@shared/schemas/auth';
 import AuthFooter from '@/components/auth/AuthFooter';
+import { useToast } from '@/components/ui/toast';
 
 export default function ProfessionalSignIn() {
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
-  const handleSignIn = async (data: { email: string, password: string }): Promise<void> => {
+  const handleSignIn = async (data: SignInFormData): Promise<void> => {
     setIsLoading(true);
     try {
       await signIn(data.email, data.password);
-      // Navigate to the professional's dashboard or home screen upon successful sign-in
-      router.replace('/(tabs)/home');
+      // AuthWrapper will handle navigation automatically
     } catch (error) {
       console.error('Sign in error:', error);
-      // You can add more specific error handling here, like showing an alert
+      toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }

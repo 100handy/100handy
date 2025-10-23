@@ -1,25 +1,43 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { type SignUpData } from '@shared/supabase/auth';
+import { type SignUpData, signUp } from '@shared/supabase/auth';
 import SignUpForm from '@/components/auth/SignUpForm';
+import { useToast } from '@/components/ui/toast';
 
 export default function ProfessionalSignUp() {
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
   const handleSignUp = async (data: SignUpData): Promise<void> => {
-    // Navigate to verify info screen
-    console.log('SignUp data:', data);
-    router.push('/(auth)/(professional)/verify-info');
+    try {
+      setIsLoading(true);
+      const result = await signUp(data);
+      
+      // Check if email confirmation is required
+      if (result.user && !result.user.email_confirmed_at) {
+        // Email verification required - navigate to verification screen
+        router.push({
+          pathname: '/(auth)/verify-email',
+          params: { email: data.email },
+        });
+      } else {
+        // No email verification required (instant confirm) - go to verification flow
+        router.push('/(auth)/(professional)/verify-info');
+      }
+    } catch (error) {
+      console.error('Professional SignUp error:', error);
+      toast.error('Sign up failed', error instanceof Error ? error.message : 'Please try again');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

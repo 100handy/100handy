@@ -8,11 +8,17 @@ interface AuthState {
   session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isEmailVerified: boolean;
+  hasCompletedOnboarding: boolean;
+  userRole: 'customer' | 'handy' | null;
+  authSubscription: { unsubscribe: () => void } | null;
   initialize: () => Promise<void>;
+  cleanup: () => void;
   setUser: (user: User | null) => void;
   setSession: (session: Session | null) => void;
   signOut: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
+  updateOnboardingStatus: (completed: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -20,9 +26,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   isLoading: true,
   isAuthenticated: false,
+  isEmailVerified: false,
+  hasCompletedOnboarding: false,
+  userRole: null,
+  authSubscription: null,
 
   initialize: async () => {
     try {
+      // Clean up any existing subscription first
+      const state = get();
+      if (state.authSubscription) {
+        state.authSubscription.unsubscribe();
+      }
+
       set({ isLoading: true });
       
       // Get initial session
@@ -30,47 +46,79 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       if (error) {
         console.error('Error getting session:', error);
-        set({ user: null, session: null, isAuthenticated: false, isLoading: false });
+        set({ user: null, session: null, isAuthenticated: false, isEmailVerified: false, userRole: null, isLoading: false });
         return;
       }
 
+      const user = session?.user;
+      const metadata = user?.user_metadata;
+
       set({
-        user: session?.user || null,
+        user: user || null,
         session,
-        isAuthenticated: !!session?.user,
+        isAuthenticated: !!user,
+        isEmailVerified: !!user?.email_confirmed_at,
+        hasCompletedOnboarding: metadata?.onboarding_completed || false,
+        userRole: metadata?.role || null,
         isLoading: false
       });
 
-      // Listen for auth changes
-      supabase.auth.onAuthStateChange((event, session) => {
+      // Listen for auth changes and store the subscription
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
+        const user = session?.user;
+        const metadata = user?.user_metadata;
+
         set({
-          user: session?.user || null,
+          user: user || null,
           session,
-          isAuthenticated: !!session?.user,
+          isAuthenticated: !!user,
+          isEmailVerified: !!user?.email_confirmed_at,
+          hasCompletedOnboarding: metadata?.onboarding_completed || false,
+          userRole: metadata?.role || null,
           isLoading: false
         });
       });
+
+      // Store subscription for cleanup
+      set({ authSubscription: subscription });
     } catch (error) {
       console.error('Error initializing auth:', error);
       set({ user: null, session: null, isAuthenticated: false, isLoading: false });
     }
   },
 
+  cleanup: () => {
+    const state = get();
+    if (state.authSubscription) {
+      state.authSubscription.unsubscribe();
+      set({ authSubscription: null });
+    }
+  },
+
   setUser: (user) => {
+    const metadata = user?.user_metadata;
     set({ 
       user, 
       isAuthenticated: !!user,
+      isEmailVerified: !!user?.email_confirmed_at,
+      hasCompletedOnboarding: metadata?.onboarding_completed || false,
+      userRole: metadata?.role || null,
       isLoading: false 
     });
   },
 
   setSession: (session) => {
+    const user = session?.user;
+    const metadata = user?.user_metadata;
     set({ 
       session, 
-      user: session?.user || null,
-      isAuthenticated: !!session?.user,
+      user: user || null,
+      isAuthenticated: !!user,
+      isEmailVerified: !!user?.email_confirmed_at,
+      hasCompletedOnboarding: metadata?.onboarding_completed || false,
+      userRole: metadata?.role || null,
       isLoading: false 
     });
   },
@@ -90,11 +138,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         user: null,
         session: null,
         isAuthenticated: false,
+        isEmailVerified: false,
+        hasCompletedOnboarding: false,
+        userRole: null,
         isLoading: false
       });
     } catch (error) {
       set({ isLoading: false });
       throw error;
+    }
+  },
+
+  updateOnboardingStatus: (completed: boolean) => {
+    const state = get();
+    if (state.user) {
+      set({ hasCompletedOnboarding: completed });
     }
   },
 
@@ -107,12 +165,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return false;
       }
 
-      const isAuthenticated = !!session?.user;
+      const user = session?.user;
+      const metadata = user?.user_metadata;
+      const isAuthenticated = !!user;
       
       set({
-        user: session?.user || null,
+        user: user || null,
         session,
         isAuthenticated,
+        isEmailVerified: !!user?.email_confirmed_at,
+        hasCompletedOnboarding: metadata?.onboarding_completed || false,
+        userRole: metadata?.role || null,
         isLoading: false
       });
 

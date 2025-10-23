@@ -6,3 +6,17 @@ export * from './store';
 
 // Query exports
 export * from './query';
+
+// Schema exports - explicitly re-export to avoid conflicts
+export {
+  signInSchema,
+  signUpSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  otpSchema,
+  type SignInFormData,
+  type SignUpFormData,
+  type ForgotPasswordFormData,
+  type ResetPasswordFormData,
+  type OtpFormData,
+} from './schemas/auth';

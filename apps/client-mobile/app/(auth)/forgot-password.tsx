@@ -1,0 +1,187 @@
+import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView } from 'react-native';
+import { Box } from '@/components/ui/box';
+import { VStack } from '@/components/ui/vstack';
+import { HStack } from '@/components/ui/hstack';
+import { Text } from '@/components/ui/text';
+import { Input, InputField } from '@/components/ui/input';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Pressable } from '@/components/ui/pressable';
+import { ChevronLeft } from 'lucide-react-native';
+import { router } from 'expo-router';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { forgotPasswordSchema, type ForgotPasswordFormData } from '@shared/schemas/auth';
+import { resetPasswordForEmail } from '@shared/supabase/auth';
+import { useToast } from '@/components/ui/toast';
+
+export default function ForgotPassword() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const toast = useToast();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+    getValues,
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: 'onChange',
+  });
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    try {
+      setIsLoading(true);
+      await resetPasswordForEmail(data.email);
+      setEmailSent(true);
+      toast.success('Email sent', 'Check your inbox for password reset instructions');
+    } catch (error) {
+      console.error('Password reset error:', error);
+      toast.error('Failed to send email', error instanceof Error ? error.message : 'Please try again');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = () => {
+    handleSubmit(onSubmit)();
+  };
+
+  if (emailSent) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <VStack className="flex-1 justify-center items-center px-6">
+          <Text className="text-2xl font-worksans-bold text-center mb-4" style={{ color: '#30352D' }}>
+            Check your email
+          </Text>
+          <Text className="text-base font-worksans text-center text-typography-600 mb-2 leading-6">
+            We've sent password reset instructions to
+          </Text>
+          <Text className="text-base font-worksans-semibold text-center mb-8" style={{ color: '#30352D' }}>
+            {getValues('email')}
+          </Text>
+          <Button
+            className="w-full max-w-sm rounded-full mb-4"
+            style={{ backgroundColor: '#A3B899' }}
+            onPress={handleResend}
+            isDisabled={isLoading}
+          >
+            <ButtonText className="text-white text-base font-worksans-bold">
+              {isLoading ? 'Sending...' : 'Resend email'}
+            </ButtonText>
+          </Button>
+          <Pressable onPress={() => router.back()} className="mt-4">
+            <Text className="text-sm font-worksans-medium" style={{ color: '#C1856A' }}>
+              Back to sign in
+            </Text>
+          </Pressable>
+        </VStack>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <Box className="flex-1 bg-white">
+      <SafeAreaView className="flex-1">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <VStack className="flex-1">
+            {/* Header */}
+            <HStack className="items-center justify-between px-5 pt-2 pb-4">
+              <Pressable onPress={() => router.back()}>
+                <ChevronLeft size={24} color="#333A31" />
+              </Pressable>
+              <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
+                Reset Password
+              </Text>
+              <Box className="w-6" />
+            </HStack>
+
+            {/* Logo */}
+            <Box className="items-center my-12">
+              <VStack className="items-center">
+                <Text className="text-5xl font-cardo-regular tracking-widest" style={{ color: '#30352D' }}>
+                  100
+                </Text>
+                <Text className="text-5xl font-cardo-bold tracking-widest" style={{ color: '#30352D' }}>
+                  HANDY
+                </Text>
+              </VStack>
+            </Box>
+
+            {/* Description */}
+            <Box className="px-5 mb-6">
+              <Text className="text-base font-worksans text-typography-600 text-center leading-6">
+                Enter your email address and we'll send you instructions to reset your password.
+              </Text>
+            </Box>
+
+            {/* Form */}
+            <Box className="px-5">
+              <Box className="mb-3">
+                <Controller
+                  control={control}
+                  name="email"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <Box>
+                      <Input
+                        variant="outline"
+                        className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
+                      >
+                        <InputField
+                          className="font-worksans text-[15px]"
+                          style={{ color: '#30352D' }}
+                          value={value}
+                          onChangeText={onChange}
+                          onBlur={onBlur}
+                          placeholder="Email"
+                          placeholderTextColor="#9CA3AF"
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                        />
+                      </Input>
+                      {errors.email && (
+                        <Text className="text-xs text-red-600 mt-1 font-worksans">
+                          {errors.email.message}
+                        </Text>
+                      )}
+                    </Box>
+                  )}
+                />
+              </Box>
+
+              <Button
+                className="rounded-full shadow-sm my-6"
+                style={{
+                  backgroundColor: isValid ? '#C1856A' : '#E5E7EB',
+                }}
+                onPress={handleSubmit(onSubmit)}
+                isDisabled={!isValid || isLoading}
+              >
+                <ButtonText
+                  className="text-[18px] font-worksans-bold"
+                  style={{ color: isValid ? 'white' : '#B7B7B7' }}
+                >
+                  {isLoading ? 'Sending...' : 'Send reset link'}
+                </ButtonText>
+              </Button>
+
+              <Pressable onPress={() => router.back()} className="mt-4">
+                <Text className="text-center text-sm font-worksans-medium" style={{ color: '#30352D' }}>
+                  Remember your password?{' '}
+                  <Text style={{ color: '#C1856A' }}>Sign in</Text>
+                </Text>
+              </Pressable>
+            </Box>
+          </VStack>
+        </ScrollView>
+      </SafeAreaView>
+    </Box>
+  );
+}
+
