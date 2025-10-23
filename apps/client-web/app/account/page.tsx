@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -78,11 +79,12 @@ export default function AccountPage() {
     try {
       await authClient.signOut({
         onSuccess: () => {
+          toast.success("Signed out successfully");
           router.push("/sign-in");
         },
         onError: (ctx) => {
           console.error("Sign out error:", ctx.error.message);
-          alert(ctx.error.message || "Failed to sign out");
+          toast.error(ctx.error.message || "Failed to sign out");
         },
       });
     } catch (error) {

@@ -16,34 +16,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signUpSchema, type SignUpFormData } from "@shared/schemas/auth";
 
 export default function SignUp() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [countryCode, setCountryCode] = useState("+44");
-  const [postCode, setPostCode] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmedEmail, setConfirmedEmail] = useState("");
 
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    watch,
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    mode: "onChange",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      phone: "",
+      postcode: "",
+    },
+  });
+
+  const email = watch("email");
+
+  const onSubmit = async (formData: SignUpFormData) => {
     if (!agreedToTerms) {
-      alert("Please agree to the Terms of Service and Privacy Policy");
+      toast.error("Please agree to the Terms of Service and Privacy Policy");
       return;
     }
 
     await authClient.signUp.email(
       {
-        email,
-        password,
-        name: `${firstName} ${lastName}`,
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`,
+        phone: `${countryCode}${formData.phone}`,
+        postcode: formData.postcode,
       },
       {
         onRequest: () => {
@@ -54,10 +73,11 @@ export default function SignUp() {
         },
         onError: (ctx: { error: { message: string } }) => {
           console.error(ctx.error.message);
-          alert(ctx.error.message || "Failed to create account");
+          toast.error(ctx.error.message || "Failed to create account");
         },
         onSuccess: async () => {
           // Show confirmation message instead of redirecting
+          setConfirmedEmail(formData.email);
           setShowConfirmation(true);
         },
       }
@@ -112,7 +132,7 @@ export default function SignUp() {
                   We've sent a confirmation link to
                 </p>
                 <p className="text-[15px] font-semibold text-[#30352d] mb-6">
-                  {email}
+                  {confirmedEmail}
                 </p>
                 <p className="text-[15px] text-[#30352d]/80 leading-relaxed mb-8">
                   Click the link in the email to activate your account.
@@ -149,7 +169,7 @@ export default function SignUp() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* First Name and Last Name Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -162,11 +182,14 @@ export default function SignUp() {
                   <Input
                     id="first-name"
                     type="text"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    {...register("firstName")}
                     className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
                   />
+                  {errors.firstName && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.firstName.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -178,11 +201,14 @@ export default function SignUp() {
                   <Input
                     id="last-name"
                     type="text"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    {...register("lastName")}
                     className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
                   />
+                  {errors.lastName && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.lastName.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -197,11 +223,14 @@ export default function SignUp() {
                 <Input
                   id="email"
                   type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register("email")}
                   className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
                 />
+                {errors.email && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               {/* Password */}
@@ -215,11 +244,14 @@ export default function SignUp() {
                 <Input
                   id="password"
                   type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password")}
                   className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
                 />
+                {errors.password && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               {/* Phone Number */}
@@ -258,11 +290,15 @@ export default function SignUp() {
                   <Input
                     id="phone"
                     type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    {...register("phone")}
                     className="flex-1 border-0 rounded-none px-0 focus-visible:ring-0 shadow-none h-auto py-0"
                   />
                 </div>
+                {errors.phone && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
 
               {/* Post Code */}
@@ -276,10 +312,14 @@ export default function SignUp() {
                 <Input
                   id="postcode"
                   type="text"
-                  value={postCode}
-                  onChange={(e) => setPostCode(e.target.value)}
+                  {...register("postcode")}
                   className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
                 />
+                {errors.postcode && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {errors.postcode.message}
+                  </p>
+                )}
               </div>
 
               {/* Help Text */}
@@ -324,9 +364,9 @@ export default function SignUp() {
               <div className="pt-1">
                 <Button
                   type="submit"
-                  disabled={loading || !agreedToTerms}
+                  disabled={loading || !agreedToTerms || !isValid}
                   className={`w-full h-11 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
-                    !loading && agreedToTerms && firstName && lastName && email && password
+                    !loading && agreedToTerms && isValid
                       ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
                       : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
                   }`}

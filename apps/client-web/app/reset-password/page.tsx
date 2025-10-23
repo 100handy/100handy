@@ -8,49 +8,49 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { resetPasswordSchema, type ResetPasswordFormData } from "@shared/schemas/auth";
 
 export default function ResetPassword() {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: "onChange",
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-    // Validate passwords match
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    // Validate password length
-    if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
-
+  const onSubmit = async (data: ResetPasswordFormData) => {
     setLoading(true);
 
     try {
       // Use Supabase auth to update password
-      await authClient.updatePassword(newPassword, {
+      await authClient.updatePassword(data.password, {
         onSuccess: () => {
           setSuccess(true);
+          toast.success("Password reset successful!");
         },
         onError: (ctx) => {
-          setError(ctx.error.message || "Failed to reset password");
+          toast.error(ctx.error.message || "Failed to reset password");
         },
       });
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to reset password");
+      toast.error(error instanceof Error ? error.message : "Failed to reset password");
     } finally {
       setLoading(false);
     }
@@ -95,7 +95,7 @@ export default function ResetPassword() {
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 {/* New Password */}
                 <div>
                   <label
@@ -109,9 +109,7 @@ export default function ResetPassword() {
                       id="new-password"
                       type={showNewPassword ? "text" : "password"}
                       placeholder="Enter new password"
-                      required
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      {...register("password")}
                       className="w-full h-12 border border-gray-300 rounded-md px-4 pr-12 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
                     />
                     <button
@@ -126,6 +124,11 @@ export default function ResetPassword() {
                       )}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Confirm Password */}
@@ -141,9 +144,7 @@ export default function ResetPassword() {
                       id="confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm new password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      {...register("confirmPassword")}
                       className="w-full h-12 border border-gray-300 rounded-md px-4 pr-12 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
                     />
                     <button
@@ -158,19 +159,17 @@ export default function ResetPassword() {
                       )}
                     </button>
                   </div>
+                  {errors.confirmPassword && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
                 </div>
-
-                {/* Error Message */}
-                {error && (
-                  <div className="text-center text-red-500 text-[14px]">
-                    {error}
-                  </div>
-                )}
 
                 {/* Password Requirements */}
                 <div className="bg-gray-50 rounded-md p-4">
                   <p className="text-[13px] text-[#30352d]/70 leading-relaxed">
-                    Password must be at least 8 characters long
+                    Password must be at least 8 characters long and contain uppercase, lowercase, and numbers
                   </p>
                 </div>
 
@@ -178,9 +177,9 @@ export default function ResetPassword() {
                 <div className="pt-2">
                   <Button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !isValid}
                     className={`w-full h-12 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
-                      !loading && newPassword && confirmPassword
+                      !loading && isValid
                         ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
                         : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
                     }`}

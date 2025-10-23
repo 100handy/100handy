@@ -8,27 +8,43 @@ import { Loader2, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { forgotPasswordSchema, type ForgotPasswordFormData } from "@shared/schemas/auth";
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    watch,
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const email = watch("email");
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
     setLoading(true);
     
     try {
       // Use Supabase auth through authClient wrapper
-      await authClient.resetPassword.email(email, {
+      await authClient.resetPassword.email(data.email, {
         onSuccess: () => {
           setSubmitted(true);
         },
         onError: (ctx) => {
           console.error("Password reset error:", ctx.error.message);
-          alert(ctx.error.message || "Failed to send reset email");
+          toast.error(ctx.error.message || "Failed to send reset email");
         },
       });
     } catch (error) {
@@ -88,7 +104,7 @@ export default function ForgotPassword() {
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Email Address */}
                 <div>
                   <label
@@ -101,20 +117,23 @@ export default function ForgotPassword() {
                     id="email"
                     type="email"
                     placeholder="Enter your email address"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    {...register("email")}
                     className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
                   />
+                  {errors.email && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Submit Button */}
                 <div className="pt-2">
                   <Button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !isValid}
                     className={`w-full h-12 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
-                      !loading && email
+                      !loading && isValid
                         ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
                         : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
                     }`}
