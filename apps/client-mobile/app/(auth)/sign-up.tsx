@@ -50,11 +50,16 @@ export default function Signup() {
       const signUpData: SignUpData = {
         email: formData.email,
         password: formData.password,
-        role: 'customer',
-        first_name: formData.firstName,
-        last_name: formData.lastName,
         phone: fullPhoneNumber,
-        postcode: formData.postCode,
+        options: {
+          data: {
+            role: 'customer',
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            postcode: formData.postCode,
+          },
+        },
       };
       const data = await signUp(signUpData);
       
@@ -285,7 +290,7 @@ export default function Signup() {
                   Already have an account?
                   <Text 
                     className="text-clayOrange font-worksans-medium" 
-                    onPress={() => router.push('/(auth)/sign-in')}
+                    onPress={() => router.push('/(auth)/role-selection')}
                   > Log in</Text>
                 </Text>
               </Box>

@@ -12,7 +12,6 @@
     "ui:add": "pnpm dlx shadcn@latest add"
   },
   "dependencies": {
-    "@100handy/auth": "workspace:*",
     "@100handy/tailwind": "workspace:*",
     "@100handy/ui": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.15",
