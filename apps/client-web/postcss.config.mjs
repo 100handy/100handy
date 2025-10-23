@@ -1,1 +1,5 @@
-export { default } from "@100handy/tailwind/postcss.config";
+export default {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};

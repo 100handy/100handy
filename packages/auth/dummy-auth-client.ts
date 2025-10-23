@@ -42,11 +42,16 @@ export const createAuthClient = (config: { baseURL: string, plugins?: any[] }) =
       }
     },
     signUp: {
-      email: async (params: SignUpParams): Promise<AuthResponse> => {
+      email: async (params: SignUpParams, options?: CallbackOptions & { onSuccess?: () => void; onError?: (ctx: { error: { message: string } }) => void }): Promise<AuthResponse> => {
         console.log('Dummy signUp.email called with:', params);
+        options?.onRequest?.({});
         
         // Simulate successful sign-up
-        return { data: { user: { email: params.email, name: params.name } } };
+        const result = { data: { user: { email: params.email, name: params.name } } };
+        
+        options?.onResponse?.({});
+        options?.onSuccess?.();
+        return result;
       }
     },
     signOut: async (): Promise<void> => {

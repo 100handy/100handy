@@ -1,244 +1,362 @@
 "use client";
 
 import { Button } from "@100handy/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@100handy/ui/components/card";
 import { Input } from "@100handy/ui/components/input";
-import { Label } from "@100handy/ui/components/label";
+import { Checkbox } from "@100handy/ui/components/checkbox";
 import { useState } from "react";
 import Image from "next/image";
-import { Loader2, X } from "lucide-react";
-import { authClient } from "../../lib/auth-client";
+import { Loader2, ChevronDown } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
-
   const [lastName, setLastName] = useState("");
-
   const [email, setEmail] = useState("");
-
   const [password, setPassword] = useState("");
-
-  const [passwordConfirmation, setPasswordConfirmation] = useState("");
-
-  const [image, setImage] = useState<File | null>(null);
-
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [countryCode, setCountryCode] = useState("+44");
+  const [postCode, setPostCode] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const router = useRouter();
 
-  const [loading, setLoading] = useState(false);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
-    if (file) {
-      setImage(file);
-
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-
-      reader.readAsDataURL(file);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!agreedToTerms) {
+      alert("Please agree to the Terms of Service and Privacy Policy");
+      return;
     }
+
+    await authClient.signUp.email(
+      {
+        email,
+        password,
+        name: `${firstName} ${lastName}`,
+      },
+      {
+        onRequest: () => {
+          setLoading(true);
+        },
+        onResponse: () => {
+          setLoading(false);
+        },
+        onError: (ctx: { error: { message: string } }) => {
+          console.error(ctx.error.message);
+          alert(ctx.error.message || "Failed to create account");
+        },
+        onSuccess: async () => {
+          // Show confirmation message instead of redirecting
+          setShowConfirmation(true);
+        },
+      }
+    );
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Card className="z-50 rounded-md rounded-t-none min-w-md">
-        <CardHeader>
-          <CardTitle className="text-lg md:text-xl">Sign Up</CardTitle>
+    <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
+      {/* Background Image */}
+      <div className="absolute inset-0">
+        <Image
+          src="/images/signup-bg.jpg"
+          alt="Background"
+          fill
+          className="object-cover"
+          priority
+        />
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/20" />
+      </div>
 
-          <CardDescription className="text-xs md:text-sm">
-            Enter your information to create an account
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <div className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="first-name">First name</Label>
-
-                <Input
-                  id="first-name"
-                  placeholder="Max"
-                  required
-                  onChange={(e) => {
-                    setFirstName(e.target.value);
-                  }}
-                  value={firstName}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="last-name">Last name</Label>
-
-                <Input
-                  id="last-name"
-                  placeholder="Robinson"
-                  required
-                  onChange={(e) => {
-                    setLastName(e.target.value);
-                  }}
-                  value={lastName}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-                value={email}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                placeholder="Password"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="password">Confirm Password</Label>
-
-              <Input
-                id="password_confirmation"
-                type="password"
-                value={passwordConfirmation}
-                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                autoComplete="new-password"
-                placeholder="Confirm Password"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="image">Profile Image (optional)</Label>
-
-              <div className="flex items-end gap-4">
-                {imagePreview && (
-                  <div className="relative w-16 h-16 rounded-sm overflow-hidden">
-                    <Image
-                      src={imagePreview}
-                      alt="Profile preview"
-                      layout="fill"
-                      objectFit="cover"
-                    />
+      {/* Centered Form Card */}
+      <div className="relative z-10 w-full max-w-[560px] px-4 py-8">
+        <div className="bg-white rounded-[12px] shadow-2xl px-12 py-8">
+          {showConfirmation ? (
+            <>
+              {/* Email Confirmation Message */}
+              <div className="text-center py-8">
+                {/* Success Icon */}
+                <div className="mb-6 flex justify-center">
+                  <div className="w-16 h-16 bg-[#C1856A]/10 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-8 h-8 text-[#C1856A]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
                   </div>
-                )}
+                </div>
 
-                <div className="flex items-center gap-2 w-full">
-                  <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="w-full"
-                  />
+                <h2 className="text-[24px] font-semibold text-[#30352d] mb-3">
+                  Check your email
+                </h2>
+                <p className="text-[15px] text-[#30352d]/80 leading-relaxed mb-4">
+                  We've sent a confirmation link to
+                </p>
+                <p className="text-[15px] font-semibold text-[#30352d] mb-6">
+                  {email}
+                </p>
+                <p className="text-[15px] text-[#30352d]/80 leading-relaxed mb-8">
+                  Click the link in the email to activate your account.
+                  <br />
+                  If you don't see it, check your spam folder.
+                </p>
 
-                  {imagePreview && (
-                    <X
-                      className="cursor-pointer"
-                      onClick={() => {
-                        setImage(null);
-
-                        setImagePreview(null);
-                      }}
-                    />
-                  )}
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => router.push("/sign-in")}
+                    className="w-full h-12 bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90 text-[18px] font-bold rounded-md shadow-sm"
+                    variant="outline"
+                  >
+                    Go to Sign In
+                  </Button>
+                  <button
+                    onClick={() => setShowConfirmation(false)}
+                    className="w-full text-[#30352d] text-[14px] hover:underline"
+                  >
+                    Resend confirmation email
+                  </button>
                 </div>
               </div>
+            </>
+          ) : (
+            <>
+            {/* Logo */}
+            <div className="text-center mb-6">
+              <h1 className="text-[40px] text-[#30352d]">
+                <span className="font-light">100</span>
+                <span className="font-bold">HANDY</span>
+              </h1>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-              onClick={async () => {
-                await authClient.signUp.email({
-                  email,
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* First Name and Last Name Row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="first-name"
+                    className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                  >
+                    First Name
+                  </label>
+                  <Input
+                    id="first-name"
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="last-name"
+                    className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                  >
+                    Last Name
+                  </label>
+                  <Input
+                    id="last-name"
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                  />
+                </div>
+              </div>
 
-                  password,
+              {/* Email */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                >
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                />
+              </div>
 
-                  name: `${firstName} ${lastName}`,
+              {/* Password */}
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                >
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                />
+              </div>
 
-                  image: image ? await convertImageToBase64(image) : "",
+              {/* Phone Number */}
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                >
+                  Phone Number
+                </label>
+                <div className="flex items-center gap-2 border-0 border-b border-gray-300 pb-1">
+                  <Select value={countryCode} onValueChange={setCountryCode}>
+                    <SelectTrigger className="w-[100px] border-0 shadow-none focus:ring-0 h-auto p-0">
+                      <SelectValue>
+                        <div className="flex items-center gap-1">
+                          <span className="text-lg">{countryCode === "+44" ? "🇬🇧" : "🇮🇳"}</span>
+                          <span className="text-[15px] font-bold text-[#30352d]">{countryCode}</span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="+44">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🇬🇧</span>
+                          <span>+44 (UK)</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="+91">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🇮🇳</span>
+                          <span>+91 (India)</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="flex-1 border-0 rounded-none px-0 focus-visible:ring-0 shadow-none h-auto py-0"
+                  />
+                </div>
+              </div>
 
-                  callbackURL: "/dashboard",
+              {/* Post Code */}
+              <div>
+                <label
+                  htmlFor="postcode"
+                  className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                >
+                  Post code
+                </label>
+                <Input
+                  id="postcode"
+                  type="text"
+                  value={postCode}
+                  onChange={(e) => setPostCode(e.target.value)}
+                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                />
+              </div>
 
-                  fetchOptions: {
-                    onResponse: () => {
-                      setLoading(false);
-                    },
+              {/* Help Text */}
+              <p className="text-[12px] font-medium text-[#30352d] leading-relaxed">
+                Your phone and postcode help us match and <br />
+                Connect you with right Taskers.
+              </p>
 
-                    onRequest: () => {
-                      setLoading(true);
-                    },
+              {/* Terms Checkbox */}
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) =>
+                    setAgreedToTerms(checked as boolean)
+                  }
+                  className="mt-0.5 data-[state=checked]:bg-[#C17B6B] data-[state=checked]:border-[#C17B6B]"
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-[15px] font-light text-[#30352d] leading-relaxed cursor-pointer select-none"
+                >
+                  I agree to the{" "}
+                  <Link
+                    href="/terms"
+                    className="underline hover:text-black"
+                  >
+                    Terms of Service
+                  </Link>{" "}
+                  and have reviewed the{" "}
+                  <Link
+                    href="/privacy"
+                    className="underline hover:text-black"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </label>
+              </div>
 
-                    onError: (ctx) => {
-                      console.error(ctx.error.message);
-                    },
+              {/* Submit Button */}
+              <div className="pt-1">
+                <Button
+                  type="submit"
+                  disabled={loading || !agreedToTerms}
+                  className={`w-full h-11 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
+                    !loading && agreedToTerms && firstName && lastName && email && password
+                      ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
+                      : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
+                  }`}
+                  variant="outline"
+                >
+                  {loading ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    "Create account"
+                  )}
+                </Button>
+              </div>
+            </form>
 
-                    onSuccess: async () => {
-                      router.push("/dashboard");
-                    },
-                  },
-                });
-              }}
-            >
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                "Create an account"
-              )}
-            </Button>
+            {/* Sign In Link */}
+            <div className="mt-3 text-center pb-2">
+              <p className="text-sm text-gray-600">
+                Already have an account?{" "}
+                <Link
+                  href="/sign-in"
+                  className="text-[#30352d] font-semibold hover:underline"
+                >
+                  Sign In
+                </Link>
+              </p>
+            </div>
+          </>
+          )}
           </div>
-        </CardContent>
-
-        <CardFooter>
-          <div className="flex justify-center w-full border-t py-4">
-            <p className="text-center text-xs text-neutral-500">
-              Secured by <span className="text-orange-400">better-auth.</span>
-            </p>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+        </div>
+      </div>
   );
-}
-
-async function convertImageToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onloadend = () => resolve(reader.result as string);
-
-    reader.onerror = reject;
-
-    reader.readAsDataURL(file);
-  });
 }

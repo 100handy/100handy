@@ -1,7 +1,4 @@
-import { createAuthClient } from "@100handy/auth/better-auth-client";
+// Using Supabase Auth instead of Better Auth
+import { supabaseAuth } from "./supabase-auth";
 
-export const authClient: ReturnType<typeof createAuthClient> = createAuthClient(
-  {
-    baseURL: "http://localhost:3000",
-  }
-);
+export const authClient = supabaseAuth;

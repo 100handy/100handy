@@ -1,0 +1,14 @@
+export { PolygonIcon } from './PolygonIcon';
+export { CircleIcon } from './CircleIcon';
+export { LogoIcon } from './LogoIcon';
+export { MailIcon } from './MailIcon';
+export { HelpIcon } from './HelpIcon';
+export { SearchIcon } from './SearchIcon';
+export { MessageIcon } from './MessageIcon';
+export { SendEmailIcon } from './SendEmailIcon';
+export { PhoneIcon } from './PhoneIcon';
+export { GiftIcon } from './GiftIcon';
+export { FacebookIcon } from './FacebookIcon';
+export { TwitterIcon } from './TwitterIcon';
+export { InstagramIcon } from './InstagramIcon';
+export { LinkedInIcon } from './LinkedInIcon';
