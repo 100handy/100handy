@@ -72,7 +72,7 @@ export const supabaseAuth: {
               full_name: credentials.name,
               postcode: credentials.postcode || '',
             },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/auth/callback`,
           },
         });
 
@@ -144,7 +144,7 @@ export const supabaseAuth: {
         const supabase = createClient();
         
         const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')}/auth/callback?next=/reset-password`,
         });
 
         if (error) throw error;

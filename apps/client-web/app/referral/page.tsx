@@ -82,7 +82,7 @@ export default function ReferralPage() {
   return (
     <>
         <div className="bg-[#F8F9FA] min-h-screen flex flex-col">
-            <Header showSearch={false} />
+            <Header />
             <ReferralContent />
             <Footer />
             <HelpButton />

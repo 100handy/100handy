@@ -90,7 +90,7 @@ export default function ContactPage() {
   return (
     <>
         <div className="bg-[#FFFFFF] min-h-screen">
-            <Header showSearch={false} />
+            <Header />
             <ContactUsContent />
             <Footer />
             <HelpButton />

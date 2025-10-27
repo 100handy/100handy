@@ -30,7 +30,7 @@ const mockTaskers = Array.from({ length: 7 }, (_, i) => ({
 }));
 
 export default function BrowseProsPage() {
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(2);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
