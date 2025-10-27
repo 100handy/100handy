@@ -153,7 +153,7 @@ export default function TrustSafetyPage() {
   return (
     <>
         <div className="bg-[#FFFFFF] min-h-screen">
-            <Header showSearch={false} />
+            <Header />
             <div className="flex flex-col lg:flex-row max-w-screen-xl mx-auto">
                 <Sidebar />
                 <MainContent />

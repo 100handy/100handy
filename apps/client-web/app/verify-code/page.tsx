@@ -2,14 +2,14 @@
 
 import { Button } from "@100handy/ui/components/button";
 import { Input } from "@100handy/ui/components/input";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import { Loader2, ChevronLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 
-export default function VerifyCode() {
+function VerifyCodeForm() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -171,5 +171,29 @@ export default function VerifyCode() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyCode() {
+  return (
+    <Suspense fallback={
+      <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/signup-bg.jpg"
+            alt="Background"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
+        <div className="relative z-10 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>
+      </div>
+    }>
+      <VerifyCodeForm />
+    </Suspense>
   );
 }

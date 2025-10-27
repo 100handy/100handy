@@ -11,7 +11,7 @@ export default function MyTasksPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header currentPage="my-tasks" />
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1">

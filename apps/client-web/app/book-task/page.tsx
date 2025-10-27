@@ -28,7 +28,7 @@ export default function BookTaskPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header currentPage="book-task" />
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 py-12">
