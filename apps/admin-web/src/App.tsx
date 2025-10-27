@@ -24,6 +24,21 @@ import NavigationPage from '@/pages/content/navigation'
 import AddUserPage from '@/pages/users/add-user'
 import RemoveUsersPage from '@/pages/users/remove-users'
 import UserProfilePage from '@/pages/users/user-profile'
+import HandySelectionProcess from '@/pages/handys/selection-process'
+import AvailabilityManagement from '@/pages/handys/availability-management'
+import CalendarSettings from '@/pages/handys/calendar-settings'
+import TotalIncome from '@/pages/finance/total-income'
+import RatesAdjustments from '@/pages/finance/rates-adjustments'
+import PaymentMethods from '@/pages/finance/payment-methods'
+import AccountBalances from '@/pages/finance/account-balances'
+import Invoices from '@/pages/finance/invoices'
+import SecurityOptions from '@/pages/accounts/security-options'
+import VerificationOptions from '@/pages/accounts/verification-options'
+import AccountStatus from '@/pages/accounts/account-status'
+import EmailNotifications from '@/pages/notifications/email-notifications'
+import PopupsPage from '@/pages/notifications/popups'
+import SupportCentre from '@/pages/support/support-centre'
+import AnnouncementsPage from '@/pages/dashboard/announcements'
 
 function App() {
   return (
@@ -33,6 +48,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard/announcements" element={<AnnouncementsPage />} />
           <Route path="/admin" element={<div className="p-6">Admin Page</div>} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/users/add" element={<AddUserPage />} />
@@ -52,12 +68,15 @@ function App() {
           <Route path="/tasks/cancelled" element={<div className="p-6">Cancelled Tasks Page</div>} />
           <Route path="/tasks/questions" element={<div className="p-6">Task Questions Page</div>} />
           <Route path="/handys" element={<HandysPage />} />
+          <Route path="/handys/selection-process" element={<HandySelectionProcess />} />
+          <Route path="/handys/availability" element={<AvailabilityManagement />} />
+          <Route path="/handys/calendar-settings" element={<CalendarSettings />} />
           <Route path="/finance/earnings" element={<EarningsDashboardPage />} />
-          <Route path="/finance/income" element={<div className="p-6">Total Income Page</div>} />
-          <Route path="/finance/rates" element={<div className="p-6">Rates Adjustments Page</div>} />
-          <Route path="/finance/payment-methods" element={<div className="p-6">Payment Methods Page</div>} />
-          <Route path="/finance/balances" element={<div className="p-6">Account Balances Page</div>} />
-          <Route path="/finance/invoices" element={<div className="p-6">Invoices Page</div>} />
+          <Route path="/finance/income" element={<TotalIncome />} />
+          <Route path="/finance/rates" element={<RatesAdjustments />} />
+          <Route path="/finance/payment-methods" element={<PaymentMethods />} />
+          <Route path="/finance/balances" element={<AccountBalances />} />
+          <Route path="/finance/invoices" element={<Invoices />} />
           <Route path="/insights/analytics" element={<DataAnalyticsPage />} />
           <Route path="/promotions/management" element={<PromotionsManagementPage />} />
           <Route path="/content/pages" element={<ContentPagesPage />} />
@@ -68,8 +87,15 @@ function App() {
           <Route path="/content/faqs" element={<FAQsPage />} />
           <Route path="/content/navigation" element={<NavigationPage />} />
           <Route path="/accounts" element={<div className="p-6">Accounts Page</div>} />
+          <Route path="/accounts/security" element={<SecurityOptions />} />
+          <Route path="/accounts/verification" element={<VerificationOptions />} />
+          <Route path="/accounts/deleted" element={<AccountStatus />} />
+          <Route path="/accounts/paused" element={<AccountStatus />} />
+          <Route path="/accounts/location" element={<AccountStatus />} />
           <Route path="/notifications" element={<div className="p-6">Notifications Page</div>} />
-          <Route path="/support" element={<div className="p-6">Support Page</div>} />
+          <Route path="/notifications/email" element={<EmailNotifications />} />
+          <Route path="/notifications/popups" element={<PopupsPage />} />
+          <Route path="/support/centre" element={<SupportCentre />} />
         </Route>
       </Routes>
     </BrowserRouter>

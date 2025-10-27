@@ -6,10 +6,37 @@ import { cn } from '@/lib/utils'
 const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Shield, label: 'Admin', path: '/admin' },
-    { icon: Wrench, label: 'Handys', path: '/handys' },
-    { icon: UserCog, label: 'Accounts', path: '/accounts' },
-    { icon: Bell, label: 'Notifications', path: '/notifications' },
-    { icon: Headset, label: 'Support', path: '/support' },
+]
+
+const dashboardSubItems = [
+    { label: 'Overview', path: '/dashboard' },
+    { label: 'Announcements & Notifications', path: '/dashboard/announcements' },
+]
+
+const supportSubItems = [
+    { label: 'Support Centre', path: '/support/centre' },
+]
+
+const notificationsSubItems = [
+    { label: 'Email Notifications', path: '/notifications/email' },
+    { label: 'Pop-ups on website and app', path: '/notifications/popups' },
+    { label: 'App notifications', path: '/notifications/app' },
+    { label: 'Text notifications', path: '/notifications/text' },
+]
+
+const accountsSubItems = [
+    { label: 'Account Security Options', path: '/accounts/security' },
+    { label: 'Verification Options', path: '/accounts/verification' },
+    { label: 'Deleted Accounts', path: '/accounts/deleted' },
+    { label: 'Paused Accounts', path: '/accounts/paused' },
+    { label: 'Default Location', path: '/accounts/location' },
+]
+
+const handysSubItems = [
+    { label: 'All Handys', path: '/handys' },
+    { label: 'Selection Process', path: '/handys/selection-process' },
+    { label: 'Availability Management', path: '/handys/availability' },
+    { label: 'Calendar & Settings', path: '/handys/calendar-settings' },
 ]
 
 const userSubItems = [
@@ -58,18 +85,28 @@ const contentSubItems = [
 
 export default function Sidebar() {
     const location = useLocation()
+    const [dashboardExpanded, setDashboardExpanded] = useState(true)
+    const [accountsExpanded, setAccountsExpanded] = useState(true)
+    const [handysExpanded, setHandysExpanded] = useState(true)
     const [usersExpanded, setUsersExpanded] = useState(true)
     const [tasksExpanded, setTasksExpanded] = useState(true)
     const [financeExpanded, setFinanceExpanded] = useState(true)
     const [insightsExpanded, setInsightsExpanded] = useState(true)
     const [promotionsExpanded, setPromotionsExpanded] = useState(true)
     const [contentExpanded, setContentExpanded] = useState(true)
+    const [supportExpanded, setSupportExpanded] = useState(true)
+    const [notificationsExpanded, setNotificationsExpanded] = useState(true)
+    const isDashboardActive = location.pathname.startsWith('/dashboard')
+    const isAccountsActive = location.pathname.startsWith('/accounts')
+    const isHandysActive = location.pathname.startsWith('/handys')
     const isUsersActive = location.pathname.startsWith('/users')
     const isTasksActive = location.pathname.startsWith('/tasks')
     const isFinanceActive = location.pathname.startsWith('/finance')
     const isInsightsActive = location.pathname.startsWith('/insights')
     const isPromotionsActive = location.pathname.startsWith('/promotions')
     const isContentActive = location.pathname.startsWith('/content')
+    const isSupportActive = location.pathname.startsWith('/support')
+    const isNotificationsActive = location.pathname.startsWith('/notifications')
 
     return (
         <aside className="w-64 flex-shrink-0 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 flex flex-col">
@@ -88,26 +125,153 @@ export default function Sidebar() {
             </div>
 
             <nav className="flex-1 px-4 py-6 space-y-2">
-                {navItems.map((item) => {
-                    const Icon = item.icon
-                    const isActive = location.pathname === item.path
-
-                    return (
-                        <Link
-                            key={item.path}
-                            to={item.path}
+                <div className="relative group">
+                    <button
+                        onClick={() => setDashboardExpanded(!dashboardExpanded)}
+                        className={cn(
+                            'w-full flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                            isDashboardActive
+                                ? 'text-white bg-primary/90 dark:bg-primary/80'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary'
+                        )}
+                    >
+                        <div className="flex items-center gap-3">
+                            <LayoutDashboard className="w-5 h-5" />
+                            <span>Dashboard</span>
+                        </div>
+                        <ChevronDown
                             className={cn(
-                                'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                                isActive
-                                    ? 'text-white bg-primary/90 dark:bg-primary/80'
-                                    : 'text-slate-600 dark:text-slate-300 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary'
+                                'w-4 h-4 transition-transform',
+                                dashboardExpanded && 'rotate-180'
                             )}
-                        >
-                            <Icon className="w-5 h-5" />
-                            <span>{item.label}</span>
-                        </Link>
-                    )
-                })}
+                        />
+                    </button>
+                    {dashboardExpanded && (
+                        <div className="mt-2 space-y-1 pl-8">
+                            {dashboardSubItems.map((subItem) => {
+                                const isSubActive = location.pathname === subItem.path
+
+                                return (
+                                    <Link
+                                        key={subItem.path}
+                                        to={subItem.path}
+                                        className={cn(
+                                            'block px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                                            isSubActive
+                                                ? 'text-primary dark:text-primary'
+                                                : 'text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary'
+                                        )}
+                                    >
+                                        {subItem.label}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                <Link
+                    to="/admin"
+                    className={cn(
+                        'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                        location.pathname === '/admin'
+                            ? 'text-white bg-primary/90 dark:bg-primary/80'
+                            : 'text-slate-600 dark:text-slate-300 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary'
+                    )}
+                >
+                    <Shield className="w-5 h-5" />
+                    <span>Admin</span>
+                </Link>
+
+                <div className="relative group">
+                    <button
+                        onClick={() => setAccountsExpanded(!accountsExpanded)}
+                        className={cn(
+                            'w-full flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                            isAccountsActive
+                                ? 'text-white bg-primary/90 dark:bg-primary/80'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary'
+                        )}
+                    >
+                        <div className="flex items-center gap-3">
+                            <UserCog className="w-5 h-5" />
+                            <span>Accounts</span>
+                        </div>
+                        <ChevronDown
+                            className={cn(
+                                'w-4 h-4 transition-transform',
+                                accountsExpanded && 'rotate-180'
+                            )}
+                        />
+                    </button>
+                    {accountsExpanded && (
+                        <div className="mt-2 space-y-1 pl-8">
+                            {accountsSubItems.map((subItem) => {
+                                const isSubActive = location.pathname === subItem.path
+
+                                return (
+                                    <Link
+                                        key={subItem.path}
+                                        to={subItem.path}
+                                        className={cn(
+                                            'block px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                                            isSubActive
+                                                ? 'text-primary dark:text-primary'
+                                                : 'text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary'
+                                        )}
+                                    >
+                                        {subItem.label}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                <div className="relative group">
+                    <button
+                        onClick={() => setHandysExpanded(!handysExpanded)}
+                        className={cn(
+                            'w-full flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                            isHandysActive
+                                ? 'text-white bg-primary/90 dark:bg-primary/80'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary'
+                        )}
+                    >
+                        <div className="flex items-center gap-3">
+                            <Wrench className="w-5 h-5" />
+                            <span>Handys</span>
+                        </div>
+                        <ChevronDown
+                            className={cn(
+                                'w-4 h-4 transition-transform',
+                                handysExpanded && 'rotate-180'
+                            )}
+                        />
+                    </button>
+                    {handysExpanded && (
+                        <div className="mt-2 space-y-1 pl-8">
+                            {handysSubItems.map((subItem) => {
+                                const isSubActive = location.pathname === subItem.path
+
+                                return (
+                                    <Link
+                                        key={subItem.path}
+                                        to={subItem.path}
+                                        className={cn(
+                                            'block px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                                            isSubActive
+                                                ? 'text-primary dark:text-primary'
+                                                : 'text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary'
+                                        )}
+                                    >
+                                        {subItem.label}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
 
                 <div className="relative group">
                     <button
@@ -358,6 +522,96 @@ export default function Sidebar() {
                     {contentExpanded && (
                         <div className="mt-2 space-y-1 pl-8">
                             {contentSubItems.map((subItem) => {
+                                const isSubActive = location.pathname === subItem.path
+
+                                return (
+                                    <Link
+                                        key={subItem.path}
+                                        to={subItem.path}
+                                        className={cn(
+                                            'block px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                                            isSubActive
+                                                ? 'text-primary dark:text-primary'
+                                                : 'text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary'
+                                        )}
+                                    >
+                                        {subItem.label}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                <div className="relative group">
+                    <button
+                        onClick={() => setSupportExpanded(!supportExpanded)}
+                        className={cn(
+                            'w-full flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                            isSupportActive
+                                ? 'text-white bg-primary/10 dark:bg-primary/20'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary'
+                        )}
+                    >
+                        <div className="flex items-center gap-3">
+                            <Headset className="w-5 h-5" />
+                            <span>Support</span>
+                        </div>
+                        <ChevronDown
+                            className={cn(
+                                'w-4 h-4 transition-transform',
+                                supportExpanded && 'rotate-180'
+                            )}
+                        />
+                    </button>
+                    {supportExpanded && (
+                        <div className="mt-2 space-y-1 pl-8">
+                            {supportSubItems.map((subItem) => {
+                                const isSubActive = location.pathname === subItem.path
+
+                                return (
+                                    <Link
+                                        key={subItem.path}
+                                        to={subItem.path}
+                                        className={cn(
+                                            'block px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                                            isSubActive
+                                                ? 'text-primary dark:text-primary'
+                                                : 'text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary'
+                                        )}
+                                    >
+                                        {subItem.label}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                <div className="relative group">
+                    <button
+                        onClick={() => setNotificationsExpanded(!notificationsExpanded)}
+                        className={cn(
+                            'w-full flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                            isNotificationsActive
+                                ? 'text-white bg-primary/10 dark:bg-primary/20'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary'
+                        )}
+                    >
+                        <div className="flex items-center gap-3">
+                            <Bell className="w-5 h-5" />
+                            <span>Notifications</span>
+                        </div>
+                        <ChevronDown
+                            className={cn(
+                                'w-4 h-4 transition-transform',
+                                notificationsExpanded && 'rotate-180'
+                            )}
+                        />
+                    </button>
+                    {notificationsExpanded && (
+                        <div className="mt-2 space-y-1 pl-8">
+                            {notificationsSubItems.map((subItem) => {
                                 const isSubActive = location.pathname === subItem.path
 
                                 return (
