@@ -2,6 +2,7 @@
   "extends": "@100handy/typescript/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "skipLibCheck": true,
     "paths": {
       "@/*": [
         "./*"
@@ -21,7 +22,8 @@
     "**/*.tsx",
     "next-env.d.ts",
     "next.config.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules"
