@@ -11,10 +11,23 @@ import { router } from 'expo-router';
 import { type SignUpData, signUp } from '@shared/supabase/auth';
 import SignUpForm from '@/components/auth/SignUpForm';
 import { useToast } from '@/components/ui/toast';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const ONBOARDING_KEY = '@hasSeenOnboarding';
 
 export default function ClientSignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
+
+  const handleNotNow = async (): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      router.replace('/(client)/(tabs)/home');
+    } catch (error) {
+      console.error('Error saving onboarding status:', error);
+      router.replace('/(client)/(tabs)/home');
+    }
+  };
 
   const handleSignUp = async (data: SignUpData): Promise<void> => {
     try {
@@ -58,7 +71,7 @@ export default function ClientSignUp() {
             <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
               Sign Up
             </Text>
-            <Pressable onPress={() => router.replace('/(client)/(tabs)/home')}>
+            <Pressable onPress={handleNotNow}>
               <Text className="text-sm font-worksans-medium" style={{ color: '#333A31' }}>
                 Not now
               </Text>

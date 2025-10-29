@@ -10,6 +10,9 @@ import { ChevronRight } from 'lucide-react-native';
 import { router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import StarRating from '@/assets/images/star-rating.svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const ONBOARDING_KEY = '@hasSeenOnboarding';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -237,19 +240,31 @@ export default function ClientOnboarding() {
   const flatListRef = useRef<FlatList>(null);
   const totalSteps = onboardingData.length;
 
-  const handleSkip = (): void => {
-    router.push('/(auth)/(client)/terms-and-privacy');
+  const handleSkip = async (): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      router.push('/(auth)/(client)/terms-and-privacy');
+    } catch (error) {
+      console.error('Error saving onboarding status:', error);
+      router.push('/(auth)/(client)/terms-and-privacy');
+    }
   };
 
-  const handleGotIt = (): void => {
+  const handleGotIt = async (): Promise<void> => {
     if (currentStep < totalSteps - 1) {
       // Go to next screen
       const nextIndex = currentStep + 1;
       flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
       setCurrentStep(nextIndex);
     } else {
-      // Last screen, go to terms and privacy
-      router.push('/(auth)/(client)/terms-and-privacy');
+      // Last screen, save onboarding completion and go to terms and privacy
+      try {
+        await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+        router.push('/(auth)/(client)/terms-and-privacy');
+      } catch (error) {
+        console.error('Error saving onboarding status:', error);
+        router.push('/(auth)/(client)/terms-and-privacy');
+      }
     }
   };
 
