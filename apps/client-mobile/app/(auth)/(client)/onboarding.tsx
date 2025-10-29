@@ -28,21 +28,21 @@ const onboardingData = [
   {
     id: 0,
     title: (
-      <>
-        <Text className="text-[80px] leading-[80px] font-worksans-light text-theme-font">
+      <VStack className="items-start">
+        <Text className="text-[44px] leading-[44px] font-worksans-medium" style={{ color: '#30352D' }}>
           100
         </Text>
-        <Text className="text-[52px] leading-[52px] font-worksans-bold text-theme-font tracking-[2px]">
+        <Text className="text-[44px] leading-[44px] font-worksans-medium tracking-[2px]" style={{ color: '#30352D' }}>
           HANDY
         </Text>
-      </>
+      </VStack>
     ),
     description: (
       <>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           Help with everyday
         </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           Life at you fingertips.
         </Text>
       </>
@@ -52,16 +52,16 @@ const onboardingData = [
     id: 1,
     description: (
       <>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           See reviews prices
         </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           of 140,00 +
         </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
-          backround
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
+          background
         </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           checked Taskers.
         </Text>
       </>
@@ -104,10 +104,10 @@ const onboardingData = [
     id: 2,
     description: (
       <>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           Chat with your Tasker to schedule
         </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           The job and get it done.
         </Text>
       </>
@@ -155,10 +155,10 @@ const onboardingData = [
     id: 3,
     description: (
       <>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           Manage your tasks and build your
         </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light text-theme-font">
+        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: '#30352D' }}>
           Inner circle of taskers.
         </Text>
       </>
@@ -238,7 +238,7 @@ export default function ClientOnboarding() {
   const totalSteps = onboardingData.length;
 
   const handleSkip = (): void => {
-    router.push('/(auth)/(client)/sign-in');
+    router.push('/(auth)/(client)/terms-and-privacy');
   };
 
   const handleGotIt = (): void => {
@@ -248,7 +248,7 @@ export default function ClientOnboarding() {
       flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
       setCurrentStep(nextIndex);
     } else {
-      // Last screen, go to sign in
+      // Last screen, go to terms and privacy
       router.push('/(auth)/(client)/terms-and-privacy');
     }
   };
@@ -261,14 +261,16 @@ export default function ClientOnboarding() {
 
   const renderItem = ({ item }: { item: typeof onboardingData[0] }) => (
     <View style={{ width: SCREEN_WIDTH }}>
-      <VStack className="flex-1 justify-center items-start px-6">
-        {/* Content */}
-        <VStack className="items-start mb-6">
-          {item.title}
-        </VStack>
+      <VStack className="flex-1 items-start px-6" style={{ paddingTop: 120 }}>
+        {/* Title (for first slide only) */}
+        {item.title && (
+          <VStack className="items-start mb-6">
+            {item.title}
+          </VStack>
+        )}
 
         {/* Description */}
-        <VStack className="items-start">
+        <VStack className="items-start mb-4">
           {item.description}
         </VStack>
 
@@ -340,13 +342,18 @@ export default function ClientOnboarding() {
           <Box className="px-6 pb-8 z-20">
             <HStack className="justify-between items-center">
               {/* Pagination Dots */}
-              <HStack className="gap-3">
+              <HStack className="gap-2">
                 {Array.from({ length: totalSteps }).map((_, index) => (
                   <View
                     key={index}
-                    className={`w-[13px] h-[13px] rounded-full border border-theme-font ${
-                      index === currentStep ? 'bg-clay-orange' : 'bg-white'
-                    }`}
+                    style={{
+                      width: 13,
+                      height: 13,
+                      borderRadius: 6.5,
+                      backgroundColor: index === currentStep ? '#D9896C' : '#FFFFFF',
+                      borderWidth: 1,
+                      borderColor: '#30352D'
+                    }}
                   />
                 ))}
               </HStack>

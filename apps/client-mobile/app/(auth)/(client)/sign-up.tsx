@@ -58,7 +58,7 @@ export default function ClientSignUp() {
             <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
               Sign Up
             </Text>
-            <Pressable>
+            <Pressable onPress={() => router.replace('/(client)/(tabs)/home')}>
               <Text className="text-sm font-worksans-medium" style={{ color: '#333A31' }}>
                 Not now
               </Text>
