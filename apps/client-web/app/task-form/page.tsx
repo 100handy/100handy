@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Footer from "@/components/layout/Footer";
+import { Footer } from "@/components/marketing/footer";
 import Link from "next/link";
 
 export default function TaskFormPage() {

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Header, Footer } from "@/components/layout";
+import { Header } from "@/components/layout";
+import { Footer } from "@/components/marketing/footer";
 import { MessageSquare } from "lucide-react";
 import { PolygonIcon, CircleIcon } from "@/components/icons";
 
