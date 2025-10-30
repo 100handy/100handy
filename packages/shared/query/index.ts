@@ -21,3 +21,13 @@ export {
   useInvalidateBookings,
   bookingKeys,
 } from './hooks/useBookings';
+
+// Profile hooks and utilities
+export {
+  useProfile,
+  useUpdateProfile,
+  useUploadAvatar,
+  useDeleteAvatar,
+  useInvalidateProfile,
+  profileKeys,
+} from './hooks/useProfile';
