@@ -30,9 +30,9 @@ export default function ClientTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="handy"
+        name="taskers"
         options={{
-          title: "Handy",
+          title: "My Taskers",
           tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
         }}
       />

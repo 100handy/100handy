@@ -87,8 +87,18 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       }
     } else {
       // User is not authenticated
-      // Only redirect if trying to access protected routes (not auth screens)
-      const tryingToAccessProtectedRoute = (inTabsGroup || inClientGroup || inProfessionalGroup) && !inAuthGroup;
+      // Block only routes that require user interaction (TaskRabbit clone approach)
+      const isOnProfile = segmentStrings.includes('profile');
+      const isOnBookings = segmentStrings.includes('bookings') || segmentStrings.includes('my-tasks');
+      const isOnMessages = segmentStrings.includes('messages') || segmentStrings.includes('chat');
+      const isOnBookingFlow = segmentStrings.includes('book') || segmentStrings.includes('confirm-booking');
+      const isOnPostTask = segmentStrings.includes('post-task') || segmentStrings.includes('task-form');
+      const isOnAccount = segmentStrings.includes('account') || segmentStrings.includes('settings');
+      
+      const isProtectedRoute = isOnProfile || isOnBookings || isOnMessages || isOnBookingFlow || isOnPostTask || isOnAccount;
+      
+      // Only redirect if trying to access protected routes that require authentication
+      const tryingToAccessProtectedRoute = (inTabsGroup || inClientGroup || inProfessionalGroup) && !inAuthGroup && isProtectedRoute;
       
       if (tryingToAccessProtectedRoute) {
         router.replace('/(auth)/role-selection');
