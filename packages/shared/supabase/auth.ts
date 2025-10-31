@@ -108,10 +108,24 @@ export async function signOut() {
 }
 
 // ✅ NEW: Phone Sign Up (requires SMS provider setup in Supabase)
-export async function signUpWithPhone(phone: string, password: string) {
+export async function signUpWithPhone(
+  phone: string,
+  password: string,
+  options?: {
+    data?: {
+      role: 'customer' | 'handy';
+      first_name: string;
+      last_name: string;
+      full_name: string;
+      postcode?: string;
+      email?: string;
+    };
+  }
+) {
   const { data, error } = await supabase.auth.signUp({
     phone,
     password,
+    options,
   });
   if (error) throw error;
   return data;

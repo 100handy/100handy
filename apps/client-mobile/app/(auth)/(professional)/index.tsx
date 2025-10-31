@@ -78,7 +78,7 @@ export default function ProfessionalWelcome() {
           <VStack className="flex-1" style={{ backgroundColor: '#FFFFFF' }}>
             {/* Welcome Text */}
             <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8" style={{ color: '#30352D' }}>
-              Wellcome to 100 Handy Task
+              Welcome to 100 Handy Task
             </Text>
 
             {/* Create Account Button */}

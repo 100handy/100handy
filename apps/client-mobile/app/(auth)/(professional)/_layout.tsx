@@ -7,6 +7,8 @@ export default function ProfessionalAuthLayout() {
       <Stack.Screen name="sign-in" />
       <Stack.Screen name="sign-up" />
       <Stack.Screen name="verify-info" />
+      <Stack.Screen name="verify-document-upload" />
+      {/* Legacy verification screens - can be removed later */}
       <Stack.Screen name="verify-getting-started" />
       <Stack.Screen name="verify-country-selection" />
       <Stack.Screen name="verify-document-type" />

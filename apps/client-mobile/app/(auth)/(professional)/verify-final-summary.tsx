@@ -135,13 +135,13 @@ export default function VerifyFinalSummary() {
               </Button>
 
               {/* Skip Button */}
-              <Pressable 
+              <Pressable
                 className="rounded-full py-3 border-2 mb-6"
                 style={{ borderColor: '#C1856A' }}
                 onPress={handleSkip}
               >
                 <Text className="text-center text-[18px] font-worksans-bold" style={{ color: '#C1856A' }}>
-                  Skip for no
+                  Skip for now
                 </Text>
               </Pressable>
             </VStack>

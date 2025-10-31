@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, TextInput, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
@@ -7,28 +7,60 @@ import { Box } from '@/components/ui/box';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
+import { useProfessionalProfileStore } from '@shared/store';
 
 export default function ClosingMessageScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const isOngoing = params.type === 'ongoing';
-  
+  const templateType = isOngoing ? 'ongoing' : 'default';
+
+  const { chatTemplates, setChatTemplate, loadChatTemplates } = useProfessionalProfileStore();
+
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const maxLength = 500;
 
-  const handleSave = () => {
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const loadTemplates = async () => {
+    setIsLoading(true);
+    await loadChatTemplates();
+    setMessage(chatTemplates[templateType]);
+    setIsLoading(false);
+  };
+
+  const handleSave = async () => {
     if (!message.trim()) {
       Alert.alert('Error', 'Please enter a message');
       return;
     }
-    
-    console.log('Saving closing message:', message);
-    Alert.alert('Success', 'Message saved successfully', [
-      { text: 'OK', onPress: () => router.back() }
-    ]);
+
+    setIsSaving(true);
+    try {
+      await setChatTemplate(templateType, message);
+      Alert.alert('Success', 'Message saved successfully', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save message. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const title = isOngoing ? 'Ongoing closing message' : 'Closing Message';
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#D17852" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -74,9 +106,10 @@ export default function ClosingMessageScreen() {
 
       {/* Fixed Bottom Button */}
       <Box className="px-5 pb-6 pt-4 bg-white">
-        <Pressable 
-          className="bg-warm-taupe rounded-full py-4 items-center"
+        <Pressable
+          className={`rounded-full py-4 items-center ${isSaving ? 'bg-gray-400' : 'bg-[#D17852]'}`}
           onPress={handleSave}
+          disabled={isSaving}
           style={{
             shadowColor: '#000000',
             shadowOffset: {
@@ -88,9 +121,13 @@ export default function ClosingMessageScreen() {
             elevation: 2
           }}
         >
-          <Text className="font-worksans-semibold text-white text-lg">
-            Save
-          </Text>
+          {isSaving ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text className="font-worksans-semibold text-white text-lg">
+              Save
+            </Text>
+          )}
         </Pressable>
       </Box>
     </SafeAreaView>

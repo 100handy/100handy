@@ -11,6 +11,8 @@ import { Pressable } from '@/components/ui/pressable';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { ChevronLeft, Lock, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { updateVerificationData } from '@shared/supabase/profile';
+import { useToast } from '@/components/ui/toast';
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -109,6 +111,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ visible, onClose, onConfirm
 
 export default function VerifyInformation() {
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -128,10 +132,36 @@ export default function VerifyInformation() {
     setShowModal(true);
   };
 
-  const handleConfirm = (): void => {
-    setShowModal(false);
-    // Navigate to verification getting started
-    router.push('/(auth)/(professional)/verify-getting-started');
+  const handleConfirm = async (): Promise<void> => {
+    try {
+      setShowModal(false);
+      setIsLoading(true);
+
+      // Save verification data to backend
+      const success = await updateVerificationData({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        date_of_birth: formData.dateOfBirth,
+        street_address: formData.streetAddress,
+        apartment: formData.apt,
+        city: formData.city,
+        county: formData.county,
+        postcode: formData.postcode,
+      });
+
+      if (success) {
+        // Navigate to document upload
+        router.push('/(auth)/(professional)/verify-document-upload');
+      } else {
+        toast.error('Error saving data', 'Please sign in again and try');
+      }
+    } catch (error) {
+      console.error('Error in handleConfirm:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Please try again';
+      toast.error('Error', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -336,9 +366,10 @@ export default function VerifyInformation() {
                 className="rounded-full shadow-sm mb-4"
                 style={{ backgroundColor: '#C1856A' }}
                 onPress={handleSignup}
+                isDisabled={isLoading}
               >
                 <ButtonText className="text-[18px] font-worksans-bold">
-                  Signup
+                  {isLoading ? 'Saving...' : 'Signup'}
                 </ButtonText>
               </Button>
             </Box>

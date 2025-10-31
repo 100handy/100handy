@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
+import { useProfessionalProfileStore } from '@shared/store';
 
 const QUICK_FACTS_LIST = [
   'I have a pet allergies',
@@ -15,12 +17,23 @@ const QUICK_FACTS_LIST = [
 ];
 
 export default function QuickFactsScreen() {
+  const { quickFacts, setQuickFacts, loadProfile } = useProfessionalProfileStore();
   const [selectedFacts, setSelectedFacts] = useState<string[]>([]);
+
+  // Load profile data on mount
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  // Sync local state with store
+  useEffect(() => {
+    setSelectedFacts(quickFacts);
+  }, [quickFacts]);
 
   const toggleFact = (fact: string) => {
     // If "None of these apply" is selected, clear all other selections
     if (fact === 'None of these apply') {
-      setSelectedFacts(prev => 
+      setSelectedFacts(prev =>
         prev.includes(fact) ? [] : [fact]
       );
     } else {
@@ -34,16 +47,16 @@ export default function QuickFactsScreen() {
     }
   };
 
-  const handleSave = () => {
-    // Save selected facts
-    console.log('Selected facts:', selectedFacts);
+  const handleSave = async () => {
+    await setQuickFacts(selectedFacts);
+    router.back();
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <HStack className="items-center px-5 py-4">
-        <Pressable onPress={() => {/* Navigate back */}}>
+        <Pressable onPress={() => router.back()}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text className="flex-1 text-center text-lg font-semibold text-[#333A31] pr-6" style={{ fontFamily: 'WorkSans_600SemiBold' }}>

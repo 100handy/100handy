@@ -29,7 +29,7 @@ export default function Index() {
       
       if (hasSeenOnboarding === 'true') {
         // Returning user - skip to home (guests can browse)
-        router.replace('/(client)/(tabs)/home');
+        router.replace('/(professional)/(tabs)/dashboard');
       } else {
         // First time user - show welcome flow
         router.replace('/(auth)/role-selection');

@@ -57,7 +57,7 @@ export default function ProfessionalProfileScreen() {
     {
       icon: <Calendar color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Sync calendar',
-      onPress: () => console.log('Sync calendar'),
+      onPress: () => router.push('/profile/calendar-settings'),
     },
     {
       icon: <MessageSquare color="#B8926A" size={24} strokeWidth={1.5} />,

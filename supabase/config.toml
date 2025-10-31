@@ -68,19 +68,19 @@ file_size_limit = "50MiB"
 [auth]
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
-# in emails.
-site_url = "handy://auth/callback"
+# in emails. This should be your WEB URL (not mobile deep link)
+site_url = "http://localhost:3000/auth/callback"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-# IMPORTANT: When deploying to production, add your web URLs here:
-#   - "https://yourapp.com"
-#   - "https://yourapp.com/auth/callback"
+# IMPORTANT: When deploying to production, change site_url to production web URL
 additional_redirect_urls = [
   "http://localhost:3000",           # Web development
+  "http://localhost:3000/auth/callback",  # Web auth callback
   "https://127.0.0.1:3000",          # Web development (HTTPS)
   "http://localhost:8081",           # Mobile development (Expo)
   "handy://",                        # Mobile deep link (root)
   "handy://auth/callback"            # Mobile deep link (auth callback)
   # TODO: Add production web URLs before deploying
+  # Production: "https://yourapp.com/auth/callback"
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604800 (1 week).
 jwt_expiry = 3600
@@ -112,23 +112,24 @@ enable_confirmations = true
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
-enable_signup = true
+enable_signup = false
 # If enabled, users need to confirm their phone number before signing in.
 enable_confirmations = false
 # Template for sending a confirmation message when signing up via phone.
-template = "Your confirmation code is {{ .Code }} ."
+# template = "Your 100 Handy verification code is {{ .Code }}"
 
 # Use pre-defined map of phone number to OTP for testing.
 # [auth.sms.test_otp]
 # 4152127777 = "123456"
+# 447874543331 = "123456"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
 # [auth.sms.twilio]
 # enabled = false
-# account_sid = ""
-# message_service_sid = ""
-# # DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
-# auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+# account_sid = "env(TWILIO_ACCOUNT_SID)"
+# message_service_sid = "env(TWILIO_MESSAGE_SERVICE_SID)"
+# DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
+# auth_token = "env(TWILIO_AUTH_TOKEN)"
 
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin`, `notion`, `twitch`,

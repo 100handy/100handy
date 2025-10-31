@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
@@ -8,15 +9,27 @@ import { Textarea } from '@/components/ui/textarea';
 import { TextareaInput } from '@/components/ui/textarea';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
+import { useProfessionalProfileStore } from '@shared/store';
 
 const MAX_CHARACTERS = 500;
 
 export default function AboutMeScreen() {
+  const { aboutMe, setAboutMe, loadProfile } = useProfessionalProfileStore();
   const [text, setText] = useState('');
 
-  const handleSave = () => {
-    // Save the about me text
-    console.log('About me text:', text);
+  // Load profile data on mount
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  // Sync local state with store
+  useEffect(() => {
+    setText(aboutMe);
+  }, [aboutMe]);
+
+  const handleSave = async () => {
+    await setAboutMe(text);
+    router.back();
   };
 
   return (
@@ -27,7 +40,7 @@ export default function AboutMeScreen() {
       >
         {/* Header */}
         <HStack className="items-center px-5 py-4">
-          <Pressable onPress={() => {/* Navigate back */}}>
+          <Pressable onPress={() => router.back()}>
             <ChevronLeft size={24} color="#000" />
           </Pressable>
           <Text 

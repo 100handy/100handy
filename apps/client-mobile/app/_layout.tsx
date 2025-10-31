@@ -75,14 +75,14 @@ export default function RootLayout() {
   return (
     <QueryProvider>
       <GluestackUIProvider mode="light">
-        <AuthWrapper>
+        {/* <AuthWrapper> */}
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(client)" />
             <Stack.Screen name="(professional)" />
           </Stack>
-        </AuthWrapper>
+        {/* </AuthWrapper> */}
       </GluestackUIProvider>
     </QueryProvider>
   );
