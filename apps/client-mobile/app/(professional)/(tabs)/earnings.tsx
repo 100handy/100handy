@@ -6,7 +6,8 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { Box } from '@/components/ui/box';
 import { Pressable } from '@/components/ui/pressable';
-import { ChevronRight, Star } from 'lucide-react-native';
+import { ChevronRight, Star, BarChart3 } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 
 interface PerformanceCardProps {
   title: string;
@@ -34,6 +35,7 @@ function PerformanceCard({ title, children, onPress }: PerformanceCardProps) {
 }
 
 export default function ProfessionalEarnings() {
+  const router = useRouter();
 
   return (
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
@@ -89,16 +91,34 @@ export default function ProfessionalEarnings() {
           <PerformanceCard title="Reviews">
             <VStack className="gap-2">
               <Text className="font-worksans text-[14px] text-[#30352D] leading-5">
-                We don’t have your numbers yet! Actively task{'\n'}For 30 days and check back to see result.
+                We don't have your numbers yet! Actively task{'\n'}For 30 days and check back to see result.
               </Text>
               <VStack className="gap-1 mt-2">
                 <Text className="font-worksans text-[13px] text-[#6B6B6B]">
                   Average search position <Text className="font-worksans-bold">--</Text>
                 </Text>
                 <Text className="font-worksans text-[13px] text-[#6B6B6B]">
-                  You’ve shown more than <Text className="font-worksans-bold">--</Text>
+                  You've shown more than <Text className="font-worksans-bold">--</Text>
                 </Text>
               </VStack>
+            </VStack>
+          </PerformanceCard>
+
+          {/* Analytics Card */}
+          <PerformanceCard 
+            title="Analytics" 
+            onPress={() => router.push('/profile/analytics')}
+          >
+            <VStack className="gap-1">
+              <HStack className="items-center gap-2">
+                <BarChart3 color="#B8926A" size={20} strokeWidth={1.5} />
+                <Text className="font-worksans text-[14px] text-[#6B6B6B]">
+                  View detailed analytics
+                </Text>
+              </HStack>
+              <Text className="font-worksans text-[12px] text-[#6B6B6B] mt-1">
+                Search position, appearances, and performance metrics
+              </Text>
             </VStack>
           </PerformanceCard>
 
