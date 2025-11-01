@@ -11,7 +11,7 @@ import { Loader } from '@/components/ui/loader';
 import { WrenchIcon, PaintbrushIcon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
-import { TaskCard, Tab } from '@/components/tasks';
+import { TaskCard, Tab, EmptyState } from '@/components/tasks';
 import { useUserBookings } from '@shared/supabase/query';
 import { useAuthStore } from '@shared/supabase/store';
 import { bookingToTaskCardProps } from '@/lib/bookings';
@@ -19,7 +19,7 @@ import { bookingToTaskCardProps } from '@/lib/bookings';
 // Using Tailwind design tokens - colors are now defined in tailwind.config.js
 
 export default function TasksScreen() {
-  const [activeTab, setActiveTab] = React.useState('upcoming');
+  const [activeTab, setActiveTab] = React.useState('redemptions');
   const router = useRouter();
   
   // Get user from auth store
@@ -41,41 +41,35 @@ export default function TasksScreen() {
 
   // Fallback data for when no real bookings exist
   const fallbackBookings = {
-    upcoming: [
+    redemptions: [
       {
         id: 1,
-        title: 'Plumbing Repair',
-        timeLine1: 'Tomorrow, 2:00 PM - 4:00 PM',
-        timeLine2: '123 Main Street, London SW1A',
-        statusLabel: 'Scheduled',
-        statusTone: 'scheduled' as const,
-        icon: WrenchIcon,
-        iconTone: 'orange' as const,
+        title: 'Deep Cleaning (1 Bedroom Flat)',
+        dateTime: '21 Oct 2025, 14:00',
+        taskerName: 'Sam O.',
+        taskerRating: 5.0,
+        taskerReviews: 124,
+        location: 'Wanstead, London E11',
+        statusLabel: 'In Progress',
+        price: '£70.27 /hr',
+        icon: PaintbrushIcon,
+        iconTone: 'sage' as const,
       },
       {
         id: 2,
-        title: 'Wall Painting',
-        timeLine1: 'Dec 18, 9:00 AM - 12:00 PM',
-        timeLine2: '456 Oak Avenue, London N1',
-        statusLabel: 'In progress',
-        statusTone: 'progress' as const,
-        icon: PaintbrushIcon,
-        iconTone: 'sage' as const,
-      }
-    ],
-    past: [
-      {
-        id: 3,
-        title: 'Electrical Work',
-        timeLine1: 'Dec 10, 10:00 AM - 12:00 PM',
-        timeLine2: '789 Pine Street, London E1',
-        statusLabel: 'Completed',
-        statusTone: 'neutral' as const,
+        title: 'Furniture Assembly',
+        dateTime: '22 Oct 2025, 10:30',
+        taskerName: 'Maria T.',
+        taskerRating: 5.0,
+        taskerReviews: 124,
+        location: 'Leytonstone, E11',
+        statusLabel: 'Scheduled',
+        price: '£60.67 /hr',
         icon: WrenchIcon,
         iconTone: 'orange' as const,
       }
     ],
-    cancelled: []
+    complated: []
   };
 
   const onRefresh = React.useCallback(() => {
@@ -85,12 +79,10 @@ export default function TasksScreen() {
   const getCurrentBookings = () => {
     const realBookings = (() => {
       switch (activeTab) {
-        case 'upcoming':
+        case 'redemptions':
           return upcoming;
-        case 'past':
-          return past;
-        case 'cancelled':
-          return cancelled;
+        case 'complated':
+          return [...past, ...cancelled];
         default:
           return [];
       }
@@ -99,12 +91,10 @@ export default function TasksScreen() {
     // If no real bookings, use fallback data
     if (realBookings.length === 0) {
       switch (activeTab) {
-        case 'upcoming':
-          return fallbackBookings.upcoming as any[];
-        case 'past':
-          return fallbackBookings.past as any[];
-        case 'cancelled':
-          return fallbackBookings.cancelled as any[];
+        case 'redemptions':
+          return fallbackBookings.redemptions as any[];
+        case 'complated':
+          return fallbackBookings.complated as any[];
         default:
           return [];
       }
@@ -118,7 +108,8 @@ export default function TasksScreen() {
     const bookings = getCurrentBookings();
     
     // If using fallback data, return it directly (already in correct format)
-    if (bookings.length > 0 && 'title' in bookings[0]) {
+    // Fallback data has 'id' while real data has 'bookingId'
+    if (bookings.length > 0 && 'dateTime' in bookings[0] && !('category' in bookings[0])) {
       return bookings as any[];
     }
     
@@ -133,7 +124,7 @@ export default function TasksScreen() {
       <Box className="flex-1">
         {/* Top App Bar */}
         <Header 
-          title="My Tasks" 
+          title="Tasks" 
           onBackPress={() => {}} 
           onBellPress={() => {}} 
           showFilterIcon={false}
@@ -144,21 +135,20 @@ export default function TasksScreen() {
 
         {/* Segmented Tabs */}
         <HStack className="bg-bg-primary">
-          <Tab id="upcoming" label="Upcoming" active={activeTab === 'upcoming'} onPress={setActiveTab} />
-          <Tab id="past" label="Past" active={activeTab === 'past'} onPress={setActiveTab} />
-          <Tab id="cancelled" label="Cancelled" active={activeTab === 'cancelled'} onPress={setActiveTab} />
+          <Tab id="redemptions" label="Redemptions" active={activeTab === 'redemptions'} onPress={setActiveTab} />
+          <Tab id="complated" label="Complated" active={activeTab === 'complated'} onPress={setActiveTab} />
         </HStack>
 
         <Divider className="h-px bg-border opacity-80" />
 
         {/* Content */}
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={{ paddingBottom: 24 }}
           refreshControl={
             <RefreshControl refreshing={showLoading} onRefresh={onRefresh} />
           }
         >
-          {!user?.id ? (
+          {user?.id ? (
             <VStack className="items-center justify-center py-12">
               <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
                 Please sign in
@@ -178,6 +168,8 @@ export default function TasksScreen() {
                 {error?.message || 'Something went wrong. Please try again.'}
               </Text>
             </VStack>
+          ) : getCurrentBookings().length === 0 ? (
+            <EmptyState />
           ) : (
             <VStack className="space-y-2">
               {getCurrentTaskCards().map((taskCardProps, index) => (
@@ -188,28 +180,12 @@ export default function TasksScreen() {
                 />
               ))}
 
-              {/* Empty state */}
-              {getCurrentBookings().length === 0 && !showLoading && (
-                <VStack className="items-center justify-center py-12">
-                  <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
-                    No {activeTab} tasks
-                  </Text>
-                  <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
-                    {activeTab === 'upcoming' && "You don't have any upcoming tasks scheduled."}
-                    {activeTab === 'past' && "You don't have any completed tasks yet."}
-                    {activeTab === 'cancelled' && "You don't have any cancelled tasks."}
-                  </Text>
-                </VStack>
-              )}
-
               {/* Helper text when there are tasks */}
-              {getCurrentBookings().length > 0 && (
-                <HStack className="justify-center pt-6">
-                  <Text className="text-xs font-work-sans text-text-tertiary leading-4">
-                    Tap to view details
-                  </Text>
-                </HStack>
-              )}
+              <HStack className="justify-center pt-6">
+                <Text className="text-xs font-work-sans text-text-tertiary leading-4">
+                  Tap to view details
+                </Text>
+              </HStack>
             </VStack>
           )}
         </ScrollView>

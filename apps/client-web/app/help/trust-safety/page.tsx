@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
-import { Header, Footer } from "@/components/layout";
+import { Header } from "@/components/layout";
+import { Footer } from "@/components/marketing/footer";
 import { Search, Mail, HelpCircle } from "lucide-react";
 import { LogoIcon, MailIcon, HelpIcon } from "@/components/icons";
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Header, Footer } from "@/components/layout";
+import { Header } from "@/components/layout";
+import { Footer } from "@/components/marketing/footer";
 import { LogoIcon, SearchIcon, MessageIcon, SendEmailIcon, PhoneIcon, HelpIcon } from "@/components/icons";
 
 // --- Components --- //

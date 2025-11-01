@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Header, Footer } from "@/components/layout";
+import { Header } from "@/components/layout";
+import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
 
 // --- Data --- //

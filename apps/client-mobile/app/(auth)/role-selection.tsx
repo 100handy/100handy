@@ -15,7 +15,7 @@ export default function AuthRoleSelectionScreen() {
   
 
   const handleClientAuth = (): void => {
-    router.push('/(auth)/(client)/sign-in');
+    router.push('/(auth)/(client)');
   };
 
   const handleProfessionalAuth = (): void => {

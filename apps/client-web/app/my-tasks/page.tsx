@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import { Footer } from "@/components/marketing/footer";
 
 export default function MyTasksPage() {
   const [activeTab, setActiveTab] = useState<"current" | "completed">("current");
