@@ -2,13 +2,20 @@
 
 import { Check } from "lucide-react";
 
-export function ContentSection(): React.JSX.Element {
+interface ContentSectionProps {
+  title: string;
+  longDescription: string;
+  benefits: Array<{ title: string; description: string }>;
+  tasks: Array<{ title: string; description: string }>;
+}
+
+export function ContentSection({ title, longDescription, benefits, tasks }: ContentSectionProps): React.JSX.Element {
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-[1920px] px-8">
         {/* Title */}
         <h2 className="mb-10 text-[29px] font-bold text-brand-dark-alt">
-          Home Repair Services
+          {title} Services
         </h2>
 
         {/* Main content grid */}
@@ -16,29 +23,22 @@ export function ContentSection(): React.JSX.Element {
           {/* Left column - Text content */}
           <div>
             <h3 className="mb-6 text-[39px] font-bold leading-tight text-brand-dark-alt">
-              Need a Hand with Home Repairs?
+              Need Help with {title}?
               <br />
               100Handy Has You Covered!
             </h3>
             <p className="mb-8 text-[20px] leading-relaxed text-brand-dark-alt">
-              Need a quick fix or a skilled handyman for larger home repairs? 100Handy makes it easy to find trusted home repair services near you. Whether it's patching drywall, fixing a leaky faucet, or assembling furniture, Taskers are background-checked, reviewed, and ready to help.
+              {longDescription}
             </p>
 
             <h3 className="mb-8 text-[39px] font-bold leading-tight text-brand-dark-alt">
-              Why Choose 100Handy for Handyman Services?
+              Why Choose 100Handy for {title}?
             </h3>
-            <p className="mb-4 text-[20px] leading-relaxed text-brand-dark-alt">
-              <span className="font-bold">Trusted & Vetted Taskers</span> – Every handyman on 100Handy is background-checked, reviewed, and rated by real users.
-            </p>
-            <p className="mb-4 text-[20px] leading-relaxed text-brand-dark-alt">
-              <span className="font-bold">Seamless Booking</span> – Find, hire, and pay your Tasker seamlessly through our secure platform.
-            </p>
-            <p className="mb-4 text-[20px] leading-relaxed text-brand-dark-alt">
-              <span className="font-bold">Reliable Home Repairs</span> – From minor fixes to larger handyman projects, Taskers can help with a variety of home maintenance needs.
-            </p>
-            <p className="text-[20px] leading-relaxed text-brand-dark-alt">
-              <span className="font-bold">Happiness Pledge</span> – We stand by the quality of our services. If something isn't right, we'll work to make it right.
-            </p>
+            {benefits.map((benefit, index) => (
+              <p key={index} className="mb-4 text-[20px] leading-relaxed text-brand-dark-alt">
+                <span className="font-bold">{benefit.title}</span> – {benefit.description}
+              </p>
+            ))}
           </div>
 
           {/* Right column - Dark decorative card with shapes */}
@@ -54,46 +54,28 @@ export function ContentSection(): React.JSX.Element {
           </div>
         </div>
 
-        {/* What Kind of Home Repairs section */}
+        {/* What Kind of Tasks section */}
         <div className="mt-16">
           <h3 className="mb-6 text-[39px] font-bold leading-tight text-brand-dark-alt">
-            What Kind of Home Repairs
+            What Kind of {title}
             <br />
             Can a Tasker Help With?
           </h3>
           <p className="mb-6 text-[20px] text-brand-dark-alt">
-            Taskers are skilled in a variety of home repair services, including:
+            Taskers are skilled in a variety of {title.toLowerCase()} services, including:
           </p>
-          
+
           <div className="space-y-4">
-            <p className="text-[20px] text-brand-dark-alt">
-              <Check className="mr-2 inline h-5 w-5 text-brand-dark-alt" strokeWidth={2} />
-              <span className="font-bold">Drywall repair</span> – Patching holes, smoothing out dents, and painting over fixes.
-            </p>
-            <p className="text-[20px] text-brand-dark-alt">
-              <Check className="mr-2 inline h-5 w-5 text-brand-dark-alt" strokeWidth={2} />
-              <span className="font-bold">Furniture repair</span> – Fixing broken chairs, tables, and other household items.
-            </p>
-            <p className="text-[20px] text-brand-dark-alt">
-              <Check className="mr-2 inline h-5 w-5 text-brand-dark-alt" strokeWidth={2} />
-              <span className="font-bold">Plumbing repair</span> – Stopping leaks, replacing faucets, and unclogging drains.
-            </p>
-            <p className="text-[20px] text-brand-dark-alt">
-              <Check className="mr-2 inline h-5 w-5 text-brand-dark-alt" strokeWidth={2} />
-              <span className="font-bold">Electrical repairs</span> – Installing light fixtures, replacing switches, and minor wiring work.
-            </p>
-            <p className="text-[20px] text-brand-dark-alt">
-              <Check className="mr-2 inline h-5 w-5 text-brand-dark-alt" strokeWidth={2} />
-              <span className="font-bold">Mounting installations</span> – Hanging TVs, picture frames, curtains, and more.
-            </p>
+            {tasks.map((task, index) => (
+              <p key={index} className="text-[20px] text-brand-dark-alt">
+                <Check className="mr-2 inline h-5 w-5 text-brand-dark-alt" strokeWidth={2} />
+                <span className="font-bold">{task.title}</span> – {task.description}
+              </p>
+            ))}
           </div>
 
           <p className="mt-8 text-[20px] text-brand-dark-alt">
-            <span className="font-bold">General handyman tasks</span> – Fixing doors, repairing cabinets, installing shelves, and more.
-          </p>
-
-          <p className="mt-8 text-[20px] text-brand-dark-alt">
-            No wonder more people trust 100Handy as the go-to solution for professional, affordable handyman services that fit your schedule.
+            No wonder more people trust 100Handy as the go-to solution for professional, affordable services that fit your schedule.
           </p>
 
           <p className="mt-6 text-[20px] text-brand-dark-alt">

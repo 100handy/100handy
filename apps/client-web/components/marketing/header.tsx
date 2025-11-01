@@ -14,24 +14,27 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Center Navigation */}
-        <nav className="hidden items-center gap-8 lg:flex">
+        {/* Right Navigation */}
+        <nav className="flex items-center gap-6">
           <Link
             href="/services"
-            className="text-[16px] font-bold text-[#30352D] transition-colors hover:text-brand-terracotta"
+            className="text-[16px] font-medium text-[#30352D] transition-colors hover:text-brand-terracotta"
           >
             Services
           </Link>
           <Link
+            href="/sign-in"
+            className="text-[16px] font-medium text-[#30352D] transition-colors hover:text-brand-terracotta"
+          >
+            Sign up / Log in
+          </Link>
+          <Link
             href="/become-tasker"
-            className="text-[16px] font-bold text-[#30352D] transition-colors hover:text-brand-terracotta"
+            className="px-4 py-2 rounded-md bg-brand-terracotta text-white font-medium text-[16px] hover:bg-brand-terracotta/90 transition-colors"
           >
             Become a Tasker
           </Link>
         </nav>
-
-        {/* User Menu - Shows Sign In/Up or User Profile */}
-        <UserMenu />
       </div>
     </header>
   );

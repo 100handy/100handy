@@ -1,31 +1,83 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/marketing/footer";
 import Link from "next/link";
+import {
+  TaskerCard,
+  BrowseFilters,
+  PeaceOfMindCard,
+} from "@/components/browse-pros";
+import { ConfirmDetails } from "@/components/confirm-booking/confirm-details";
+import { TaskSummary } from "@/components/confirm-booking/task-summary";
 
 export default function TaskFormPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const categoryFromUrl = searchParams.get("category");
+
+  const [taskCategory, setTaskCategory] = useState(categoryFromUrl || "General Mounting");
   const [streetAddress, setStreetAddress] = useState("");
   const [unitFlat, setUnitFlat] = useState("");
-  const [taskOptionsOpen, setTaskOptionsOpen] = useState(false);
-  const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [taskSize, setTaskSize] = useState("");
   const [vehicleRequirement, setVehicleRequirement] = useState("");
+  const [taskDetails, setTaskDetails] = useState("");
   const [locationConfirmed, setLocationConfirmed] = useState(false);
+  const [taskOptionsCompleted, setTaskOptionsCompleted] = useState(false);
+  const [showBrowsePros, setShowBrowsePros] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const MAX_TASK_DETAILS_LENGTH = 300;
+
+  const mockTaskers = Array.from({ length: 7 }, (_, i) => ({
+    id: `tasker-${i}`,
+    name: "Mike W.",
+    rating: 5.0,
+    reviewCount: 124,
+    hourlyRate: 70.27,
+    minimumHours: 2,
+    tasksCompleted: 438,
+    overallTasks: 548,
+    vehicle: "Car",
+    profileImage: "/images/tasker-placeholder.jpg",
+    bio: "I have 8 years of experience. I come with all the right rawlplugs, fixings and tools and not forgetting my trust…",
+    recentReview: {
+      text: "Great Work, very considerate and excellent Attention to detail.",
+      author: "Ana B.",
+      date: "Thursday, Oct 2",
+    },
+  }));
+
+  useEffect(() => {
+    if (categoryFromUrl) {
+      setTaskCategory(categoryFromUrl);
+    }
+  }, [categoryFromUrl]);
 
   const handleLocationContinue = () => {
     if (streetAddress.trim()) {
       setLocationConfirmed(true);
-      setTaskOptionsOpen(true);
     }
   };
 
+  const handleTaskOptionsContinue = () => {
+    if (taskSize && vehicleRequirement) {
+      setTaskOptionsCompleted(true);
+    }
+  };
+
+  const getCurrentStep = () => {
+    if (showConfirmation) return 3;
+    if (showBrowsePros) return 2;
+    return 1;
+  };
+
   const steps = [
-    { number: 1, label: "Describe your task", active: true },
-    { number: 2, label: "", active: false },
-    { number: 3, label: "", active: false },
+    { number: 1, label: "Describe your task", active: getCurrentStep() === 1 },
+    { number: 2, label: "", active: getCurrentStep() === 2 },
+    { number: 3, label: "Confirm details", active: getCurrentStep() === 3 },
     { number: 4, label: "", active: false },
   ];
 
@@ -98,10 +150,18 @@ export default function TaskFormPage() {
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-brand-dark text-sm">
-                Tell us about your task. We use these details to show Taskers in your area
-              </p>
-              <p className="text-brand-dark text-sm">Who fit your needs.</p>
+              {showConfirmation ? (
+                <p className="text-brand-dark text-sm">
+                  {"You're almost done! We just need a few more details to connect you with your Pro."}
+                </p>
+              ) : (
+                <>
+                  <p className="text-brand-dark text-sm">
+                    Tell us about your task. We use these details to show Taskers in your area
+                  </p>
+                  <p className="text-brand-dark text-sm">Who fit your needs.</p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -110,11 +170,21 @@ export default function TaskFormPage() {
       {/* Main Content */}
       <main className="flex-1 py-8">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-          <div className="max-w-3xl mx-auto space-y-6">
-            {/* Task Title */}
-            <h1 className="text-brand-dark font-bold text-2xl sm:text-3xl">
-              General Mounting
-            </h1>
+          {showConfirmation ? (
+            /* Confirmation Step */
+            <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+              {/* Left Column - Payment Form */}
+              <ConfirmDetails />
+
+              {/* Right Column - Task Summary */}
+              <TaskSummary />
+            </div>
+          ) : !showBrowsePros ? (
+            <div className="max-w-3xl mx-auto space-y-6">
+              {/* Task Title */}
+              <h1 className="text-brand-dark font-bold text-2xl sm:text-3xl">
+                {taskCategory}
+              </h1>
 
             {/* Your task location */}
             <div className="bg-white rounded-lg border border-gray-300 p-6">
@@ -180,20 +250,11 @@ export default function TaskFormPage() {
             </div>
 
             {/* Task Options */}
-            <div className="bg-white rounded-lg border border-gray-300">
-              <button
-                onClick={() => setTaskOptionsOpen(!taskOptionsOpen)}
-                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors rounded-lg"
-              >
-                <h2 className="text-brand-dark font-semibold text-lg">Task Options</h2>
-                {taskOptionsOpen ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
-                )}
-              </button>
-              {taskOptionsOpen && (
-                <div className="px-6 pb-6 space-y-6">
+            <div className="bg-white rounded-lg border border-gray-300 p-6">
+              <h2 className="text-brand-dark font-semibold text-lg mb-6">Task options</h2>
+
+              {locationConfirmed && (
+                <div className="space-y-6">
                   {/* Task Size */}
                   <div>
                     <h3 className="text-brand-dark font-semibold text-base mb-3">
@@ -280,7 +341,10 @@ export default function TaskFormPage() {
 
                   {/* Continue Button */}
                   <div className="flex justify-center pt-4">
-                    <Button className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full">
+                    <Button
+                      onClick={handleTaskOptionsContinue}
+                      className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full"
+                    >
                       Continue
                     </Button>
                   </div>
@@ -289,29 +353,90 @@ export default function TaskFormPage() {
             </div>
 
             {/* Tell us the details of your task */}
-            <div className="bg-white rounded-lg border border-gray-300">
-              <button
-                onClick={() => setTaskDetailsOpen(!taskDetailsOpen)}
-                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors rounded-lg"
-              >
-                <h2 className="text-brand-dark font-semibold text-lg">
-                  Tell us the details of your task
-                </h2>
-                {taskDetailsOpen ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
-                )}
-              </button>
-              {taskDetailsOpen && (
-                <div className="px-6 pb-6">
-                  <p className="text-gray-500 text-sm">
-                    Task details content will go here...
-                  </p>
-                </div>
+            <div className="bg-white rounded-lg border border-gray-300 p-6">
+              <h2 className="text-brand-dark font-semibold text-lg mb-4">
+                Tell us the details of your task
+              </h2>
+
+              {taskOptionsCompleted && (
+                <>
+                  <div className="relative">
+                    <textarea
+                      value={taskDetails}
+                      onChange={(e) => {
+                        if (e.target.value.length <= MAX_TASK_DETAILS_LENGTH) {
+                          setTaskDetails(e.target.value);
+                        }
+                      }}
+                      placeholder="For example, what supplies are needed, where to park, or timing restrictions."
+                      className="w-full min-h-[200px] px-4 py-3 border border-gray-300 rounded-lg text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-terracotta focus:border-brand-terracotta resize-none"
+                    />
+                    <div className="flex justify-end mt-2">
+                      <span className="text-sm text-gray-500">
+                        {taskDetails.length}/{MAX_TASK_DETAILS_LENGTH}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* See Taskers & Prices Button */}
+                  <div className="flex justify-center pt-6">
+                    <Button
+                      onClick={() => setShowBrowsePros(true)}
+                      className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full"
+                    >
+                      See Taskers & Prices
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
           </div>
+        ) : (
+          /* Browse Pros Section */
+          <div className="flex gap-8">
+            {/* Filters Sidebar */}
+            <aside className="w-80 flex-shrink-0 space-y-6">
+              <BrowseFilters />
+              <PeaceOfMindCard />
+            </aside>
+
+            {/* Taskers List */}
+            <main className="flex-1">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h1 className="text-2xl font-medium text-[#30352D]">
+                    Browse Pros & Prices
+                  </h1>
+                  <p className="text-[#30352D] text-base leading-relaxed mt-1">
+                    Filter and sort to find your 100Handy Pro. Then view their
+                    availability to request your date and time.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    Sorted by:
+                  </span>
+                  <select className="border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+                    <option>Recommended</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {mockTaskers.map((tasker) => (
+                  <TaskerCard
+                    key={tasker.id}
+                    tasker={tasker}
+                    onSelectContinue={() => {
+                      setShowBrowsePros(false);
+                      setShowConfirmation(true);
+                    }}
+                  />
+                ))}
+              </div>
+            </main>
+          </div>
+        )}
         </div>
       </main>
 

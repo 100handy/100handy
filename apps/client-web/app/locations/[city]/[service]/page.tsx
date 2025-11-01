@@ -1,0 +1,356 @@
+import React from "react";
+import { Header } from "@/components/layout";
+import { Footer } from "@/components/marketing/footer";
+import { HelpIcon } from "@/components/icons";
+import { notFound } from "next/navigation";
+import { FAQSection } from "@/components/location-service/faq-section";
+
+// Service data mapping
+const serviceData: Record<string, { name: string; description: string; category: string }> = {
+  "furniture-assembly": {
+    name: "Furniture Assembly",
+    description: "Need someone to put together furniture? Hire a Tasker to assemble your furniture and leave the building to them.",
+    category: "Handyman"
+  },
+  "tv-mounting": {
+    name: "TV Mounting",
+    description: "Mount your TV safely and professionally with expert help from local Taskers.",
+    category: "Handyman"
+  },
+  "handyman": {
+    name: "Handyman",
+    description: "If you're looking for local handyman services to help with home maintenance projects, just search \"handyman near me\" on 100Handy.",
+    category: "Services"
+  },
+  "home-cleaning": {
+    name: "Home Cleaning",
+    description: "Get professional home cleaning services from trusted Taskers in your area.",
+    category: "Cleaning"
+  },
+  "help-moving": {
+    name: "Help Moving",
+    description: "Get help with your move from experienced Taskers who can handle heavy lifting and transport.",
+    category: "Moving"
+  },
+};
+
+// City data mapping
+const cityData: Record<string, { name: string; taskerCount: number; reviewCount: string }> = {
+  "london": { name: "London", taskerCount: 3744, reviewCount: "500k" },
+  "manchester": { name: "Manchester", taskerCount: 2100, reviewCount: "300k" },
+  "birmingham": { name: "Birmingham", taskerCount: 1800, reviewCount: "250k" },
+  "leeds": { name: "Leeds", taskerCount: 1200, reviewCount: "180k" },
+  "liverpool": { name: "Liverpool", taskerCount: 1400, reviewCount: "200k" },
+  "glasgow": { name: "Glasgow", taskerCount: 1100, reviewCount: "150k" },
+  "edinburgh": { name: "Edinburgh", taskerCount: 900, reviewCount: "130k" },
+  "bristol": { name: "Bristol", taskerCount: 1300, reviewCount: "190k" },
+  "sheffield": { name: "Sheffield", taskerCount: 800, reviewCount: "120k" },
+};
+
+interface LocationServicePageProps {
+  params: Promise<{
+    city: string;
+    service: string;
+  }>;
+}
+
+// Sample taskers data
+const generateTaskers = (serviceName: string, count: number = 6) => {
+  const names = ["Maria R.", "Lucas P.", "Marcus R.", "Lore V.", "Ahmet P.", "Lisa O."];
+  const descriptions = [
+    "From start to finish, I communicate clearly and work carefully to deliver exactly what you need",
+    "Friendly, punctual, and experienced—I focus on providing quality service and customer satisfaction every time.",
+    "Whether it's a quick fix or a larger project, I'm committed to delivering dependable, professional results.",
+    "With over 6 years of experience, I bring the right tools and skills to ensure your job is completed safely."
+  ];
+
+  return names.slice(0, count).map((name, index) => ({
+    name,
+    tasks: `${Math.floor(Math.random() * 90) + 10} ${serviceName.toLowerCase()} tasks`,
+    rating: "5.0",
+    reviews: 124,
+    description: descriptions[index % descriptions.length]
+  }));
+};
+
+export default async function LocationServicePage({ params }: LocationServicePageProps) {
+  const { city, service } = await params;
+
+  // Validate city and service
+  const cityInfo = cityData[city];
+  const serviceInfo = serviceData[service];
+
+  if (!cityInfo || !serviceInfo) {
+    notFound();
+  }
+
+  const taskers = generateTaskers(serviceInfo.name);
+
+  return (
+    <LocationServiceContent
+      city={cityInfo}
+      service={serviceInfo}
+      citySlug={city}
+      serviceSlug={service}
+      taskers={taskers}
+    />
+  );
+}
+
+interface LocationServiceContentProps {
+  city: { name: string; taskerCount: number; reviewCount: string };
+  service: { name: string; description: string; category: string };
+  citySlug: string;
+  serviceSlug: string;
+  taskers: Array<{
+    name: string;
+    tasks: string;
+    rating: string;
+    reviews: number;
+    description: string;
+  }>;
+}
+
+function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers }: LocationServiceContentProps) {
+  return (
+    <div className="bg-white min-h-screen">
+      <Header currentPage="services" />
+
+      {/* Breadcrumb */}
+      <div className="bg-white py-4 border-b border-gray-200">
+        <div className="max-w-[1920px] mx-auto px-8">
+          <p className="text-brand-terracotta text-sm">
+            Home &gt; Locations &gt; {city.name} &gt; {service.name}
+          </p>
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <section className="bg-brand-dark py-16">
+        <div className="max-w-[1920px] mx-auto px-8">
+          <div className="grid grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-white font-bold text-[44px] leading-tight mb-6">
+                {service.name} Services in<br />
+                {city.name}
+              </h1>
+
+              <p className="text-white text-[24px] mb-6 leading-relaxed">
+                {service.description}
+              </p>
+
+              <div className="flex items-center gap-2 mb-8">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-white text-[24px] font-semibold">{city.reviewCount} Reviews</span>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-white mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-white text-[24px]">Browse {city.taskerCount.toLocaleString()}+ Taskers with a variety of skills.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-white mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-white text-[24px]">All Taskers bring their own tools and equipment.</p>
+                </div>
+              </div>
+
+              <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+                Book Now
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center">
+              <svg width="289" height="220" viewBox="0 0 289 220" className="text-brand-sage">
+                <circle cx="50" cy="50" r="50" fill="currentColor" opacity="0.6" />
+                <polygon points="145,0 289,220 0,220" fill="currentColor" opacity="0.6" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Taskers */}
+      <section className="bg-white py-20">
+        <div className="max-w-[1920px] mx-auto px-8">
+          <h2 className="text-brand-dark-alt font-bold text-[37px] mb-12">
+            {city.taskerCount.toLocaleString()} featured {service.name} Taskers in {city.name}
+          </h2>
+
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            {taskers.map((tasker, index) => (
+              <div key={index} className="border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-24 h-24 bg-gray-300 rounded-full flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="text-brand-dark-alt font-bold text-[26px] mb-1">{tasker.name}</h3>
+                    <div className="flex items-center gap-1 mb-2">
+                      <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span className="text-brand-dark-alt text-[18px]">{tasker.rating} ({tasker.reviews} reviews)</span>
+                    </div>
+                    <p className="text-brand-dark-alt text-[18px]">{tasker.tasks}</p>
+                  </div>
+                </div>
+                <p className="text-brand-dark-alt text-[19px] leading-relaxed mb-4">{tasker.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <button className="border-2 border-brand-dark-alt text-brand-dark-alt hover:bg-brand-dark-alt hover:text-white font-semibold py-3 px-10 rounded-md transition-colors text-[18px]">
+              Search all Taskers
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Satisfaction Guarantee */}
+      <section className="bg-[#F5F3F1] py-20">
+        <div className="max-w-[1920px] mx-auto px-8">
+          <h2 className="text-brand-dark-alt font-bold text-[44px] mb-16 text-center">
+            Your satisfaction, guaranteed
+          </h2>
+
+          <div className="grid grid-cols-3 gap-12">
+            <div>
+              <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4">Happiness Pledge</h3>
+              <p className="text-brand-dark-alt text-[21px] leading-relaxed">
+                If you're not satisfied, we'll work to make it right.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4">Vetted Taskers</h3>
+              <p className="text-brand-dark-alt text-[21px] leading-relaxed">
+                Taskers are always background checked before joining the platform.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4">Dedicated Support</h3>
+              <p className="text-brand-dark-alt text-[21px] leading-relaxed">
+                Friendly service when you need us — every day of the week.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <FAQSection serviceName={service.name} cityName={city.name} />
+
+      {/* How It Works */}
+      <section className="bg-brand-dark py-20">
+        <div className="max-w-[1920px] mx-auto px-8">
+          <div className="grid grid-cols-2 gap-12 items-center">
+            <div className="bg-white rounded-2xl p-12 shadow-2xl">
+              <h2 className="text-brand-dark-alt font-bold text-[33px] mb-10">How it works</h2>
+
+              <div className="space-y-8">
+                <div className="flex items-start gap-4">
+                  <div className="bg-brand-terracotta w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-[33px] font-bold">1</span>
+                  </div>
+                  <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
+                    Choose a Tasker by price, skills, and reviews.
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="bg-brand-sage w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-[33px] font-bold">2</span>
+                  </div>
+                  <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
+                    Schedule a Tasker as early as today.
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="bg-brand-sage w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-[33px] font-bold">3</span>
+                  </div>
+                  <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
+                    Chat, pay, tip, and review, all in one place.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center">
+              <svg width="289" height="220" viewBox="0 0 289 220" className="text-brand-sage opacity-60">
+                <circle cx="50" cy="50" r="50" fill="currentColor" />
+                <polygon points="145,0 289,220 0,220" fill="currentColor" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className="bg-white py-20">
+        <div className="max-w-[1920px] mx-auto px-8">
+          <h2 className="text-brand-dark-alt font-bold text-[44px] mb-12">
+            See what happy customers are saying about {service.name.toLowerCase()} in {city.name}
+          </h2>
+
+          <div className="grid grid-cols-3 gap-6 mb-10">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="border border-gray-200 rounded-2xl p-6">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <h4 className="text-brand-dark-alt font-bold text-[24px] mb-2">Customer {index + 1}</h4>
+                <p className="text-brand-dark-alt text-[24px] mb-3">{service.name}</p>
+                <p className="text-brand-dark-alt text-[21px] leading-relaxed">
+                  Great service! Professional and efficient. Highly recommend for anyone in {city.name}.
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+              Get started
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+
+      {/* Help Button */}
+      <button className="fixed bottom-6 left-6 bg-[#A0B194] text-white p-4 rounded-full shadow-lg hover:bg-[#8a9a7e] transition-colors flex items-center justify-center">
+        <HelpIcon />
+      </button>
+    </div>
+  );
+}
+
+// Generate static params for common city/service combinations
+export async function generateStaticParams() {
+  const cities = Object.keys(cityData);
+  const services = Object.keys(serviceData);
+  const params: Array<{ city: string; service: string }> = [];
+
+  cities.forEach((city) => {
+    services.forEach((service) => {
+      params.push({ city, service });
+    });
+  });
+
+  return params;
+}

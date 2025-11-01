@@ -1,6 +1,11 @@
 "use client";
 
-export function ServiceHero(): React.JSX.Element {
+interface ServiceHeroProps {
+  title: string;
+  description: string;
+}
+
+export function ServiceHero({ title, description }: ServiceHeroProps): React.JSX.Element {
   return (
     <section className="relative bg-brand-dark py-16">
       <div className="mx-auto max-w-[1920px] px-8">
@@ -17,10 +22,10 @@ export function ServiceHero(): React.JSX.Element {
           {/* White info card - centered */}
           <div className="relative z-10 w-full max-w-[576px] rounded-2xl bg-white px-12 py-16 text-center shadow-xl">
             <h1 className="mb-6 text-[48px] font-bold leading-tight text-brand-dark-alt">
-              Handyman Services
+              {title}
             </h1>
             <p className="mb-8 text-[22px] leading-relaxed text-brand-dark-alt">
-              Jacks (and Jills) of all trades can handle most of your minor home repairs.
+              {description}
             </p>
             <button className="rounded-full bg-brand-terracotta px-12 py-4 text-[22px] font-medium text-white transition-colors hover:bg-brand-terracotta/90">
               Book Now

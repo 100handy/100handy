@@ -46,14 +46,19 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect to home if accessing auth routes with active session
+  // Redirect to dashboard if accessing auth routes with active session
   const authRoutes = ['/sign-in', '/sign-up']
-  const isAuthRoute = authRoutes.some(route => 
+  const isAuthRoute = authRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   )
 
   if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // Redirect signed-in users from homepage to dashboard
+  if (request.nextUrl.pathname === '/' && user) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return supabaseResponse

@@ -3,17 +3,21 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
-const faqs = [
+interface FAQsProps {
+  service: string;
+}
+
+const defaultFaqs = [
   {
-    question: "Do Taskers only do minor home repairs?",
-    answer: "No, Taskers can handle both minor and major home repair projects depending on their expertise and qualifications.",
+    question: "Do Taskers only do minor repairs?",
+    answer: "No, Taskers can handle both minor and major projects depending on their expertise and qualifications.",
   },
   {
-    question: "How quickly can I get a Tasker to do my home repair job?",
+    question: "How quickly can I get a Tasker?",
     answer: "Many Taskers are available same-day or within 24 hours, depending on your location and the scope of work.",
   },
   {
-    question: "How much do handyman services cost?",
+    question: "How much do services cost?",
     answer: "Costs vary based on the task, location, and Tasker experience. You can compare prices and choose the best fit for your budget.",
   },
   {
@@ -22,7 +26,8 @@ const faqs = [
   },
 ];
 
-export function FAQs(): React.JSX.Element {
+export function FAQs({ service }: FAQsProps): React.JSX.Element {
+  const faqs = defaultFaqs;
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (

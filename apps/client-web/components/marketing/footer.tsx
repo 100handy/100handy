@@ -10,33 +10,29 @@ const discoverLinks = [
   { label: "Become a Tasker", href: "/become-tasker" },
   { label: "Services By City", href: "/services-by-city" },
   { label: "All Services", href: "/all-services" },
-  { label: "Browse Pros", href: "/browse-pros" },
+  { label: "Elite Taskers", href: "/elite-taskers" },
   { label: "Help", href: "/help" },
 ];
 
 const companyLinks = [
   { label: "About Us", href: "/about-us" },
   { label: "Careers", href: "/careers" },
-  { label: "Contact Us", href: "/contact" },
+  { label: "Partner with 100 Handy", href: "/partner" },
   { label: "Press", href: "/press" },
-  { label: "For Business", href: "/for-business" },
+  { label: "100 Handy for Good", href: "/for-good" },
   { label: "Blog", href: "/blog" },
-];
-
-const legalLinks = [
-  { label: "Terms of Service", href: "/terms" },
-  { label: "Privacy Policy", href: "/privacy" },
-  {
-    label: "Do Not Sell My Personal Information",
-    href: "/privacy/do-not-sell",
-  },
+  { label: "Terms & Privacy", href: "/terms" },
   { label: "Legal", href: "/legal" },
+  { label: "Cookie Settings", href: "/cookie-settings" },
 ];
 
 export function Footer(): JSX.Element {
   return (
     <footer className="bg-[#2D332B] py-12 text-gray-300">
       <div className="mx-auto max-w-[1920px] px-8">
+        <div className="mb-6 text-sm text-gray-400">
+          Follow us! We're friendly:
+        </div>
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Logo and Social */}
           <div>
@@ -123,25 +119,6 @@ export function Footer(): JSX.Element {
             </ul>
           </div>
 
-          {/* Terms & Privacy */}
-          <div>
-            <h3 className="mb-4 text-[14px] font-bold text-white">
-              Terms & Privacy
-            </h3>
-            <ul className="space-y-2">
-              {legalLinks.map((link) => (
-                <li key={link.label}>
-                  {/* @ts-expect-error - React 19 type compatibility issue */}
-                  <Link
-                    href={link.href}
-                    className="text-[14px] text-gray-300 transition-colors hover:text-white"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
 
           {/* Download App */}
           <div>

@@ -48,7 +48,7 @@ export default function SignIn() {
           toast.error(ctx.error.message || "Failed to sign in");
         },
         onSuccess: async () => {
-          router.push("/");
+          router.push("/dashboard");
         },
       }
     );
