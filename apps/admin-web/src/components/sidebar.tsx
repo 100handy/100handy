@@ -3,11 +3,6 @@ import { LayoutDashboard, Shield, Users, ClipboardList, Wrench, CreditCard, Tren
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
-const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: Shield, label: 'Admin', path: '/admin' },
-]
-
 const dashboardSubItems = [
     { label: 'Overview', path: '/dashboard' },
     { label: 'Announcements & Notifications', path: '/dashboard/announcements' },

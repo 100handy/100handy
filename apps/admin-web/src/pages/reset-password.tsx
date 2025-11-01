@@ -1,41 +1,95 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const navigate = useNavigate()
-  const { signIn, user, isAdmin } = useAuth()
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
-  // Redirect to dashboard if already logged in as admin
   useEffect(() => {
-    if (user && isAdmin) {
-      navigate('/dashboard', { replace: true })
+    // Check if we have a recovery token in the URL
+    const hashParams = new URLSearchParams(window.location.hash.substring(1))
+    const accessToken = hashParams.get('access_token')
+    const type = hashParams.get('type')
+
+    if (!accessToken || type !== 'recovery') {
+      setError('Invalid or expired password reset link.')
     }
-  }, [user, isAdmin, navigate])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    // Validation
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const { error } = await signIn(email, password)
+      const { error } = await supabase.auth.updateUser({
+        password: password,
+      })
 
       if (error) {
-        setError(error.message || 'Failed to sign in. Please check your credentials.')
+        setError(error.message)
       } else {
-        navigate('/dashboard')
+        setSuccess(true)
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          navigate('/login')
+        }, 2000)
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
-      console.error('Login error:', err)
+      console.error('Password reset error:', err)
     } finally {
       setLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center p-4">
+        <div className="w-full max-w-md text-center">
+          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-8 mb-4">
+            <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
+              <svg
+                className="w-8 h-8 text-green-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              Password Updated!
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400">
+              Your password has been successfully updated. Redirecting to login...
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -66,7 +120,10 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-white/5 dark:bg-black/10 rounded-lg p-8 shadow-2xl shadow-black/10">
-            <h2 className="text-2xl font-bold text-center mb-6">Administrator Login</h2>
+            <h2 className="text-2xl font-bold text-center mb-2">Reset Your Password</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 text-center mb-6">
+              Enter your new password below
+            </p>
 
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
@@ -77,30 +134,10 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-400 dark:text-gray-500 mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  disabled={loading}
-                  className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
-
-              <div>
-                <label
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-400 dark:text-gray-500 mb-2"
                 >
-                  Password
+                  New Password
                 </label>
                 <input
                   id="password"
@@ -109,7 +146,27 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Enter new password (min 6 characters)"
+                  disabled={loading}
+                  className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-gray-400 dark:text-gray-500 mb-2"
+                >
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
                   disabled={loading}
                   className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
@@ -124,10 +181,10 @@ export default function LoginPage() {
                   {loading ? (
                     <>
                       <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                      <span>Signing in...</span>
+                      <span>Updating Password...</span>
                     </>
                   ) : (
-                    'Login'
+                    'Update Password'
                   )}
                 </button>
               </div>
