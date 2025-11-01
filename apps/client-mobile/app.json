@@ -11,7 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yourco.handy",
-      "associatedDomains": ["applinks:auth.yourdomain.com"]
+      "associatedDomains": ["applinks:auth.yourdomain.com"],
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to help you set your work area and find nearby jobs."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,6 +23,15 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.yourco.handy",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      },
       "intentFilters": [
         {
           "action": "VIEW",
@@ -46,6 +58,12 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "We need your location to help you set your work area and find nearby jobs."
         }
       ]
     ],

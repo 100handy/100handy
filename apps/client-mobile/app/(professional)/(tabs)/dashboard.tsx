@@ -59,7 +59,7 @@ const onboardingTasks = [
     title: 'Set work area',
     duration: '4 MIN',
     onPress: () => {
-      // TODO: Navigate to work area screen
+      router.push('/(professional)/set-work-area');
     },
   },
 ];
