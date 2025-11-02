@@ -7,10 +7,11 @@ import { Text } from '@/components/ui/text';
 import { Checkbox, CheckboxIndicator, CheckboxIcon, CheckboxLabel } from '@/components/ui/checkbox';
 import { Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectItem } from '@/components/ui/select';
 import { EyeIcon, EyeOffIcon, CheckIcon, ChevronDownIcon } from 'lucide-react-native';
-import { signUp, SignUpData } from '@shared/supabase/auth';
+import { signUp } from '@shared/supabase/auth';
 import { useAuthStore } from '@shared/supabase';
 import { useRouter } from 'expo-router';
 import { Loader } from '@/components/ui/loader';
+import { useToast } from '@/components/ui/toast';
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +28,7 @@ export default function Signup() {
     postCode: '',
   });
   const router = useRouter();
-  const { setSession } = useAuthStore();
+  const toast = useToast();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -39,7 +40,7 @@ export default function Signup() {
       return;
     }
 
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
@@ -47,34 +48,27 @@ export default function Signup() {
     try {
       setIsLoading(true);
       const fullPhoneNumber = `${countryCode}${formData.phone}`;
-      const signUpData: SignUpData = {
-        email: formData.email,
-        password: formData.password,
-        phone: fullPhoneNumber,
-        options: {
-          data: {
-            role: 'customer',
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            full_name: `${formData.firstName} ${formData.lastName}`,
-            postcode: formData.postCode,
-          },
+
+      // Sign up with email - this will send email verification automatically
+      await signUp(formData.email, formData.password, {
+        data: {
+          role: 'customer',
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          full_name: `${formData.firstName} ${formData.lastName}`,
+          postcode: formData.postCode,
+          phone: fullPhoneNumber,
         },
-      };
-      const data = await signUp(signUpData);
-      
-      // Update the auth store with the new session
-      if (data.session) {
-        setSession(data.session);
-      }
-      
-      Alert.alert('Success', 'Account created successfully!');
-      console.log('Signup successful:', data);
-      
-      // AuthWrapper will handle navigation automatically
+      });
+
+      // Navigate to email verification screen
+      router.push({
+        pathname: '/(auth)/verify-email',
+        params: { email: formData.email },
+      });
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create account');
       console.error('Signup error:', error);
+      toast.error('Sign up failed', error instanceof Error ? error.message : 'Please try again');
     } finally {
       setIsLoading(false);
     }

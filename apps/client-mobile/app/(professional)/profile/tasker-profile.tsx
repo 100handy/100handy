@@ -20,7 +20,7 @@ export default function TaskerProfileScreen() {
         <Text className="text-lg font-semibold text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
           Tasker Profile
         </Text>
-        <Pressable onPress={() => {/* Preview profile */}}>
+        <Pressable onPress={() => router.push('/profile/profile-preview')}>
           <Eye size={24} color="#C1856A" />
         </Pressable>
       </HStack>

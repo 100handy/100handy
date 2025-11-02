@@ -28,7 +28,7 @@ export function OnboardingTask({
             <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-0.5">
               {title}
             </Text>
-            <Text className="font-worksans text-[11px] text-[#6B6B6B]">
+            <Text className="font-worksans text-[11px] text-[#333a31]">
               {duration}
             </Text>
           </VStack>

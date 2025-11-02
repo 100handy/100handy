@@ -8,13 +8,13 @@ import { Text } from '@/components/ui/text';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronDown, X, Eye, EyeOff } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { type SignUpData } from '@shared/supabase/auth';
+import { type SignUpData, signUpWithPhone } from '@shared/supabase/auth';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signUpSchema, type SignUpFormData } from '@shared/schemas/auth';
 
 interface SignUpFormProps {
-  onSubmit: (data: SignUpData) => void;
+  onSubmit: (email: string, password: string, metadata: any) => void;
   isLoading: boolean;
   userRole: 'professional' | 'client';
 }
@@ -45,22 +45,17 @@ export default function SignUpForm({
   });
 
   const handleSignUp = (formData: SignUpFormData): void => {
-    const signUpData: SignUpData = {
-      email: formData.email,
-      password: formData.password,
-      phone: `${selectedCountry}${formData.phone}`,
-      options: {
-        data: {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          full_name: `${formData.firstName} ${formData.lastName}`,
-          role: userRole === 'professional' ? 'handy' : 'customer',
-          postcode: formData.postcode,
-        },
-      },
+    const fullPhone = `${selectedCountry}${formData.phone}`;
+    const metadata = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      full_name: `${formData.firstName} ${formData.lastName}`,
+      role: userRole === 'professional' ? 'handy' : 'customer',
+      postcode: formData.postcode,
+      phone: fullPhone,
     };
 
-    onSubmit(signUpData);
+    onSubmit(formData.email, formData.password, metadata);
   };
 
   return (
@@ -213,6 +208,9 @@ export default function SignUpForm({
 
       {/* Phone Number */}
       <Box className="mb-3">
+        <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
+          Phone Number
+        </Text>
         <Controller
           control={control}
           name="phone"
@@ -303,7 +301,7 @@ export default function SignUpForm({
       {/* Help Text */}
       <Text className="text-[12px] font-worksans-medium mb-5 leading-5" style={{ color: '#30352D' }}>
         Your phone and postcode help us match and{'\n'}
-        Connect you with right Takers.
+        connect you with the right Taskers.
       </Text>
 
       {/* Signup Button */}

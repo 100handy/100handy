@@ -8,7 +8,7 @@ import { Text } from '@/components/ui/text';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { type SignUpData, signUp } from '@shared/supabase/auth';
+import { signUp } from '@shared/supabase/auth';
 import SignUpForm from '@/components/auth/SignUpForm';
 import { useToast } from '@/components/ui/toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,23 +29,18 @@ export default function ClientSignUp() {
     }
   };
 
-  const handleSignUp = async (data: SignUpData): Promise<void> => {
+  const handleSignUp = async (email: string, password: string, metadata: any): Promise<void> => {
     try {
       setIsLoading(true);
-      const result = await signUp(data);
-      console.log("result", result);
-      
-      // Check if email confirmation is required
-      if (result.user && !result.user.email_confirmed_at) {
-        // Email verification required - navigate to verification screen
-        router.push({
-          pathname: '/(auth)/verify-email',
-          params: { email: data.email },
-        });
-      } else {
-        // No email verification required (instant confirm) - go to onboarding
-        router.push('/(auth)/(client)/onboarding');
-      }
+
+      // Sign up with email - this will send email verification automatically
+      await signUp(email, password, { data: metadata });
+
+      // Navigate to email verification screen
+      router.push({
+        pathname: '/(auth)/verify-email',
+        params: { email },
+      });
     } catch (error) {
       console.error('Client SignUp error:', error);
       toast.error('Sign up failed', error instanceof Error ? error.message : 'Please try again');
