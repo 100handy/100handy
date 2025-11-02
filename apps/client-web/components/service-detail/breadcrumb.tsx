@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 
-export function Breadcrumb(): React.JSX.Element {
+interface BreadcrumbProps {
+  category: string;
+  service: string;
+  categorySlug: string;
+}
+
+export function Breadcrumb({ category, service, categorySlug }: BreadcrumbProps): React.JSX.Element {
   return (
     <div className="bg-white py-6">
       <div className="mx-auto max-w-[1920px] px-8">
@@ -11,9 +17,9 @@ export function Breadcrumb(): React.JSX.Element {
           {" > "}
           <Link href="/services" className="hover:text-brand-terracotta transition-colors">Services</Link>
           {" > "}
-          <Link href="/services/handyman" className="hover:text-brand-terracotta transition-colors">Handyman</Link>
+          <Link href={`/services#${categorySlug}`} className="hover:text-brand-terracotta transition-colors">{category}</Link>
           {" > "}
-          <span>Home Repairs</span>
+          <span>{service}</span>
         </p>
       </div>
     </div>

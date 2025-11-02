@@ -24,7 +24,7 @@ export function PressReleases(): React.JSX.Element {
   return (
     <section className="bg-white py-20">
       <div className="mx-auto max-w-[1920px] px-8">
-        <h2 className="mb-16 text-center text-[39px] font-bold text-brand-dark-alt">
+        <h2 className="mb-16 text-center text-[32px] font-bold text-[#30352D]">
           Press Release Highlights
         </h2>
 
@@ -34,15 +34,15 @@ export function PressReleases(): React.JSX.Element {
               key={index}
               className="rounded-2xl bg-gray-50 p-8 transition-shadow hover:shadow-lg"
             >
-              <p className="mb-4 text-[16px] font-medium text-brand-dark-alt">
+              <p className="mb-4 text-[20px] font-medium text-[#30352D]">
                 {release.date}
               </p>
-              <h3 className="mb-6 min-h-[120px] text-[20px] font-bold leading-snug text-brand-dark-alt">
+              <h3 className="mb-6 min-h-[120px] text-[20px] font-medium leading-relaxed text-[#30352D]">
                 {release.title}
               </h3>
               <Link
                 href={release.link}
-                className="text-[16px] font-bold text-brand-dark-alt underline hover:text-brand-terracotta"
+                className="text-[16px] font-bold text-[#333A31] underline hover:text-[#C1856A]"
               >
                 Read Release
               </Link>
@@ -51,7 +51,7 @@ export function PressReleases(): React.JSX.Element {
         </div>
 
         <div className="mt-12 text-center">
-          <button className="rounded-full bg-brand-terracotta px-8 py-3 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/90">
+          <button className="rounded-md bg-[#C1856A] px-6 py-2.5 text-[16px] font-bold text-white transition-colors hover:bg-[#C1856A]/90">
             Explore
           </button>
         </div>
