@@ -46,6 +46,7 @@ export interface SignUpData {
       last_name: string;
       full_name: string;
       postcode?: string;
+      phone?: string;
     };
   };
 }

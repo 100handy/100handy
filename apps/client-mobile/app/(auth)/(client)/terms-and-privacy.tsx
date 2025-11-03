@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StatusBar, ScrollView } from 'react-native';
+import { StatusBar, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
-import { Checkbox, CheckboxIndicator, CheckboxIcon, CheckboxLabel } from '@/components/ui/checkbox';
+import { Checkbox, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Image } from 'expo-image';
 import { CheckIcon, ChevronLeft } from 'lucide-react-native';
