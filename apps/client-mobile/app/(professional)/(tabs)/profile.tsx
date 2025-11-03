@@ -1,12 +1,12 @@
-import React from 'react';
-import { ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { Box } from '@/components/ui/box';
 import { Pressable } from '@/components/ui/pressable';
-import { 
+import {
   User,
   FileText,
   Calendar,
@@ -19,9 +19,13 @@ import {
   Lock,
   LogOut,
   ChevronRight,
+  Camera,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@shared/supabase';
+import { useProfileStore } from '@shared/store';
+import * as ImagePicker from 'expo-image-picker';
+import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -32,7 +36,15 @@ interface MenuItem {
 
 export default function ProfessionalProfileScreen() {
   const router = useRouter();
-  const { signOut } = useAuthStore();
+  const { signOut, user } = useAuthStore();
+  const { profile, fetchProfile, uploadAvatar } = useProfileStore();
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user, fetchProfile]);
 
   const handleSignOut = async () => {
     try {
@@ -40,6 +52,55 @@ export default function ProfessionalProfileScreen() {
       router.replace('/');
     } catch (error) {
       console.error('Sign out error:', error);
+    }
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to upload a photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const uploaded = await uploadAvatar(result.assets[0].uri);
+      if (uploaded) {
+        await fetchProfile();
+        Alert.alert('Success', 'Profile photo updated successfully!');
+      } else {
+        Alert.alert('Error', 'Failed to upload photo. Please try again.');
+      }
+    }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera permissions to take a photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const uploaded = await uploadAvatar(result.assets[0].uri);
+      if (uploaded) {
+        await fetchProfile();
+        Alert.alert('Success', 'Profile photo updated successfully!');
+      } else {
+        Alert.alert('Error', 'Failed to upload photo. Please try again.');
+      }
     }
   };
 
@@ -112,6 +173,48 @@ export default function ProfessionalProfileScreen() {
       </Box>
 
       <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+        {/* Profile Photo Section */}
+        <VStack className="px-6 py-8 items-center gap-4 border-b border-gray-100">
+          <Box className="w-[100px] h-[100px] rounded-full overflow-hidden bg-gray-300 relative">
+            {profile?.avatar_url ? (
+              <Image
+                source={{ uri: profile.avatar_url }}
+                className="w-full h-full"
+                style={{ width: 100, height: 100 }}
+              />
+            ) : (
+              <Box className="w-full h-full items-center justify-center bg-[#D17852]/20">
+                <Text className="font-worksans-bold text-3xl text-[#D17852]">
+                  {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'}
+                </Text>
+              </Box>
+            )}
+          </Box>
+
+          <VStack className="items-center gap-1">
+            <Text className="font-worksans-bold text-xl text-theme-font">
+              {profile?.first_name && profile?.last_name
+                ? `${profile.first_name} ${profile.last_name}`
+                : profile?.first_name || 'Professional'}
+            </Text>
+            {profile?.email && (
+              <Text className="font-worksans text-sm text-gray-600">
+                {profile.email}
+              </Text>
+            )}
+          </VStack>
+
+          <Pressable
+            onPress={() => setShowPhotoModal(true)}
+            className="flex-row items-center gap-2 px-4 py-2"
+          >
+            <Camera size={18} color="#B8926A" />
+            <Text className="font-worksans-semibold text-sm text-[#B8926A]">
+              {profile?.avatar_url ? 'Change Photo' : 'Add Photo'}
+            </Text>
+          </Pressable>
+        </VStack>
+
         {/* Menu Items */}
         <VStack className="">
           {menuItems.map((item, index) => (
@@ -141,6 +244,14 @@ export default function ProfessionalProfileScreen() {
           ))}
         </VStack>
       </ScrollView>
+
+      {/* Add Profile Photo Modal */}
+      <AddProfilePhotoModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onTakePhoto={takePhoto}
+        onChooseFromLibrary={pickImage}
+      />
     </SafeAreaView>
   );
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -20,51 +20,61 @@ import {
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingTask } from '@/components/dashboard';
-
-const onboardingTasks = [
-  {
-    icon: <CreditCard color="#D17852" size={28} strokeWidth={1.5} />,
-    title: '100 Handy Support',
-    duration: '4 MIN PER SKILL',
-    onPress: () => {
-      // TODO: Navigate to support screen
-    },
-  },
-  {
-    icon: <Smile color="#D17852" size={28} strokeWidth={1.5} />,
-    title: 'Upload a profile photo',
-    duration: '2 MIN',
-    onPress: () => {
-      // TODO: Navigate to profile photo upload
-    },
-  },
-  {
-    icon: <HandCoins color="#D17852" size={28} strokeWidth={1.5} />,
-    title: 'Upload a profile photo',
-    duration: '2 MIN',
-    onPress: () => {
-      // TODO: Navigate to profile photo upload
-    },
-  },
-  {
-    icon: <Calendar color="#D17852" size={28} strokeWidth={1.5} />,
-    title: 'Set availability',
-    duration: '4 MIN',
-    onPress: () => {
-      router.push('/(professional)/set-availability');
-    },
-  },
-  {
-    icon: <MapPin color="#D17852" size={28} strokeWidth={1.5} />,
-    title: 'Set work area',
-    duration: '4 MIN',
-    onPress: () => {
-      router.push('/(professional)/set-work-area');
-    },
-  },
-];
+import { useAuthStore } from '@shared/supabase';
+import { useProfileStore } from '@shared/store';
 
 export default function ProfessionalDashboard() {
+  const { user } = useAuthStore();
+  const { profile, fetchProfile } = useProfileStore();
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user, fetchProfile]);
+
+  const onboardingTasks = [
+    {
+      icon: <CreditCard color="#D17852" size={28} strokeWidth={1.5} />,
+      title: '100 Handy Support',
+      duration: '4 MIN PER SKILL',
+      onPress: () => {
+        // TODO: Navigate to support screen
+      },
+    },
+    {
+      icon: <Smile color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Upload a profile photo',
+      duration: '2 MIN',
+      onPress: () => {
+        router.push('/(professional)/add-profile-photo');
+      },
+    },
+    {
+      icon: <HandCoins color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Set your hourly rate',
+      duration: '2 MIN',
+      onPress: () => {
+        // TODO: Navigate to hourly rate screen
+      },
+    },
+    {
+      icon: <Calendar color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Set availability',
+      duration: '4 MIN',
+      onPress: () => {
+        router.push('/(professional)/set-availability');
+      },
+    },
+    {
+      icon: <MapPin color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Set work area',
+      duration: '4 MIN',
+      onPress: () => {
+        router.push('/(professional)/set-work-area');
+      },
+    },
+  ];
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <Box className="bg-[#4A5347]">
@@ -75,21 +85,30 @@ export default function ProfessionalDashboard() {
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-3">
               <Box className="w-[62px] h-[62px] rounded-full overflow-hidden bg-gray-300">
-                {/* <Image
-                  source={require('../../../../assets/images/profile-mike.png')}
-                  className="w-full h-full"
-                /> */}
+                {profile?.avatar_url ? (
+                  <Image
+                    source={{ uri: profile.avatar_url }}
+                    className="w-full h-full"
+                    style={{ width: 62, height: 62 }}
+                  />
+                ) : (
+                  <Box className="w-full h-full items-center justify-center bg-[#D17852]/30">
+                    <Text className="font-worksans-bold text-2xl text-white">
+                      {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'}
+                    </Text>
+                  </Box>
+                )}
               </Box>
               <Text className="font-worksans-semibold text-white text-[26px]">
-                Hello, Mike
+                Hello, {profile?.first_name || 'Professional'}
               </Text>
             </HStack>
 
             <HStack className="items-center gap-4">
-              <Pressable>
+              <Pressable onPress={() => router.push('/(professional)/announcements')}>
                 <Bell color="white" size={26} strokeWidth={1.5} />
               </Pressable>
-              <Pressable>
+              <Pressable onPress={() => router.push('/(professional)/inbox')}>
                 <Mail color="white" size={26} strokeWidth={1.5} />
               </Pressable>
             </HStack>
