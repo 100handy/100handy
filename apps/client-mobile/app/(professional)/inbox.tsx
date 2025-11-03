@@ -8,7 +8,7 @@ import { Box } from '@/components/ui/box';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft, Mail } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useProfileStore } from '@shared/store';
+import { useProfileStore } from '@shared/supabase';
 
 export default function InboxScreen() {
   const router = useRouter();

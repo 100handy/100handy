@@ -11,7 +11,7 @@ import {
   Edit3,
   ChevronLeft
 } from 'lucide-react-native';
-import { useProfileStore } from '@shared/store';
+import { useProfileStore } from '@shared/supabase';
 
 interface FieldRowProps {
   label: string;

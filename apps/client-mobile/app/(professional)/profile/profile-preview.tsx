@@ -7,7 +7,7 @@ import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
-import { useProfessionalProfileStore } from '@shared/store';
+import { useProfessionalProfileStore } from '@shared/supabase';
 
 export default function ProfilePreviewScreen() {
   const { tools, vehicles, quickFacts, aboutMe, syncCalendars, loadProfile } = useProfessionalProfileStore();

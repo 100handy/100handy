@@ -11,7 +11,7 @@ import { InputField } from '@/components/ui/input';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Camera, X } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useProfileStore } from '@shared/store';
+import { useProfileStore } from '@shared/supabase';
 import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
 
 interface FormData {

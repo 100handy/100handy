@@ -23,7 +23,7 @@ import {
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@shared/supabase';
-import { useProfileStore } from '@shared/store';
+import { useProfileStore } from '@shared/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
 

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { TextareaInput } from '@/components/ui/textarea';
 import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
-import { useProfessionalProfileStore } from '@shared/store';
+import { useProfessionalProfileStore } from '@shared/supabase';
 
 const MAX_CHARACTERS = 500;
 

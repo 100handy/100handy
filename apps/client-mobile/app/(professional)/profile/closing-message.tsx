@@ -7,7 +7,7 @@ import { Box } from '@/components/ui/box';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import { useProfessionalProfileStore } from '@shared/store';
+import { useProfessionalProfileStore } from '@shared/supabase';
 
 export default function ClosingMessageScreen() {
   const router = useRouter();

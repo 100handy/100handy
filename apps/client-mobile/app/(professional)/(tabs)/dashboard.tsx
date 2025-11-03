@@ -21,7 +21,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingTask } from '@/components/dashboard';
 import { useAuthStore } from '@shared/supabase';
-import { useProfileStore } from '@shared/store';
+import { useProfileStore } from '@shared/supabase';
 
 export default function ProfessionalDashboard() {
   const { user } = useAuthStore();

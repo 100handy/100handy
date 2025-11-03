@@ -251,6 +251,9 @@ importers:
       expo-web-browser:
         specifier: ~15.0.8
         version: 15.0.8(expo@54.0.21(@babel/core@7.28.0)(@expo/metro-runtime@5.0.4(react-native@0.81.5(@babel/core@7.28.0)(@react-native/metro-config@0.82.1(@babel/core@7.28.0))(@types/react@19.1.17)(react@19.1.0)))(@modelcontextprotocol/sdk@1.20.0)(expo-router@6.0.14)(graphql@16.11.0)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.28.0)(@react-native/metro-config@0.82.1(@babel/core@7.28.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.0)(@react-native/metro-config@0.82.1(@babel/core@7.28.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.0)(@react-native/metro-config@0.82.1(@babel/core@7.28.0))(@types/react@19.1.17)(react@19.1.0))
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       lucide-react-native:
         specifier: ^0.539.0
         version: 0.539.0(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.28.0)(@react-native/metro-config@0.82.1(@babel/core@7.28.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.0)(@react-native/metro-config@0.82.1(@babel/core@7.28.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -312,6 +315,9 @@ importers:
       '@babel/core':
         specifier: ^7.25.2
         version: 7.28.0
+      '@types/lodash':
+        specifier: ^4.17.20
+        version: 4.17.20
       '@types/react':
         specifier: ~19.1.10
         version: 19.1.17
@@ -3302,6 +3308,9 @@ packages:
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+
+  '@types/lodash@4.17.20':
+    resolution: {integrity: sha512-H3MHACvFUEiujabxhaI/ImO6gUrd8oOurg7LQtS7mbwIXA/cUqWrvBsaeJ23aZEPk1TAYkurjfMbSELfoCXlGA==}
 
   '@types/node@22.16.3':
     resolution: {integrity: sha512-sr4Xz74KOUeYadexo1r8imhRtlVXcs+j3XK3TcoiYk7B1t3YRVJgtaD3cwX73NYb71pmVuMLNRhJ9XKdoDB74g==}
@@ -12059,6 +12068,8 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
+
+  '@types/lodash@4.17.20': {}
 
   '@types/node@22.16.3':
     dependencies:

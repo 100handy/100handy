@@ -9,7 +9,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { useProfileStore } from '@shared/store';
+import { useProfileStore } from '@shared/supabase';
 
 export default function AddProfilePhotoScreen() {
   const router = useRouter();
