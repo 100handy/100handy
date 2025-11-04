@@ -12,6 +12,7 @@ import {
 } from "@/components/browse-pros";
 import { ConfirmDetails } from "@/components/confirm-booking/confirm-details";
 import { TaskSummary } from "@/components/confirm-booking/task-summary";
+import { LocationAutocomplete } from "@/components/LocationAutocomplete";
 
 export default function TaskFormPage() {
   const searchParams = useSearchParams();
@@ -196,10 +197,15 @@ export default function TaskFormPage() {
                   </h2>
 
                   <div className="space-y-4">
-                    <input
-                      type="text"
+                    <LocationAutocomplete
                       value={streetAddress}
-                      onChange={(e) => setStreetAddress(e.target.value)}
+                      onChange={setStreetAddress}
+                      onPlaceSelected={(place) => {
+                        // Extract address components if needed
+                        if (place.formatted_address) {
+                          setStreetAddress(place.formatted_address);
+                        }
+                      }}
                       placeholder="Street address"
                       className="w-full px-4 py-3 border border-gray-300 rounded-full text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-terracotta focus:border-brand-terracotta"
                     />
