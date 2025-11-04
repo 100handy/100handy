@@ -21,13 +21,16 @@ export default function ClientSignUp() {
       setIsLoading(true);
       const result = await signUp(data);
       console.log("result", result);
-      
+
       // Check if email confirmation is required
       if (result.user && !result.user.email_confirmed_at) {
-        // Email verification required - navigate to verification screen
+        // Email verification required - navigate to OTP verification screen
         router.push({
-          pathname: '/(auth)/verify-email',
-          params: { email: data.email },
+          pathname: '/(auth)/verify-otp',
+          params: {
+            email: data.email,
+            type: 'signup',
+          },
         });
       } else {
         // No email verification required (instant confirm) - go to onboarding

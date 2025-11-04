@@ -8,31 +8,67 @@ import { Loader2, ChevronLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 function VerifyCodeForm() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const email = searchParams.get("email");
   const phoneNumber = searchParams.get("phone") || "+44 7784 - 500446";
+  const isPasswordReset = searchParams.get("reset") === "true";
+
+  // Determine if we're verifying email or phone
+  const isEmailVerification = !!email;
+  const verificationTarget = email || phoneNumber;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setLoading(true);
-    
+
     try {
-      await authClient.verifyOTP(phoneNumber, code, {
-        onSuccess: () => {
-          router.push("/dashboard");
-        },
-        onError: (ctx) => {
-          console.error("OTP verification error:", ctx.error.message);
-          alert(ctx.error.message || "Failed to verify code");
-        },
-      });
+      if (isPasswordReset && email) {
+        // Verify password reset OTP
+        await authClient.verifyPasswordResetOTP(email, code, {
+          onSuccess: () => {
+            toast.success("Code verified! Now set your new password.");
+            router.push("/reset-password");
+          },
+          onError: (ctx) => {
+            console.error("Password reset OTP verification error:", ctx.error.message);
+            toast.error(ctx.error.message || "Failed to verify code");
+          },
+        });
+      } else if (isEmailVerification) {
+        // Verify email OTP (for signup)
+        await authClient.verifyEmailOTP(email!, code, {
+          onSuccess: () => {
+            toast.success("Email verified successfully!");
+            router.push("/dashboard");
+          },
+          onError: (ctx) => {
+            console.error("Email OTP verification error:", ctx.error.message);
+            toast.error(ctx.error.message || "Failed to verify code");
+          },
+        });
+      } else {
+        // Verify phone OTP
+        await authClient.verifyOTP(phoneNumber, code, {
+          onSuccess: () => {
+            toast.success("Phone verified successfully!");
+            router.push("/dashboard");
+          },
+          onError: (ctx) => {
+            console.error("Phone OTP verification error:", ctx.error.message);
+            toast.error(ctx.error.message || "Failed to verify code");
+          },
+        });
+      }
     } catch (error) {
       console.error("OTP verification error:", error);
+      toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -40,17 +76,43 @@ function VerifyCodeForm() {
 
   const handleResendCode = async () => {
     try {
-      await authClient.resendOTP(phoneNumber, {
-        onSuccess: () => {
-          alert("Verification code resent!");
-        },
-        onError: (ctx) => {
-          console.error("Resend OTP error:", ctx.error.message);
-          alert(ctx.error.message || "Failed to resend code");
-        },
-      });
+      if (isPasswordReset && email) {
+        // Resend password reset OTP
+        await authClient.resetPassword.sendOTP(email, {
+          onSuccess: () => {
+            toast.success("Password reset code resent to your email!");
+          },
+          onError: (ctx) => {
+            console.error("Resend password reset OTP error:", ctx.error.message);
+            toast.error(ctx.error.message || "Failed to resend code");
+          },
+        });
+      } else if (isEmailVerification) {
+        // Resend email OTP (for signup)
+        await authClient.resendEmailOTP(email!, {
+          onSuccess: () => {
+            toast.success("Verification code resent to your email!");
+          },
+          onError: (ctx) => {
+            console.error("Resend email OTP error:", ctx.error.message);
+            toast.error(ctx.error.message || "Failed to resend code");
+          },
+        });
+      } else {
+        // Resend phone OTP
+        await authClient.resendOTP(phoneNumber, {
+          onSuccess: () => {
+            toast.success("Verification code resent to your phone!");
+          },
+          onError: (ctx) => {
+            console.error("Resend phone OTP error:", ctx.error.message);
+            toast.error(ctx.error.message || "Failed to resend code");
+          },
+        });
+      }
     } catch (error) {
       console.error("Resend OTP error:", error);
+      toast.error("An unexpected error occurred");
     }
   };
 
@@ -81,17 +143,23 @@ function VerifyCodeForm() {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <h1 className="text-[24px] font-semibold text-[#30352d]">
-              Verify your authentication code
+              {isPasswordReset
+                ? "Reset your password"
+                : "Verify your authentication code"}
             </h1>
           </div>
 
           {/* Instructions */}
           <div className="text-center mb-8">
             <p className="text-[15px] text-[#30352d] leading-relaxed">
-              Enter the 6-digit code sent to your phone number
+              {isPasswordReset
+                ? "Enter the 6-digit code sent to your email to reset your password"
+                : isEmailVerification
+                ? "Enter the 6-digit code sent to your email"
+                : "Enter the 6-digit code sent to your phone number"}
             </p>
             <p className="text-[15px] font-semibold text-[#30352d] mt-1">
-              {phoneNumber}
+              {verificationTarget}
             </p>
           </div>
 

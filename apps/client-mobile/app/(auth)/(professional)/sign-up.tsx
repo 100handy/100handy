@@ -20,13 +20,17 @@ export default function ProfessionalSignUp() {
     try {
       setIsLoading(true);
       const result = await signUp(data);
-      
+
       // Check if email confirmation is required
       if (result.user && !result.user.email_confirmed_at) {
-        // Email verification required - navigate to verification screen
+        // Email verification required - navigate to OTP verification screen
         router.push({
-          pathname: '/(auth)/verify-email',
-          params: { email: data.email },
+          pathname: '/(auth)/verify-otp',
+          params: {
+            email: data.email,
+            type: 'signup',
+            userRole: 'professional',
+          },
         });
       } else {
         // No email verification required (instant confirm) - go to verification flow

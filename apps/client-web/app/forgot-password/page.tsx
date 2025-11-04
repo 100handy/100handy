@@ -15,7 +15,6 @@ import { forgotPasswordSchema, type ForgotPasswordFormData } from "@shared/schem
 
 export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
 
   const {
@@ -35,16 +34,17 @@ export default function ForgotPassword() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setLoading(true);
-    
+
     try {
-      // Use Supabase auth through authClient wrapper
-      await authClient.resetPassword.email(data.email, {
+      // Send OTP for password reset
+      await authClient.resetPassword.sendOTP(data.email, {
         onSuccess: () => {
-          setSubmitted(true);
+          // Redirect to verify-code page with reset parameter
+          router.push(`/verify-code?email=${encodeURIComponent(data.email)}&reset=true`);
         },
         onError: (ctx) => {
           console.error("Password reset error:", ctx.error.message);
-          toast.error(ctx.error.message || "Failed to send reset email");
+          toast.error(ctx.error.message || "Failed to send reset code");
         },
       });
     } catch (error) {
@@ -91,15 +91,13 @@ export default function ForgotPassword() {
             </h1>
           </div>
 
-          {!submitted ? (
-            <>
-              {/* Title & Description */}
+          {/* Title & Description */}
               <div className="text-center mb-8">
                 <h2 className="text-[24px] font-semibold text-[#30352d] mb-3">
                   Forgot your password?
                 </h2>
                 <p className="text-[15px] text-[#30352d]/80 leading-relaxed">
-                  Enter your email address and we'll send you a link to reset your password.
+                  Enter your email address and we'll send you a verification code to reset your password.
                 </p>
               </div>
 
@@ -142,77 +140,24 @@ export default function ForgotPassword() {
                     {loading ? (
                       <Loader2 size={20} className="animate-spin" />
                     ) : (
-                      "Send Reset Link"
+                      "Send Verification Code"
                     )}
                   </Button>
                 </div>
               </form>
 
-              {/* Sign In Link */}
-              <div className="mt-6 text-center">
-                <p className="text-[14px] text-[#30352d]">
-                  Remember your password?{" "}
-                  <Link
-                    href="/sign-in"
-                    className="text-[#C1856A] font-semibold hover:underline"
-                  >
-                    Sign In
-                  </Link>
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Success Message */}
-              <div className="text-center py-8">
-                {/* Success Icon */}
-                <div className="mb-6 flex justify-center">
-                  <div className="w-16 h-16 bg-[#C1856A]/10 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-8 h-8 text-[#C1856A]"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-                <h2 className="text-[24px] font-semibold text-[#30352d] mb-3">
-                  Check your email
-                </h2>
-                <p className="text-[15px] text-[#30352d]/80 leading-relaxed mb-8">
-                  We've sent a password reset link to
-                  <br />
-                  <span className="font-semibold text-[#30352d]">{email}</span>
-                </p>
-
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  <Button
-                    onClick={() => router.push("/sign-in")}
-                    className="w-full h-12 bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90 text-[18px] font-bold rounded-md shadow-sm"
-                    variant="outline"
-                  >
-                    Back to Sign In
-                  </Button>
-
-                  <button
-                    onClick={() => setSubmitted(false)}
-                    className="w-full text-[15px] text-[#C1856A] hover:underline py-2"
-                  >
-                    Didn't receive the email? Resend
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
+          {/* Sign In Link */}
+          <div className="mt-6 text-center">
+            <p className="text-[14px] text-[#30352d]">
+              Remember your password?{" "}
+              <Link
+                href="/sign-in"
+                className="text-[#C1856A] font-semibold hover:underline"
+              >
+                Sign In
+              </Link>
+            </p>
+          </div>
 
           {/* Terms Text */}
           <div className="mt-8 text-center">
