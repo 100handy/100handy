@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import gluestack-ui components
 import { Box } from '@/components/ui/box';
@@ -20,10 +21,52 @@ import {
   X,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { AnalyticsWelcome } from '@/components/analytics';
+
+const ANALYTICS_WELCOME_KEY = '@hasSeenAnalyticsWelcome';
 
 export default function AnalyticsScreen() {
   const router = useRouter();
   const [showError, setShowError] = React.useState(true);
+  const [showWelcome, setShowWelcome] = React.useState(false);
+  const [isCheckingWelcome, setIsCheckingWelcome] = React.useState(true);
+
+  React.useEffect(() => {
+    checkWelcomeStatus();
+  }, []);
+
+  const checkWelcomeStatus = async () => {
+    try {
+      const hasSeenWelcome = await AsyncStorage.getItem(ANALYTICS_WELCOME_KEY);
+      if (hasSeenWelcome !== 'true') {
+        setShowWelcome(true);
+      }
+    } catch (error) {
+      console.error('Error checking analytics welcome status:', error);
+      // On error, show welcome to be safe
+      setShowWelcome(true);
+    } finally {
+      setIsCheckingWelcome(false);
+    }
+  };
+
+  const handleWelcomeComplete = async () => {
+    try {
+      await AsyncStorage.setItem(ANALYTICS_WELCOME_KEY, 'true');
+      setShowWelcome(false);
+    } catch (error) {
+      console.error('Error saving analytics welcome status:', error);
+      setShowWelcome(false);
+    }
+  };
+
+  if (isCheckingWelcome) {
+    return null;
+  }
+
+  if (showWelcome) {
+    return <AnalyticsWelcome onComplete={handleWelcomeComplete} onSkip={handleWelcomeComplete} />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -79,12 +122,17 @@ export default function AnalyticsScreen() {
             </VStack>
 
             {/* Earnings Card */}
-            <VStack className="items-center flex-1">
-              <Box className="bg-[#F5F5F5] rounded-lg p-6 mb-2 w-full items-center justify-center aspect-square">
-                <CreditCard size={32} color="#30352D" strokeWidth={2.5} />
-              </Box>
-              <Text className="text-[#30352D] text-xs font-bold">Earnings</Text>
-            </VStack>
+            <Pressable
+              onPress={() => router.push('/profile/earnings')}
+              className="items-center flex-1"
+            >
+              <VStack className="items-center flex-1">
+                <Box className="bg-[#F5F5F5] rounded-lg p-6 mb-2 w-full items-center justify-center aspect-square">
+                  <CreditCard size={32} color="#30352D" strokeWidth={2.5} />
+                </Box>
+                <Text className="text-[#30352D] text-xs font-bold">Earnings</Text>
+              </VStack>
+            </Pressable>
 
             {/* Tasks Card */}
             <VStack className="items-center flex-1">
@@ -193,3 +241,4 @@ export default function AnalyticsScreen() {
     </SafeAreaView>
   );
 }
+

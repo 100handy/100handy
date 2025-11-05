@@ -124,20 +124,31 @@ export function bookingToTaskCardProps(booking: BookingWithRelations) {
   const categoryName = booking.category?.name || 'General';
   const icon = getCategoryIcon(categoryName);
   const iconTone = getCategoryIconTone(categoryName);
-  const statusTone = getStatusTone(booking.status);
   const statusLabel = getStatusLabel(booking.status);
   
-  const timeLine1 = formatDateTime(booking.scheduled_date, booking.scheduled_time);
-  const timeLine2 = formatAddress(booking.address);
+  const dateTime = formatDateTime(booking.scheduled_date, booking.scheduled_time);
+  const location = formatAddress(booking.address);
+  
+  // Convert hourly_rate_cents to price string
+  const hourlyRate = booking.hourly_rate_cents / 100;
+  const price = `£${hourlyRate.toFixed(2)} /hr`;
+  
+  // TODO: Fetch tasker info from handy_id when profile relation is added
+  const taskerName = booking.handy_id ? 'Tasker' : 'Unassigned';
+  const taskerRating = 5.0;
+  const taskerReviews = 0;
   
   return {
     icon,
     iconTone,
     title: booking.task_title,
-    timeLine1,
-    timeLine2,
+    dateTime,
+    taskerName,
+    taskerRating,
+    taskerReviews,
+    location,
     statusLabel,
-    statusTone,
+    price,
     bookingId: booking.id,
   };
 }

@@ -3,71 +3,83 @@ import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
 import { Pressable } from '@/components/ui/pressable';
-import { useRouter } from 'expo-router';
-import { IconTile } from './IconTile';
-import { StatusPill } from './StatusPill';
+import { CalendarIcon, MapPinIcon, StarIcon, UserIcon } from 'lucide-react-native';
 
 interface TaskCardProps {
-  icon: React.ComponentType<{ size?: number; color?: string }>;
+  icon?: React.ComponentType<{ size?: number; color?: string }>;
   iconTone?: 'sage' | 'orange' | 'taupe';
   title: string;
-  timeLine1: string;
-  timeLine2: string;
+  dateTime: string;
+  taskerName: string;
+  taskerRating: number;
+  taskerReviews: number;
+  location: string;
   statusLabel: string;
-  statusTone?: 'scheduled' | 'progress' | 'neutral';
+  price: string;
   bookingId?: number;
   onPress?: () => void;
 }
 
 export function TaskCard({
-  icon,
-  iconTone = 'sage',
   title,
-  timeLine1,
-  timeLine2,
+  dateTime,
+  taskerName,
+  taskerRating,
+  taskerReviews,
+  location,
   statusLabel,
-  statusTone,
-  bookingId,
+  price,
   onPress,
 }: TaskCardProps) {
-  const IconComp = icon;
-  const router = useRouter();
 
   return (
     <Pressable
       onPress={onPress}
-      className="bg-bg-primary border border-border rounded-lg mx-4 my-2 shadow-sm"
+      className="bg-white border border-gray-200 rounded-xl mx-4 my-2 p-4"
     >
-      <VStack className="p-4">
-        <HStack className="items-start justify-between">
-          <HStack className="space-x-3 flex-1">
-            <IconTile tone={iconTone}>
-              <IconComp size={20} color="#D9896C" />
-            </IconTile>
+      <VStack className="gap-2.5">
+        {/* Title */}
+        <Text className="text-lg font-work-sans font-normal text-[#D9896C]">
+          {title}
+        </Text>
 
-            <VStack className="flex-1 ml-3">
-              <Text className="text-sm font-work-sans font-medium mb-1 text-text-primary leading-5">
-                {title}
-              </Text>
-
-              <Text className="text-xs font-work-sans text-text-secondary leading-4 mb-0.5">
-                {timeLine1}
-              </Text>
-              <Text className="text-xs font-work-sans text-text-tertiary leading-4">
-                {timeLine2}
-              </Text>
-            </VStack>
-          </HStack>
-
-          <VStack className="items-end">
-            <StatusPill label={statusLabel} tone={statusTone} />
-            <Pressable className="mt-2" onPress={() => router.push('/tasks/details')}>
-              <Text className="text-xs font-work-sans font-medium text-clay-orange leading-4">
-                View Details
-              </Text>
-            </Pressable>
-          </VStack>
+        {/* Date & Time */}
+        <HStack className="items-center gap-2">
+          <CalendarIcon size={16} color="#333A31" />
+          <Text className="text-sm font-work-sans text-text-primary">
+            {dateTime}
+          </Text>
         </HStack>
+
+        {/* Tasker Info with inline rating */}
+        <HStack className="items-center gap-1.5">
+          <UserIcon size={16} color="#333A31" />
+          <Text className="text-sm font-work-sans text-text-primary">
+            {taskerName}
+          </Text>
+          <StarIcon size={12} color="#333A31" fill="#333A31" />
+          <Text className="text-sm font-work-sans text-text-primary">
+            {taskerRating.toFixed(1)} ({taskerReviews} reviews)
+          </Text>
+        </HStack>
+
+        {/* Location */}
+        <HStack className="items-center gap-2">
+          <MapPinIcon size={16} color="#333A31" />
+          <Text className="text-sm font-work-sans font-semibold text-text-primary">
+            {location}
+          </Text>
+        </HStack>
+
+        {/* Price */}
+        <Text className="text-lg font-work-sans font-bold text-text-primary mt-1">
+          {price}
+        </Text>
+
+        {/* Status */}
+        <Text className="text-sm font-work-sans text-[#D9896C]">
+          {statusLabel}
+        </Text>
       </VStack>
     </Pressable>
   );

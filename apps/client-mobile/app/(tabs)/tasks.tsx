@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
 import { TaskCard, Tab } from '@/components/tasks';
 import { useUserBookings } from '@shared/supabase/query';
-import { useAuthStore } from '@shared/supabase/store';
+import { useAuthStore } from '@shared/supabase';
 import { bookingToTaskCardProps } from '@/lib/bookings';
 
 // Using Tailwind design tokens - colors are now defined in tailwind.config.js
@@ -44,33 +44,42 @@ export default function TasksScreen() {
     upcoming: [
       {
         id: 1,
-        title: 'Plumbing Repair',
-        timeLine1: 'Tomorrow, 2:00 PM - 4:00 PM',
-        timeLine2: '123 Main Street, London SW1A',
-        statusLabel: 'Scheduled',
-        statusTone: 'scheduled' as const,
-        icon: WrenchIcon,
-        iconTone: 'orange' as const,
+        title: 'Deep Cleaning (1 Bedroom Flat)',
+        dateTime: '21 Oct 2025, 14:00',
+        taskerName: 'Sam O.',
+        taskerRating: 5.0,
+        taskerReviews: 124,
+        location: 'Wanstead, London E11',
+        statusLabel: 'In Progress',
+        price: '£70.27 /hr',
+        icon: PaintbrushIcon,
+        iconTone: 'sage' as const,
       },
       {
         id: 2,
-        title: 'Wall Painting',
-        timeLine1: 'Dec 18, 9:00 AM - 12:00 PM',
-        timeLine2: '456 Oak Avenue, London N1',
-        statusLabel: 'In progress',
-        statusTone: 'progress' as const,
-        icon: PaintbrushIcon,
-        iconTone: 'sage' as const,
+        title: 'Furniture Assembly',
+        dateTime: '22 Oct 2025, 10:30',
+        taskerName: 'Maria T.',
+        taskerRating: 5.0,
+        taskerReviews: 124,
+        location: 'Leytonstone, E11',
+        statusLabel: 'Scheduled',
+        price: '£60.67 /hr',
+        icon: WrenchIcon,
+        iconTone: 'orange' as const,
       }
     ],
     past: [
       {
         id: 3,
-        title: 'Electrical Work',
-        timeLine1: 'Dec 10, 10:00 AM - 12:00 PM',
-        timeLine2: '789 Pine Street, London E1',
+        title: 'Plumbing Repair',
+        dateTime: '10 Oct 2025, 10:00',
+        taskerName: 'John D.',
+        taskerRating: 4.8,
+        taskerReviews: 89,
+        location: '789 Pine Street, London E1',
         statusLabel: 'Completed',
-        statusTone: 'neutral' as const,
+        price: '£55.00 /hr',
         icon: WrenchIcon,
         iconTone: 'orange' as const,
       }
@@ -118,7 +127,8 @@ export default function TasksScreen() {
     const bookings = getCurrentBookings();
     
     // If using fallback data, return it directly (already in correct format)
-    if (bookings.length > 0 && 'title' in bookings[0]) {
+    // Fallback data has 'id' while real data has 'bookingId'
+    if (bookings.length > 0 && 'dateTime' in bookings[0] && !('category' in bookings[0])) {
       return bookings as any[];
     }
     

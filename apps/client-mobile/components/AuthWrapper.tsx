@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '@shared/supabase';
+import { getHandyProfile } from '@shared/supabase/profile';
 import { Loader } from '@/components/ui/loader';
 
 interface AuthWrapperProps {
@@ -8,18 +9,20 @@ interface AuthWrapperProps {
 }
 
 export function AuthWrapper({ children }: AuthWrapperProps) {
-  const { 
-    isAuthenticated, 
-    isLoading, 
-    isEmailVerified, 
+  const {
+    isAuthenticated,
+    isLoading,
+    isEmailVerified,
     hasCompletedOnboarding,
     userRole,
     user,
-    initialize, 
-    cleanup 
+    initialize,
+    cleanup
   } = useAuthStore();
   const router = useRouter();
   const segments = useSegments();
+  const [professionalOnboardingComplete, setProfessionalOnboardingComplete] = useState<boolean | null>(null);
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
 
   useEffect(() => {
     // Initialize auth state when component mounts
@@ -31,8 +34,30 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     };
   }, [initialize, cleanup]);
 
+  // Check professional onboarding status from database
   useEffect(() => {
-    if (isLoading) return; // Don't redirect while loading
+    const checkProfessionalOnboarding = async () => {
+      if (isAuthenticated && userRole === 'handy' && !isLoading) {
+        setIsCheckingOnboarding(true);
+        try {
+          const handyProfile = await getHandyProfile();
+          setProfessionalOnboardingComplete(handyProfile?.onboarding_completed || false);
+        } catch (error) {
+          console.error('Error checking professional onboarding:', error);
+          setProfessionalOnboardingComplete(false);
+        } finally {
+          setIsCheckingOnboarding(false);
+        }
+      } else if (userRole !== 'handy') {
+        setProfessionalOnboardingComplete(null);
+      }
+    };
+
+    checkProfessionalOnboarding();
+  }, [isAuthenticated, userRole, isLoading]);
+
+  useEffect(() => {
+    if (isLoading || isCheckingOnboarding) return; // Don't redirect while loading
 
     const segmentStrings = segments.map(String);
     const inAuthGroup = segmentStrings.includes('(auth)');
@@ -45,15 +70,18 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
 
     if (isAuthenticated && user) {
       // User is authenticated
-      
+
       // Don't redirect if on callback page (let it finish processing)
       if (isOnCallback) {
         return;
       }
 
       // Check email verification
-      if (!isEmailVerified && !isOnVerifyEmail) {
-        // Email not verified - send to verification screen
+      const isVerified = isEmailVerified;
+      const isOnVerificationScreen = isOnVerifyEmail;
+
+      if (!isVerified && !isOnVerificationScreen) {
+        // Not verified - send to email verification screen
         router.replace({
           pathname: '/(auth)/verify-email',
           params: { email: user.email || '' },
@@ -61,17 +89,21 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         return;
       }
 
-      // Email is verified - check onboarding status
-      if (isEmailVerified) {
+      // Verification complete - check onboarding status
+      if (isVerified) {
         const isClient = userRole === 'customer';
         const isProfessional = userRole === 'handy';
 
         // If on auth screens or index, redirect to appropriate home
         if (inAuthGroup || isOnIndex) {
           if (isProfessional) {
-            // Check if they completed onboarding/verification
-            if (!hasCompletedOnboarding) {
-              router.replace('/(auth)/(professional)/verify-getting-started');
+            // Check if they completed onboarding/verification from database
+            const onboardingComplete = professionalOnboardingComplete !== null
+              ? professionalOnboardingComplete
+              : hasCompletedOnboarding;
+
+            if (!onboardingComplete) {
+              router.replace('/(auth)/(professional)/verify-info');
             } else {
               router.replace('/(professional)/(tabs)/dashboard');
             }
@@ -87,16 +119,26 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       }
     } else {
       // User is not authenticated
-      // Only redirect if trying to access protected routes (not auth screens)
-      const tryingToAccessProtectedRoute = (inTabsGroup || inClientGroup || inProfessionalGroup) && !inAuthGroup;
+      // Block only routes that require user interaction (TaskRabbit clone approach)
+      const isOnProfile = segmentStrings.includes('profile');
+      const isOnBookings = segmentStrings.includes('bookings') || segmentStrings.includes('my-tasks');
+      const isOnMessages = segmentStrings.includes('messages') || segmentStrings.includes('chat');
+      const isOnBookingFlow = segmentStrings.includes('book') || segmentStrings.includes('confirm-booking');
+      const isOnPostTask = segmentStrings.includes('post-task') || segmentStrings.includes('task-form');
+      const isOnAccount = segmentStrings.includes('account') || segmentStrings.includes('settings');
+      
+      const isProtectedRoute =  isOnBookings || isOnMessages || isOnBookingFlow || isOnPostTask || isOnAccount;
+      
+      // Only redirect if trying to access protected routes that require authentication
+      const tryingToAccessProtectedRoute = (inTabsGroup || inClientGroup || inProfessionalGroup) && !inAuthGroup && isProtectedRoute;
       
       if (tryingToAccessProtectedRoute) {
         router.replace('/(auth)/role-selection');
       }
     }
-  }, [isAuthenticated, isEmailVerified, hasCompletedOnboarding, userRole, user, isLoading, segments, router]);
+  }, [isAuthenticated, isEmailVerified, hasCompletedOnboarding, professionalOnboardingComplete, userRole, user, isLoading, isCheckingOnboarding, segments, router]);
 
-  if (isLoading) {
+  if (isLoading || (isAuthenticated && userRole === 'handy' && isCheckingOnboarding)) {
     return <Loader />;
   }
 

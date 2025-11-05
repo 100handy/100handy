@@ -1,0 +1,135 @@
+import React, { useState, useEffect } from 'react';
+import { ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { VStack } from '@/components/ui/vstack';
+import { HStack } from '@/components/ui/hstack';
+import { Text } from '@/components/ui/text';
+import { Pressable } from '@/components/ui/pressable';
+import { Input, InputField } from '@/components/ui/input';
+import { Button, ButtonText } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { LocationAutocomplete } from '@/components/location';
+import { useLocationStore } from '@shared/supabase';
+
+export default function LocationScreen() {
+  const router = useRouter();
+  const { location, setLocation } = useLocationStore();
+
+  const [streetAddress, setStreetAddress] = useState('');
+  const [unitNumber, setUnitNumber] = useState('');
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+
+  // Load existing location on mount
+  useEffect(() => {
+    if (location) {
+      setStreetAddress(location.streetAddress || '');
+      setUnitNumber(location.unitNumber || '');
+      setSelectedPlaceId(location.placeId || null);
+    }
+  }, [location]);
+
+  const handleSelectLocation = (locationData: any) => {
+    setSelectedPlaceId(locationData.place_id);
+    console.log('Selected location:', locationData);
+  };
+
+  const handleSave = () => {
+    // Parse address to extract city and country
+    const addressParts = streetAddress.split(',').map(part => part.trim());
+    const country = addressParts.length > 0 ? addressParts[addressParts.length - 1] : '';
+    const city = addressParts.length > 1 ? addressParts[addressParts.length - 2] : '';
+
+    setLocation({
+      streetAddress,
+      unitNumber,
+      placeId: selectedPlaceId || undefined,
+      city,
+      country,
+      formattedAddress: streetAddress,
+    });
+
+    console.log('Location saved!');
+    router.back();
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      {/* Header */}
+      <HStack className="items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
+        <Pressable onPress={() => router.back()}>
+          <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
+        </Pressable>
+        <Text className="font-worksans-bold text-[18px] text-[#30352D]">
+          Location
+        </Text>
+        <Pressable onPress={() => router.back()} className="w-7" />
+      </HStack>
+
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <VStack className="px-5 pt-6 pb-8">
+          {/* Street Address with Autocomplete */}
+          <VStack className="mb-6">
+            <LocationAutocomplete
+              value={streetAddress}
+              onChangeText={setStreetAddress}
+              onSelectLocation={handleSelectLocation}
+              label="Street address"
+              placeholder="Enter your address"
+            />
+          </VStack>
+
+          {/* Optional Unit Number */}
+          <VStack className="mb-8">
+            <Text className="font-worksans text-[14px] text-[#30352D] mb-2">
+              Optional unit or apt #
+            </Text>
+            <Input
+              variant="outline"
+              size="lg"
+              className="rounded-lg border-[#E5E5E5]"
+            >
+              <InputField
+                value={unitNumber}
+                onChangeText={setUnitNumber}
+                placeholder=""
+                placeholderTextColor="#6B6B6B"
+                style={{ color: '#30352D', fontSize: 15 }}
+              />
+            </Input>
+          </VStack>
+
+          {/* Current/Default Section */}
+          {location && location.streetAddress && (
+            <VStack>
+              <Text className="font-worksans text-[14px] text-[#30352D] mb-3">
+                Current Location
+              </Text>
+              <Text className="font-worksans text-[16px] text-[#30352D]">
+                {location.formattedAddress || location.streetAddress}
+              </Text>
+              {location.unitNumber && (
+                <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-1">
+                  Unit/Apt: {location.unitNumber}
+                </Text>
+              )}
+            </VStack>
+          )}
+        </VStack>
+      </ScrollView>
+
+      {/* Save Button */}
+      <VStack className="px-5 pb-6">
+        <Button
+          onPress={handleSave}
+          className="bg-[#4A5347] rounded-full"
+          size="lg"
+        >
+          <ButtonText className="font-worksans-semibold text-white text-[16px]">
+            Save
+          </ButtonText>
+        </Button>
+      </VStack>
+    </SafeAreaView>
+  );
+}

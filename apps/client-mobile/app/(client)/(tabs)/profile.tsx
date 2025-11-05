@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,9 +25,9 @@ import {
   Gift,
   Megaphone,
   Globe,
-  BarChart3,
 } from 'lucide-react-native';
-import { useProfileStore, useAuthStore } from '@shared/supabase';
+import { useAuthStore } from '@shared/supabase';
+import { useProfile } from '@shared/query';
 import { useRouter } from 'expo-router';
 
 // --- Data for list items ---
@@ -36,7 +36,6 @@ const menuItems = [
   { icon: Shield, title: 'Account Security' },
   { icon: Lock, title: 'Change Password' },
   { icon: CreditCard, title: 'Payment' },
-  { icon: BarChart3, title: 'Analytics' },
   { icon: Megaphone, title: 'Promos' },
   { icon: Bell, title: 'Notifications' },
   { icon: HelpCircle, title: 'Privacy settings' },
@@ -46,14 +45,8 @@ const menuItems = [
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { profile, isLoading, error, fetchProfile } = useProfileStore();
+  const { data: profile, isLoading, error } = useProfile();
   const { signOut, user } = useAuthStore();
-
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user, fetchProfile]);
 
   const handleSignOut = async () => {
     try {
@@ -78,10 +71,9 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <Box className="flex-1 justify-center items-center p-6">
-          <Text className="text-red-500 text-center mb-4">{error}</Text>
-          <Pressable onPress={fetchProfile} className="bg-blue-500 px-4 py-2 rounded">
-            <Text className="text-white">Retry</Text>
-          </Pressable>
+          <Text className="text-red-500 text-center mb-4">
+            {error instanceof Error ? error.message : 'Failed to load profile'}
+          </Text>
         </Box>
       </SafeAreaView>
     );
@@ -146,15 +138,16 @@ export default function ProfileScreen() {
                   router.push('/profile/change-password');
                 } else if (item.title === 'Notifications') {
                   router.push('/profile/notifications');
+                } else if (item.title === 'Privacy settings') {
+                  router.push('/profile/privacy-settings');
+                } else if (item.title === 'Support') {
+                  router.push('/profile/support');
                 } else if (item.title === 'About') {
                   router.push('/profile/about');
-                }
-                else if (item.title === 'Promos') {
+                } else if (item.title === 'Promos') {
                   router.push('/profile/promotions');
                 } else if (item.title === 'Payment') {
                   router.push('/profile/payments');
-                } else if (item.title === 'Analytics') {
-                  router.push('/(client)/profile/analytics' as any);
                 }
               }}
             >

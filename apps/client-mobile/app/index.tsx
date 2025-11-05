@@ -1,154 +1,52 @@
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
-import { Box } from "@/components/ui/box";
-import { VStack } from "@/components/ui/vstack";
-import { Pressable } from "@/components/ui/pressable";
-import { Link, LinkText } from "@/components/ui/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { signInWithProvider } from "@shared/supabase/auth";
-import { useToast } from "@/components/ui/toast";
-import * as WebBrowser from "expo-web-browser";
+import { Loader } from "@/components/ui/loader";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import TaskHelperLogo from "../assets/images/task-helper-logo.svg";
-import GoogleLogo from "../assets/images/google-logo.svg";
-import AppleLogo from "../assets/images/apple-logo.svg";
-import FacebookLogo from "../assets/images/facebook-logo.svg";
-import { SafeAreaView, StatusBar } from "react-native";
+const ONBOARDING_KEY = '@hasSeenOnboarding';
 
-// Ensure the browser session completes properly
-WebBrowser.maybeCompleteAuthSession();
-
+/**
+ * Index Route - Entry Point
+ * 
+ * Checks if user has seen onboarding before:
+ * - First time: Show welcome screens
+ * - Returning: Go to home (guests) or appropriate screen (authenticated)
+ * 
+ * Authenticated users are handled by AuthWrapper which will
+ * route them to the appropriate home screen based on their role.
+ */
 export default function Index() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const toast = useToast();
+  const [isChecking, setIsChecking] = useState(true);
 
-  const handleSocialLogin = async (provider: 'google' | 'apple' | 'facebook') => {
+  useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
+
+  const checkOnboardingStatus = async () => {
     try {
-      setLoading(true);
+      const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
       
-      // Get OAuth URL from Supabase
-      const { url } = await signInWithProvider(provider);
-      
-      if (!url) {
-        throw new Error('No OAuth URL returned from Supabase');
+      if (hasSeenOnboarding === 'true') {
+        // Returning user - skip to client home (guests can browse)
+        // AuthWrapper will redirect authenticated users to their appropriate screens
+        router.replace('/(client)/(tabs)/home');
+      } else {
+        // First time user - show welcome flow
+        router.replace('/(auth)/role-selection');
       }
-
-      // Open OAuth flow in browser - on mobile this returns the URL for manual handling
-      const result = await WebBrowser.openAuthSessionAsync(
-        url,
-        'handy://auth/callback',
-        { showInRecents: true }
-      );
-
-      console.log('OAuth result:', result);
-
-      // The auth callback route will handle the session
-      // No need to do anything here as AuthWrapper will detect the session change
     } catch (error) {
-      console.error('Social login error:', error);
-      toast.error('Sign in failed', error instanceof Error ? error.message : `Failed to sign in with ${provider}`);
+      console.error('Error checking onboarding status:', error);
+      // On error, show onboarding to be safe
+      router.replace('/(auth)/role-selection');
     } finally {
-      setLoading(false);
+      setIsChecking(false);
     }
   };
 
-  const handleLogin = () => {
-    router.push('/(auth)/role-selection');
-  };
+  if (isChecking) {
+    return <Loader />;
+  }
 
-  const handleSignUp = () => {
-    router.push('/(auth)/role-selection');
-  };
-
-  return (
-    <SafeAreaView className="flex-1 bg-theme-background">
-      <StatusBar barStyle="dark-content" />
-      <VStack className="flex-1 justify-center items-center p-6">
-        <VStack className="items-center mb-10">
-          <Box className="w-20 h-20 bg-white rounded-2xl shadow-lg justify-center items-center mb-4">
-            <TaskHelperLogo width={40} height={40} />
-          </Box>
-          <Heading className="font-worksans-bold text-2xl text-typography-900 mb-2">
-            TaskHelper
-          </Heading>
-          <Text className="font-worksans text-center text-typography-600 text-base">
-            Get help with home tasks fast and trusted
-          </Text>
-        </VStack>
-
-        <VStack className="w-full mb-6">
-          <Pressable
-            className={`bg-clay-orange p-4 rounded-xl mb-4 shadow-md ${loading ? 'opacity-50' : ''}`}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            <Text className="font-worksans-bold text-typography-white text-center font-bold text-lg">
-              Log in
-            </Text>
-          </Pressable>
-          <Pressable
-            className={`bg-sage-green p-4 rounded-xl shadow-md ${loading ? 'opacity-50' : ''}`}
-            onPress={handleSignUp}
-            disabled={loading}
-          >
-            <Text className="font-worksans-bold text-typography-white text-center font-bold text-lg">
-              Sign up
-            </Text>
-          </Pressable>
-        </VStack>
-
-        <Box className="flex-row items-center w-full mb-4">
-          <Box className="flex-1 h-px bg-outline-300" />
-          <Text className="font-worksans text-typography-500 mx-4 text-sm">or continue with</Text>
-          <Box className="flex-1 h-px bg-outline-300" />
-        </Box>
-
-        <VStack className="w-full">
-          <Pressable
-            className={`flex-row items-center justify-center bg-typography-white p-4 rounded-xl mb-4 border border-outline-200 shadow-sm ${loading ? 'opacity-50' : ''}`}
-            onPress={() => handleSocialLogin('google')}
-            disabled={loading}
-          >
-            <GoogleLogo width={24} height={24} className="mr-3" />
-            <Text className="font-worksans-bold text-typography-900 font-bold text-base">
-              Continue with Google
-            </Text>
-          </Pressable>
-          <Pressable
-            className={`flex-row items-center justify-center bg-typography-black p-4 rounded-xl mb-4 shadow-sm ${loading ? 'opacity-50' : ''}`}
-            onPress={() => handleSocialLogin('apple')}
-            disabled={loading}
-          >
-            <AppleLogo width={24} height={24} className="mr-3" />
-            <Text className="font-worksans-bold text-typography-white font-bold text-base">
-              Continue with Apple
-            </Text>
-          </Pressable>
-          <Pressable
-            className={`flex-row items-center justify-center bg-info-600 p-4 rounded-xl shadow-sm ${loading ? 'opacity-50' : ''}`}
-            onPress={() => handleSocialLogin('facebook')}
-            disabled={loading}
-          >
-            <FacebookLogo width={24} height={24} className="mr-3" />
-            <Text className="font-worksans-bold text-typography-white font-bold text-base">
-              Continue with Facebook
-            </Text>
-          </Pressable>
-        </VStack>
-
-        <VStack className="mt-8 w-full items-center">
-          <Text className="font-worksans text-center text-xs text-typography-500 leading-5">
-            By continuing, you agree to our <Link href="#"><LinkText underline>Terms of Service</LinkText></Link> and <Link href="#"><LinkText underline>Privacy Policy</LinkText></Link>
-          </Text>
-          <Link href="#" className="mt-4">
-            <LinkText className="font-worksans text-center text-xs text-typography-500 leading-4" underline>
-              Need help? Contact Support
-            </LinkText>
-          </Link>
-        </VStack>
-      </VStack>
-    </SafeAreaView>
-  );
+  return <Loader />;
 }

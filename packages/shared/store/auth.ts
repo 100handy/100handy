@@ -9,6 +9,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   isEmailVerified: boolean;
+  isPhoneVerified: boolean;
   hasCompletedOnboarding: boolean;
   userRole: 'customer' | 'handy' | null;
   authSubscription: { unsubscribe: () => void } | null;
@@ -27,6 +28,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: true,
   isAuthenticated: false,
   isEmailVerified: false,
+  isPhoneVerified: false,
   hasCompletedOnboarding: false,
   userRole: null,
   authSubscription: null,
@@ -46,7 +48,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       if (error) {
         console.error('Error getting session:', error);
-        set({ user: null, session: null, isAuthenticated: false, isEmailVerified: false, userRole: null, isLoading: false });
+        set({ user: null, session: null, isAuthenticated: false, isEmailVerified: false, isPhoneVerified: false, userRole: null, isLoading: false });
         return;
       }
 
@@ -58,6 +60,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         session,
         isAuthenticated: !!user,
         isEmailVerified: !!user?.email_confirmed_at,
+        isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
         userRole: metadata?.role || null,
         isLoading: false
@@ -65,8 +68,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Listen for auth changes and store the subscription
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
-        
+        console.log('Auth state changed:', event, session?.user?.phone || session?.user?.email);
+
         const user = session?.user;
         const metadata = user?.user_metadata;
 
@@ -75,6 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           session,
           isAuthenticated: !!user,
           isEmailVerified: !!user?.email_confirmed_at,
+          isPhoneVerified: !!user?.phone_confirmed_at,
           hasCompletedOnboarding: metadata?.onboarding_completed || false,
           userRole: metadata?.role || null,
           isLoading: false
@@ -99,27 +103,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setUser: (user) => {
     const metadata = user?.user_metadata;
-    set({ 
-      user, 
+    set({
+      user,
       isAuthenticated: !!user,
       isEmailVerified: !!user?.email_confirmed_at,
+      isPhoneVerified: !!user?.phone_confirmed_at,
       hasCompletedOnboarding: metadata?.onboarding_completed || false,
       userRole: metadata?.role || null,
-      isLoading: false 
+      isLoading: false
     });
   },
 
   setSession: (session) => {
     const user = session?.user;
     const metadata = user?.user_metadata;
-    set({ 
-      session, 
+    set({
+      session,
       user: user || null,
       isAuthenticated: !!user,
       isEmailVerified: !!user?.email_confirmed_at,
+      isPhoneVerified: !!user?.phone_confirmed_at,
       hasCompletedOnboarding: metadata?.onboarding_completed || false,
       userRole: metadata?.role || null,
-      isLoading: false 
+      isLoading: false
     });
   },
 
@@ -139,6 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         session: null,
         isAuthenticated: false,
         isEmailVerified: false,
+        isPhoneVerified: false,
         hasCompletedOnboarding: false,
         userRole: null,
         isLoading: false
@@ -168,12 +175,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = session?.user;
       const metadata = user?.user_metadata;
       const isAuthenticated = !!user;
-      
+
       set({
         user: user || null,
         session,
         isAuthenticated,
         isEmailVerified: !!user?.email_confirmed_at,
+        isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
         userRole: metadata?.role || null,
         isLoading: false

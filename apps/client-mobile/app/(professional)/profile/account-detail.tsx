@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { ScrollView, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
@@ -7,10 +7,11 @@ import { Text } from '@/components/ui/text';
 import { Box } from '@/components/ui/box';
 import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
-import { 
+import {
   Edit3,
   ChevronLeft
 } from 'lucide-react-native';
+import { useProfileStore } from '@shared/supabase';
 
 interface FieldRowProps {
   label: string;
@@ -30,11 +31,31 @@ const FieldRow = ({ label, value }: FieldRowProps) => (
 
 export default function AccountDetailScreen() {
   const router = useRouter();
+  const { profile, isLoading, fetchProfile } = useProfileStore();
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const handleEdit = () => {
-    console.log('Edit account details');
-    // Navigate to edit screen when implemented
+    router.push('/profile/account-detail-edit');
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#D17852" />
+      </SafeAreaView>
+    );
+  }
+
+  const fullName = profile?.first_name && profile?.last_name
+    ? `${profile.first_name} ${profile.last_name}`
+    : 'Not set';
+
+  const displayName = profile?.first_name
+    ? `${profile.first_name} ${profile.last_name?.[0] || ''}.`
+    : 'Not set';
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -55,24 +76,31 @@ export default function AccountDetailScreen() {
         {/* Profile Section */}
         <HStack className="px-6 py-8 items-center justify-between">
           <Text className="font-worksans-bold text-2xl text-theme-font">
-            Mike W.
+            {displayName}
           </Text>
           <Box className="w-[120px] h-[120px] rounded-full overflow-hidden bg-gray-300">
-            <Image 
-              source={{ uri: 'https://via.placeholder.com/120' }}
-              className="w-full h-full"
-              style={{ width: 120, height: 120 }}
-            />
+            {profile?.avatar_url ? (
+              <Image
+                source={{ uri: profile.avatar_url }}
+                className="w-full h-full"
+                style={{ width: 120, height: 120 }}
+              />
+            ) : (
+              <Box className="w-full h-full items-center justify-center bg-[#D17852]/20">
+                <Text className="font-worksans-bold text-4xl text-[#D17852]">
+                  {profile?.first_name?.[0] || '?'}
+                </Text>
+              </Box>
+            )}
           </Box>
         </HStack>
 
         {/* Form Fields */}
         <VStack className="">
-          <FieldRow label="Name" value="Mike W." />
-          <FieldRow label="Email" value="Mikewilliam@gmail.com" />
-          <FieldRow label="Mobile phone" value="+44 7435667700" />
-          <FieldRow label="Postcode" value="E11 2ER" />
-          <FieldRow label="Country" value="GB" />
+          <FieldRow label="Name" value={fullName} />
+          <FieldRow label="Email" value={profile?.email || 'Not set'} />
+          <FieldRow label="Mobile phone" value={profile?.phone || 'Not set'} />
+          <FieldRow label="Postcode" value={profile?.postcode || 'Not set'} />
         </VStack>
       </ScrollView>
     </SafeAreaView>

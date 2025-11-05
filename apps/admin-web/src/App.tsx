@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import LoginPage from '@/pages/login'
+import ResetPasswordPage from '@/pages/reset-password'
 import DashboardLayout from '@/layouts/dashboard-layout'
 import DashboardPage from '@/pages/dashboard'
 import UsersPage from '@/pages/users'
@@ -46,7 +48,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route element={<DashboardLayout />}>
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/dashboard/announcements" element={<AnnouncementsPage />} />
           <Route path="/admin" element={<div className="p-6">Admin Page</div>} />
@@ -96,6 +100,7 @@ function App() {
           <Route path="/notifications/email" element={<EmailNotifications />} />
           <Route path="/notifications/popups" element={<PopupsPage />} />
           <Route path="/support/centre" element={<SupportCentre />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

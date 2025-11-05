@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
@@ -19,66 +20,101 @@ import {
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { OnboardingTask } from '@/components/dashboard';
-
-const onboardingTasks = [
-  {
-    icon: <CreditCard color="#D17852" size={28} strokeWidth={1.5} />,
-    title: '100 Handy Support',
-    duration: '4 MIN PER SKILL',
-  },
-  {
-    icon: <Smile color="#D17852" size={28} strokeWidth={1.5} />,
-    title: 'Upload a profile photo',
-    duration: '2 MIN',
-  },
-  {
-    icon: <HandCoins color="#D17852" size={28} strokeWidth={1.5} />,
-    title: 'Upload a profile photo',
-    duration: '2 MIN',
-  },
-  {
-    icon: <Calendar color="#D17852" size={28} strokeWidth={1.5} />,
-    title: 'Set availability',
-    duration: '4 MIN',
-  },
-  {
-    icon: <MapPin color="#D17852" size={28} strokeWidth={1.5} />,
-    title: 'Set work area',
-    duration: '4 MIN',
-  },
-];
+import { useAuthStore } from '@shared/supabase';
+import { useProfileStore } from '@shared/supabase';
 
 export default function ProfessionalDashboard() {
+  const { user } = useAuthStore();
+  const { profile, fetchProfile } = useProfileStore();
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user, fetchProfile]);
+
+  const onboardingTasks = [
+    {
+      icon: <CreditCard color="#D17852" size={28} strokeWidth={1.5} />,
+      title: '100 Handy Support',
+      duration: '4 MIN PER SKILL',
+      onPress: () => {
+        // TODO: Navigate to support screen
+      },
+    },
+    {
+      icon: <Smile color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Upload a profile photo',
+      duration: '2 MIN',
+      onPress: () => {
+        router.push('/(professional)/add-profile-photo');
+      },
+    },
+    {
+      icon: <HandCoins color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Set your hourly rate',
+      duration: '2 MIN',
+      onPress: () => {
+        // TODO: Navigate to hourly rate screen
+      },
+    },
+    {
+      icon: <Calendar color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Set availability',
+      duration: '4 MIN',
+      onPress: () => {
+        router.push('/(professional)/set-availability');
+      },
+    },
+    {
+      icon: <MapPin color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Set work area',
+      duration: '4 MIN',
+      onPress: () => {
+        router.push('/(professional)/set-work-area');
+      },
+    },
+  ];
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <LinearGradient
-        colors={['#4A5347', '#3D4239']}
-        className="px-5 pt-3 pb-5"
-        style={{height: 120,padding: 4}}
-      >
-        <HStack className="items-center justify-between mt-2">
-          <HStack className="items-center space-x-3">
-            <Box className="w-[62px] h-[62px] rounded-full overflow-hidden bg-gray-300">
-              {/* <Image
-                source={require('../../../../assets/images/profile-mike.png')}
-                className="w-full h-full"
-              /> */}
-            </Box>
-            <Text className="font-worksans-semibold text-white text-[26px]">
-              Hello, Mike
-            </Text>
-          </HStack>
+      <Box className="bg-[#4A5347]">
+        <LinearGradient
+          colors={['#4A5347', '#3D4239']}
+          style={{paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16}}
+        >
+          <HStack className="items-center justify-between">
+            <HStack className="items-center gap-3">
+              <Box className="w-[62px] h-[62px] rounded-full overflow-hidden bg-gray-300">
+                {profile?.avatar_url ? (
+                  <Image
+                    source={{ uri: profile.avatar_url }}
+                    className="w-full h-full"
+                    style={{ width: 62, height: 62 }}
+                  />
+                ) : (
+                  <Box className="w-full h-full items-center justify-center bg-[#D17852]/30">
+                    <Text className="font-worksans-bold text-2xl text-white">
+                      {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'}
+                    </Text>
+                  </Box>
+                )}
+              </Box>
+              <Text className="font-worksans-semibold text-white text-[26px]">
+                Hello, {profile?.first_name || 'Professional'}
+              </Text>
+            </HStack>
 
-          <HStack className="space-x-3">
-            <Pressable className="p-1">
-              <Bell color="white" size={26} strokeWidth={2} />
-            </Pressable>
-            <Pressable className="p-1">
-              <Mail color="white" size={26} strokeWidth={2} />
-            </Pressable>
+            <HStack className="items-center gap-4">
+              <Pressable onPress={() => router.push('/(professional)/announcements')}>
+                <Bell color="white" size={26} strokeWidth={1.5} />
+              </Pressable>
+              <Pressable onPress={() => router.push('/(professional)/inbox')}>
+                <Mail color="white" size={26} strokeWidth={1.5} />
+              </Pressable>
+            </HStack>
           </HStack>
-        </HStack>
-      </LinearGradient>
+        </LinearGradient>
+      </Box>
 
       <ScrollView
         className="flex-1 bg-white"
@@ -100,6 +136,7 @@ export default function ProfessionalDashboard() {
               icon={task.icon}
               title={task.title}
               duration={task.duration}
+              onPress={task.onPress}
             />
           ))}
         </VStack>
@@ -112,7 +149,7 @@ export default function ProfessionalDashboard() {
                 <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-1">
                   Your account isn't live yet!
                 </Text>
-                <Text className="font-worksans text-[11px] text-[#4A5347] leading-[15px]">
+                <Text className="font-worksans text-[11px] text-[#333a31] leading-[15px]">
                   Tap here to verify your identity and activate your account.
                 </Text>
               </VStack>

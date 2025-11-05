@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, StatusBar } from 'react-native';
+import { StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Box } from '@/components/ui/box';
@@ -15,11 +16,11 @@ export default function AuthRoleSelectionScreen() {
   
 
   const handleClientAuth = (): void => {
-    router.push('/(auth)/(client)/sign-in');
+    router.push('/(auth)/(client)');
   };
 
   const handleProfessionalAuth = (): void => {
-    router.push('/(auth)/(professional)');
+    router.push('/(professional)/(tabs)/dashboard');
   };
 
   return (

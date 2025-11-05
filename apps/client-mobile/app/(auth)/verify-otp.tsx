@@ -1,57 +1,48 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ScrollView, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable, TextInput, View } from 'react-native';
 import { Box } from '@/components/ui/box';
+import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
-import { Input, InputField } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { ChevronLeftIcon, SmartphoneIcon, Mail } from 'lucide-react-native';
+import { Pressable } from '@/components/ui/pressable';
+import { Button, ButtonText } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { verifyOTP, verifyEmailOTP, verifyPasswordResetOTP, resendOTP, resendEmailOTP, sendPasswordResetOTP } from '@shared/supabase/auth';
+import { verifyOTP, resendOTP } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
 
-const VerifyOtp = () => {
+export default function VerifyOtp() {
   const params = useLocalSearchParams();
-  const email = params.email as string | undefined;
-  const phone = params.phone as string | undefined;
-  const type = params.type as 'signup' | 'reset' | undefined;
-  const userRole = params.userRole as 'professional' | 'client' | undefined;
+  const phone = params.phone as string;
+  const metadata = params.metadata ? JSON.parse(params.metadata as string) : {};
+
+  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [canResend, setCanResend] = useState(false);
+  const [countdown, setCountdown] = useState(60);
   const toast = useToast();
 
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
-  const [isVerifyEnabled, setIsVerifyEnabled] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
-  // Determine verification target and type
-  const isEmailVerification = !!email;
-  const isPasswordReset = type === 'reset';
-  const verificationTarget = email || phone || '+44 7123 456 789';
-
-  // Timer effect
+  // Countdown timer for resend
   useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
     }
-  }, [timeLeft]);
+  }, [countdown]);
 
-  // Check if all OTP fields are filled
-  useEffect(() => {
-    const allFilled = otp.every(digit => digit.trim() !== '');
-    setIsVerifyEnabled(allFilled);
-  }, [otp]);
-
-  // Handle OTP input change
-  const handleOtpChange = (value: string, index: number) => {
+  const handleCodeChange = (value: string, index: number): void => {
     // Only allow numbers
-    if (!/^\d*$/.test(value)) return;
+    if (value && !/^\d$/.test(value)) return;
 
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+    const newCode = [...code];
+    newCode[index] = value;
+    setCode(newCode);
 
     // Auto-focus next input
     if (value && index < 5) {
@@ -59,207 +50,165 @@ const VerifyOtp = () => {
     }
   };
 
-  // Handle backspace
-  const handleKeyPress = (key: string, index: number) => {
-    if (key === 'Backspace' && !otp[index] && index > 0) {
+  const handleKeyPress = (e: any, index: number): void => {
+    // Handle backspace
+    if (e.nativeEvent.key === 'Backspace' && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  // Format timer display
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  const handleVerify = async (): Promise<void> => {
+    const otpCode = code.join('');
 
-  const handleVerify = async () => {
-    const code = otp.join('');
-    setIsLoading(true);
+    if (otpCode.length !== 6) {
+      toast.error('Invalid code', 'Please enter a 6-digit code');
+      return;
+    }
 
     try {
-      if (isPasswordReset && email) {
-        // Verify password reset OTP
-        await verifyPasswordResetOTP(email, code);
-        toast.success('Verified!', 'Code verified. Set your new password.');
-        router.push('/(auth)/reset-password');
-      } else if (isEmailVerification && email) {
-        // Verify email OTP for signup
-        await verifyEmailOTP(email, code);
-        toast.success('Email verified!', 'Your account has been verified.');
+      setIsLoading(true);
 
-        // Navigate based on user role
-        if (userRole === 'professional') {
-          router.push('/(auth)/(professional)/verify-info');
+      // Verify the OTP
+      const result = await verifyOTP(phone, otpCode);
+
+      if (result.user) {
+        // OTP verified successfully - navigate based on role
+        toast.success('Success', 'Phone number verified!');
+
+        const role = metadata.role;
+        if (role === 'handy') {
+          // Professional - go to verification flow
+          router.replace('/(auth)/(professional)/verify-info');
         } else {
-          router.push('/(auth)/(client)/onboarding');
+          // Customer - go to client onboarding or home
+          router.replace('/(client)/(tabs)/home');
         }
-      } else if (phone) {
-        // Verify phone OTP
-        await verifyOTP(phone, code);
-        toast.success('Phone verified!', 'Your phone has been verified.');
-        router.push('/(tabs)');
       }
     } catch (error) {
       console.error('OTP verification error:', error);
-      toast.error('Verification failed', error instanceof Error ? error.message : 'Please try again');
+      toast.error('Verification failed', error instanceof Error ? error.message : 'Invalid code. Please try again');
+      // Clear code on error
+      setCode(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResendCode = async () => {
-    try {
-      if (isPasswordReset && email) {
-        // Resend password reset OTP
-        await sendPasswordResetOTP(email);
-        toast.success('Code resent!', 'Check your email for the new code.');
-      } else if (isEmailVerification && email) {
-        // Resend email OTP for signup
-        await resendEmailOTP(email);
-        toast.success('Code resent!', 'Check your email for the new code.');
-      } else if (phone) {
-        // Resend phone OTP
-        await resendOTP(phone);
-        toast.success('Code resent!', 'Check your phone for the new code.');
-      }
+  const handleResend = async (): Promise<void> => {
+    if (!canResend) return;
 
-      setTimeLeft(120);
-      setOtp(['', '', '', '', '', '']);
-      inputRefs.current[0]?.focus();
+    try {
+      setIsResending(true);
+      await resendOTP(phone);
+      toast.success('Code sent', 'A new verification code has been sent');
+      setCanResend(false);
+      setCountdown(60);
     } catch (error) {
       console.error('Resend OTP error:', error);
-      toast.error('Failed to resend', error instanceof Error ? error.message : 'Please try again');
+      toast.error('Resend failed', error instanceof Error ? error.message : 'Please try again');
+    } finally {
+      setIsResending(false);
     }
   };
 
-  const handleGoBack = () => {
-    router.back();
-  };
-
-  const handleChangeNumber = () => {
-    console.log('Change number');
-    // Navigate back to phone number input or sign-up page
-    // router.push('/sign-up');
-  };
+  const isCodeComplete = code.every(digit => digit !== '');
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F6E4D8]">
-      <Box className="flex-1 px-6 py-4">
-        {/* Header */}
-        <HStack className="items-center justify-center mb-8 relative">
-          <Pressable
-            className="absolute left-0 bg-white p-2 rounded-full shadow-sm"
-            onPress={handleGoBack}
-          >
-            <ChevronLeftIcon size={24} color="#333A31" />
-          </Pressable>
-          <Text className="text-xl font-bold text-[#333A31]">
-            {isPasswordReset ? 'Reset Password' : isEmailVerification ? 'Verify Email' : 'Verify Phone'}
-          </Text>
-        </HStack>
+    <Box className="flex-1 bg-white">
+      <SafeAreaView className="flex-1">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <VStack className="flex-1">
+            {/* Header */}
+            <HStack className="items-center justify-between px-5 pt-2 pb-6">
+              <Pressable onPress={() => router.back()}>
+                <ChevronLeft size={24} color="#333A31" />
+              </Pressable>
+              <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>
+                Account Security
+              </Text>
+              <Box className="w-6" />
+            </HStack>
 
-        <View className="flex-1  items-center px-4">
-          <View className="items-center w-full max-w-sm">
-            {/* Icon */}
-            <View className="bg-[#A3B899] w-20 h-20 rounded-full mb-8 justify-center items-center">
-              {isEmailVerification ? (
-                <Mail size={32} color="white" />
-              ) : (
-                <SmartphoneIcon size={32} color="white" />
-              )}
-            </View>
+            {/* Content */}
+            <VStack className="px-5">
+              {/* Title */}
+              <Text className="text-[24px] font-worksans-bold mb-3" style={{ color: '#30352D' }}>
+                Verify your{'\n'}authentication code
+              </Text>
 
-            {/* Main Text */}
-            <Text className="text-2xl font-bold text-[#333A31] text-center mb-4">
-              {isPasswordReset
-                ? 'Enter verification code'
-                : isEmailVerification
-                ? 'Verify your email'
-                : 'Verify your phone number'}
-            </Text>
+              {/* Description */}
+              <Text className="text-[15px] font-worksans-medium mb-8 leading-[20px]" style={{ color: '#30352D' }}>
+                A code has been sent to{'\n'}
+                <Text className="font-worksans-bold">{phone}</Text>
+              </Text>
 
-            <Text className="text-[#666] text-center mb-1 text-base">
-              {isPasswordReset
-                ? 'Enter the 6-digit code sent to your email to reset your password'
-                : `We've sent a 6-digit verification code to ${isEmailVerification ? 'your email' : 'your phone'}`}
-            </Text>
+              {/* OTP Input */}
+              <HStack className="justify-between mb-8">
+                {code.map((digit, index) => (
+                  <Box key={index} className="flex-1 mx-1">
+                    <TextInput
+                      ref={(ref) => {
+                        inputRefs.current[index] = ref;
+                      }}
+                      className="text-center text-[24px] font-worksans-bold border-b-2 pb-2"
+                      style={{
+                        color: '#30352D',
+                        borderBottomColor: digit ? '#C1856A' : '#E5E5E5',
+                      }}
+                      value={digit}
+                      onChangeText={(value) => handleCodeChange(value, index)}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      autoFocus={index === 0}
+                      selectTextOnFocus
+                    />
+                  </Box>
+                ))}
+              </HStack>
 
-            <Text className="text-lg font-semibold text-[#333A31] mb-8">
-              {verificationTarget}
-            </Text>
-
-            {/* OTP Input Fields */}
-            <View className="flex-row justify-center items-center mb-6 gap-3">
-              {otp.map((digit, index) => (
-                <View
-                  key={index}
-                  className={`w-12 h-12 bg-white rounded-lg border-2 ${
-                    digit ? 'border-[#D9896C]' : 'border-[#BFA28D]'
-                  } justify-center items-center`}
+              {/* Resend Code */}
+              <Pressable onPress={handleResend} disabled={!canResend || isResending}>
+                <Text
+                  className="text-[15px] font-worksans-bold mb-4"
+                  style={{ color: canResend ? '#C1856A' : '#9CA3AF' }}
                 >
-                  <TextInput
-                     ref={(ref: TextInput | null) => {
-                       inputRefs.current[index] = ref;
-                     }}
-                     value={digit}
-                     onChangeText={(value: string) => handleOtpChange(value, index)}
-                     onKeyPress={({ nativeEvent }: { nativeEvent: { key: string } }) => handleKeyPress(nativeEvent.key, index)}
-                     maxLength={1}
-                     keyboardType="numeric"
-                     className="text-center text-xl font-semibold text-[#333A31] w-full h-full"
-                     autoFocus={index === 0}
-                     style={{ textAlign: 'center' }}
-                   />
-                </View>
-              ))}
-            </View>
-
-            {/* Timer */}
-            <Text className="text-[#666] mb-8 text-center">
-              Code expires in{' '}
-              <Text className="font-semibold text-[#D9896C]">
-                {formatTime(timeLeft)}
-              </Text>
-            </Text>
-
-            {/* Verify Button */}
-            <Pressable
-              onPress={handleVerify}
-              disabled={!isVerifyEnabled || isLoading}
-              className={`w-full py-4 rounded-xl ${
-                isVerifyEnabled && !isLoading
-                  ? 'bg-[#A3B899]'
-                  : 'bg-[#A3B899] opacity-50'
-              } mb-8`}
-            >
-              <Text className="text-white text-lg font-semibold text-center">
-                {isLoading ? 'Verifying...' : 'Verify Code'}
-              </Text>
-            </Pressable>
-
-            {/* Resend and Change Links */}
-            <View className="items-center">
-              <View className="items-center mb-4">
-                <Text className="text-[#666] text-center mb-1">Didn't receive the code?</Text>
-                <Pressable onPress={handleResendCode}>
-                  <Text className="font-semibold text-[#D9896C] text-center">
-                    Resend Code
-                  </Text>
-                </Pressable>
-              </View>
-              
-              <Pressable onPress={handleChangeNumber}>
-                <Text className="text-[#666] text-center">
-                  Wrong number? <Text className="font-semibold text-[#D9896C]">Change it</Text>
+                  {isResending ? 'Sending...' : canResend ? 'Resend code' : `Resend code in ${countdown}s`}
                 </Text>
               </Pressable>
-            </View>
-          </View>
-        </View>
-      </Box>
-    </SafeAreaView>
-  );
-};
 
-export default VerifyOtp;
+              {/* Support Text */}
+              <Text className="text-[13px] font-worksans-medium mb-8 leading-[18px]" style={{ color: '#30352D' }}>
+                Need your code sent to a new phone number?{' '}
+                <Text style={{ color: '#C1856A' }}>Contact customer support</Text>
+              </Text>
+
+              {/* Verify Button */}
+              <Button
+                className="rounded-full shadow-sm"
+                style={{
+                  backgroundColor: isCodeComplete && !isLoading ? '#C1856A' : '#E5E7EB',
+                }}
+                onPress={handleVerify}
+                isDisabled={!isCodeComplete || isLoading}
+              >
+                <ButtonText
+                  className="text-[18px] font-worksans-bold"
+                  style={{ color: isCodeComplete && !isLoading ? 'white' : '#B7B7B7' }}
+                >
+                  {isLoading ? 'Verifying...' : 'Verify'}
+                </ButtonText>
+              </Button>
+            </VStack>
+          </VStack>
+        </ScrollView>
+      </SafeAreaView>
+    </Box>
+  );
+}
