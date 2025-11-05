@@ -3,17 +3,20 @@
 -- Level 1: Subcategories
 -- Level 2: Individual Services
 
+-- Clear existing categories
+TRUNCATE TABLE categories CASCADE;
+
 -- ============================================================================
 -- MAIN CATEGORY 1: Furniture & Assembly
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Furniture & Assembly', 'We build it so you don't have to. Our skilled handymen handle any assembly task — big or small.', NULL, NULL, 0, 1);
+VALUES (generate_nanoid('category'::text), 'Furniture & Assembly', 'We build it so you don''t have to. Our skilled handymen handle any assembly task — big or small.', NULL, NULL, 0, 1);
 
 -- Furniture & Assembly Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Furniture & Assembly' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -27,7 +30,7 @@ FROM parent,
     ('Desk, Bed & Dresser Assembly', 3),
     ('Bookshelf & Storage Assembly', 4),
     ('Wardrobe & Closet Setup', 5),
-    ('Office Furniture Assembly', 6),
+    ('Home Office Furniture Assembly', 6),
     ('Furniture Disassembly & Reassembly', 7)
   ) AS services(service, row_number);
 
@@ -35,13 +38,13 @@ FROM parent,
 -- MAIN CATEGORY 2: Home Cleaning & Maintenance
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Home Cleaning & Maintenance', 'A clean, comfortable home — without the hassle. Whether it's a deep clean or a move-in refresh, we'll make your space shine.', NULL, NULL, 0, 2);
+VALUES (generate_nanoid('category'::text), 'Home Cleaning & Maintenance', 'A clean, comfortable home — without the hassle. Whether it''s a deep clean or a move-in refresh, we''ll make your space shine.', NULL, NULL, 0, 2);
 
 -- Home Cleaning & Maintenance Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Home Cleaning & Maintenance' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -65,13 +68,13 @@ FROM parent,
 -- MAIN CATEGORY 3: Handyman & Home Repairs
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Handyman & Home Repairs', 'Reliable fixes and upgrades for every room in your home. From small repairs to smart home installations — we've got it handled.', NULL, NULL, 0, 3);
+VALUES (generate_nanoid('category'::text), 'Handyman & Home Repairs', 'Reliable fixes and upgrades for every room in your home. From small repairs to smart home installations — we''ve got it handled.', NULL, NULL, 0, 3);
 
 -- Handyman & Home Repairs Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Handyman & Home Repairs' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -103,13 +106,13 @@ FROM parent,
 -- MAIN CATEGORY 4: Moving & Heavy Lifting
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Moving & Heavy Lifting', 'Move smarter — not harder. Our movers make relocation simple, fast, and stress-free.', NULL, NULL, 0, 4);
+VALUES (generate_nanoid('category'::text), 'Moving & Heavy Lifting', 'Move smarter — not harder. Our movers make relocation simple, fast, and stress-free.', NULL, NULL, 0, 4);
 
 -- Moving & Heavy Lifting Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Moving & Heavy Lifting' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -135,13 +138,13 @@ FROM parent,
 -- MAIN CATEGORY 5: Mounting & Installation
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Mounting & Installation', 'Perfectly placed. Safely secured. We handle all your wall mounting and installation needs.', NULL, NULL, 0, 5);
+VALUES (generate_nanoid('category'::text), 'Mounting & Installation', 'Perfectly placed. Safely secured. We handle all your wall mounting and installation needs.', NULL, NULL, 0, 5);
 
 -- Mounting & Installation Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Mounting & Installation' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -163,13 +166,13 @@ FROM parent,
 -- MAIN CATEGORY 6: Yard & Outdoor Services
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Yard & Outdoor Services', 'A beautiful yard, made effortless. Keep your outdoor spaces healthy, clean, and ready to enjoy.', NULL, NULL, 0, 6);
+VALUES (generate_nanoid('category'::text), 'Yard & Outdoor Services', 'A beautiful yard, made effortless. Keep your outdoor spaces healthy, clean, and ready to enjoy.', NULL, NULL, 0, 6);
 
 -- Yard & Outdoor Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Yard & Outdoor Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -199,13 +202,13 @@ FROM parent,
 -- MAIN CATEGORY 7: Errands, Shopping & Delivery
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Errands, Shopping & Delivery', 'We'll handle your errands so you can save time. Fast, flexible help for your everyday tasks, shopping, and deliveries.', NULL, NULL, 0, 7);
+VALUES (generate_nanoid('category'::text), 'Errands, Shopping & Delivery', 'We''ll handle your errands so you can save time. Fast, flexible help for your everyday tasks, shopping, and deliveries.', NULL, NULL, 0, 7);
 
 -- Errands, Shopping & Delivery Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Errands, Shopping & Delivery' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -232,13 +235,13 @@ FROM parent,
 -- MAIN CATEGORY 8: Personal & Virtual Assistance
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Personal & Virtual Assistance', 'An extra pair of hands — in person or online. Stay organized, productive, and stress-free.', NULL, NULL, 0, 8);
+VALUES (generate_nanoid('category'::text), 'Personal & Virtual Assistance', 'An extra pair of hands — in person or online. Stay organized, productive, and stress-free.', NULL, NULL, 0, 8);
 
 -- Personal & Virtual Assistance Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Personal & Virtual Assistance' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -261,13 +264,13 @@ FROM parent,
 -- MAIN CATEGORY 9: Family & Baby Prep
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Family & Baby Prep', 'Helping families get ready for life's big changes. From setting up the nursery to safety installations, we make home life easier.', NULL, NULL, 0, 9);
+VALUES (generate_nanoid('category'::text), 'Family & Baby Prep', 'Helping families get ready for life''s big changes. From setting up the nursery to safety installations, we make home life easier.', NULL, NULL, 0, 9);
 
 -- Family & Baby Prep Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Family & Baby Prep' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -289,13 +292,13 @@ FROM parent,
 -- MAIN CATEGORY 10: Office Services
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Office Services', 'Professional help to keep your workspace running smoothly. Create a productive, organized, and inspiring office environment.', NULL, NULL, 0, 10);
+VALUES (generate_nanoid('category'::text), 'Office Services', 'Professional help to keep your workspace running smoothly. Create a productive, organized, and inspiring office environment.', NULL, NULL, 0, 10);
 
 -- Office Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Office Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -319,18 +322,19 @@ FROM parent,
 -- MAIN CATEGORY 11: Seasonal Services
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Seasonal Services', 'Ready for every season — from spring cleanups to winter prep.', NULL, NULL, 0, 11);
+VALUES (generate_nanoid('category'::text), 'Seasonal Services', 'Ready for every season — from spring cleanups to winter prep.', NULL, NULL, 0, 11);
 
 -- Seasonal Services - Spring & Summer (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Seasonal Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Spring & Summer', 'Spring and summer outdoor services', NULL, parent.id, 1, 1);
+SELECT generate_nanoid('category'::text), 'Spring & Summer', 'Spring and summer outdoor services', NULL, parent.id, 1, 1
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Seasonal Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Spring & Summer' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Spring & Summer' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -341,20 +345,21 @@ FROM grandparent, parent,
   (VALUES
     ('Spring Cleaning', 1),
     ('Gardening & Landscaping Refresh', 2),
-    ('Outdoor Furniture Setup', 3),
+    ('Seasonal Outdoor Furniture Setup', 3),
     ('Patio & Deck Maintenance', 4)
   ) AS services(service, row_number);
 
 -- Seasonal Services - Fall & Winter (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Seasonal Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Fall & Winter', 'Fall and winter preparation services', NULL, parent.id, 1, 2);
+SELECT generate_nanoid('category'::text), 'Fall & Winter', 'Fall and winter preparation services', NULL, parent.id, 1, 2
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Seasonal Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Fall & Winter' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Fall & Winter' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -378,13 +383,13 @@ FROM grandparent, parent,
 -- MAIN CATEGORY 12: Contactless & Online Tasks
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Contactless & Online Tasks', 'Safe, simple, and 100% contact-free options.', NULL, NULL, 0, 12);
+VALUES (generate_nanoid('category'::text), 'Contactless & Online Tasks', 'Safe, simple, and 100% contact-free options.', NULL, NULL, 0, 12);
 
 -- Contactless & Online Tasks Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Contactless & Online Tasks' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -394,7 +399,7 @@ SELECT
 FROM parent,
   (VALUES
     ('Contactless Deliveries', 1),
-    ('Prescription Pickup & Drop-Off', 2),
+    ('Contactless Prescription Pickup & Drop-Off', 2),
     ('Contactless Grocery Shopping', 3),
     ('Disinfection & Sanitizing Services', 4),
     ('Virtual Assistance', 5),
@@ -406,20 +411,21 @@ FROM parent,
 -- MAIN CATEGORY 13: 100Handy Experiences & At-Home Services
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), '100Handy Experiences & At-Home Services', 'Unique entertainment, wellness, and beauty brought directly to your home. From live music to spa days, dining experiences, and professional grooming.', NULL, NULL, 0, 13);
+VALUES (generate_nanoid('category'::text), '100Handy Experiences & At-Home Services', 'Unique entertainment, wellness, and beauty brought directly to your home. From live music to spa days, dining experiences, and professional grooming.', NULL, NULL, 0, 13);
 
 -- ============================================================================
 -- SUBCATEGORY: Personal & Social Entertainment Experiences
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Personal & Social Entertainment Experiences', 'Bring the fun home with private entertainment and interactive events. Turn your home into a venue for music, laughter, and celebration.', NULL, parent.id, 1, 1);
+SELECT generate_nanoid('category'::text), 'Personal & Social Entertainment Experiences', 'Bring the fun home with private entertainment and interactive events. Turn your home into a venue for music, laughter, and celebration.', NULL, parent.id, 1, 1
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Personal & Social Entertainment Experiences' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Personal & Social Entertainment Experiences' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -446,13 +452,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Creative & Artistic Experiences', 'Explore your creativity with fun, hands-on activities at home. Perfect for individuals, couples, or small groups looking to create and connect.', NULL, parent.id, 1, 2);
+SELECT generate_nanoid('category'::text), 'Creative & Artistic Experiences', 'Explore your creativity with fun, hands-on activities at home. Perfect for individuals, couples, or small groups looking to create and connect.', NULL, parent.id, 1, 2
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Creative & Artistic Experiences' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Creative & Artistic Experiences' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -476,13 +483,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Relaxation & Luxury Experiences', 'Turn your home into a private spa or wellness retreat. Relax, recharge, and indulge in luxury experiences without leaving your space.', NULL, parent.id, 1, 3);
+SELECT generate_nanoid('category'::text), 'Relaxation & Luxury Experiences', 'Turn your home into a private spa or wellness retreat. Relax, recharge, and indulge in luxury experiences without leaving your space.', NULL, parent.id, 1, 3
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Relaxation & Luxury Experiences' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Relaxation & Luxury Experiences' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -504,13 +512,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Food & Dining Experiences', 'Restaurant-quality dining, right at your table. Enjoy exquisite food and drink experiences crafted by professionals in your own home.', NULL, parent.id, 1, 4);
+SELECT generate_nanoid('category'::text), 'Food & Dining Experiences', 'Restaurant-quality dining, right at your table. Enjoy exquisite food and drink experiences crafted by professionals in your own home.', NULL, parent.id, 1, 4
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Food & Dining Experiences' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Food & Dining Experiences' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -533,13 +542,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Family & Group Entertainment', 'Fun and engaging experiences for families and friends. Make memories together with interactive and creative group activities.', NULL, parent.id, 1, 5);
+SELECT generate_nanoid('category'::text), 'Family & Group Entertainment', 'Fun and engaging experiences for families and friends. Make memories together with interactive and creative group activities.', NULL, parent.id, 1, 5
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Family & Group Entertainment' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Family & Group Entertainment' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -561,13 +571,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Fitness & Interactive Fun', 'Move, dance, and energise with fitness brought to your home. Group sessions or one-to-one workouts designed for all ages and skill levels.', NULL, parent.id, 1, 6);
+SELECT generate_nanoid('category'::text), 'Fitness & Interactive Fun', 'Move, dance, and energise with fitness brought to your home. Group sessions or one-to-one workouts designed for all ages and skill levels.', NULL, parent.id, 1, 6
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Fitness & Interactive Fun' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Fitness & Interactive Fun' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -589,13 +600,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Seasonal & Themed Experiences', 'Celebrate every occasion in style. From festive gatherings to creative workshops, we make every season special.', NULL, parent.id, 1, 7);
+SELECT generate_nanoid('category'::text), 'Seasonal & Themed Experiences', 'Celebrate every occasion in style. From festive gatherings to creative workshops, we make every season special.', NULL, parent.id, 1, 7
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Seasonal & Themed Experiences' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Seasonal & Themed Experiences' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -616,13 +628,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Photography, Videography & Media', 'Capture your best moments at home. Professional creative services for families, events, and content creators.', NULL, parent.id, 1, 8);
+SELECT generate_nanoid('category'::text), 'Photography, Videography & Media', 'Capture your best moments at home. Professional creative services for families, events, and content creators.', NULL, parent.id, 1, 8
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = '100Handy Experiences & At-Home Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Photography, Videography & Media' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Photography, Videography & Media' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -642,20 +655,21 @@ FROM grandparent, parent,
 -- MAIN CATEGORY 14: Beauty & Grooming Services
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Beauty & Grooming Services', 'Professional beauty and wellness treatments — all at home. From haircuts to facials, massages to manicures, our beauty experts come to you.', NULL, NULL, 0, 14);
+VALUES (generate_nanoid('category'::text), 'Beauty & Grooming Services', 'Professional beauty and wellness treatments — all at home. From haircuts to facials, massages to manicures, our beauty experts come to you.', NULL, NULL, 0, 14);
 
 -- ============================================================================
 -- SUBCATEGORY: Hair Services
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Hair Services', 'Professional hair services at your home', NULL, parent.id, 1, 1);
+SELECT generate_nanoid('category'::text), 'Hair Services', 'Professional hair services at your home', NULL, parent.id, 1, 1
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Hair Services' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Hair Services' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -678,13 +692,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Hair Removal', 'Professional hair removal services at home', NULL, parent.id, 1, 2);
+SELECT generate_nanoid('category'::text), 'Hair Removal', 'Professional hair removal services at home', NULL, parent.id, 1, 2
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Hair Removal' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Hair Removal' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -703,20 +718,22 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Face & Beauty', 'Comprehensive facial and beauty treatments', NULL, parent.id, 1, 3);
+SELECT generate_nanoid('category'::text), 'Face & Beauty', 'Comprehensive facial and beauty treatments', NULL, parent.id, 1, 3
+FROM parent;
 
 -- Lash & Brow Services (Level 2)
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Face & Beauty' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Face & Beauty' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Lash & Brow Services', 'Eyebrow and eyelash treatments', NULL, parent.id, 2, 1);
+SELECT generate_nanoid('category'::text), 'Lash & Brow Services', 'Eyebrow and eyelash treatments', NULL, parent.id, 2, 1
+FROM parent;
 
 WITH greatgrandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     grandparent AS (SELECT id FROM categories WHERE name = 'Face & Beauty' AND parent_id = greatgrandparent.id),
-     parent AS (SELECT id FROM categories WHERE name = 'Lash & Brow Services' AND parent_id = grandparent.id)
+     grandparent AS (SELECT c.id FROM categories c, greatgrandparent WHERE c.name = 'Face & Beauty' AND c.parent_id = greatgrandparent.id),
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Lash & Brow Services' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -733,16 +750,17 @@ FROM greatgrandparent, grandparent, parent,
 
 -- Facials & Skin Care (Level 2)
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Face & Beauty' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Face & Beauty' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Facials & Skin Care', 'Professional facial treatments', NULL, parent.id, 2, 2);
+SELECT generate_nanoid('category'::text), 'Facials & Skin Care', 'Professional facial treatments', NULL, parent.id, 2, 2
+FROM parent;
 
 WITH greatgrandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     grandparent AS (SELECT id FROM categories WHERE name = 'Face & Beauty' AND parent_id = greatgrandparent.id),
-     parent AS (SELECT id FROM categories WHERE name = 'Facials & Skin Care' AND parent_id = grandparent.id)
+     grandparent AS (SELECT c.id FROM categories c, greatgrandparent WHERE c.name = 'Face & Beauty' AND c.parent_id = greatgrandparent.id),
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Facials & Skin Care' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -759,16 +777,17 @@ FROM greatgrandparent, grandparent, parent,
 
 -- Makeup & Aesthetics (Level 2)
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Face & Beauty' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Face & Beauty' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Makeup & Aesthetics', 'Professional makeup services', NULL, parent.id, 2, 3);
+SELECT generate_nanoid('category'::text), 'Makeup & Aesthetics', 'Professional makeup services', NULL, parent.id, 2, 3
+FROM parent;
 
 WITH greatgrandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     grandparent AS (SELECT id FROM categories WHERE name = 'Face & Beauty' AND parent_id = greatgrandparent.id),
-     parent AS (SELECT id FROM categories WHERE name = 'Makeup & Aesthetics' AND parent_id = grandparent.id)
+     grandparent AS (SELECT c.id FROM categories c, greatgrandparent WHERE c.name = 'Face & Beauty' AND c.parent_id = greatgrandparent.id),
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Makeup & Aesthetics' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -788,13 +807,14 @@ FROM greatgrandparent, grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Nails', 'Professional nail services at home', NULL, parent.id, 1, 4);
+SELECT generate_nanoid('category'::text), 'Nails', 'Professional nail services at home', NULL, parent.id, 1, 4
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Nails' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Nails' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -817,13 +837,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Body Treatments', 'Professional body treatments at home', NULL, parent.id, 1, 5);
+SELECT generate_nanoid('category'::text), 'Body Treatments', 'Professional body treatments at home', NULL, parent.id, 1, 5
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Body Treatments' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Body Treatments' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -844,13 +865,14 @@ FROM grandparent, parent,
 -- ============================================================================
 WITH parent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Massage & Wellness', 'Professional massage and wellness treatments', NULL, parent.id, 1, 6);
+SELECT generate_nanoid('category'::text), 'Massage & Wellness', 'Professional massage and wellness treatments', NULL, parent.id, 1, 6
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Beauty & Grooming Services' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Massage & Wellness' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Massage & Wellness' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -870,18 +892,19 @@ FROM grandparent, parent,
 -- MAIN CATEGORY 15: Men's Grooming & At-Home Treatments
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Men''s Grooming & At-Home Treatments', 'Professional grooming, just for him — in the comfort of home. From haircuts to massages, we bring the barbershop and spa experience to you.', NULL, NULL, 0, 15);
+VALUES (generate_nanoid('category'::text), 'Men''s Grooming & At-Home Treatments', 'Professional grooming, just for him — in the comfort of home. From haircuts to massages, we bring the barbershop and spa experience to you.', NULL, NULL, 0, 15);
 
 -- Men's Hair & Grooming (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Hair & Grooming', 'Men''s hair and grooming services', NULL, parent.id, 1, 1);
+SELECT generate_nanoid('category'::text), 'Hair & Grooming', 'Men''s hair and grooming services', NULL, parent.id, 1, 1
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Hair & Grooming' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Hair & Grooming' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -900,13 +923,14 @@ FROM grandparent, parent,
 -- Men's Hair Removal (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Hair Removal', 'Men''s hair removal services', NULL, parent.id, 1, 2);
+SELECT generate_nanoid('category'::text), 'Men''s Hair Removal', 'Men''s hair removal services', NULL, parent.id, 1, 2
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Hair Removal' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Men''s Hair Removal' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -922,13 +946,14 @@ FROM grandparent, parent,
 -- Men's Face & Skin (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Face & Skin', 'Men''s facial and skin treatments', NULL, parent.id, 1, 3);
+SELECT generate_nanoid('category'::text), 'Face & Skin', 'Men''s facial and skin treatments', NULL, parent.id, 1, 3
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Face & Skin' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Face & Skin' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -945,13 +970,14 @@ FROM grandparent, parent,
 -- Men's Nails & Hands (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Nails & Hands', 'Men''s manicure and nail services', NULL, parent.id, 1, 4);
+SELECT generate_nanoid('category'::text), 'Nails & Hands', 'Men''s manicure and nail services', NULL, parent.id, 1, 4
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Nails & Hands' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Nails & Hands' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -967,13 +993,14 @@ FROM grandparent, parent,
 -- Men's Massage & Therapy (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Massage & Therapy', 'Men''s massage and therapy services', NULL, parent.id, 1, 5);
+SELECT generate_nanoid('category'::text), 'Massage & Therapy', 'Men''s massage and therapy services', NULL, parent.id, 1, 5
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Massage & Therapy' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Massage & Therapy' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -990,13 +1017,14 @@ FROM grandparent, parent,
 -- Men's Other Grooming (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Other Grooming', 'Additional men''s grooming services', NULL, parent.id, 1, 6);
+SELECT generate_nanoid('category'::text), 'Other Grooming', 'Additional men''s grooming services', NULL, parent.id, 1, 6
+FROM parent;
 
 WITH grandparent AS (SELECT id FROM categories WHERE name = 'Men''s Grooming & At-Home Treatments' AND parent_id IS NULL),
-     parent AS (SELECT id FROM categories WHERE name = 'Other Grooming' AND parent_id = grandparent.id)
+     parent AS (SELECT c.id FROM categories c, grandparent WHERE c.name = 'Other Grooming' AND c.parent_id = grandparent.id)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
@@ -1005,22 +1033,22 @@ SELECT
   row_number
 FROM grandparent, parent,
   (VALUES
-    ('Eyebrow Shaping', 1),
+    ('Men''s Eyebrow Shaping', 1),
     ('Henna Tattoos', 2),
-    ('Body Hair Bleaching', 3)
+    ('Men''s Body Hair Bleaching', 3)
   ) AS services(service, row_number);
 
 -- ============================================================================
 -- MAIN CATEGORY 16: Shared & Unisex Treatments
 -- ============================================================================
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
-VALUES (generate_nanoid(), 'Shared & Unisex Treatments', 'Beauty and wellness services everyone can enjoy. Perfect for couples, families, or housemates who want to relax together.', NULL, NULL, 0, 16);
+VALUES (generate_nanoid('category'::text), 'Shared & Unisex Treatments', 'Beauty and wellness services everyone can enjoy. Perfect for couples, families, or housemates who want to relax together.', NULL, NULL, 0, 16);
 
 -- Shared & Unisex Treatments Services (Level 1)
 WITH parent AS (SELECT id FROM categories WHERE name = 'Shared & Unisex Treatments' AND parent_id IS NULL)
 INSERT INTO categories (id, name, description, icon_url, parent_id, level, display_order)
 SELECT
-  generate_nanoid(),
+  generate_nanoid('category'::text),
   service,
   NULL,
   NULL,
