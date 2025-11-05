@@ -359,20 +359,16 @@ importers:
         version: 1.3.6(@types/react-dom@19.0.6(@types/react@19.1.17))(@types/react@19.1.17)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-slot':
         specifier: ^1.2.3
-<<<<<<< HEAD
-        version: 1.2.3(@types/react@19.0.14)(react@19.0.0)
+        version: 1.2.3(@types/react@19.1.17)(react@19.1.0)
       '@react-google-maps/api':
         specifier: ^2.20.7
-        version: 2.20.7(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-=======
-        version: 1.2.3(@types/react@19.1.17)(react@19.1.0)
->>>>>>> 1d4c684112c5bd7f56e0e9193474f733fd3cb852
+        version: 2.20.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@shared/supabase':
         specifier: workspace:*
         version: link:../../packages/shared
       '@stripe/react-stripe-js':
         specifier: ^5.3.0
-        version: 5.3.0(@stripe/stripe-js@8.3.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 5.3.0(@stripe/stripe-js@8.3.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@stripe/stripe-js':
         specifier: ^8.3.0
         version: 8.3.0
@@ -420,14 +416,10 @@ importers:
         version: 7.65.0(react@19.1.0)
       sonner:
         specifier: ^2.0.7
-<<<<<<< HEAD
-        version: 2.0.7(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 2.0.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       stripe:
         specifier: ^19.2.1
         version: 19.2.1(@types/node@22.16.3)
-=======
-        version: 2.0.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
->>>>>>> 1d4c684112c5bd7f56e0e9193474f733fd3cb852
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
@@ -2620,8 +2612,8 @@ packages:
   '@react-google-maps/api@2.20.7':
     resolution: {integrity: sha512-ys7uri3V6gjhYZUI43srHzSKDC6/jiKTwHNlwXFTvjeaJE3M3OaYBt9FZKvJs8qnOhL6i6nD1BKJoi1KrnkCkg==}
     peerDependencies:
-      react: 19.0.0
-      react-dom: 19.0.0
+      react: 19.1.0
+      react-dom: 19.1.0
 
   '@react-google-maps/infobox@2.20.0':
     resolution: {integrity: sha512-03PJHjohhaVLkX6+NHhlr8CIlvUxWaXhryqDjyaZ8iIqqix/nV8GFdz9O3m5OsjtxtNho09F/15j14yV0nuyLQ==}
@@ -3055,8 +3047,8 @@ packages:
     resolution: {integrity: sha512-q9Wl6JKg9JUU9zRcQyx4rkKauiM4Il+/ohJemQkLa4SsFEvcXVzX9X89cRLiaAEiNOaJ/2EQML+aWNSHc0EXBw==}
     peerDependencies:
       '@stripe/stripe-js': '>=8.0.0 <9.0.0'
-      react: 19.0.0
-      react-dom: 19.0.0
+      react: 19.1.0
+      react-dom: 19.1.0
 
   '@stripe/stripe-js@8.3.0':
     resolution: {integrity: sha512-hmC3u0anySPI+As+wFGrKG38pXnXAUqyiitnYeYknEOslcDM96AkBdMNxKYOopecuP/v1HMbclUEq8/DKKn+6w==}
@@ -3334,13 +3326,11 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
-<<<<<<< HEAD
-  '@types/google.maps@3.58.1':
-    resolution: {integrity: sha512-X9QTSvGJ0nCfMzYOnaVs/k6/4L+7F5uCS+4iUmkLEls6J9S/Phv+m/i3mDeyc49ZBgwab3EFO1HEoBY7k98EGQ==}
-=======
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
->>>>>>> 1d4c684112c5bd7f56e0e9193474f733fd3cb852
+
+  '@types/google.maps@3.58.1':
+    resolution: {integrity: sha512-X9QTSvGJ0nCfMzYOnaVs/k6/4L+7F5uCS+4iUmkLEls6J9S/Phv+m/i3mDeyc49ZBgwab3EFO1HEoBY7k98EGQ==}
 
   '@types/graceful-fs@4.1.9':
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
@@ -10129,7 +10119,6 @@ snapshots:
     transitivePeerDependencies:
       - react-native
 
-<<<<<<< HEAD
   '@googlemaps/js-api-loader@1.16.8': {}
 
   '@googlemaps/markerclusterer@2.5.3':
@@ -10137,10 +10126,7 @@ snapshots:
       fast-deep-equal: 3.1.3
       supercluster: 8.0.1
 
-  '@hookform/resolvers@3.10.0(react-hook-form@7.65.0(react@19.0.0))':
-=======
   '@hookform/resolvers@3.10.0(react-hook-form@7.65.0(react@19.1.0))':
->>>>>>> 1d4c684112c5bd7f56e0e9193474f733fd3cb852
     dependencies:
       react-hook-form: 7.65.0(react@19.1.0)
 
@@ -11153,8 +11139,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-<<<<<<< HEAD
-  '@react-google-maps/api@2.20.7(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+  '@react-google-maps/api@2.20.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@googlemaps/js-api-loader': 1.16.8
       '@googlemaps/markerclusterer': 2.5.3
@@ -11162,17 +11147,14 @@ snapshots:
       '@react-google-maps/marker-clusterer': 2.20.0
       '@types/google.maps': 3.58.1
       invariant: 2.2.4
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@react-google-maps/infobox@2.20.0': {}
 
   '@react-google-maps/marker-clusterer@2.20.0': {}
 
-  '@react-native-aria/checkbox@0.2.10(react-dom@19.0.0(react@19.0.0))(react-native@0.79.5(@babel/core@7.28.0)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
-=======
   '@react-native-aria/checkbox@0.2.10(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.0)(@react-native/metro-config@0.82.1(@babel/core@7.28.0))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
->>>>>>> 1d4c684112c5bd7f56e0e9193474f733fd3cb852
     dependencies:
       '@react-aria/checkbox': 3.2.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/utils': 3.29.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -11857,12 +11839,12 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
-  '@stripe/react-stripe-js@5.3.0(@stripe/stripe-js@8.3.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+  '@stripe/react-stripe-js@5.3.0(@stripe/stripe-js@8.3.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@stripe/stripe-js': 8.3.0
       prop-types: 15.8.1
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@stripe/stripe-js@8.3.0': {}
 
@@ -12155,11 +12137,9 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
-<<<<<<< HEAD
-  '@types/google.maps@3.58.1': {}
-=======
   '@types/geojson@7946.0.16': {}
->>>>>>> 1d4c684112c5bd7f56e0e9193474f733fd3cb852
+
+  '@types/google.maps@3.58.1': {}
 
   '@types/graceful-fs@4.1.9':
     dependencies:
