@@ -21,7 +21,7 @@ export default function ProfessionalSignUp() {
       setIsLoading(true);
 
       // Sign up with email - this will send email verification automatically
-      await signUp(email, password, { data: metadata });
+      await signUp({ email, password, options: { data: metadata } });
 
       // Navigate to email verification screen
       router.push({

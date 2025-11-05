@@ -28,8 +28,9 @@ export default function Index() {
       const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
       
       if (hasSeenOnboarding === 'true') {
-        // Returning user - skip to home (guests can browse)
-        router.replace('/(professional)/(tabs)/dashboard');
+        // Returning user - skip to client home (guests can browse)
+        // AuthWrapper will redirect authenticated users to their appropriate screens
+        router.replace('/(client)/(tabs)/home');
       } else {
         // First time user - show welcome flow
         router.replace('/(auth)/role-selection');

@@ -34,7 +34,7 @@ export default function ClientSignUp() {
       setIsLoading(true);
 
       // Sign up with email - this will send email verification automatically
-      await signUp(email, password, { data: metadata });
+      await signUp({ email, password, options: { data: metadata } });
 
       // Navigate to email verification screen
       router.push({
@@ -52,9 +52,8 @@ export default function ClientSignUp() {
   return (
     <Box className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
-        <ScrollView 
-          className="flex-1"
-          contentContainerStyle={{ paddingBottom: 40 }}
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
           <VStack className="flex-1">

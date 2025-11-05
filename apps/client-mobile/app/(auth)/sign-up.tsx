@@ -50,14 +50,18 @@ export default function Signup() {
       const fullPhoneNumber = `${countryCode}${formData.phone}`;
 
       // Sign up with email - this will send email verification automatically
-      await signUp(formData.email, formData.password, {
-        data: {
-          role: 'customer',
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          full_name: `${formData.firstName} ${formData.lastName}`,
-          postcode: formData.postCode,
-          phone: fullPhoneNumber,
+      await signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            role: 'customer',
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            postcode: formData.postCode,
+            phone: fullPhoneNumber,
+          },
         },
       });
 

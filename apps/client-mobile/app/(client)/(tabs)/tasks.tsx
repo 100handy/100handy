@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
 import { TaskCard, Tab, EmptyState } from '@/components/tasks';
 import { useUserBookings } from '@shared/supabase/query';
-import { useAuthStore } from '@shared/supabase/store';
+import { useAuthStore } from '@shared/supabase';
 import { bookingToTaskCardProps } from '@/lib/bookings';
 
 // Using Tailwind design tokens - colors are now defined in tailwind.config.js

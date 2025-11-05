@@ -89,13 +89,15 @@ export default function SelectDateTimeModal({
                 textDayHeaderFontWeight: 'normal',
                 dayTextColor: colors.darkGrey,
                 textDisabledColor: colors.lightGrey,
-                'stylesheet.calendar.header': {
-                    week: {
-                        marginTop: 5,
-                        flexDirection: 'row',
-                        justifyContent: 'space-between'
+                ...(({
+                    'stylesheet.calendar.header': {
+                        week: {
+                            marginTop: 5,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between'
+                        }
                     }
-                }
+                }) as any)
               }}
             />
             

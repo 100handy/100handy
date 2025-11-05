@@ -11,7 +11,8 @@ import { InputField } from '@/components/ui/input';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Camera, X } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useProfileStore } from '@shared/store';
+import { useProfileStore } from '@shared/supabase';
+import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
 
 interface FormData {
   first_name: string;
@@ -32,6 +33,7 @@ export default function AccountDetailEditScreen() {
   });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -104,15 +106,7 @@ export default function AccountDetailEditScreen() {
   };
 
   const showPhotoOptions = () => {
-    Alert.alert(
-      'Profile Photo',
-      'Choose an option',
-      [
-        { text: 'Take Photo', onPress: takePhoto },
-        { text: 'Choose from Library', onPress: pickImage },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
+    setShowPhotoModal(true);
   };
 
   const handleSave = async () => {
@@ -320,6 +314,14 @@ export default function AccountDetailEditScreen() {
           </VStack>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Add Profile Photo Modal */}
+      <AddProfilePhotoModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onTakePhoto={takePhoto}
+        onChooseFromLibrary={pickImage}
+      />
     </SafeAreaView>
   );
 }

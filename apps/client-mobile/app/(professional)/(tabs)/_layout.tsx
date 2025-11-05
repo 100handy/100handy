@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Briefcase, DollarSign, User } from 'lucide-react-native';
+import { Home, MapPin, Calendar, BarChart, User } from 'lucide-react-native';
 
 export default function ProfessionalTabLayout() {
   return (
@@ -11,29 +11,36 @@ export default function ProfessionalTabLayout() {
           borderTopWidth: 1,
           borderTopColor: '#e5e5e5',
         },
-        tabBarActiveTintColor: '#FF6B35',
-        tabBarInactiveTintColor: '#666666',
+        tabBarActiveTintColor: '#D17852',
+        tabBarInactiveTintColor: '#B8926A',
       }}
     >
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: "Dashboard",
+          title: "Home",
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
         }}
       />
       <Tabs.Screen
-        name="jobs"
+        name="work-area"
         options={{
-          title: "Available Jobs",
-          tabBarIcon: ({ color, size }) => <Briefcase color={color} size={size} />,
+          title: "Location",
+          tabBarIcon: ({ color, size }) => <MapPin color={color} size={size} />,
         }}
       />
       <Tabs.Screen
-        name="earnings"
+        name="bookings"
         options={{
-          title: "Earnings",
-          tabBarIcon: ({ color, size }) => <DollarSign color={color} size={size} />,
+          title: "Bookings",
+          tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="performance"
+        options={{
+          title: "Performance",
+          tabBarIcon: ({ color, size }) => <BarChart color={color} size={size} />,
         }}
       />
       <Tabs.Screen

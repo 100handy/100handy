@@ -153,7 +153,7 @@ export default function SetWorkAreaScreen() {
         type: 'polygon',
       });
     }
-    router.back();
+    router.push('/(professional)/(tabs)/dashboard');
   };
 
   const increaseRadius = () => {
@@ -193,7 +193,7 @@ export default function SetWorkAreaScreen() {
         {/* Header */}
         <Box className="bg-white px-6 py-4 border-b border-gray-200 z-10">
           <HStack className="items-center justify-between">
-            <Pressable onPress={() => router.back()}>
+            <Pressable onPress={() => router.push('/(professional)/(tabs)/dashboard')}>
               <ArrowLeft size={24} color="#30352D" />
             </Pressable>
             <Text className="text-[#30352D] text-lg font-bold">Set Work Area</Text>
