@@ -9,33 +9,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { enableTwoFactor, verifyTwoFactor, isTwoFactorEnabled } from "@/lib/supabase/security";
+import { createClient } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export function SecurityTab() {
   const [twoFactorDialogOpen, setTwoFactorDialogOpen] = useState(false);
   const [twoFactorActivatedDialogOpen, setTwoFactorActivatedDialogOpen] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [countryCode, setCountryCode] = useState("+44");
+  const [userEmail, setUserEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
   useEffect(() => {
-    isTwoFactorEnabled().then(setIs2FAEnabled);
+    // Get user email and 2FA status
+    const fetchUserData = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setUserEmail(user.email);
+      }
+      const enabled = await isTwoFactorEnabled();
+      setIs2FAEnabled(enabled);
+    };
+    fetchUserData();
   }, []);
 
   const handleEnable2FA = async () => {
     try {
-      const fullPhone = `${countryCode}${phoneNumber}`;
-      await enableTwoFactor(fullPhone);
-      toast.success("Verification code sent to your phone");
+      await enableTwoFactor(userEmail);
+      toast.success("Verification code sent to your email");
       setTwoFactorDialogOpen(false);
       setTwoFactorActivatedDialogOpen(true);
     } catch (error: any) {
@@ -45,12 +47,10 @@ export function SecurityTab() {
 
   const handleVerify2FA = async () => {
     try {
-      const fullPhone = `${countryCode}${phoneNumber}`;
-      await verifyTwoFactor(fullPhone, otpCode);
+      await verifyTwoFactor(userEmail, otpCode);
       toast.success("Two-factor authentication enabled");
       setTwoFactorActivatedDialogOpen(false);
       setIs2FAEnabled(true);
-      setPhoneNumber("");
       setOtpCode("");
     } catch (error: any) {
       toast.error(error.message || "Failed to verify code");
@@ -83,7 +83,7 @@ export function SecurityTab() {
                   To keep your account secure, set up two-factor authentication.
                 </p>
                 <p className="text-brand-dark text-sm sm:text-base">
-                  Enter your phone number to receive the security code and activate two-factor authentication.
+                  We'll send a verification code to your email address to activate two-factor authentication.
                 </p>
               </>
             )}
@@ -111,56 +111,19 @@ export function SecurityTab() {
 
           <div className="space-y-6 py-4">
             <p className="text-brand-dark text-sm text-center">
-              Enter your phone number to receive your authentication code
+              We'll send a verification code to your email address
             </p>
 
-            <div className="flex gap-2">
-              {/* Country Code Selector */}
-              <Select value={countryCode} onValueChange={setCountryCode}>
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🇬🇧</span>
-                      <span>{countryCode}</span>
-                    </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="+44">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🇬🇧</span>
-                      <span>+44</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="+1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🇺🇸</span>
-                      <span>+1</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="+91">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🇮🇳</span>
-                      <span>+91</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Phone Number Input */}
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="7757510964"
-                className="flex-1 h-10 px-3 py-2 border border-gray-300 rounded-md text-sm text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-terracotta focus:border-brand-terracotta"
-              />
+            <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+              <p className="text-brand-dark text-sm font-medium text-center">
+                {userEmail || "Loading..."}
+              </p>
             </div>
 
             <div className="flex justify-center">
               <Button
                 onClick={handleEnable2FA}
-                disabled={!phoneNumber}
+                disabled={!userEmail}
                 className="bg-brand-terracotta hover:bg-brand-coral text-white px-12 disabled:bg-gray-300 disabled:text-gray-500"
               >
                 Send Code
@@ -181,7 +144,7 @@ export function SecurityTab() {
 
           <div className="space-y-6 py-4">
             <p className="text-brand-dark text-sm text-center">
-              Enter the verification code sent to {countryCode}{phoneNumber}
+              Enter the 6-digit code sent to {userEmail}
             </p>
 
             <div className="space-y-2">
@@ -189,7 +152,11 @@ export function SecurityTab() {
               <input
                 type="text"
                 value={otpCode}
-                onChange={(e) => setOtpCode(e.target.value)}
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/\D/g, "");
+                  setOtpCode(value);
+                }}
                 placeholder="Enter 6-digit code"
                 maxLength={6}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-brand-terracotta focus:border-brand-terracotta text-brand-dark text-center tracking-widest text-lg"
@@ -207,7 +174,6 @@ export function SecurityTab() {
               <button
                 onClick={() => {
                   setTwoFactorActivatedDialogOpen(false);
-                  setPhoneNumber("");
                   setOtpCode("");
                 }}
                 className="text-brand-dark text-sm hover:underline"

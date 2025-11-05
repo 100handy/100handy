@@ -5,7 +5,7 @@ export interface Booking {
   id: number;
   customer_id: string;
   handy_id: string | null;
-  category_id: number | null;
+  category_id: string | null;
   task_title: string;
   task_details: string | null;
   scheduled_date: string;
@@ -18,10 +18,13 @@ export interface Booking {
 }
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   description: string | null;
   icon_url: string | null;
+  parent_id: string | null;
+  level: number;
+  display_order: number;
 }
 
 export interface Address {

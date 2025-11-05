@@ -11,13 +11,17 @@
  *   ✅ signUp() - Email/password registration
  *   ✅ signIn() - Email/password login
  *   ✅ sendMagicLink() - Passwordless login via email
- *   ✅ resetPasswordForEmail() - Request password reset
+ *   ✅ resetPasswordForEmail() - Request password reset (email link)
+ *   ✅ sendPasswordResetOTP() - Request password reset (OTP code)
  *   ✅ updatePassword() - Set new password
  *   ✅ signOut() - Log out user
  *   ✅ getSession() - Get current session
  *   ✅ signUpWithPhone() - Phone number registration (requires SMS provider)
  *   ✅ verifyOTP() - Verify phone OTP
+ *   ✅ verifyEmailOTP() - Verify email OTP (for signup)
+ *   ✅ verifyPasswordResetOTP() - Verify password reset OTP
  *   ✅ resendOTP() - Resend phone OTP
+ *   ✅ resendEmailOTP() - Resend email OTP
  * 
  * PLATFORM-AWARE FUNCTIONS (behave differently per platform):
  *   ⚙️ signInWithProvider() - OAuth login
@@ -148,6 +152,47 @@ export async function resendOTP(phone: string) {
   const { data, error } = await supabase.auth.resend({
     type: 'sms',
     phone,
+  });
+  if (error) throw error;
+  return data;
+}
+
+// ✅ NEW: Verify Email OTP (for signup)
+export async function verifyEmailOTP(email: string, token: string) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'email',
+  });
+  if (error) throw error;
+  return data;
+}
+
+// ✅ NEW: Resend Email OTP (for signup)
+export async function resendEmailOTP(email: string) {
+  const { data, error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+  });
+  if (error) throw error;
+  return data;
+}
+
+// ✅ NEW: Send Password Reset OTP
+export async function sendPasswordResetOTP(email: string) {
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: getRedirectUrl(),
+  });
+  if (error) throw error;
+  return data;
+}
+
+// ✅ NEW: Verify Password Reset OTP
+export async function verifyPasswordResetOTP(email: string, token: string) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'recovery',
   });
   if (error) throw error;
   return data;

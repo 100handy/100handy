@@ -13,12 +13,11 @@ import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@shared/schemas/auth';
-import { resetPasswordForEmail } from '@shared/supabase/auth';
+import { sendPasswordResetOTP } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
 
 export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
   const toast = useToast();
 
   const {
@@ -34,53 +33,24 @@ export default function ForgotPassword() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
       setIsLoading(true);
-      await resetPasswordForEmail(data.email);
-      setEmailSent(true);
-      toast.success('Email sent', 'Check your inbox for password reset instructions');
+      await sendPasswordResetOTP(data.email);
+      toast.success('Code sent!', 'Check your email for the verification code');
+
+      // Navigate to verify-otp screen with reset type
+      router.push({
+        pathname: '/(auth)/verify-otp',
+        params: {
+          email: data.email,
+          type: 'reset',
+        },
+      });
     } catch (error) {
       console.error('Password reset error:', error);
-      toast.error('Failed to send email', error instanceof Error ? error.message : 'Please try again');
+      toast.error('Failed to send code', error instanceof Error ? error.message : 'Please try again');
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleResend = () => {
-    handleSubmit(onSubmit)();
-  };
-
-  if (emailSent) {
-    return (
-      <SafeAreaView className="flex-1 bg-white">
-        <VStack className="flex-1 justify-center items-center px-6">
-          <Text className="text-2xl font-worksans-bold text-center mb-4" style={{ color: '#30352D' }}>
-            Check your email
-          </Text>
-          <Text className="text-base font-worksans text-center text-typography-600 mb-2 leading-6">
-            We've sent password reset instructions to
-          </Text>
-          <Text className="text-base font-worksans-semibold text-center mb-8" style={{ color: '#30352D' }}>
-            {getValues('email')}
-          </Text>
-          <Button
-            className="w-full max-w-sm rounded-full mb-4"
-            style={{ backgroundColor: '#A3B899' }}
-            onPress={handleResend}
-            isDisabled={isLoading}
-          >
-            <ButtonText className="text-white text-base font-worksans-bold">
-              {isLoading ? 'Sending...' : 'Resend email'}
-            </ButtonText>
-          </Button>
-          <Pressable onPress={() => router.back()} className="mt-4">
-            <Text className="text-sm font-worksans-medium" style={{ color: '#C1856A' }}>
-              Back to sign in
-            </Text>
-          </Pressable>
-        </VStack>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <Box className="flex-1 bg-white">
@@ -117,7 +87,7 @@ export default function ForgotPassword() {
             {/* Description */}
             <Box className="px-5 mb-6">
               <Text className="text-base font-worksans text-typography-600 text-center leading-6">
-                Enter your email address and we'll send you instructions to reset your password.
+                Enter your email address and we'll send you a verification code to reset your password.
               </Text>
             </Box>
 
@@ -167,7 +137,7 @@ export default function ForgotPassword() {
                   className="text-[18px] font-worksans-bold"
                   style={{ color: isValid ? 'white' : '#B7B7B7' }}
                 >
-                  {isLoading ? 'Sending...' : 'Send reset link'}
+                  {isLoading ? 'Sending...' : 'Send verification code'}
                 </ButtonText>
               </Button>
 

@@ -3,22 +3,70 @@
 import Image from "next/image";
 import { Calendar, MapPin, Clock, Truck } from "lucide-react";
 
-export function TaskSummary() {
+interface TaskSummaryProps {
+  handymanName?: string;
+  handymanAvatar?: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  address?: string;
+  taskSize?: string;
+  vehicleRequirement?: string;
+  taskDetails?: string;
+  hourlyRateCents?: number;
+  onEdit?: () => void;
+  onConfirm?: () => void;
+  isSubmitting?: boolean;
+}
+
+const getTaskSizeLabel = (size: string) => {
+  switch (size) {
+    case 'small': return 'Small – Est. 1 hr';
+    case 'medium': return 'Medium – Est. 2-3 hrs';
+    case 'large': return 'Large – Est. 4+ hrs';
+    default: return size;
+  }
+};
+
+const getVehicleLabel = (vehicle: string) => {
+  switch (vehicle) {
+    case 'not-needed': return 'Vehicle not needed';
+    case 'car': return 'Task requires a car';
+    case 'truck': return 'Task requires a truck';
+    default: return vehicle;
+  }
+};
+
+export function TaskSummary({
+  handymanName = "Mike W.",
+  handymanAvatar = "/images/tasker-placeholder.jpg",
+  scheduledDate = "Fri, Oct 3",
+  scheduledTime = "16:00",
+  address = "London, England E7 9EU",
+  taskSize = "medium",
+  vehicleRequirement = "car",
+  taskDetails = "Task details will appear here",
+  hourlyRateCents = 7027,
+  onEdit,
+  onConfirm,
+  isSubmitting = false
+}: TaskSummaryProps) {
+  const hourlyRate = hourlyRateCents / 100;
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6">
       {/* Tasker Profile */}
       <div className="mb-6 flex items-center gap-4">
         <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-200">
           <Image
-            src="/images/tasker-placeholder.jpg"
-            alt="Mike W."
+            src={handymanAvatar}
+            alt={handymanName}
             width={64}
             height={64}
             className="h-full w-full object-cover"
           />
         </div>
         <div>
-          <p className="text-[18px] font-medium text-[#333A31]">Mike W.</p>
+          <p className="text-[18px] font-medium text-[#333A31]">{handymanName}</p>
         </div>
       </div>
 
@@ -26,29 +74,34 @@ export function TaskSummary() {
       <div className="mb-6 space-y-3">
         <div className="flex items-start gap-3">
           <Calendar className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#333A31]" />
-          <p className="text-[18px] text-[#333A31]">Fri, Oct 3 at 16:00</p>
+          <p className="text-[18px] text-[#333A31]">{scheduledDate} at {scheduledTime}</p>
         </div>
 
         <div className="flex items-start gap-3">
           <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#333A31]" />
-          <p className="text-[18px] text-[#333A31]">London, England E7 9EU</p>
+          <p className="text-[18px] text-[#333A31]">{address}</p>
         </div>
 
         <div className="flex items-start gap-3">
           <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#333A31]" />
-          <p className="text-[18px] text-[#333A31]">Medium – Est. 2–3 hrs</p>
+          <p className="text-[18px] text-[#333A31]">{getTaskSizeLabel(taskSize)}</p>
         </div>
 
         <div className="flex items-start gap-3">
           <Truck className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#333A31]" />
-          <p className="text-[#18px] text-[#333A31]">Task requires a car</p>
+          <p className="text-[18px] text-[#333A31]">{getVehicleLabel(vehicleRequirement)}</p>
         </div>
       </div>
 
       {/* Edit Task Button */}
-      <button className="mb-6 w-full rounded-lg border border-[#C1856A] bg-white px-4 py-2.5 text-[16px] font-medium text-[#C1856A] transition-colors hover:bg-[#C1856A]/5">
-        Edit Task
-      </button>
+      {onEdit && (
+        <button
+          onClick={onEdit}
+          className="mb-6 w-full rounded-lg border border-[#C1856A] bg-white px-4 py-2.5 text-[16px] font-medium text-[#C1856A] transition-colors hover:bg-[#C1856A]/5"
+        >
+          Edit Task
+        </button>
+      )}
 
       {/* Task Details */}
       <div className="mb-6">
@@ -57,7 +110,7 @@ export function TaskSummary() {
         </p>
         <div className="rounded-lg bg-gray-50 p-4">
           <p className="text-[18px] leading-relaxed text-[#333A31]">
-            I need help mounting a 55-inch TV on the living room wall. The wall is plasterboard, and I already have the bracket. Please make sure cables are hidden neatly.
+            {taskDetails}
           </p>
         </div>
       </div>
@@ -69,12 +122,12 @@ export function TaskSummary() {
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <p className="text-[18px] font-bold text-[#333A31]">Hourly Rate</p>
-          <p className="text-[18px] font-bold text-[#333A31]">£70.27 /hr</p>
+          <p className="text-[18px] font-bold text-[#333A31]">£{hourlyRate.toFixed(2)} /hr</p>
         </div>
       </div>
 
       {/* Pricing Details */}
-      <div className="space-y-2 text-[14px]">
+      <div className="space-y-2 text-[14px] mb-6">
         <p className="text-[#333A31]">
           <span>Pricing is inclusive of a </span>
           <span className="font-medium text-[#C1856A]">£10.68/hr Trust & Support fee.</span>
@@ -95,6 +148,17 @@ export function TaskSummary() {
           <span> about our cancellation policy.</span>
         </p>
       </div>
+
+      {/* Confirm Button */}
+      {onConfirm && (
+        <button
+          onClick={onConfirm}
+          disabled={isSubmitting}
+          className="w-full rounded-lg bg-[#C1856A] px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-[#a67359] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? 'Creating booking...' : 'Confirm and Chat'}
+        </button>
+      )}
     </div>
   );
 }

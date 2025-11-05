@@ -3,39 +3,31 @@
 import Image from "next/image";
 import { useState } from "react";
 import { SelectDateTimeModal } from "./select-datetime-modal";
+import type { HandymanProfile } from "@/lib/supabase/handymen";
 
-interface Tasker {
-  id: string;
-  name: string;
-  rating: number;
-  reviewCount: number;
-  hourlyRate: number;
-  minimumHours: number;
-  tasksCompleted: number;
-  overallTasks: number;
-  vehicle: string;
-  profileImage: string;
-  bio: string;
-  recentReview: {
-    text: string;
-    author: string;
-    date: string;
-  };
+interface TaskerCardProps {
+  handyman: HandymanProfile;
+  categoryName: string;
+  onSelectContinue?: (date: string, time: string) => void;
 }
 
-export function TaskerCard({ 
-  tasker, 
-  onSelectContinue 
-}: { 
-  tasker: Tasker;
-  onSelectContinue?: () => void;
-}) {
+export function TaskerCard({
+  handyman,
+  categoryName,
+  onSelectContinue
+}: TaskerCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSelectContinue = () => {
+  const handleSelectContinue = (date: string, time: string) => {
     setIsModalOpen(false);
-    onSelectContinue?.();
+    onSelectContinue?.(date, time);
   };
+
+  // Convert cents to pounds for display
+  const hourlyRate = handyman.hourly_rate_cents / 100;
+  const displayName = handyman.display_name || `${handyman.first_name} ${handyman.last_name?.charAt(0) || ''}.`;
+  const minimumHours = 2; // Default minimum
+  const vehicleType = "Car"; // Default - can be enhanced later
 
   return (
     <>
@@ -45,8 +37,8 @@ export function TaskerCard({
           <div className="flex flex-col items-center gap-3 flex-shrink-0">
             <div className="w-36 h-36 rounded-full overflow-hidden bg-gray-200">
               <Image
-                src={tasker.profileImage}
-                alt={tasker.name}
+                src={handyman.avatar_url || '/images/default-avatar.png'}
+                alt={displayName}
                 width={144}
                 height={144}
                 className="w-full h-full object-cover"
@@ -55,7 +47,7 @@ export function TaskerCard({
             <button className="text-[#C1856A] text-sm font-medium hover:underline whitespace-nowrap">
               View Profile &<br />Reviews
             </button>
-            <button 
+            <button
               onClick={() => setIsModalOpen(true)}
               className="bg-[#C1856A] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#a67359] transition-colors whitespace-nowrap"
             >
@@ -71,16 +63,16 @@ export function TaskerCard({
             {/* Header with Name and Price */}
             <div className="flex items-start justify-between mb-2">
               <h3 className="text-[#333A31] text-2xl font-semibold">
-                {tasker.name}
+                {displayName}
               </h3>
               <div className="text-[#333A31] text-2xl font-semibold">
-                £{tasker.hourlyRate.toFixed(2)} /hr
+                £{hourlyRate.toFixed(2)} /hr
               </div>
             </div>
 
             {/* Minimum Hours Badge */}
             <div className="inline-flex items-center bg-[#82BE56] text-white px-3 py-1 rounded text-xs font-semibold mb-3">
-              {tasker.minimumHours} HOUR MINIMUM
+              {minimumHours} HOUR MINIMUM
             </div>
 
             {/* Rating */}
@@ -92,17 +84,17 @@ export function TaskerCard({
                 <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
               </svg>
               <span className="text-[#333A31] text-sm font-medium">
-                {tasker.rating.toFixed(1)} ({tasker.reviewCount} reviews)
+                {handyman.rating.toFixed(1)} ({handyman.review_count || handyman.jobs_completed} reviews)
               </span>
             </div>
 
             {/* Stats */}
             <div className="space-y-0.5 mb-4">
               <p className="text-[#333A31] text-sm font-medium">
-                {tasker.tasksCompleted} General Mounting tasks
+                {handyman.jobs_completed} {categoryName} tasks
               </p>
               <p className="text-[#333A31] text-sm">
-                {tasker.overallTasks} Mounting task overall
+                {handyman.experience_years} years of experience
               </p>
               <div className="flex items-center gap-1.5">
                 <svg
@@ -114,44 +106,35 @@ export function TaskerCard({
                   <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
                 </svg>
                 <span className="text-[#333A31] text-sm">
-                  Vehicle: {tasker.vehicle}
+                  Vehicle: {vehicleType}
                 </span>
               </div>
             </div>
 
             {/* Bio Section */}
-            <div className="mb-4">
-              <h4 className="text-[#333A31] text-base font-semibold mb-2">
-                How I can help:
-              </h4>
-              <p className="text-[#333A31] text-sm leading-relaxed mb-1">
-                {tasker.bio}
-              </p>
-              <button className="text-[#333A31] text-sm font-semibold hover:text-[#C1856A]">
-                Read More
-              </button>
-            </div>
+            {handyman.bio && (
+              <div className="mb-4">
+                <h4 className="text-[#333A31] text-base font-semibold mb-2">
+                  How I can help:
+                </h4>
+                <p className="text-[#333A31] text-sm leading-relaxed mb-1">
+                  {handyman.bio}
+                </p>
+                <button className="text-[#333A31] text-sm font-semibold hover:text-[#C1856A]">
+                  Read More
+                </button>
+              </div>
+            )}
 
-            {/* Recent Review */}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                <Image
-                  src={tasker.profileImage}
-                  alt={tasker.recentReview.author}
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover"
-                />
+            {/* Verified Badge */}
+            {handyman.verified && (
+              <div className="flex items-center gap-2 text-[#82BE56] text-sm font-medium">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Verified Professional</span>
               </div>
-              <div>
-                <p className="text-[#333A31] text-sm font-semibold mb-0.5">
-                  {tasker.recentReview.author}. On {tasker.recentReview.date}
-                </p>
-                <p className="text-[#333A31] text-sm">
-                  "{tasker.recentReview.text}"
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -161,7 +144,7 @@ export function TaskerCard({
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onConfirm={handleSelectContinue}
-        taskerName={tasker.name}
+        taskerName={displayName}
       />
     </>
   );

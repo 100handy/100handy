@@ -2,19 +2,19 @@
 import { createClient } from '../supabase';
 
 /**
- * Enable two-factor authentication via SMS
- * Sends an OTP to the provided phone number
+ * Enable two-factor authentication via email
+ * Sends an OTP to the user's email address
  */
-export async function enableTwoFactor(phone: string): Promise<void> {
+export async function enableTwoFactor(email: string): Promise<void> {
   try {
     const supabase = createClient();
-    
-    // Format phone number (remove spaces, ensure it starts with +)
-    const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
 
-    // Send OTP to phone
+    // Send OTP to email
     const { error } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
+      email,
+      options: {
+        shouldCreateUser: false, // Don't create a new user if email doesn't exist
+      },
     });
 
     if (error) {
@@ -29,30 +29,27 @@ export async function enableTwoFactor(phone: string): Promise<void> {
 /**
  * Verify OTP code and complete two-factor setup
  */
-export async function verifyTwoFactor(phone: string, code: string): Promise<void> {
+export async function verifyTwoFactor(email: string, code: string): Promise<void> {
   try {
     const supabase = createClient();
-    
-    // Format phone number
-    const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
 
     // Verify OTP
     const { error } = await supabase.auth.verifyOtp({
-      phone: formattedPhone,
+      email,
       token: code,
-      type: 'sms',
+      type: 'email',
     });
 
     if (error) {
       throw error;
     }
 
-    // Update user's phone in their profile
+    // Mark 2FA as enabled in user's profile
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       await supabase
         .from('profiles')
-        .update({ phone: formattedPhone })
+        .update({ two_factor_enabled: true })
         .eq('user_id', user.id);
     }
   } catch (error) {
@@ -67,15 +64,21 @@ export async function verifyTwoFactor(phone: string, code: string): Promise<void
 export async function isTwoFactorEnabled(): Promise<boolean> {
   try {
     const supabase = createClient();
-    
+
     const { data: { user }, error } = await supabase.auth.getUser();
-    
+
     if (error || !user) {
       return false;
     }
 
-    // User has 2FA enabled if their phone is confirmed
-    return !!user.phone_confirmed_at;
+    // Check if 2FA is enabled in profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('two_factor_enabled')
+      .eq('user_id', user.id)
+      .single();
+
+    return profile?.two_factor_enabled === true;
   } catch (error) {
     console.error('Error in isTwoFactorEnabled:', error);
     return false;
@@ -84,20 +87,18 @@ export async function isTwoFactorEnabled(): Promise<boolean> {
 
 /**
  * Disable two-factor authentication
- * Note: Supabase doesn't have a direct API to disable phone auth,
- * so we just remove the phone from the user's profile
  */
 export async function disableTwoFactor(): Promise<void> {
   try {
     const supabase = createClient();
-    
+
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (user) {
-      // Remove phone from profile
+      // Disable 2FA in profile
       await supabase
         .from('profiles')
-        .update({ phone: null })
+        .update({ two_factor_enabled: false })
         .eq('user_id', user.id);
     }
   } catch (error) {
