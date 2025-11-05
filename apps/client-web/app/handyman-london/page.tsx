@@ -516,7 +516,7 @@ const HelpButton = () => {
 export default function HandymanLondonPage() {
   return (
     <div className="bg-white min-h-screen">
-      <Header currentPage="services" />
+      <Header />
       <BreadcrumbSection />
       <HeroSection />
       <FeaturedTaskersSection />

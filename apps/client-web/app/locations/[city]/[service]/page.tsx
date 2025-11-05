@@ -55,7 +55,13 @@ interface LocationServicePageProps {
 }
 
 // Sample taskers data
-const generateTaskers = (serviceName: string, count: number = 6) => {
+const generateTaskers = (serviceName: string, count: number = 6): Array<{
+  name: string;
+  tasks: string;
+  rating: string;
+  reviews: number;
+  description: string;
+}> => {
   const names = ["Maria R.", "Lucas P.", "Marcus R.", "Lore V.", "Ahmet P.", "Lisa O."];
   const descriptions = [
     "From start to finish, I communicate clearly and work carefully to deliver exactly what you need",
@@ -64,13 +70,16 @@ const generateTaskers = (serviceName: string, count: number = 6) => {
     "With over 6 years of experience, I bring the right tools and skills to ensure your job is completed safely."
   ];
 
-  return names.slice(0, count).map((name, index) => ({
-    name,
-    tasks: `${Math.floor(Math.random() * 90) + 10} ${serviceName.toLowerCase()} tasks`,
-    rating: "5.0",
-    reviews: 124,
-    description: descriptions[index % descriptions.length]
-  }));
+  return names.slice(0, count).map((name, index) => {
+    const description = descriptions[index % descriptions.length] ?? descriptions[0] ?? "";
+    return {
+      name,
+      tasks: `${Math.floor(Math.random() * 90) + 10} ${serviceName.toLowerCase()} tasks`,
+      rating: "5.0",
+      reviews: 124,
+      description
+    };
+  });
 };
 
 export default async function LocationServicePage({ params }: LocationServicePageProps) {
@@ -114,7 +123,7 @@ interface LocationServiceContentProps {
 function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers }: LocationServiceContentProps) {
   return (
     <div className="bg-white min-h-screen">
-      <Header currentPage="services" />
+      <Header />
 
       {/* Breadcrumb */}
       <div className="bg-white py-4 border-b border-gray-200">

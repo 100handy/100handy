@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/marketing/footer";
@@ -22,7 +22,7 @@ import { createPaymentIntent } from "@/lib/stripe/payment";
 import { createClient } from "@/lib/supabase";
 import type { Category } from "@/lib/supabase/types";
 
-export default function TaskFormPage() {
+function TaskFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const categoryFromUrl = searchParams.get("category");
@@ -756,5 +756,13 @@ export default function TaskFormPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function TaskFormPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+      <TaskFormContent />
+    </Suspense>
   );
 }

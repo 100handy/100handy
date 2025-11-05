@@ -45,7 +45,6 @@ export function Footer(): JSX.Element {
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
                 aria-label="Facebook"
               >
-                {/* @ts-expect-error - React 19 type compatibility issue */}
                 <Facebook className="h-5 w-5" />
               </a>
               <a
@@ -53,7 +52,6 @@ export function Footer(): JSX.Element {
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
                 aria-label="Twitter"
               >
-                {/* @ts-expect-error - React 19 type compatibility issue */}
                 <Twitter className="h-5 w-5" />
               </a>
               <a
@@ -61,7 +59,6 @@ export function Footer(): JSX.Element {
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
                 aria-label="Instagram"
               >
-                {/* @ts-expect-error - React 19 type compatibility issue */}
                 <Instagram className="h-5 w-5" />
               </a>
               <a
@@ -69,7 +66,6 @@ export function Footer(): JSX.Element {
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
                 aria-label="LinkedIn"
               >
-                {/* @ts-expect-error - React 19 type compatibility issue */}
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
@@ -77,7 +73,6 @@ export function Footer(): JSX.Element {
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
                 aria-label="YouTube"
               >
-                {/* @ts-expect-error - React 19 type compatibility issue */}
                 <Youtube className="h-5 w-5" />
               </a>
             </div>
@@ -89,7 +84,6 @@ export function Footer(): JSX.Element {
             <ul className="space-y-2">
               {discoverLinks.map((link) => (
                 <li key={link.label}>
-                  {/* @ts-expect-error - React 19 type compatibility issue */}
                   <Link
                     href={link.href}
                     className="text-[14px] text-gray-300 transition-colors hover:text-white"
@@ -107,7 +101,6 @@ export function Footer(): JSX.Element {
             <ul className="space-y-2">
               {companyLinks.map((link) => (
                 <li key={link.label}>
-                  {/* @ts-expect-error - React 19 type compatibility issue */}
                   <Link
                     href={link.href}
                     className="text-[14px] text-gray-300 transition-colors hover:text-white"

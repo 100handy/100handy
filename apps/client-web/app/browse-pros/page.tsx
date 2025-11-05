@@ -11,26 +11,26 @@ import { ConfirmDetails } from "@/components/confirm-booking/confirm-details";
 import { TaskSummary } from "@/components/confirm-booking/task-summary";
 
 const mockTaskers = Array.from({ length: 7 }, (_, i) => ({
-  id: `tasker-${i}`,
-  name: "Mike W.",
+  user_id: `tasker-${i}`,
+  first_name: "Mike",
+  last_name: "W.",
+  display_name: "Mike W.",
   rating: 5.0,
-  reviewCount: 124,
-  hourlyRate: 70.27,
-  minimumHours: 2,
-  tasksCompleted: 438,
-  overallTasks: 548,
-  vehicle: "Car",
-  profileImage: "/images/tasker-placeholder.jpg",
+  review_count: 124,
+  hourly_rate_cents: 7027, // £70.27
+  experience_years: 8,
+  jobs_completed: 438,
   bio: "I have 8 years of experience. I come with all the right rawlplugs, fixings and tools and not forgetting my trust…",
-  recentReview: {
-    text: "Great Work, very considerate and excellent Attention to detail.",
-    author: "Ana B.",
-    date: "Thursday, Oct 2",
-  },
+  avatar_url: "/images/tasker-placeholder.jpg",
+  verified: true,
+  created_at: new Date().toISOString(),
+  phone: null,
+  postcode: null,
 }));
 
 export default function BrowseProsPage() {
   const [currentStep, setCurrentStep] = useState(2);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
@@ -108,11 +108,15 @@ export default function BrowseProsPage() {
               </div>
 
               <div className="space-y-6">
-                {mockTaskers.map((tasker) => (
+                {mockTaskers.map((handyman) => (
                   <TaskerCard 
-                    key={tasker.id} 
-                    tasker={tasker}
-                    onSelectContinue={() => setCurrentStep(3)}
+                    key={handyman.user_id} 
+                    handyman={handyman}
+                    categoryName="Handyman"
+                    onSelectContinue={(date: string, time: string) => {
+                      console.log('Selected date:', date, 'time:', time);
+                      setCurrentStep(3);
+                    }}
                   />
                 ))}
               </div>
@@ -121,7 +125,17 @@ export default function BrowseProsPage() {
         ) : (
           <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
             {/* Left Column - Payment Form */}
-            <ConfirmDetails />
+            <ConfirmDetails 
+              onPaymentSuccess={(paymentIntentId: string) => {
+                console.log('Payment successful:', paymentIntentId);
+                // Handle successful payment
+              }}
+              onPaymentError={(error: string) => {
+                console.error('Payment error:', error);
+                // Handle payment error
+              }}
+              isSubmitting={isSubmitting}
+            />
 
             {/* Right Column - Task Summary */}
             <TaskSummary />

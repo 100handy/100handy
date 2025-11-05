@@ -60,7 +60,8 @@ function PaymentForm({ clientSecret, onSuccess, onError, isSubmitting }: Payment
         }}
         onLoadError={(error) => {
           console.error('PaymentElement load error:', error);
-          setElementError(error.message || 'Failed to load payment form');
+          const errorMessage = (error as any)?.error?.message || (error as any)?.message || 'Failed to load payment form';
+          setElementError(errorMessage);
         }}
       />
       {elementError && (

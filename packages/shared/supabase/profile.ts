@@ -685,7 +685,11 @@ export async function getSkillsByCategory(): Promise<Record<string, Skill[]>> {
       if (!grouped[skill.category]) {
         grouped[skill.category] = [];
       }
-      grouped[skill.category].push(skill);
+      // TypeScript needs explicit check - we know it exists from above check
+      const categoryArray = grouped[skill.category];
+      if (categoryArray) {
+        categoryArray.push(skill);
+      }
     });
 
     return grouped;

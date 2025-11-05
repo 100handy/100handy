@@ -164,9 +164,12 @@ export async function generateStaticParams() {
   const params: Array<{ category: string; service: string }> = [];
 
   Object.keys(servicesData).forEach((category) => {
-    Object.keys(servicesData[category]).forEach((service) => {
-      params.push({ category, service });
-    });
+    const categoryData = servicesData[category];
+    if (categoryData) {
+      Object.keys(categoryData).forEach((service) => {
+        params.push({ category, service });
+      });
+    }
   });
 
   return params;

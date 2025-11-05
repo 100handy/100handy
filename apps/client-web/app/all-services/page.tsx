@@ -68,7 +68,7 @@ const HelpButton = () => {
 export default function AllServicesPage() {
   return (
     <div className="bg-white min-h-screen">
-      <Header currentPage="services" />
+      <Header />
       <ServicesSection />
       <Footer />
       <HelpButton />
