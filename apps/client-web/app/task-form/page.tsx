@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/marketing/footer";
@@ -10,56 +10,129 @@ import {
   BrowseFilters,
   PeaceOfMindCard,
 } from "@/components/browse-pros";
+import type { FilterValues } from "@/components/browse-pros/browse-filters";
 import { ConfirmDetails } from "@/components/confirm-booking/confirm-details";
 import { TaskSummary } from "@/components/confirm-booking/task-summary";
 import { LocationAutocomplete } from "@/components/LocationAutocomplete";
+import { getCategoryByName } from "@/lib/supabase/categories";
+import { getHandymenByCategory, type HandymanProfile } from "@/lib/supabase/handymen";
+import { findOrCreateAddress } from "@/lib/supabase/addresses";
+import { createBooking } from "@/lib/supabase/bookings";
+import { createPaymentIntent } from "@/lib/stripe/payment";
+import { createClient } from "@/lib/supabase";
+import type { Category } from "@/lib/supabase/types";
 
 export default function TaskFormPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const categoryFromUrl = searchParams.get("category");
 
-  const [taskCategory, setTaskCategory] = useState(categoryFromUrl || "General Mounting");
+  // Task details state
+  const [category, setCategory] = useState<Category | null>(null);
+  const [taskCategory, setTaskCategory] = useState(categoryFromUrl || "");
   const [streetAddress, setStreetAddress] = useState("");
   const [unitFlat, setUnitFlat] = useState("");
+  const [googlePlaceData, setGooglePlaceData] = useState<any>(null);
   const [taskSize, setTaskSize] = useState("");
   const [vehicleRequirement, setVehicleRequirement] = useState("");
   const [taskDetails, setTaskDetails] = useState("");
+
+  // Flow state
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [taskOptionsCompleted, setTaskOptionsCompleted] = useState(false);
   const [showBrowsePros, setShowBrowsePros] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
+  // Data state
+  const [handymen, setHandymen] = useState<HandymanProfile[]>([]);
+  const [filteredHandymen, setFilteredHandymen] = useState<HandymanProfile[]>([]);
+  const [selectedHandyman, setSelectedHandyman] = useState<HandymanProfile | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [addressId, setAddressId] = useState<string>("");
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Loading and error state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Payment state
+  const [paymentIntentClientSecret, setPaymentIntentClientSecret] = useState<string>("");
+  const [paymentIntentId, setPaymentIntentId] = useState<string>("");
+
   const MAX_TASK_DETAILS_LENGTH = 300;
 
-  const mockTaskers = Array.from({ length: 7 }, (_, i) => ({
-    id: `tasker-${i}`,
-    name: "Mike W.",
-    rating: 5.0,
-    reviewCount: 124,
-    hourlyRate: 70.27,
-    minimumHours: 2,
-    tasksCompleted: 438,
-    overallTasks: 548,
-    vehicle: "Car",
-    profileImage: "/images/tasker-placeholder.jpg",
-    bio: "I have 8 years of experience. I come with all the right rawlplugs, fixings and tools and not forgetting my trust…",
-    recentReview: {
-      text: "Great Work, very considerate and excellent Attention to detail.",
-      author: "Ana B.",
-      date: "Thursday, Oct 2",
-    },
-  }));
-
+  // Check authentication
   useEffect(() => {
-    if (categoryFromUrl) {
-      setTaskCategory(categoryFromUrl);
-    }
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        // Store current path to return after login
+        sessionStorage.setItem('returnPath', window.location.pathname + window.location.search);
+        router.push('/sign-in');
+        return;
+      }
+
+      setUserId(user.id);
+    };
+
+    checkAuth();
+  }, [router]);
+
+  // Load category from URL
+  useEffect(() => {
+    const loadCategory = async () => {
+      if (!categoryFromUrl) {
+        setError('No category specified. Please select a service category.');
+        return;
+      }
+
+      try {
+        const cat = await getCategoryByName(categoryFromUrl);
+        if (cat) {
+          setCategory(cat);
+          setTaskCategory(cat.name);
+          setError(null); // Clear any previous errors
+        } else {
+          setError(`Category "${categoryFromUrl}" not found. Please select a valid service from the homepage.`);
+        }
+      } catch (error) {
+        console.error('Error loading category:', error);
+        setError('Failed to load category. Please try again or select a different service.');
+      }
+    };
+
+    loadCategory();
   }, [categoryFromUrl]);
 
-  const handleLocationContinue = () => {
-    if (streetAddress.trim()) {
-      setLocationConfirmed(true);
+  const handleLocationContinue = async () => {
+    if (!streetAddress.trim() || !userId) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Create or find address in database
+      const address = await findOrCreateAddress(
+        userId,
+        googlePlaceData || { formatted_address: streetAddress },
+        unitFlat
+      );
+
+      if (address) {
+        setAddressId(address.id);
+        setLocationConfirmed(true);
+      } else {
+        setError('Failed to save address. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error saving address:', err);
+      setError('Failed to save address. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,6 +141,183 @@ export default function TaskFormPage() {
       setTaskOptionsCompleted(true);
     }
   };
+
+  const handleBrowsePros = async () => {
+    // Debug logging
+    console.log('handleBrowsePros called', { category, userId, categoryFromUrl });
+
+    if (!category || !userId) {
+      const missingItems = [];
+      if (!category) missingItems.push('category');
+      if (!userId) missingItems.push('userId');
+      setError(`Cannot load handymen: Missing ${missingItems.join(' and ')}`);
+      console.error('Missing required data:', { category, userId });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log('Fetching handymen for category:', category.id, category.name);
+
+      // Fetch handymen for this category
+      const handymenData = await getHandymenByCategory(category.id);
+      console.log('Fetched handymen:', handymenData.length, handymenData);
+
+      if (handymenData.length === 0) {
+        setError('No handymen available for this category yet. Please try another service or check back later.');
+      }
+
+      setHandymen(handymenData);
+      setFilteredHandymen(handymenData);
+      setShowBrowsePros(true);
+    } catch (err: any) {
+      console.error('Error fetching handymen:', err);
+      console.error('Error details:', {
+        message: err?.message,
+        code: err?.code,
+        details: err?.details,
+        hint: err?.hint,
+      });
+      setError(`Failed to load handymen: ${err?.message || 'Unknown error'}. Please try again.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectHandyman = async (handyman: HandymanProfile, date: string, time: string) => {
+    setSelectedHandyman(handyman);
+    setSelectedDate(date);
+    setSelectedTime(time);
+    setShowBrowsePros(false);
+    setShowConfirmation(true);
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Calculate the amount for authorization hold (minimum 2 hours)
+      const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'medium' ? 2.5 : 4;
+      const minimumHours = Math.max(2, estimatedHours); // Minimum 2 hours
+      const amount = handyman.hourly_rate_cents * minimumHours;
+
+      // Create payment intent for authorization hold
+      const paymentIntent = await createPaymentIntent({
+        amount,
+        currency: 'gbp',
+        metadata: {
+          handyman_id: handyman.user_id,
+          category_id: category?.id || '',
+          estimated_hours: estimatedHours.toString(),
+        },
+      });
+
+      if (paymentIntent) {
+        setPaymentIntentClientSecret(paymentIntent.clientSecret);
+        setPaymentIntentId(paymentIntent.paymentIntentId);
+      } else {
+        setError('Failed to initialize payment. Please try again.');
+        setShowConfirmation(false);
+        setShowBrowsePros(true);
+      }
+    } catch (err) {
+      console.error('Error creating payment intent:', err);
+      setError('Failed to initialize payment. Please try again.');
+      setShowConfirmation(false);
+      setShowBrowsePros(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = useCallback((filters: FilterValues) => {
+    // Apply filters to handymen list
+    let filtered = [...handymen];
+
+    // Filter by price range (convert to pounds for comparison)
+    filtered = filtered.filter(handyman => {
+      const hourlyRate = handyman.hourly_rate_cents / 100;
+      return hourlyRate >= filters.priceMin && hourlyRate <= filters.priceMax;
+    });
+
+    // Filter by elite status (verified)
+    if (filters.isEliteTasker) {
+      filtered = filtered.filter(handyman => handyman.verified);
+    }
+
+    // TODO: Add date/time availability filtering when we have availability data
+
+    setFilteredHandymen(filtered);
+  }, [handymen]);
+
+  const handlePaymentSuccess = async (authorizedPaymentIntentId: string) => {
+    // Payment authorization successful! Now create the booking
+    if (!userId || !selectedHandyman || !category || !addressId) {
+      setError('Missing required booking information');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      // Estimate hours based on task size
+      let estimatedHours = 2; // Default
+      if (taskSize === 'small') estimatedHours = 1;
+      else if (taskSize === 'medium') estimatedHours = 2.5;
+      else if (taskSize === 'large') estimatedHours = 4;
+
+      const booking = await createBooking({
+        customer_id: userId,
+        handy_id: selectedHandyman.user_id,
+        category_id: category.id,
+        task_title: category.name,
+        task_details: taskDetails || null,
+        scheduled_date: selectedDate,
+        scheduled_time: selectedTime,
+        address_id: addressId,
+        hourly_rate_cents: selectedHandyman.hourly_rate_cents,
+        estimated_hours: estimatedHours,
+        task_size: taskSize,
+        vehicle_requirement: vehicleRequirement,
+        payment_intent_id: authorizedPaymentIntentId,
+      });
+
+      if (booking) {
+        console.log('Booking created successfully:', booking);
+        console.log('Payment authorized (ID):', authorizedPaymentIntentId);
+
+        // Navigate to booking confirmation page
+        router.push(`/bookings/${booking.id}`);
+      } else {
+        setError('Failed to create booking. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error creating booking:', err);
+      setError('Failed to create booking. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePaymentError = (errorMessage: string) => {
+    setError(errorMessage);
+    setIsSubmitting(false);
+  };
+
+  const handleEditTask = () => {
+    setShowConfirmation(false);
+    setShowBrowsePros(true);
+  };
+
+  // Memoize the place selected callback to prevent Google Autocomplete from re-initializing
+  const handlePlaceSelected = useCallback((place: google.maps.places.PlaceResult) => {
+    setGooglePlaceData(place);
+    if (place.formatted_address) {
+      setStreetAddress(place.formatted_address);
+    }
+  }, []);
 
   const getCurrentStep = () => {
     if (showConfirmation) return 3;
@@ -175,16 +425,52 @@ export default function TaskFormPage() {
             /* Confirmation Step */
             <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
               {/* Left Column - Payment Form */}
-              <ConfirmDetails />
+              <ConfirmDetails
+                clientSecret={paymentIntentClientSecret}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+                isSubmitting={isSubmitting}
+              />
 
               {/* Right Column - Task Summary */}
-              <TaskSummary />
+              <TaskSummary
+                handymanName={selectedHandyman?.display_name || `${selectedHandyman?.first_name} ${selectedHandyman?.last_name?.charAt(0)}.` || 'Handyman'}
+                handymanAvatar={selectedHandyman?.avatar_url || '/images/default-avatar.png'}
+                scheduledDate={selectedDate}
+                scheduledTime={selectedTime}
+                address={streetAddress}
+                taskSize={taskSize}
+                vehicleRequirement={vehicleRequirement}
+                taskDetails={taskDetails || 'No details provided'}
+                hourlyRateCents={selectedHandyman?.hourly_rate_cents || 0}
+                onEdit={handleEditTask}
+              />
+
+              {/* Error Message */}
+              {error && (
+                <div className="col-span-full mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
+              )}
             </div>
           ) : !showBrowsePros ? (
             <div className="max-w-3xl mx-auto space-y-6">
+              {/* Error Message (shown at top if category fails to load) */}
+              {error && !category && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-sm mb-2">{error}</p>
+                  <Link
+                    href="/"
+                    className="text-brand-terracotta hover:underline text-sm font-medium"
+                  >
+                    ← Return to homepage to select a service
+                  </Link>
+                </div>
+              )}
+
               {/* Task Title */}
               <h1 className="text-brand-dark font-bold text-2xl sm:text-3xl">
-                {taskCategory}
+                {taskCategory || 'Select a Service'}
               </h1>
 
             {/* Your task location */}
@@ -200,12 +486,7 @@ export default function TaskFormPage() {
                     <LocationAutocomplete
                       value={streetAddress}
                       onChange={setStreetAddress}
-                      onPlaceSelected={(place) => {
-                        // Extract address components if needed
-                        if (place.formatted_address) {
-                          setStreetAddress(place.formatted_address);
-                        }
-                      }}
+                      onPlaceSelected={handlePlaceSelected}
                       placeholder="Street address"
                       className="w-full px-4 py-3 border border-gray-300 rounded-full text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-terracotta focus:border-brand-terracotta"
                     />
@@ -218,13 +499,20 @@ export default function TaskFormPage() {
                     />
 
                     <div className="flex justify-center pt-2">
-                      <Button 
+                      <Button
                         onClick={handleLocationContinue}
-                        className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full"
+                        disabled={loading || !streetAddress.trim()}
+                        className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Continue
+                        {loading ? 'Saving...' : 'Continue'}
                       </Button>
                     </div>
+
+                    {error && (
+                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-red-800 text-sm">{error}</p>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (
@@ -387,12 +675,20 @@ export default function TaskFormPage() {
                   {/* See Taskers & Prices Button */}
                   <div className="flex justify-center pt-6">
                     <Button
-                      onClick={() => setShowBrowsePros(true)}
-                      className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full"
+                      onClick={handleBrowsePros}
+                      disabled={loading}
+                      className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      See Taskers & Prices
+                      {loading ? 'Loading...' : 'See Taskers & Prices'}
                     </Button>
                   </div>
+
+                  {/* Error Message */}
+                  {error && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-800 text-sm">{error}</p>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -402,7 +698,7 @@ export default function TaskFormPage() {
           <div className="flex gap-8">
             {/* Filters Sidebar */}
             <aside className="w-80 flex-shrink-0 space-y-6">
-              <BrowseFilters />
+              <BrowseFilters onFilterChange={handleFilterChange} />
               <PeaceOfMindCard />
             </aside>
 
@@ -429,16 +725,28 @@ export default function TaskFormPage() {
               </div>
 
               <div className="space-y-6">
-                {mockTaskers.map((tasker) => (
-                  <TaskerCard
-                    key={tasker.id}
-                    tasker={tasker}
-                    onSelectContinue={() => {
-                      setShowBrowsePros(false);
-                      setShowConfirmation(true);
-                    }}
-                  />
-                ))}
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-terracotta"></div>
+                    <p className="mt-4 text-gray-600">Loading handymen...</p>
+                  </div>
+                ) : filteredHandymen.length === 0 ? (
+                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200 p-8">
+                    <p className="text-gray-600 text-lg mb-2">No handymen available for this category</p>
+                    <p className="text-gray-500 text-sm">Try adjusting your filters or check back later</p>
+                  </div>
+                ) : (
+                  filteredHandymen.map((handyman) => (
+                    <TaskerCard
+                      key={handyman.user_id}
+                      handyman={handyman}
+                      categoryName={category?.name || ''}
+                      onSelectContinue={(date, time) => {
+                        handleSelectHandyman(handyman, date, time);
+                      }}
+                    />
+                  ))
+                )}
               </div>
             </main>
           </div>

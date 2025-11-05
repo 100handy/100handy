@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
 interface SelectDateTimeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm?: () => void;
+  onConfirm?: (date: string, time: string) => void;
   taskerName: string;
 }
 
@@ -21,34 +21,89 @@ export function SelectDateTimeModal({
   onConfirm,
   taskerName,
 }: SelectDateTimeModalProps) {
-  const [selectedDate, setSelectedDate] = useState<number>(3);
-  const [selectedTime, setSelectedTime] = useState("16:00");
+  const today = new Date();
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
+  const [selectedTime, setSelectedTime] = useState("10:00");
 
-  // Calendar data for September-October 2025
+  // Reset to today when modal opens
+  useEffect(() => {
+    if (open) {
+      setSelectedDate(today);
+      setSelectedTime("10:00");
+    }
+  }, [open]);
+
+  // Generate calendar days dynamically
+  const calendarDays = useMemo(() => {
+    const days: Array<{ date: Date; isCurrentMonth: boolean; isPast: boolean }> = [];
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    // Get first day of current month
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const startDay = firstDay.getDay(); // 0 = Sunday
+
+    // Get last day of next month
+    const lastDay = new Date(currentYear, currentMonth + 2, 0);
+
+    // Add previous month's trailing days
+    if (startDay > 0) {
+      const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+      for (let i = startDay - 1; i >= 0; i--) {
+        const date = new Date(currentYear, currentMonth - 1, prevMonthLastDay - i);
+        days.push({ date, isCurrentMonth: false, isPast: date < now });
+      }
+    }
+
+    // Add current month and next month days (up to 35 days total for nice grid)
+    let currentDate = new Date(firstDay);
+    while (days.length < 35 && currentDate <= lastDay) {
+      const isCurrentMonth = currentDate.getMonth() === currentMonth;
+      const isPast = currentDate.setHours(0, 0, 0, 0) < now.setHours(0, 0, 0, 0);
+      days.push({
+        date: new Date(currentDate),
+        isCurrentMonth,
+        isPast
+      });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return days;
+  }, []);
+
   const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-  const calendarDays = [
-    { date: 28, month: "sep" },
-    { date: 29, month: "sep" },
-    { date: 30, month: "sep" },
-    { date: 1, month: "oct" },
-    { date: 2, month: "oct" },
-    { date: 3, month: "oct", highlighted: true },
-    { date: 4, month: "oct" },
-    { date: 5, month: "oct" },
-    { date: 6, month: "oct" },
-    { date: 7, month: "oct" },
-    { date: 8, month: "oct" },
-    { date: 9, month: "oct" },
-    { date: 10, month: "oct" },
-    { date: 11, month: "oct" },
-    { date: 12, month: "oct" },
-    { date: 13, month: "oct" },
-    { date: 14, month: "oct" },
-    { date: 15, month: "oct" },
-    { date: 16, month: "oct" },
-    { date: 17, month: "oct" },
-    { date: 18, month: "oct" },
-  ];
+
+  // Format display date
+  const formatDisplayDate = (date: Date) => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  };
+
+  // Format for database (YYYY-MM-DD)
+  const formatDatabaseDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleConfirm = () => {
+    const formattedDate = formatDatabaseDate(selectedDate);
+    onConfirm?.(formattedDate, selectedTime);
+    onOpenChange(false);
+  };
+
+  const isSameDay = (date1: Date, date2: Date) => {
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
+  };
+
+  // Get month names for display
+  const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+  const nextMonthName = new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleString('default', { month: 'long' });
+  const year = new Date().getFullYear();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,7 +119,9 @@ export function SelectDateTimeModal({
           <p className="text-sm font-medium text-[#30352D]">
             {taskerName}'s Availability
           </p>
-          <p className="text-sm text-[#30352D]">September → October 2025</p>
+          <p className="text-sm text-[#30352D]">
+            {currentMonthName} → {nextMonthName} {year}
+          </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
@@ -84,21 +141,30 @@ export function SelectDateTimeModal({
 
             {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-1">
-              {calendarDays.map((day, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedDate(day.date)}
-                  className={`aspect-square rounded-lg p-2 text-center text-sm font-medium transition-colors ${
-                    selectedDate === day.date
-                      ? "bg-[#C1856A] text-white"
-                      : day.month === "sep"
-                        ? "text-gray-400 hover:bg-gray-100"
-                        : "text-[#30352D] hover:bg-gray-100"
-                  }`}
-                >
-                  {day.date}
-                </button>
-              ))}
+              {calendarDays.map((day, index) => {
+                const isSelected = isSameDay(day.date, selectedDate);
+                const isPast = day.isPast;
+                const isOtherMonth = !day.isCurrentMonth;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => !isPast && setSelectedDate(day.date)}
+                    disabled={isPast}
+                    className={`aspect-square rounded-lg p-2 text-center text-sm font-medium transition-colors ${
+                      isSelected
+                        ? "bg-[#C1856A] text-white"
+                        : isPast
+                          ? "text-gray-300 cursor-not-allowed"
+                          : isOtherMonth
+                            ? "text-gray-400 hover:bg-gray-100"
+                            : "text-[#30352D] hover:bg-gray-100"
+                    }`}
+                  >
+                    {day.date.getDate()}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Time selector */}
@@ -122,16 +188,13 @@ export function SelectDateTimeModal({
                 Request for:
               </p>
               <p className="text-lg font-semibold text-[#30352D]">
-                Oct {selectedDate}, {selectedTime}
+                {formatDisplayDate(selectedDate)}, {selectedTime}
               </p>
             </div>
 
             <div>
               <button
-                onClick={() => {
-                  onConfirm?.();
-                  onOpenChange(false);
-                }}
+                onClick={handleConfirm}
                 className="w-full rounded-full bg-[#C1856A] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#a67359]"
               >
                 Select & Continue

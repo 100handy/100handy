@@ -2,28 +2,37 @@
 
 import { Search } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
+import { getAllCategories } from "@/lib/supabase/categories";
+import type { Category } from "@/lib/supabase/types";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const taskCategories = [
-    "Furniture Assembly",
-    "Garden Assembly",
-    "Office Furniture Assembly",
-    "Bed Assembly",
-    "Wardrobe Assembly",
-    "Crib Assembly",
-    "Tv mounting",
-    "Home Repair",
-    "Electrical work",
-    "General Mounting",
-  ];
+  // Fetch categories from database
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const allCategories = await getAllCategories();
+        // Filter to show only subcategories (level 1) or popular ones
+        const displayCategories = allCategories.filter(cat => cat.level === 1).slice(0, 10);
+        setCategories(displayCategories);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
@@ -61,18 +70,29 @@ export default function DashboardPage() {
 
           {/* Task Category Buttons */}
           <div className="flex flex-wrap justify-center gap-3 mb-12 max-w-4xl mx-auto">
-            {taskCategories.map((category) => (
-              <button
-                key={category}
-                onClick={() => handleCategoryClick(category)}
-                className="px-6 py-2 rounded-full border transition-colors bg-white text-brand-dark border-gray-300 hover:border-brand-terracotta hover:text-brand-terracotta"
-              >
-                {category}
-              </button>
-            ))}
-            <button className="px-6 py-2 rounded-full bg-white text-brand-terracotta border border-gray-300 hover:border-brand-terracotta font-medium">
-              See more
-            </button>
+            {loading ? (
+              <div className="text-gray-500">Loading categories...</div>
+            ) : categories.length === 0 ? (
+              <div className="text-gray-500">No categories available</div>
+            ) : (
+              <>
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.name)}
+                    className="px-6 py-2 rounded-full border transition-colors bg-white text-brand-dark border-gray-300 hover:border-brand-terracotta hover:text-brand-terracotta"
+                  >
+                    {category.name}
+                  </button>
+                ))}
+                <button
+                  onClick={() => router.push('/all-services')}
+                  className="px-6 py-2 rounded-full bg-white text-brand-terracotta border border-gray-300 hover:border-brand-terracotta font-medium"
+                >
+                  See more
+                </button>
+              </>
+            )}
           </div>
         </div>
 

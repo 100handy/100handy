@@ -1,18 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/marketing/header";
 import { Footer } from "@/components/marketing/footer";
-
-// Service category data structure with images
-interface ServiceCategory {
-  title: string;
-  slug: string;
-  description: string;
-  image: string;
-  services: Array<{ name: string; slug: string }>;
-  moreLink?: string;
-}
+import { getCategoryTree } from "@/lib/supabase/categories";
+import type { CategoryWithChildren } from "@/lib/supabase/types";
 
 // Helper function to create slug from service name
 function slugify(text: string): string {
@@ -25,155 +18,37 @@ function slugify(text: string): string {
     .trim();
 }
 
-const serviceCategories: ServiceCategory[] = [
-  {
-    title: "Featured Tasks",
-    slug: "featured-tasks",
-    description: "Let Taskers help tackle your to-do list.",
-    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop",
-    services: [
-      { name: "Furniture Assembly", slug: "furniture-assembly" },
-      { name: "Home Repairs", slug: "home-repairs" },
-      { name: "Help Moving", slug: "help-moving" },
-      { name: "Heavy Lifting", slug: "heavy-lifting" },
-      { name: "Home Cleaning", slug: "home-cleaning" },
-      { name: "Spring Cleaning", slug: "spring-cleaning" },
-      { name: "Personal Assistant", slug: "personal-assistant" },
-      { name: "Hang Art, Mirror & Decor", slug: "hang-art-mirror-and-decor" },
-      { name: "Yard Work Services", slug: "yard-work-services" },
-      { name: "Wait in Line", slug: "wait-in-line" },
-      { name: "Closet Organization Service", slug: "closet-organization-service" },
-    ],
-  },
-  {
-    title: "Handyman",
-    slug: "handyman",
-    description: "Hire a Tasker for help around the house",
-    image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&h=600&fit=crop",
-    services: [
-      { name: "Door, Cabinet, & Furniture Repair", slug: "door-cabinet-and-furniture-repair" },
-      { name: "Appliance Installation & Repairs", slug: "appliance-installation-and-repairs" },
-      { name: "Furniture Assembly", slug: "furniture-assembly" },
-      { name: "TV Mounting", slug: "tv-mounting" },
-      { name: "Drywall Repair Service", slug: "drywall-repair-service" },
-      { name: "Flooring & Tiling Help", slug: "flooring-and-tiling-help" },
-      { name: "Electrical Help", slug: "electrical-help" },
-      { name: "Sealing & Caulking", slug: "sealing-and-caulking" },
-      { name: "Plumbing", slug: "plumbing" },
-      { name: "Window & Blinds Repair", slug: "window-and-blinds-repair" },
-      { name: "Ceiling Fan Installation", slug: "ceiling-fan-installation" },
-      { name: "Smart Home Installation", slug: "smart-home-installation" },
-    ],
-  },
-  {
-    title: "Moving Services",
-    slug: "moving-services",
-    description: "From the heavy lifting to unpacking and organizing make your move with 100Handy!",
-    image: "https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=800&h=600&fit=crop",
-    services: [
-      { name: "Help Moving", slug: "help-moving" },
-      { name: "Truck Assisted Help Moving", slug: "truck-assisted-help-moving" },
-      { name: "Packing Services & Help", slug: "packing-services-and-help" },
-      { name: "Unpacking Services", slug: "unpacking-services" },
-      { name: "Heavy Lifting", slug: "heavy-lifting" },
-      { name: "Local Movers", slug: "local-movers" },
-    ],
-  },
-  {
-    title: "Furniture Assembly",
-    slug: "furniture-assembly",
-    description: "Get help assembling your furniture quickly and correctly.",
-    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop",
-    services: [
-      { name: "Furniture Assembly", slug: "furniture-assembly" },
-      { name: "Patio Furniture Assembly", slug: "patio-furniture-assembly" },
-      { name: "Desk Assembly", slug: "desk-assembly" },
-      { name: "Dresser Assembly", slug: "dresser-assembly" },
-      { name: "Bed Assembly", slug: "bed-assembly" },
-      { name: "Bookshelf Assembly", slug: "bookshelf-assembly" },
-    ],
-  },
-  {
-    title: "Mounting & Installation",
-    slug: "mounting-and-installation",
-    description: "Wall Mounting",
-    image: "https://images.unsplash.com/photo-1585412727339-54e4bae3bbf9?w=800&h=600&fit=crop",
-    services: [
-      { name: "TV Mounting", slug: "tv-mounting" },
-      { name: "Install Shelves, Rods & Hooks", slug: "install-shelves-rods-and-hooks" },
-      { name: "Ceiling Fan Installation", slug: "ceiling-fan-installation" },
-      { name: "Install Blinds & Window Treatments", slug: "install-blinds-and-window-treatments" },
-      { name: "Hang Art, Mirror & Decor", slug: "hang-art-mirror-and-decor" },
-      { name: "General Mounting", slug: "general-mounting" },
-    ],
-  },
-  {
-    title: "Cleaning",
-    slug: "cleaning",
-    description: "Taskers will make your home sparkle!",
-    image: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&h=600&fit=crop",
-    services: [
-      { name: "House Cleaning Services", slug: "house-cleaning-services" },
-      { name: "Deep Cleaning", slug: "deep-cleaning" },
-      { name: "Disinfecting Services", slug: "disinfecting-services" },
-      { name: "Move In Cleaning", slug: "move-in-cleaning" },
-      { name: "Move Out Cleaning", slug: "move-out-cleaning" },
-      { name: "Vacation Rental Cleaning", slug: "vacation-rental-cleaning" },
-    ],
-  },
-  {
-    title: "Shopping + Delivery",
-    slug: "shopping-and-delivery",
-    description: "Get anything from groceries to furniture",
-    image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=600&fit=crop",
-    services: [
-      { name: "Delivery Service", slug: "delivery-service" },
-      { name: "Grocery Shopping & Delivery", slug: "grocery-shopping-and-delivery" },
-      { name: "Running Your Errands", slug: "running-your-errands" },
-      { name: "Wait in Line", slug: "wait-in-line" },
-      { name: "Deliver Big Piece of Furniture", slug: "deliver-big-piece-of-furniture" },
-      { name: "Drop Off Donations", slug: "drop-off-donations" },
-    ],
-  },
-  {
-    title: "IKEA Services",
-    slug: "ikea-services",
-    description: "Hire a Tasker for all your IKEA needs",
-    image: "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=800&h=600&fit=crop",
-    services: [
-      { name: "Light Installation", slug: "light-installation" },
-      { name: "Furniture Removal", slug: "furniture-removal" },
-      { name: "Smart Home Installation", slug: "smart-home-installation" },
-      { name: "Organization", slug: "organization" },
-      { name: "Furniture Assembly", slug: "furniture-assembly" },
-      { name: "General Mounting", slug: "general-mounting" },
-    ],
-  },
-  {
-    title: "Yardwork Services",
-    slug: "yardwork-services",
-    description: "Hire a Tasker to help with yardwork & landscaping!",
-    image: "https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop",
-    services: [
-      { name: "Gardening Services", slug: "gardening-services" },
-      { name: "Weed Removal", slug: "weed-removal" },
-      { name: "Lawn Care Services", slug: "lawn-care-services" },
-      { name: "Lawn Mowing Services", slug: "lawn-mowing-services" },
-      { name: "Landscaping Services", slug: "landscaping-services" },
-      { name: "Gutter Cleaning", slug: "gutter-cleaning" },
-    ],
-  },
-];
+// Default images for different category types (can be customized later)
+const getCategoryImage = (categoryName: string): string => {
+  const imageMap: Record<string, string> = {
+    'Furniture & Assembly': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop',
+    'Home Cleaning & Maintenance': 'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&h=600&fit=crop',
+    'Handyman & Home Repairs': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&h=600&fit=crop',
+    'Moving & Heavy Lifting': 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=800&h=600&fit=crop',
+    'Mounting & Installation': 'https://images.unsplash.com/photo-1585412727339-54e4bae3bbf9?w=800&h=600&fit=crop',
+    'Yard & Outdoor Services': 'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop',
+    'Errands, Shopping & Delivery': 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=600&fit=crop',
+    'Beauty & Grooming Services': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&h=600&fit=crop',
+    'Men\'s Grooming & At-Home Treatments': 'https://images.unsplash.com/photo-1621607512214-68297480165e?w=800&h=600&fit=crop',
+  };
+
+  return imageMap[categoryName] || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop';
+};
 
 // Service Category Card Component
-function ServiceCategoryCard({ category }: { category: ServiceCategory }) {
+function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
+  const slug = slugify(category.name);
+  const subcategories = category.subcategories || [];
+
+  // Get first 6 subcategories to display
+  const displayedSubcategories = subcategories.slice(0, 6);
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
       {/* Category Image */}
       <div className="relative h-48 bg-gray-200">
         <img
-          src={category.image}
-          alt={category.title}
+          src={category.icon_url || getCategoryImage(category.name)}
+          alt={category.name}
           className="w-full h-full object-cover"
         />
       </div>
@@ -181,33 +56,37 @@ function ServiceCategoryCard({ category }: { category: ServiceCategory }) {
       {/* Category Content */}
       <div className="p-6">
         <h2 className="text-[20px] font-bold text-[#30352D] mb-2">
-          {category.title}
+          {category.name}
         </h2>
         <p className="text-[14px] text-gray-600 mb-4">
-          {category.description}
+          {category.description || `Explore ${category.name} services`}
         </p>
 
-        {/* Service Links */}
-        <ul className="space-y-2 mb-4">
-          {category.services.map((service) => (
-            <li key={service.slug}>
-              <Link
-                href={`/services/${category.slug}/${service.slug}`}
-                className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 hover:underline transition-colors"
-              >
-                {service.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {/* Subcategory Links */}
+        {displayedSubcategories.length > 0 && (
+          <ul className="space-y-2 mb-4">
+            {displayedSubcategories.map((subcategory) => (
+              <li key={subcategory.id}>
+                <Link
+                  href={`/services/${slug}/${slugify(subcategory.name)}`}
+                  className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 hover:underline transition-colors"
+                >
+                  {subcategory.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {/* See More Link */}
-        <Link
-          href={`/services#${category.slug}`}
-          className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 font-medium hover:underline transition-colors"
-        >
-          See more {category.title} services →
-        </Link>
+        {subcategories.length > 6 && (
+          <Link
+            href={`/services#${slug}`}
+            className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 font-medium hover:underline transition-colors"
+          >
+            See more {category.name} services →
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -242,6 +121,29 @@ function ServicesHero() {
 }
 
 export default function ServicesPage() {
+  const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        setLoading(true);
+        const data = await getCategoryTree();
+        // Only show main categories (level 0)
+        setCategories(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError('Failed to load categories. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCategories();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
@@ -251,11 +153,32 @@ export default function ServicesPage() {
         {/* Services Grid */}
         <section className="py-12 md:py-16 bg-gray-50">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {serviceCategories.map((category) => (
-                <ServiceCategoryCard key={category.title} category={category} />
-              ))}
-            </div>
+            {loading && (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-terracotta"></div>
+                <p className="mt-4 text-gray-600">Loading services...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="text-center py-12">
+                <p className="text-red-600">{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && categories.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No services available at the moment.</p>
+              </div>
+            )}
+
+            {!loading && !error && categories.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {categories.map((category) => (
+                  <ServiceCategoryCard key={category.id} category={category} />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </main>

@@ -1,13 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export function BrowseFilters() {
+export interface FilterValues {
+  selectedDate: string;
+  selectedTimes: string[];
+  priceMin: number;
+  priceMax: number;
+  isEliteTasker: boolean;
+}
+
+interface BrowseFiltersProps {
+  onFilterChange?: (filters: FilterValues) => void;
+}
+
+export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
   const [selectedDate, setSelectedDate] = useState<string>("week");
   const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState({ min: 10, max: 150 });
   const [sliderValues, setSliderValues] = useState({ min: 10, max: 90 });
   const [isEliteTasker, setIsEliteTasker] = useState(false);
+
+  // Notify parent of filter changes
+  useEffect(() => {
+    if (onFilterChange) {
+      onFilterChange({
+        selectedDate,
+        selectedTimes,
+        priceMin: sliderValues.min,
+        priceMax: sliderValues.max,
+        isEliteTasker,
+      });
+    }
+  }, [selectedDate, selectedTimes, sliderValues, isEliteTasker, onFilterChange]);
 
   const priceDistribution = [
     0.2, 0.3, 0.4, 0.6, 0.9, 1, 0.8, 0.7, 0.5, 0.4, 0.3, 0.2, 0.25, 0.35, 0.55,
