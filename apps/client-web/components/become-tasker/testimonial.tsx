@@ -11,7 +11,7 @@ export function TaskerTestimonial(): React.JSX.Element {
               "100Handy has allowed me to overcome the fear of talking to customers and taught me to always do more than the customer expects. I have more flexibility now and more time to stay with my family."
             </p>
             <p className="mt-6 text-[24px] font-medium text-brand-dark-alt">
-              — Berkay W., London
+              — Berkay W. , London
             </p>
           </div>
 

@@ -46,7 +46,7 @@ export default function Header({ currentPage }: HeaderProps) {
             // Signed-in navigation (from Figma)
             <nav className="flex items-center gap-6 lg:gap-8">
               <Link
-                href="/get-e10"
+                href="/referral"
                 className={`font-medium hover:text-brand-terracotta transition-colors text-sm sm:text-base ${
                   currentPage === "get-e10" ? "text-brand-terracotta" : "text-brand-dark"
                 }`}

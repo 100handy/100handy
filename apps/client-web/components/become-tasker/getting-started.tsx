@@ -14,7 +14,7 @@ const steps = [
   {
     number: 3,
     title: "Verify your eligibility to task",
-    description: "Set your weekly availability and opt in to receive same-day jobs.",
+    description: "Build a level of trust you want to offer and where.",
   },
   {
     number: 4,
