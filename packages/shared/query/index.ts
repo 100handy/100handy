@@ -5,10 +5,18 @@ export { createQueryClient, queryClient } from './queryClient';
 export {
   useCategories,
   useCategoriesByNames,
+  useTopLevelCategories,
+  useSubcategories,
+  useCategoriesByLevel,
   getCategories,
   getCategoriesByNames,
+  getTopLevelCategories,
+  getSubcategories,
+  getCategoriesByLevel,
+  buildCategoryTree,
   categoryKeys,
   type Category,
+  type CategoryTree,
 } from './hooks/useCategories';
 
 // Booking hooks and utilities
@@ -19,8 +27,12 @@ export {
   useBookingById,
   useUserBookings,
   useInvalidateBookings,
+  useCreateBooking,
   bookingKeys,
 } from './hooks/useBookings';
+
+// Booking types
+export type { CreateBookingInput } from '../supabase/bookings';
 
 // Profile hooks and utilities
 export {
@@ -31,3 +43,19 @@ export {
   useInvalidateProfile,
   profileKeys,
 } from './hooks/useProfile';
+
+// Handymen hooks and utilities
+export {
+  useHandymen,
+  useHandymenByCategory,
+  useHandymanProfile,
+  useHandymanReviews,
+  useHandymanCategories,
+  getHandymen,
+  getHandymanProfile,
+  getHandymanReviews,
+  getHandymanCategories,
+  handymenKeys,
+  type HandymanProfile,
+  type HandymanFilters,
+} from './hooks/useHandymen';

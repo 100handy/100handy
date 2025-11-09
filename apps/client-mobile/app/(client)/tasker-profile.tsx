@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, Image, View } from 'react-native';
+import { ScrollView, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
@@ -12,7 +12,8 @@ import {
   RatingFilter,
   RatingFilterSheet,
 } from '@/components/tasker';
-import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
+import DateTimeSelectionSheet from '@/components/tasker/DateTimeSelectionSheet';
+import { useHandymanProfile, useHandymanReviews } from '@shared/supabase';
 
 // Mock data - in production would come from API
 const taskerProfile = {
@@ -83,12 +84,44 @@ const taskerProfile = {
 export default function TaskerProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const taskerId = params.taskerId as string;
+
+  // Task details from previous screens
+  const categoryId = params.categoryId as string;
+  const categoryName = params.categoryName as string;
+  const taskSize = params.taskSize as string;
+  const vehicleRequirement = params.vehicleRequirement as string;
+  const taskDetails = params.taskDetails as string;
+
   const [showFilterSheet, setShowFilterSheet] = useState(false);
-  const [showLocationSheet, setShowLocationSheet] = useState(false);
+  const [showDateTimeSheet, setShowDateTimeSheet] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<RatingFilter>('All mounting');
 
+  // Fetch tasker profile and reviews
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useHandymanProfile(taskerId);
+  const { data: reviews, isLoading: reviewsLoading } = useHandymanReviews(taskerId, 10);
+
+  const isLoading = profileLoading || reviewsLoading;
+
   const handleSelect = () => {
-    setShowLocationSheet(true);
+    setShowDateTimeSheet(true);
+  };
+
+  const handleDateTimeSelect = (date: string, time: string) => {
+    // Navigate to confirm-booking screen with all task details
+    router.push({
+      pathname: '/(client)/confirm-booking',
+      params: {
+        taskerId,
+        categoryId,
+        categoryName,
+        taskSize,
+        vehicleRequirement,
+        taskDetails: taskDetails || '',
+        selectedDate: date,
+        selectedTime: time,
+      },
+    });
   };
 
   const handleFilterSelect = (filter: RatingFilter) => {
@@ -96,24 +129,51 @@ export default function TaskerProfileScreen() {
     setShowFilterSheet(false);
   };
 
-  const renderProgressDots = () => {
-    const totalDots = 6;
-    const currentStep = 1;
-    
+  if (isLoading) {
     return (
-      <HStack className="items-center justify-center gap-2 mb-6">
-        {Array.from({ length: totalDots }).map((_, index) => (
-          <View
-            key={index}
-            className="w-2.5 h-2.5 rounded-full"
-            style={{
-              backgroundColor: index === 0 ? '#C1856A' : '#E5E7EB',
-            }}
-          />
-        ))}
-      </HStack>
+      <SafeAreaView className="flex-1 bg-white">
+        <VStack className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+          <HStack className="items-center">
+            <Pressable onPress={() => router.back()} className="mr-4">
+              <ChevronLeft size={24} color="#000000" strokeWidth={2} />
+            </Pressable>
+            <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
+              Tasker Profile
+            </Text>
+          </HStack>
+        </VStack>
+        <VStack className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#000000" />
+          <Text className="text-sm text-gray-600 mt-3">Loading profile...</Text>
+        </VStack>
+      </SafeAreaView>
     );
-  };
+  }
+
+  if (profileError || !profile) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <VStack className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+          <HStack className="items-center">
+            <Pressable onPress={() => router.back()} className="mr-4">
+              <ChevronLeft size={24} color="#000000" strokeWidth={2} />
+            </Pressable>
+            <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
+              Tasker Profile
+            </Text>
+          </HStack>
+        </VStack>
+        <VStack className="flex-1 items-center justify-center px-6">
+          <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+            Profile not found
+          </Text>
+          <Text className="text-sm text-gray-600 text-center">
+            This tasker's profile could not be loaded
+          </Text>
+        </VStack>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -123,14 +183,14 @@ export default function TaskerProfileScreen() {
           <Pressable onPress={() => router.back()} className="mr-4">
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
-          
+
           <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
             Tasker Profile
           </Text>
         </HStack>
       </VStack>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
       >
@@ -139,17 +199,17 @@ export default function TaskerProfileScreen() {
           <HStack className="items-start mb-3">
             {/* Avatar */}
             <Image
-              source={{ uri: taskerProfile.avatarUrl }}
+              source={{ uri: profile.avatar_url || `https://i.pravatar.cc/150?u=${profile.user_id}` }}
               className="w-[72px] h-[72px] rounded-full bg-gray-100 mr-3"
             />
-            
+
             {/* Name and Badge */}
             <VStack>
               <Text className="text-xl font-semibold text-black mb-2">
-                {taskerProfile.name}
+                {profile.display_name}
               </Text>
-              
-              {taskerProfile.isSuperTasker && (
+
+              {profile.verified && (
                 <HStack
                   className="items-center px-2 py-1 rounded self-start"
                   style={{ backgroundColor: '#7EC04B' }}
@@ -166,13 +226,13 @@ export default function TaskerProfileScreen() {
           <HStack className="items-center gap-1 mb-1">
             <Star size={14} color="#000000" fill="#000000" strokeWidth={0} />
             <Text className="text-sm font-bold text-black">
-              {taskerProfile.rating.toFixed(1)} ({taskerProfile.reviewCount} reviews)
+              {profile.rating.toFixed(1)} ({profile.review_count} reviews)
             </Text>
           </HStack>
 
           {/* Task Count */}
           <Text className="text-xs font-bold text-black">
-            {taskerProfile.taskCount} {taskerProfile.taskType}
+            {profile.jobs_completed} tasks completed
           </Text>
         </VStack>
 
@@ -184,35 +244,32 @@ export default function TaskerProfileScreen() {
           <Text className="text-base font-semibold text-black mb-2">
             Skill & experience
           </Text>
-          
-          <Text
-            className="text-xs font-light mb-1"
-            style={{ color: '#333A31', lineHeight: 16 }}
-            numberOfLines={2}
-          >
-            {taskerProfile.skillDescription}
-          </Text>
-          
+
+          {profile.bio ? (
+            <Text
+              className="text-xs font-light mb-1"
+              style={{ color: '#333A31', lineHeight: 16 }}
+              numberOfLines={2}
+            >
+              {profile.bio}
+            </Text>
+          ) : (
+            <Text
+              className="text-xs font-light mb-1"
+              style={{ color: '#6B6B6B', lineHeight: 16 }}
+            >
+              {profile.experience_years} years of experience as a professional tasker.
+            </Text>
+          )}
+
           <Pressable className="mb-3">
             <Text className="text-xs font-bold" style={{ color: '#C1856A' }}>
-              See profile
+              See full profile
             </Text>
           </Pressable>
 
-          {/* Portfolio Images */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 6 }}
-          >
-            {taskerProfile.portfolioImages.map((imageUrl, index) => (
-              <Image
-                key={index}
-                source={{ uri: imageUrl }}
-                className="w-[78px] h-[78px] rounded-md bg-gray-100"
-              />
-            ))}
-          </ScrollView>
+          {/* Portfolio Images - would need separate endpoint */}
+          {/* For now, showing placeholder */}
         </VStack>
 
         {/* Divider */}
@@ -229,19 +286,19 @@ export default function TaskerProfileScreen() {
             <HStack className="items-center gap-1">
               <Star size={14} color="#000000" fill="#000000" strokeWidth={0} />
               <Text className="text-sm font-bold text-black">
-                {taskerProfile.rating.toFixed(1)} ({taskerProfile.reviewCount} reviews)
+                {profile.rating.toFixed(1)} ({reviews?.length || 0} reviews)
               </Text>
             </HStack>
-            
+
             <Pressable
               className="px-2 py-1 bg-white border border-gray-300"
               style={{ borderRadius: 4 }}
               onPress={() => setShowFilterSheet(true)}
             >
               <HStack className="items-center gap-[3px]">
-                <SlidersHorizontal 
-                  size={9} 
-                  color="#333A31" 
+                <SlidersHorizontal
+                  size={9}
+                  color="#333A31"
                   strokeWidth={2}
                   style={{ transform: [{ rotate: '90deg' }] }}
                 />
@@ -291,63 +348,72 @@ export default function TaskerProfileScreen() {
 
           {/* Reviews List */}
           <VStack className="gap-5">
-            {taskerProfile.reviews.map((review) => (
-              <VStack key={review.id}>
-                <HStack className="items-start justify-between mb-2">
-                  <HStack className="flex-1 items-start gap-2.5">
-                    {/* Reviewer Avatar */}
-                    <Image
-                      source={{ uri: review.reviewerAvatar }}
-                      className="w-10 h-10 rounded-full bg-gray-100"
-                    />
-                    
-                    {/* Reviewer Info */}
-                    <VStack className="flex-1">
-                      <Text
-                        className="text-base font-bold mb-1"
-                        style={{ color: '#333A31' }}
-                      >
-                        {review.reviewerName}
-                      </Text>
-                      
-                      <HStack className="items-center gap-1.5 mb-1">
-                        <HStack
-                          className="px-2 py-0.5 rounded"
-                          style={{ backgroundColor: '#7EC04B' }}
-                        >
-                          <Text className="text-xs font-medium text-white">
-                            {review.taskType}
+            {reviews && reviews.length > 0 ? (
+              reviews.map((review: any) => {
+                const reviewerName = review.profiles
+                  ? `${review.profiles.first_name} ${review.profiles.last_name?.charAt(0) || ''}.`
+                  : 'Customer';
+                const reviewDate = new Date(review.created_at).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                });
+
+                return (
+                  <VStack key={review.id}>
+                    <HStack className="items-start justify-between mb-2">
+                      <HStack className="flex-1 items-start gap-2.5">
+                        {/* Reviewer Avatar */}
+                        <Image
+                          source={{ uri: `https://i.pravatar.cc/150?u=${review.id}` }}
+                          className="w-10 h-10 rounded-full bg-gray-100"
+                        />
+
+                        {/* Reviewer Info */}
+                        <VStack className="flex-1">
+                          <Text
+                            className="text-base font-bold mb-1"
+                            style={{ color: '#333A31' }}
+                          >
+                            {reviewerName}
                           </Text>
-                        </HStack>
-                        
-                        <Text
-                          className="text-xs font-light"
-                          style={{ color: '#333A31' }}
-                        >
-                          {review.date}
+
+                          <HStack className="items-center gap-1.5 mb-1">
+                            <Text
+                              className="text-xs font-light"
+                              style={{ color: '#333A31' }}
+                            >
+                              {reviewDate}
+                            </Text>
+                          </HStack>
+                        </VStack>
+                      </HStack>
+
+                      {/* Review Rating */}
+                      <HStack className="items-center gap-0.5">
+                        <Star size={12} color="#000000" fill="#000000" strokeWidth={0} />
+                        <Text className="text-xs font-medium text-black">
+                          {review.rating.toFixed(1)}
                         </Text>
                       </HStack>
-                    </VStack>
-                  </HStack>
-                  
-                  {/* Review Rating */}
-                  <HStack className="items-center gap-0.5">
-                    <Star size={12} color="#000000" fill="#000000" strokeWidth={0} />
-                    <Text className="text-xs font-medium text-black">
-                      {review.rating.toFixed(1)}
-                    </Text>
-                  </HStack>
-                </HStack>
-                
-                {/* Review Comment */}
-                <Text
-                  className="text-xs font-light"
-                  style={{ color: '#333A31', lineHeight: 16 }}
-                >
-                  {review.comment}
-                </Text>
-              </VStack>
-            ))}
+                    </HStack>
+
+                    {/* Review Comment */}
+                    {review.comment && (
+                      <Text
+                        className="text-xs font-light"
+                        style={{ color: '#333A31', lineHeight: 16 }}
+                      >
+                        {review.comment}
+                      </Text>
+                    )}
+                  </VStack>
+                );
+              })
+            ) : (
+              <Text className="text-sm text-gray-600 text-center py-4">
+                No reviews yet
+              </Text>
+            )}
           </VStack>
         </VStack>
 
@@ -362,9 +428,9 @@ export default function TaskerProfileScreen() {
             className="text-base font-bold"
             style={{ color: '#333A31' }}
           >
-            £{taskerProfile.pricePerHour.toFixed(2)} /hr
+            £{(profile.hourly_rate_cents / 100).toFixed(2)} /hr
           </Text>
-          
+
           <Pressable
             onPress={handleSelect}
             className="px-20 py-3 rounded-xl"
@@ -377,10 +443,12 @@ export default function TaskerProfileScreen() {
         </HStack>
       </VStack>
 
-      {/* Location Selection Action Sheet */}
-      <LocationSelectionSheet 
-        isOpen={showLocationSheet} 
-        onClose={() => setShowLocationSheet(false)} 
+      {/* Date/Time Selection Action Sheet */}
+      <DateTimeSelectionSheet
+        isOpen={showDateTimeSheet}
+        onClose={() => setShowDateTimeSheet(false)}
+        onSelectDateTime={handleDateTimeSelect}
+        taskerName={profile?.display_name || 'Tasker'}
       />
 
       {/* Rating Filter Action Sheet */}

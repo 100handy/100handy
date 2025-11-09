@@ -152,3 +152,73 @@ export async function getBookingById(bookingId: number): Promise<BookingWithRela
     throw error;
   }
 }
+
+export interface CreateBookingInput {
+  customer_id: string;
+  handy_id: string;
+  category_id: string;
+  task_title: string;
+  task_details?: string;
+  scheduled_date: string; // YYYY-MM-DD
+  scheduled_time: string; // HH:MM:SS or time slot string
+  address_street: string;
+  address_apartment?: string;
+  address_postcode: string;
+  address_city?: string;
+  address_country: string;
+  hourly_rate_cents: number;
+  estimated_hours: number;
+}
+
+export async function createBooking(input: CreateBookingInput): Promise<Booking> {
+  try {
+    // First, create or get the address
+    const { data: addressData, error: addressError } = await supabase
+      .from('addresses')
+      .insert({
+        user_id: input.customer_id,
+        street: input.address_street,
+        apartment: input.address_apartment || null,
+        postcode: input.address_postcode,
+        city: input.address_city || null,
+        country: input.address_country,
+        is_primary: false,
+      })
+      .select()
+      .single();
+
+    if (addressError) {
+      console.error('Error creating address:', addressError);
+      throw new Error(`Failed to create address: ${addressError.message}`);
+    }
+
+    // Then create the booking
+    const { data: bookingData, error: bookingError } = await supabase
+      .from('bookings')
+      .insert({
+        customer_id: input.customer_id,
+        handy_id: input.handy_id,
+        category_id: input.category_id,
+        task_title: input.task_title,
+        task_details: input.task_details || null,
+        scheduled_date: input.scheduled_date,
+        scheduled_time: input.scheduled_time,
+        address_id: addressData.id,
+        hourly_rate_cents: input.hourly_rate_cents,
+        estimated_hours: input.estimated_hours,
+        status: 'pending',
+      })
+      .select()
+      .single();
+
+    if (bookingError) {
+      console.error('Error creating booking:', bookingError);
+      throw new Error(`Failed to create booking: ${bookingError.message}`);
+    }
+
+    return bookingData;
+  } catch (error) {
+    console.error('Error in createBooking:', error);
+    throw error;
+  }
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { VStack } from '@/components/ui/vstack';
 import { Text } from '@/components/ui/text';
 import {
@@ -19,12 +19,72 @@ import {
   Camera,
   Monitor,
   Briefcase,
+  Home,
+  Palette,
+  Users,
+  PaintRoller,
+  Hammer,
+  Laptop,
+  Car,
+  Heart,
+  Dumbbell,
+  Calendar,
+  Wind,
+  Smile,
+  Hand,
+  Droplets,
+  UserCircle,
+  Building,
+  Snowflake,
+  Wifi,
+  LucideIcon,
 } from 'lucide-react-native';
 import { HStack } from '../ui/hstack';
 import { Pressable } from '../ui/pressable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useLocationStore } from '@shared/supabase';
+import { useLocationStore, useTopLevelCategories } from '@shared/supabase';
+import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
+
+// Icon mapping function - maps category names/keywords to icons
+const getCategoryIcon = (categoryName: string): LucideIcon => {
+  const name = categoryName.toLowerCase();
+
+  // Map based on keywords in category name
+  if (name.includes('furniture') || name.includes('assembly')) return Armchair;
+  if (name.includes('clean')) return Sparkles;
+  if (name.includes('handyman') || name.includes('repair') || name.includes('maintenance')) return Wrench;
+  if (name.includes('moving') || name.includes('lifting') || name.includes('delivery')) return Truck;
+  if (name.includes('mount') || name.includes('installation') || name.includes('tv')) return Monitor;
+  if (name.includes('yard') || name.includes('lawn') || name.includes('garden') || name.includes('outdoor') || name.includes('landscaping')) return Flower2;
+  if (name.includes('shopping') || name.includes('errand')) return ShoppingBag;
+  if (name.includes('assistant') || name.includes('virtual') || name.includes('office')) return Briefcase;
+  if (name.includes('baby') || name.includes('family') || name.includes('child')) return Baby;
+  if (name.includes('seasonal') || name.includes('holiday')) return Snowflake;
+  if (name.includes('contactless') || name.includes('online') || name.includes('tech')) return Wifi;
+  if (name.includes('entertainment') || name.includes('music') || name.includes('event')) return Music;
+  if (name.includes('creative') || name.includes('artistic') || name.includes('art')) return Palette;
+  if (name.includes('relaxation') || name.includes('luxury') || name.includes('spa')) return Heart;
+  if (name.includes('food') || name.includes('dining') || name.includes('cook') || name.includes('chef')) return Coffee;
+  if (name.includes('group') || name.includes('social')) return Users;
+  if (name.includes('fitness') || name.includes('gym') || name.includes('workout')) return Dumbbell;
+  if (name.includes('themed') || name.includes('experience')) return Calendar;
+  if (name.includes('photography') || name.includes('photo') || name.includes('media')) return Camera;
+  if (name.includes('hair') || name.includes('salon') || name.includes('barber')) return Scissors;
+  if (name.includes('removal') || name.includes('wax')) return Wind;
+  if (name.includes('face') || name.includes('beauty') || name.includes('facial') || name.includes('makeup')) return Smile;
+  if (name.includes('nail') || name.includes('manicure') || name.includes('pedicure')) return Hand;
+  if (name.includes('body') || name.includes('treatment')) return Droplets;
+  if (name.includes('massage') || name.includes('wellness') || name.includes('spa')) return HeartPulse;
+  if (name.includes('men') || name.includes('grooming')) return UserCircle;
+  if (name.includes('paint')) return PaintRoller;
+  if (name.includes('building') || name.includes('construction')) return Hammer;
+  if (name.includes('computer') || name.includes('laptop')) return Laptop;
+  if (name.includes('car') || name.includes('automotive') || name.includes('vehicle')) return Car;
+
+  // Default icon
+  return Home;
+};
 
 // Service chip data for horizontal scrollable rows
 const serviceChips = [
@@ -35,9 +95,8 @@ const serviceChips = [
   ['Event Planning', 'Photography', 'Personal Chef'],
 ];
 
-// Service cards data with icons and colors (matching Figma design)
-// Dark charcoal: #30352d, Terracotta/clay: #BFA28D
-const serviceCards = [
+// Fallback service cards data (used when categories are loading or empty)
+const fallbackServiceCards = [
   { title: 'Furniture & Assembly', icon: Armchair, bgColor: '#30352d' },
   { title: 'Home Cleaning', icon: Sparkles, bgColor: '#BFA28D' },
   { title: 'Handyman & Repairs', icon: Wrench, bgColor: '#BFA28D' },
@@ -57,6 +116,9 @@ const serviceCards = [
 export function ServicesHomeScreen() {
   const router = useRouter();
   const { location } = useLocationStore();
+  const { data: categories, isLoading } = useTopLevelCategories();
+  const [showBookingSheet, setShowBookingSheet] = React.useState(false);
+  const [selectedCategory, setSelectedCategory] = React.useState({ id: '', name: '' });
 
   // Parse location for display
   const getLocationDisplay = () => {
@@ -86,11 +148,29 @@ export function ServicesHomeScreen() {
 
   const locationDisplay = getLocationDisplay();
 
-  const handleServicePress = (serviceName: string) => {
-    router.push({
-      pathname: '/(client)/select-tasker',
-      params: { service: serviceName },
-    });
+  // Transform categories from database into service cards format
+  const serviceCards = React.useMemo(() => {
+    if (!categories || categories.length === 0) {
+      return fallbackServiceCards;
+    }
+
+    // Map categories to cards with alternating colors
+    return categories.map((category, index) => ({
+      id: category.id,
+      title: category.name,
+      icon: getCategoryIcon(category.name),
+      bgColor: index % 2 === 0 ? '#30352d' : '#BFA28D',
+    }));
+  }, [categories]);
+
+  const handleServicePress = (categoryId: string, categoryName: string) => {
+    if (!categoryId || !categoryName) {
+      // If no category info, navigate to search instead
+      router.push('/(client)/search-services');
+      return;
+    }
+    setSelectedCategory({ id: categoryId, name: categoryName });
+    setShowBookingSheet(true);
   };
 
   return (
@@ -159,12 +239,25 @@ export function ServicesHomeScreen() {
                 <Pressable
                   key={index}
                   className="px-6 py-2.5 rounded-full"
-                  style={{ 
+                  style={{
                     backgroundColor: 'transparent',
                     borderWidth: 1.5,
                     borderColor: '#ffffff'
                   }}
-                  onPress={() => handleServicePress(service)}
+                  onPress={() => {
+                    // Find category by name for chips - try to match with existing categories
+                    const category = categories?.find(c => 
+                      c.name.toLowerCase().includes(service.toLowerCase()) ||
+                      service.toLowerCase().includes(c.name.toLowerCase())
+                    );
+                    if (category) {
+                      handleServicePress(category.id, category.name);
+                    } else {
+                      // If no exact match found, still try to open action sheet with service name
+                      // Use a temporary ID format for fallback categories
+                      handleServicePress(`temp-${service.toLowerCase().replace(/\s+/g, '-')}`, service);
+                    }
+                  }}
                 >
                   <Text className="text-white text-sm" style={{ fontWeight: '500' }}>
                     {service}
@@ -187,37 +280,62 @@ export function ServicesHomeScreen() {
 
         {/* Service Cards Grid */}
         <VStack className="px-5 pb-6 bg-white">
-          <VStack className="gap-3">
-            {Array.from({ length: Math.ceil(serviceCards.length / 2) }).map((_, rowIndex) => (
-              <HStack key={rowIndex} className="gap-3">
-                {serviceCards.slice(rowIndex * 2, rowIndex * 2 + 2).map((service, index) => {
-                  const Icon = service.icon;
-                  return (
-                    <Pressable
-                      key={index}
-                      className="flex-1 rounded-2xl items-center justify-center"
-                      style={{
-                        backgroundColor: service.bgColor,
-                        height: 140,
-                        padding: 16
-                      }}
-                      onPress={() => handleServicePress(service.title)}
-                    >
-                      <VStack className="items-center gap-2">
-                        <Icon size={36} color="white" strokeWidth={1.5} />
-                        <Text className="text-white font-medium text-sm text-center">
-                          {service.title}
-                        </Text>
-                      </VStack>
-                    </Pressable>
-                  );
-                })}
-              </HStack>
-            ))}
-          </VStack>
+          {isLoading ? (
+            <VStack className="items-center justify-center py-12">
+              <ActivityIndicator size="large" color="#30352d" />
+              <Text className="text-sm text-gray-600 mt-3">Loading categories...</Text>
+            </VStack>
+          ) : (
+            <VStack className="gap-3">
+              {Array.from({ length: Math.ceil(serviceCards.length / 2) }).map((_, rowIndex) => (
+                <HStack key={rowIndex} className="gap-3">
+                  {serviceCards.slice(rowIndex * 2, rowIndex * 2 + 2).map((service, index) => {
+                    const Icon = service.icon;
+                    const serviceId = ('id' in service && service.id) ? String(service.id) : service.title;
+
+                    return (
+                      <Pressable
+                        key={serviceId}
+                        className="flex-1 rounded-2xl items-center justify-center"
+                        style={{
+                          backgroundColor: service.bgColor,
+                          height: 140,
+                          padding: 16
+                        }}
+                        onPress={() => {
+                          if ('id' in service && service.id) {
+                            // Has a real category ID from database
+                            handleServicePress(String(service.id), service.title);
+                          } else {
+                            // Fallback card - use title as category name with temp ID
+                            handleServicePress(`temp-${service.title.toLowerCase().replace(/\s+/g, '-')}`, service.title);
+                          }
+                        }}
+                      >
+                        <VStack className="items-center gap-2">
+                          <Icon size={36} color="white" strokeWidth={1.5} />
+                          <Text className="text-white font-medium text-sm text-center">
+                            {service.title}
+                          </Text>
+                        </VStack>
+                      </Pressable>
+                    );
+                  })}
+                </HStack>
+              ))}
+            </VStack>
+          )}
         </VStack>
       </VStack>
     </ScrollView>
+
+    {/* Booking Action Sheet */}
+    <LocationSelectionSheet
+      isOpen={showBookingSheet}
+      onClose={() => setShowBookingSheet(false)}
+      categoryId={selectedCategory.id}
+      categoryName={selectedCategory.name}
+    />
     </SafeAreaView>
   );
 }

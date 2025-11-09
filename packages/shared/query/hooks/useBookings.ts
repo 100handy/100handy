@@ -1,10 +1,12 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { 
-  getUpcomingBookings, 
-  getPastBookings, 
-  getCancelledBookings, 
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getUpcomingBookings,
+  getPastBookings,
+  getCancelledBookings,
   getBookingById,
-  type BookingWithRelations 
+  createBooking,
+  type BookingWithRelations,
+  type CreateBookingInput
 } from '../../supabase/bookings';
 
 // Query keys
@@ -87,7 +89,7 @@ export function useUserBookings(userId: string) {
 // Utility hook for invalidating booking queries
 export function useInvalidateBookings() {
   const queryClient = useQueryClient();
-  
+
   return {
     invalidateUserBookings: (userId: string) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
@@ -99,4 +101,20 @@ export function useInvalidateBookings() {
       queryClient.invalidateQueries({ queryKey: bookingKeys.all });
     }
   };
+}
+
+// Mutation hook for creating bookings
+export function useCreateBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createBooking,
+    onSuccess: (data) => {
+      // Invalidate and refetch booking queries
+      queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+    },
+    onError: (error) => {
+      console.error('Error creating booking:', error);
+    },
+  });
 }

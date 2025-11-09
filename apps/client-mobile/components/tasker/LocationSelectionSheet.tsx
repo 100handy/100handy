@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Pressable as RNPressable } from 'react-native';
 import {
   Actionsheet,
@@ -7,15 +7,23 @@ import {
   ActionsheetDragIndicatorWrapper,
   ActionsheetDragIndicator,
 } from '@/components/ui/actionsheet';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
+  import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
-import { ChevronLeft, X } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
+import {
+  useLocationStore,
+  useTaskFormStore,
+} from '@shared/supabase';
+import { useRouter } from 'expo-router';
+import { LocationAutocomplete } from '@/components/location';
 
 interface LocationSelectionSheetProps {
   isOpen: boolean;
   onClose: () => void;
+  categoryId: string;
+  categoryName: string;
 }
 
 interface SelectionStepProps {
@@ -90,24 +98,63 @@ function SelectionStep({
   );
 }
 
-function LocationStep({ onContinue }: { onContinue: () => void }) {
-  const [streetAddress, setStreetAddress] = useState('16 Leicester Square, London WC2H 7...');
-  const [unitNumber, setUnitNumber] = useState('');
+function LocationStep({
+  title,
+  onContinue
+}: {
+  title: string;
+  onContinue: () => void;
+}) {
+  const location = useLocationStore((state) => state.location);
+  const setLocation = useLocationStore((state) => state.setLocation);
+  // Pre-fill with default location if available
+  const [streetAddress, setStreetAddress] = useState(location?.streetAddress || '');
+  const [unitNumber, setUnitNumber] = useState(location?.unitNumber || '');
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(location?.placeId || null);
+  
+  // Update fields when location changes
+  useEffect(() => {
+    if (location?.streetAddress) {
+      setStreetAddress(location.streetAddress);
+      setUnitNumber(location.unitNumber || '');
+      setSelectedPlaceId(location.placeId || null);
+    }
+  }, [location]);
 
-  const handleClearAddress = () => {
-    setStreetAddress('');
+  const handleSelectLocation = (locationData: any) => {
+    setSelectedPlaceId(locationData.place_id);
+    // The address is already set by LocationAutocomplete's onChangeText
+  };
+
+  const handleContinue = () => {
+    if (streetAddress.trim()) {
+      // Parse address to extract city and country
+      const addressParts = streetAddress.split(',').map(part => part.trim());
+      const country = addressParts.length > 0 ? addressParts[addressParts.length - 1] : '';
+      const city = addressParts.length > 1 ? addressParts[addressParts.length - 2] : '';
+
+      setLocation({
+        streetAddress: streetAddress.trim(),
+        unitNumber: unitNumber.trim() || undefined,
+        placeId: selectedPlaceId || undefined,
+        city,
+        country,
+        formattedAddress: streetAddress.trim(),
+      });
+      onContinue();
+    }
   };
 
   return (
     <>
-      <ScrollView 
+      <ScrollView
         className="w-full flex-1"
         showsVerticalScrollIndicator={false}
       >
         <VStack className="px-5 pt-4 pb-6">
           {/* Task Title */}
           <Text className="text-3xl font-bold text-black text-center mb-10">
-            TV Mounting
+            {title}
           </Text>
 
           {/* Question */}
@@ -115,41 +162,26 @@ function LocationStep({ onContinue }: { onContinue: () => void }) {
             What is the task location?
           </Text>
 
-          {/* Street Address Input */}
+          {/* Street Address Input with Autocomplete */}
           <VStack className="mb-5">
-            <Text 
-              className="text-sm font-normal mb-2 text-gray-400"
-            >
-              Street address
-            </Text>
-            
-            <Input
-              variant="outline"
-              size="xl"
-              className="border-gray-200 rounded-xl min-h-[56px]"
-            >
-              <InputField
-                value={streetAddress}
-                onChangeText={setStreetAddress}
-                placeholder="Enter street address"
-                className="text-base px-4 text-black"
-              />
-              {streetAddress.length > 0 && (
-                <InputSlot className="pr-4" onPress={handleClearAddress}>
-                  <X size={22} color="#9CA3AF" strokeWidth={2} />
-                </InputSlot>
-              )}
-            </Input>
+            <LocationAutocomplete
+              value={streetAddress}
+              onChangeText={setStreetAddress}
+              onSelectLocation={handleSelectLocation}
+              label="Street address"
+              placeholder="Enter street address"
+              showClearButton={true}
+            />
           </VStack>
 
           {/* Unit Number Input */}
           <VStack className="mb-8">
-            <Text 
+            <Text
               className="text-sm font-normal mb-2 text-gray-400"
             >
               Optional unit or apt #
             </Text>
-            
+
             <Input
               variant="outline"
               size="xl"
@@ -165,32 +197,41 @@ function LocationStep({ onContinue }: { onContinue: () => void }) {
           </VStack>
 
           {/* Divider */}
-          <View 
+          <View
             className="w-full mb-4 h-px bg-gray-200"
           />
 
           {/* Default Address Section */}
-          <VStack className="mb-8">
-            <Text 
-              className="text-sm font-normal mb-4 text-gray-400"
-            >
-              Default
-            </Text>
-            
-            <RNPressable className="py-2">
-              <Text className="text-base font-normal text-black leading-6">
-                16 Leicester Square, London{'\n'}WC2H 7LE, UK
+          {location && (
+            <VStack className="mb-8">
+              <Text
+                className="text-sm font-normal mb-4 text-gray-400"
+              >
+                Default
               </Text>
-            </RNPressable>
-          </VStack>
+
+              <RNPressable className="py-2" onPress={() => {
+                if (location.streetAddress) {
+                  setStreetAddress(location.streetAddress);
+                  setUnitNumber(location.unitNumber || '');
+                }
+              }}>
+                <Text className="text-base font-normal text-black leading-6">
+                  {location.streetAddress}
+                  {location.unitNumber && `\n${location.unitNumber}`}
+                </Text>
+              </RNPressable>
+            </VStack>
+          )}
         </VStack>
       </ScrollView>
 
       {/* Continue Button - Fixed at Bottom */}
       <VStack className="px-5 py-6 w-full border-t border-gray-100">
         <RNPressable
-          onPress={onContinue}
-          className="w-full py-4 items-center bg-[#C1856A] rounded-full"
+          onPress={handleContinue}
+          disabled={!streetAddress.trim()}
+          className={`w-full py-4 items-center rounded-full ${!streetAddress.trim() ? 'bg-gray-300' : 'bg-[#C1856A]'}`}
         >
           <Text className="text-lg font-bold text-white">
             Continue
@@ -201,75 +242,84 @@ function LocationStep({ onContinue }: { onContinue: () => void }) {
   );
 }
 
-function TVQuantityStep({ onContinue }: { onContinue: () => void }) {
-  const [selectedQuantity, setSelectedQuantity] = useState<number | null>(null);
-  const tvQuantityOptions = [1, 2, 3, 4, 5];
+// Task Size Step
+function TaskSizeStep({
+  title,
+  onContinue
+}: {
+  title: string;
+  onContinue: () => void;
+}) {
+  const setTaskOption = useTaskFormStore((state) => state.setTaskOption);
+  const taskOptions = useTaskFormStore((state) => state.formData.taskOptions);
+  const [selectedSize, setSelectedSize] = useState<string>(taskOptions.taskSize || '');
 
-  return (
-    <SelectionStep
-      title="Describe your task"
-      question="How many TVs do you need installed?"
-      options={tvQuantityOptions}
-      selectedOptions={selectedQuantity !== null ? [selectedQuantity] : []}
-      onSelectOption={(option) => setSelectedQuantity(option as number)}
-      onContinue={onContinue}
-      optionAlignment="center"
-    />
-  );
-}
+  const taskSizeOptions = [
+    'Small – Est. 1 hr',
+    'Medium – Est. 2-3 hrs',
+    'Large – Est. 4+ hrs',
+  ];
 
-const helpOptions = [
-  'Someone will be around',
-  'No one will be around. 1 or more TVs above 60”',
-  'Not needed. No TVs above 60”',
-  'Unsure if needed',
-];
-
-function HelpNeededStep({ onContinue }: { onContinue: () => void }) {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-
-  return (
-    <SelectionStep
-      title="Describe your task"
-      question="Will someone be around to help your Tasker lift the TV into place?"
-      description="Larger TVs (60” +) may require a second person for safe mounting."
-      options={helpOptions}
-      selectedOptions={selectedOption !== null ? [selectedOption] : []}
-      onSelectOption={(option) => setSelectedOption(option as string)}
-      onContinue={onContinue}
-    />
-  );
-}
-
-const mountOptions = [
-  'Fixed / low profile',
-  'Tilting',
-  'Articulating / full motion',
-  'Other / Not sure',
-];
-
-function TVMountStep({ onContinue }: { onContinue: () => void }) {
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-
-  const handleSelectOption = (option: string | number) => {
-    const optionStr = option as string;
-    setSelectedOptions(prev => 
-      prev.includes(optionStr) 
-        ? prev.filter(item => item !== optionStr) 
-        : [...prev, optionStr]
-    );
+  const handleContinue = () => {
+    const sizeMap: Record<string, string> = {
+      'Small – Est. 1 hr': 'small',
+      'Medium – Est. 2-3 hrs': 'medium',
+      'Large – Est. 4+ hrs': 'large',
+    };
+    setTaskOption('taskSize', sizeMap[selectedSize]);
+    onContinue();
   };
 
   return (
     <SelectionStep
-      title="Describe your task"
-      question="What type of TV mount do you want to use?"
-      description="Select all that apply."
-      options={mountOptions}
-      selectedOptions={selectedOptions}
-      onSelectOption={handleSelectOption}
-      onContinue={onContinue}
-      optionAlignment="center"
+      title={title}
+      question="How big is your task?"
+      options={taskSizeOptions}
+      selectedOptions={selectedSize ? [selectedSize] : []}
+      onSelectOption={(option) => setSelectedSize(option as string)}
+      onContinue={handleContinue}
+      optionAlignment="start"
+    />
+  );
+}
+
+// Vehicle Requirements Step
+const vehicleOptions = [
+  'Not needed for task',
+  'Task requires a car',
+  'Task requires a truck',
+];
+
+function VehicleRequirementStep({
+  title,
+  onContinue
+}: {
+  title: string;
+  onContinue: () => void;
+}) {
+  const setTaskOption = useTaskFormStore((state) => state.setTaskOption);
+  const taskOptions = useTaskFormStore((state) => state.formData.taskOptions);
+  const [selectedVehicle, setSelectedVehicle] = useState<string>(taskOptions.vehicleRequirement || '');
+
+  const handleContinue = () => {
+    const vehicleMap: Record<string, string> = {
+      'Not needed for task': 'not-needed',
+      'Task requires a car': 'car',
+      'Task requires a truck': 'truck',
+    };
+    setTaskOption('vehicleRequirement', vehicleMap[selectedVehicle]);
+    onContinue();
+  };
+
+  return (
+    <SelectionStep
+      title={title}
+      question="Does your Tasker need a vehicle?"
+      description="Some tasks may require transportation of equipment or materials."
+      options={vehicleOptions}
+      selectedOptions={selectedVehicle ? [selectedVehicle] : []}
+      onSelectOption={(option) => setSelectedVehicle(option as string)}
+      onContinue={handleContinue}
     />
   );
 }
@@ -277,16 +327,46 @@ function TVMountStep({ onContinue }: { onContinue: () => void }) {
 export default function LocationSelectionSheet({
   isOpen,
   onClose,
+  categoryId,
+  categoryName,
 }: LocationSelectionSheetProps) {
+  const router = useRouter();
   const [step, setStep] = useState(1);
+  const reset = useTaskFormStore((state) => state.reset);
+  const setCategory = useTaskFormStore((state) => state.setCategory);
+  const taskOptions = useTaskFormStore((state) => state.formData.taskOptions);
+
+  // Set category when sheet opens
+  useEffect(() => {
+    if (isOpen && categoryId && categoryName) {
+      setCategory(categoryId, categoryName);
+    }
+  }, [isOpen, categoryId, categoryName]);
+
+  // Reset form when sheet closes
+  useEffect(() => {
+    if (!isOpen) {
+      setStep(1);
+      reset();
+    }
+  }, [isOpen]);
 
   const handleNextStep = () => {
-    if (step < 6) {
+    if (step < 3) {
       setStep(step + 1);
     } else {
+      // After step 3, navigate to select-tasker screen
       onClose();
-      // Navigate to next step or proceed with booking
-      console.log('Continue with booking');
+      router.push({
+        pathname: '/(client)/select-tasker',
+        params: {
+          categoryId,
+          categoryName,
+          taskSize: taskOptions.taskSize,
+          vehicleRequirement: taskOptions.vehicleRequirement,
+          taskDetails: taskOptions.taskDetails || '',
+        },
+      });
     }
   };
 
@@ -305,15 +385,15 @@ export default function LocationSelectionSheet({
         <ActionsheetDragIndicatorWrapper>
           <ActionsheetDragIndicator className="bg-gray-300" />
         </ActionsheetDragIndicatorWrapper>
-        
+
         {/* Header with Back Button and Progress Dots */}
         <HStack className="w-full items-center px-5 pt-4 pb-2">
           <RNPressable onPress={handlePrevStep} className="mr-4">
             <ChevronLeft size={28} color="#000000" strokeWidth={2} />
           </RNPressable>
-          
+
           <HStack className="flex-1 items-center justify-center gap-2 mr-8">
-            {Array.from({ length: 6 }).map((_, index) => (
+            {Array.from({ length: 5 }).map((_, index) => (
               <View
                 key={index}
                 className="w-2.5 h-2.5 rounded-full"
@@ -324,12 +404,10 @@ export default function LocationSelectionSheet({
             ))}
           </HStack>
         </HStack>
-        
-        {step === 1 && <LocationStep onContinue={handleNextStep} />}
-        {step === 2 && <TVQuantityStep onContinue={handleNextStep} />}
-        {step === 3 && <HelpNeededStep onContinue={handleNextStep} />}
-        {step === 4 && <TVMountStep onContinue={handleNextStep} />}
 
+        {step === 1 && <LocationStep title={categoryName} onContinue={handleNextStep} />}
+        {step === 2 && <TaskSizeStep title={categoryName} onContinue={handleNextStep} />}
+        {step === 3 && <VehicleRequirementStep title={categoryName} onContinue={handleNextStep} />}
       </ActionsheetContent>
     </Actionsheet>
   );

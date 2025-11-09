@@ -51,9 +51,12 @@ export default function ProfileScreen() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.replace('/');
+      // Navigate directly to auth screen after successful logout
+      router.replace('/(auth)/role-selection');
     } catch (error) {
       console.error('Sign out error:', error);
+      // Even if signOut fails, try to navigate to auth screen
+      router.replace('/(auth)/role-selection');
     }
   };
 

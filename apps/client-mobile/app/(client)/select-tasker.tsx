@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
@@ -17,6 +17,7 @@ import {
   ActionsheetItem,
   ActionsheetItemText,
 } from '@/components/ui/actionsheet';
+import { useHandymenByCategory, type HandymanFilters } from '@shared/supabase';
 
 // Mock data for taskers - in production, this would come from an API
 const mockTaskers: TaskerData[] = [
@@ -116,9 +117,51 @@ const sortOptions: SortOption[] = [
 export default function SelectTaskerScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const categoryId = params.categoryId as string;
+  const categoryName = params.categoryName as string;
+  const serviceName = params.service as string;
+
+  // Task details from task-form screen
+  const taskSize = params.taskSize as string;
+  const vehicleRequirement = params.vehicleRequirement as string;
+  const taskDetails = params.taskDetails as string;
+
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showSortSheet, setShowSortSheet] = useState(false);
   const [selectedSort, setSelectedSort] = useState<SortOption>('Recommended');
+
+  // Map sort option to API filter
+  const sortByMap: Record<SortOption, HandymanFilters['sortBy']> = {
+    'Recommended': 'recommended',
+    'Price (Lowest)': 'price_low',
+    'Price (Highest)': 'price_high',
+    'Positive Reviews (Highest)': 'rating',
+    'Total Reviews (Highest)': 'reviews',
+    'Completed Tasks (Highest)': 'reviews',
+  };
+
+  // Fetch handymen data
+  const { data: handymen, isLoading, isError } = useHandymenByCategory(categoryId, {
+    sortBy: sortByMap[selectedSort],
+  });
+
+  // Transform handymen data to TaskerData format
+  const taskers: TaskerData[] = React.useMemo(() => {
+    if (!handymen) return mockTaskers; // Fallback to mock data if no real data
+
+    return handymen.map((handyman) => ({
+      id: handyman.user_id,
+      name: handyman.display_name || 'Handyman',
+      avatarUrl: handyman.avatar_url || `https://i.pravatar.cc/150?u=${handyman.user_id}`,
+      rating: handyman.rating,
+      reviewCount: handyman.review_count || 0,
+      pricePerHour: handyman.hourly_rate_cents / 100,
+      taskCount: handyman.jobs_completed,
+      taskType: `${serviceName || 'tasks'}`,
+      description: handyman.bio || 'Experienced professional ready to help.',
+      isSuperTasker: handyman.verified,
+    }));
+  }, [handymen, serviceName]);
 
   const toggleFilter = (filter: string) => {
     setActiveFilters((prev) =>
@@ -136,14 +179,28 @@ export default function SelectTaskerScreen() {
   const handleTaskerPress = (taskerId: string) => {
     router.push({
       pathname: '/(client)/tasker-profile',
-      params: { taskerId },
+      params: {
+        taskerId,
+        categoryId,
+        categoryName,
+        taskSize,
+        vehicleRequirement,
+        taskDetails: taskDetails || '',
+      },
     });
   };
 
   const handleSeeProfile = (taskerId: string) => {
     router.push({
       pathname: '/(client)/tasker-profile',
-      params: { taskerId },
+      params: {
+        taskerId,
+        categoryId,
+        categoryName,
+        taskSize,
+        vehicleRequirement,
+        taskDetails: taskDetails || '',
+      },
     });
   };
 
@@ -208,16 +265,41 @@ export default function SelectTaskerScreen() {
         style={{ backgroundColor: '#F9FAFB' }}
         showsVerticalScrollIndicator={false}
       >
-        <VStack className="px-5 pt-2 pb-6">
-          {mockTaskers.map((tasker) => (
-            <TaskerCard
-              key={tasker.id}
-              tasker={tasker}
-              onPress={() => handleTaskerPress(tasker.id)}
-              onSeeProfile={() => handleSeeProfile(tasker.id)}
-            />
-          ))}
-        </VStack>
+        {isLoading ? (
+          <VStack className="items-center justify-center py-20">
+            <ActivityIndicator size="large" color="#000000" />
+            <Text className="text-sm text-gray-600 mt-3">Loading taskers...</Text>
+          </VStack>
+        ) : isError ? (
+          <VStack className="items-center justify-center py-20 px-6">
+            <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+              Error loading taskers
+            </Text>
+            <Text className="text-sm text-gray-600 text-center">
+              Please try again later
+            </Text>
+          </VStack>
+        ) : taskers.length === 0 ? (
+          <VStack className="items-center justify-center py-20 px-6">
+            <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+              No taskers found
+            </Text>
+            <Text className="text-sm text-gray-600 text-center">
+              Try adjusting your filters or search in a different category
+            </Text>
+          </VStack>
+        ) : (
+          <VStack className="px-5 pt-2 pb-6">
+            {taskers.map((tasker) => (
+              <TaskerCard
+                key={tasker.id}
+                tasker={tasker}
+                onPress={() => handleTaskerPress(tasker.id)}
+                onSeeProfile={() => handleSeeProfile(tasker.id)}
+              />
+            ))}
+          </VStack>
+        )}
       </ScrollView>
 
       {/* Sort Options Action Sheet */}

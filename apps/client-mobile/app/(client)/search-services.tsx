@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
@@ -37,76 +37,136 @@ import {
   Droplets,
   HeartPulse,
   UserCircle,
-  ChevronRight
+  ChevronRight,
+  Home,
+  PaintRoller,
+  Hammer,
+  Laptop,
+  Car,
+  LucideIcon,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useCategories } from '@shared/supabase';
+import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 
-interface Category {
-  id: string;
-  name: string;
-  icon: any;
-  group: string;
-}
+// Icon mapping function - maps category names/keywords to icons
+const getCategoryIcon = (categoryName: string): LucideIcon => {
+  const name = categoryName.toLowerCase();
 
-const ALL_CATEGORIES: Category[] = [
-  // Main Services
-  { id: '1', name: 'Furniture & Assembly', icon: Armchair, group: 'Services' },
-  { id: '2', name: 'Home Cleaning & Maintenance', icon: Sparkles, group: 'Services' },
-  { id: '3', name: 'Handyman & Home Repairs', icon: Wrench, group: 'Services' },
-  { id: '4', name: 'Moving & Heavy Lifting', icon: Truck, group: 'Services' },
-  { id: '5', name: 'Mounting & Installation', icon: Monitor, group: 'Services' },
-  { id: '6', name: 'Yard & Outdoor Services', icon: Flower2, group: 'Services' },
-  { id: '7', name: 'Errands, Shopping & Delivery', icon: ShoppingBag, group: 'Services' },
-  { id: '8', name: 'Personal & Virtual Assistance', icon: Briefcase, group: 'Services' },
-  { id: '9', name: 'Family & Baby Prep', icon: Baby, group: 'Services' },
-  { id: '10', name: 'Office Services', icon: Building, group: 'Services' },
-  { id: '11', name: 'Seasonal Services', icon: Snowflake, group: 'Services' },
-  { id: '12', name: 'Contactless & Online Tasks', icon: Wifi, group: 'Services' },
+  // Map based on keywords in category name
+  if (name.includes('furniture') || name.includes('assembly')) return Armchair;
+  if (name.includes('clean')) return Sparkles;
+  if (name.includes('handyman') || name.includes('repair') || name.includes('maintenance')) return Wrench;
+  if (name.includes('moving') || name.includes('lifting') || name.includes('delivery')) return Truck;
+  if (name.includes('mount') || name.includes('installation') || name.includes('tv')) return Monitor;
+  if (name.includes('yard') || name.includes('lawn') || name.includes('garden') || name.includes('outdoor') || name.includes('landscaping')) return Flower2;
+  if (name.includes('shopping') || name.includes('errand')) return ShoppingBag;
+  if (name.includes('assistant') || name.includes('virtual') || name.includes('office')) return Briefcase;
+  if (name.includes('baby') || name.includes('family') || name.includes('child')) return Baby;
+  if (name.includes('seasonal') || name.includes('holiday')) return Snowflake;
+  if (name.includes('contactless') || name.includes('online') || name.includes('tech')) return Wifi;
+  if (name.includes('entertainment') || name.includes('music') || name.includes('event')) return Music;
+  if (name.includes('creative') || name.includes('artistic') || name.includes('art')) return Palette;
+  if (name.includes('relaxation') || name.includes('luxury') || name.includes('spa')) return Heart;
+  if (name.includes('food') || name.includes('dining') || name.includes('cook') || name.includes('chef')) return Coffee;
+  if (name.includes('group') || name.includes('social')) return Users;
+  if (name.includes('fitness') || name.includes('gym') || name.includes('workout')) return Dumbbell;
+  if (name.includes('themed') || name.includes('experience')) return Calendar;
+  if (name.includes('photography') || name.includes('photo') || name.includes('media')) return Camera;
+  if (name.includes('hair') || name.includes('salon') || name.includes('barber')) return Scissors;
+  if (name.includes('removal') || name.includes('wax')) return Wind;
+  if (name.includes('face') || name.includes('beauty') || name.includes('facial') || name.includes('makeup')) return Smile;
+  if (name.includes('nail') || name.includes('manicure') || name.includes('pedicure')) return Hand;
+  if (name.includes('body') || name.includes('treatment')) return Droplets;
+  if (name.includes('massage') || name.includes('wellness') || name.includes('spa')) return HeartPulse;
+  if (name.includes('men') || name.includes('grooming')) return UserCircle;
+  if (name.includes('paint')) return PaintRoller;
+  if (name.includes('building') || name.includes('construction')) return Hammer;
+  if (name.includes('computer') || name.includes('laptop')) return Laptop;
+  if (name.includes('car') || name.includes('automotive') || name.includes('vehicle')) return Car;
 
-  // Experiences
-  { id: '13', name: 'Personal & Social Entertainment', icon: Music, group: 'Experiences' },
-  { id: '14', name: 'Creative & Artistic Experiences', icon: Palette, group: 'Experiences' },
-  { id: '15', name: 'Relaxation & Luxury', icon: Heart, group: 'Experiences' },
-  { id: '16', name: 'Food & Dining Experiences', icon: Coffee, group: 'Experiences' },
-  { id: '17', name: 'Family & Group Entertainment', icon: Users, group: 'Experiences' },
-  { id: '18', name: 'Fitness & Interactive Fun', icon: Dumbbell, group: 'Experiences' },
-  { id: '19', name: 'Seasonal & Themed Experiences', icon: Calendar, group: 'Experiences' },
-  { id: '20', name: 'Photography & Media', icon: Camera, group: 'Experiences' },
+  // Default icon
+  return Home;
+};
 
-  // Beauty & Grooming
-  { id: '21', name: 'Hair Services', icon: Scissors, group: 'Beauty & Grooming' },
-  { id: '22', name: 'Hair Removal', icon: Wind, group: 'Beauty & Grooming' },
-  { id: '23', name: 'Face & Beauty', icon: Smile, group: 'Beauty & Grooming' },
-  { id: '24', name: 'Nails', icon: Hand, group: 'Beauty & Grooming' },
-  { id: '25', name: 'Body Treatments', icon: Droplets, group: 'Beauty & Grooming' },
-  { id: '26', name: 'Massage & Wellness', icon: HeartPulse, group: 'Beauty & Grooming' },
-  { id: '27', name: 'Men\'s Grooming', icon: UserCircle, group: 'Beauty & Grooming' },
-  { id: '28', name: 'Shared & Unisex Treatments', icon: Users, group: 'Beauty & Grooming' },
-];
+// Determine group based on category name
+const getCategoryGroup = (categoryName: string): string => {
+  const name = categoryName.toLowerCase();
+
+  // Beauty & Grooming keywords
+  if (
+    name.includes('hair') ||
+    name.includes('nail') ||
+    name.includes('face') ||
+    name.includes('beauty') ||
+    name.includes('massage') ||
+    name.includes('spa') ||
+    name.includes('grooming') ||
+    name.includes('wax') ||
+    name.includes('treatment')
+  ) {
+    return 'Beauty & Grooming';
+  }
+
+  // Experiences keywords
+  if (
+    name.includes('entertainment') ||
+    name.includes('music') ||
+    name.includes('creative') ||
+    name.includes('art') ||
+    name.includes('relaxation') ||
+    name.includes('luxury') ||
+    name.includes('dining') ||
+    name.includes('food') ||
+    name.includes('fitness') ||
+    name.includes('event') ||
+    name.includes('photography') ||
+    name.includes('experience')
+  ) {
+    return 'Experiences';
+  }
+
+  // Default to Services
+  return 'Services';
+};
 
 export default function SearchServicesScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showBookingSheet, setShowBookingSheet] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState({ id: '', name: '' });
+  const { data: categories, isLoading, isError } = useCategories();
 
+  // Transform database categories to include icon and group
+  const transformedCategories = React.useMemo(() => {
+    if (!categories) return [];
+
+    return categories.map(category => ({
+      ...category,
+      icon: getCategoryIcon(category.name),
+      group: getCategoryGroup(category.name),
+    }));
+  }, [categories]);
+
+  // Filter categories based on search query
   const filteredCategories = searchQuery.trim()
-    ? ALL_CATEGORIES.filter((category) =>
+    ? transformedCategories.filter((category) =>
         category.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : ALL_CATEGORIES;
+    : transformedCategories;
 
+  // Group categories by their group
   const groupedCategories = filteredCategories.reduce((acc, category) => {
     if (!acc[category.group]) {
       acc[category.group] = [];
     }
     acc[category.group].push(category);
     return acc;
-  }, {} as Record<string, Category[]>);
+  }, {} as Record<string, typeof transformedCategories>);
 
-  const handleCategoryPress = (categoryName: string) => {
-    router.push({
-      pathname: '/(client)/select-tasker',
-      params: { service: categoryName },
-    });
+  const handleCategoryPress = (categoryId: string, categoryName: string) => {
+    setSelectedCategory({ id: categoryId, name: categoryName });
+    setShowBookingSheet(true);
   };
 
   return (
@@ -140,9 +200,23 @@ export default function SearchServicesScreen() {
 
       {/* Categories List */}
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {Object.keys(groupedCategories).length > 0 ? (
+        {isLoading ? (
+          <VStack className="items-center justify-center py-20">
+            <ActivityIndicator size="large" color="#30352D" />
+            <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-3">Loading categories...</Text>
+          </VStack>
+        ) : isError ? (
+          <VStack className="items-center justify-center py-20 px-6">
+            <Text className="font-worksans-semibold text-[16px] text-[#30352D] mb-2 text-center">
+              Error loading categories
+            </Text>
+            <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center">
+              Please try again later
+            </Text>
+          </VStack>
+        ) : Object.keys(groupedCategories).length > 0 ? (
           <VStack className="py-4">
-            {Object.entries(groupedCategories).map(([group, categories]) => (
+            {Object.entries(groupedCategories).map(([group, categoryList]) => (
               <VStack key={group} className="mb-6">
                 {/* Group Header */}
                 <Text className="font-worksans-bold text-[16px] text-[#30352D] px-5 mb-3">
@@ -151,13 +225,13 @@ export default function SearchServicesScreen() {
 
                 {/* Category Items */}
                 <VStack>
-                  {categories.map((category) => {
+                  {categoryList.map((category) => {
                     const Icon = category.icon;
                     return (
                       <Pressable
                         key={category.id}
                         className="px-5 py-4 border-b border-gray-100"
-                        onPress={() => handleCategoryPress(category.name)}
+                        onPress={() => handleCategoryPress(category.id, category.name)}
                       >
                         <HStack className="items-center justify-between">
                           <HStack className="items-center gap-3 flex-1">
@@ -191,6 +265,14 @@ export default function SearchServicesScreen() {
           </VStack>
         )}
       </ScrollView>
+
+      {/* Booking Action Sheet */}
+      <LocationSelectionSheet
+        isOpen={showBookingSheet}
+        onClose={() => setShowBookingSheet(false)}
+        categoryId={selectedCategory.id}
+        categoryName={selectedCategory.name}
+      />
     </SafeAreaView>
   );
 }
