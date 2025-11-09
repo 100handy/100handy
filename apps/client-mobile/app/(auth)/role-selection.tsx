@@ -20,7 +20,7 @@ export default function AuthRoleSelectionScreen() {
   };
 
   const handleProfessionalAuth = (): void => {
-    router.push('/(professional)/(tabs)/dashboard');
+    router.push('/(auth)/(professional)/sign-up');
   };
 
   return (
