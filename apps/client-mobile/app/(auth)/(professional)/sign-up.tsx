@@ -23,9 +23,9 @@ export default function ProfessionalSignUp() {
       // Sign up with email - this will send email verification automatically
       await signUp({ email, password, options: { data: metadata } });
 
-      // Navigate to email verification screen
+      // Navigate to email OTP verification screen
       router.push({
-        pathname: '/(auth)/verify-email',
+        pathname: '/(auth)/(professional)/verify-email-otp',
         params: { email },
       });
     } catch (error) {

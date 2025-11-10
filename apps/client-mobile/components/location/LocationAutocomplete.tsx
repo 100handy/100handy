@@ -26,6 +26,7 @@ interface LocationAutocompleteProps {
   placeholder?: string;
   label?: string;
   showClearButton?: boolean;
+  inputClassName?: string;
 }
 
 export function LocationAutocomplete({
@@ -35,6 +36,7 @@ export function LocationAutocomplete({
   placeholder = 'Enter your address',
   label,
   showClearButton = true,
+  inputClassName,
 }: LocationAutocompleteProps) {
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [loading, setLoading] = useState(false);
@@ -113,14 +115,15 @@ export function LocationAutocomplete({
 
       <Input
         variant="outline"
-        size="lg"
-        className="rounded-lg border-[#E5E5E5]"
+        size={inputClassName ? undefined : "lg"}
+        className={inputClassName || "rounded-lg border-[#E5E5E5]"}
       >
         <InputField
           value={value}
           onChangeText={handleTextChange}
           placeholder={placeholder}
-          placeholderTextColor="#6B6B6B"
+          placeholderTextColor={placeholder ? "#6B6B6B" : "#9CA3AF"}
+          className="font-worksans text-[15px]"
           style={{ color: '#30352D', fontSize: 15 }}
           autoComplete="street-address"
         />
