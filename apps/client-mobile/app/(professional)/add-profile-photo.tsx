@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, Image, Alert } from 'react-native';
+import { ScrollView, Image, Alert, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -80,51 +75,51 @@ export default function AddProfilePhotoScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <HStack className="items-center px-5 py-4 border-b border-gray-100">
+      <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
         <Pressable onPress={() => router.back()} className="mr-4">
           <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text className="text-lg font-semibold text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
           Add profile photo
         </Text>
-      </HStack>
+      </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <VStack className="px-5 py-8 gap-6">
+        <View className="flex-col px-5 py-8 gap-6">
           {/* Title */}
           <Text className="text-xl font-semibold text-center text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
             Show off your best self!
           </Text>
 
           {/* Sample Photos */}
-          <HStack className="justify-center gap-4">
-            <Box className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+          <View className="flex-row justify-center gap-4">
+            <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
               <Image
                 source={{ uri: 'https://i.pravatar.cc/150?img=33' }}
                 style={{ width: 96, height: 96 }}
               />
-            </Box>
-            <Box className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+            </View>
+            <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
               <Image
                 source={{ uri: 'https://i.pravatar.cc/150?img=47' }}
                 style={{ width: 96, height: 96 }}
               />
-            </Box>
-            <Box className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+            </View>
+            <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
               <Image
                 source={{ uri: 'https://i.pravatar.cc/150?img=29' }}
                 style={{ width: 96, height: 96 }}
               />
-            </Box>
-          </HStack>
+            </View>
+          </View>
 
           {/* Tips */}
-          <VStack className="gap-4">
+          <View className="flex-col gap-4">
             <Text className="text-center text-sm text-[#333A31]" style={{ fontFamily: 'WorkSans_400Regular' }}>
               A great photo increases your chances of being hired. Some tips:
             </Text>
 
-            <VStack className="gap-2">
+            <View className="flex-col gap-2">
               <Text className="text-center text-sm text-[#666666]" style={{ fontFamily: 'WorkSans_400Regular' }}>
                 Center yourself and smile at the camera
               </Text>
@@ -134,8 +129,8 @@ export default function AddProfilePhotoScreen() {
               <Text className="text-center text-sm text-[#666666]" style={{ fontFamily: 'WorkSans_400Regular' }}>
                 Make sure it's focused and well - lit.
               </Text>
-            </VStack>
-          </VStack>
+            </View>
+          </View>
 
           {/* Add Photo Button */}
           <Pressable
@@ -146,7 +141,7 @@ export default function AddProfilePhotoScreen() {
               Add Photo
             </Text>
           </Pressable>
-        </VStack>
+        </View>
       </ScrollView>
 
       {/* Bottom Sheet for Select Photo Options */}
@@ -159,13 +154,13 @@ export default function AddProfilePhotoScreen() {
           />
 
           {/* Bottom Sheet */}
-          <Box className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg">
-            <VStack className="px-6 py-8 gap-6">
+          <View className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg">
+            <View className="flex-col px-6 py-8 gap-6">
               <Text className="text-xl font-semibold text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
                 Select a Photo
               </Text>
 
-              <HStack className="gap-4">
+              <View className="flex-row gap-4">
                 {/* Library Button */}
                 <Pressable
                   onPress={pickImage}
@@ -185,9 +180,9 @@ export default function AddProfilePhotoScreen() {
                     Take a photo
                   </Text>
                 </Pressable>
-              </HStack>
-            </VStack>
-          </Box>
+              </View>
+            </View>
+          </View>
         </>
       )}
     </SafeAreaView>

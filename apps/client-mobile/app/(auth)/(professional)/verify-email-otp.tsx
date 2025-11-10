@@ -1,11 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ScrollView, TextInput } from 'react-native';
+import { ScrollView, TextInput, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { Button, ButtonText } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -106,7 +101,7 @@ export default function ProfessionalVerifyEmailOtp() {
   const isCodeComplete = code.every(digit => digit !== '');
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
         <ScrollView
           className="flex-1"
@@ -114,20 +109,20 @@ export default function ProfessionalVerifyEmailOtp() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <VStack className="flex-1">
+          <View className="flex-col flex-1">
             {/* Header */}
-            <HStack className="items-center justify-between px-5 pt-2 pb-6">
+            <View className="flex-row items-center justify-between px-5 pt-2 pb-6">
               <Pressable onPress={() => router.back()}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>
                 Account Security
               </Text>
-              <Box className="w-6" />
-            </HStack>
+              <View className="w-6" />
+            </View>
 
             {/* Content */}
-            <VStack className="px-5">
+            <View className="flex-col px-5">
               {/* Title */}
               <Text className="text-[24px] font-worksans-bold mb-3" style={{ color: '#30352D' }}>
                 Verify your{'\n'}authentication code
@@ -140,9 +135,9 @@ export default function ProfessionalVerifyEmailOtp() {
               </Text>
 
               {/* OTP Input */}
-              <HStack className="justify-between mb-8">
+              <View className="flex-row justify-between mb-8">
                 {code.map((digit, index) => (
-                  <Box key={index} className="flex-1 mx-1">
+                  <View key={index} className="flex-1 mx-1">
                     <TextInput
                       ref={(ref) => {
                         inputRefs.current[index] = ref;
@@ -160,9 +155,9 @@ export default function ProfessionalVerifyEmailOtp() {
                       autoFocus={index === 0}
                       selectTextOnFocus
                     />
-                  </Box>
+                  </View>
                 ))}
-              </HStack>
+              </View>
 
               {/* Resend Code */}
               <Pressable onPress={handleResend} disabled={!canResend || isResending}>
@@ -196,11 +191,11 @@ export default function ProfessionalVerifyEmailOtp() {
                   {isLoading ? 'Verifying...' : 'Verify'}
                 </ButtonText>
               </Button>
-            </VStack>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
-    </Box>
+    </View>
   );
 }
 

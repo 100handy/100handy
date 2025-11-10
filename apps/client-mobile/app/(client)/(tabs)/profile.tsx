@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Import gluestack-ui components
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Image } from '@/components/ui/image';
-import { Pressable } from '@/components/ui/pressable';
-import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicator,
-  ActionsheetDragIndicatorWrapper
-} from '@/components/ui/actionsheet';
+import { Image } from 'expo-image';
+import { ScrollView, View, Text, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
 // Import lucide-react-native icons
 import {
@@ -98,9 +86,9 @@ export default function ProfileScreen() {
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <Box className="flex-1 justify-center items-center">
+        <View className="flex-1 justify-center items-center">
           <Text className="mt-4 text-gray-500">Loading profile...</Text>
-        </Box>
+        </View>
       </SafeAreaView>
     );
   }
@@ -108,11 +96,11 @@ export default function ProfileScreen() {
   if (error) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <Box className="flex-1 justify-center items-center p-6">
+        <View className="flex-1 justify-center items-center p-6">
           <Text className="text-red-500 text-center mb-4">
             {error instanceof Error ? error.message : 'Failed to load profile'}
           </Text>
-        </Box>
+        </View>
       </SafeAreaView>
     );
   }
@@ -124,22 +112,22 @@ export default function ProfileScreen() {
   return (
     <>
       <SafeAreaView className="flex-1 bg-white">
-        <Box className="flex-1">
+        <View className="flex-1">
           {/* Header with dark green background */}
-          <Box className="bg-[#333A31] pt-12 pb-6 px-6">
+          <View className="bg-[#333A31] pt-12 pb-6 px-6">
             {/* Notification icon */}
             <Pressable className="absolute top-3 right-6 z-10">
               <Bell size={24} color="white" />
             </Pressable>
 
             {/* Profile Info */}
-            <HStack className="items-start mb-6">
+            <View className="flex-row items-start mb-6">
               <Image
                 source={{ uri: profile?.avatar_url || 'https://i.pravatar.cc/150?u=default' }}
                 alt="User Avatar"
                 className="w-[72px] h-[72px] rounded-full"
               />
-              <VStack className="ml-4 flex-1">
+              <View className="flex-col ml-4 flex-1">
                 <Text className="text-white text-[32px] font-black leading-tight mb-1">
                   {displayName}
                 </Text>
@@ -149,8 +137,8 @@ export default function ProfileScreen() {
                 <Text className="text-white text-base">
                   Wanstead, Greater London, E11 2
                 </Text>
-              </VStack>
-            </HStack>
+              </View>
+            </View>
 
             {/* Referral Banner */}
             <Pressable
@@ -160,7 +148,7 @@ export default function ProfileScreen() {
               <Gift size={20} color="#C1856A" className="mr-2" />
               <Text className="text-[#C1856A] font-bold text-base">Help your friends, Get £10</Text>
             </Pressable>
-          </Box>
+          </View>
 
           {/* Menu Items */}
           <ScrollView className="flex-1 bg-white mt-4">
@@ -194,47 +182,50 @@ export default function ProfileScreen() {
               <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Log out</Text>
             </Pressable>
           </ScrollView>
-        </Box>
+        </View>
       </SafeAreaView>
 
-      {/* Privacy Notice Actionsheet */}
-      <Actionsheet isOpen={showPrivacyNotice} onClose={() => setShowPrivacyNotice(false)}>
-        <ActionsheetBackdrop />
-        <ActionsheetContent className="bg-white" style={{ minHeight: '40%' }}>
-          <ActionsheetDragIndicatorWrapper>
-            <ActionsheetDragIndicator className="bg-gray-400" />
-          </ActionsheetDragIndicatorWrapper>
+      {/* Privacy Notice Modal */}
+      <Modal isOpen={showPrivacyNotice} onClose={() => setShowPrivacyNotice(false)}>
+        <ModalBackdrop />
+        <ModalContent className="bg-white" style={{ minHeight: '40%' }}>
+          {/* Drag Indicator */}
+          <View className="w-full items-center pt-2 pb-1">
+            <View className="w-12 h-1 rounded-full bg-gray-400" />
+          </View>
 
-          <VStack className="w-full px-6 py-4 items-center">
-            {/* Title */}
-            <Text className="text-[#333A31] text-xl font-medium mb-4">
-              Privacy Notice
-            </Text>
-
-            {/* Description */}
-            <Text className="text-[#333A31] text-xs text-center leading-5 mb-6">
-              By selecting "Accept All", you agree to the app storing information to enhance device navigation, analyze usage, and assist in our marketing efforts
-            </Text>
-
-            {/* Accept All Cookies Button */}
-            <Pressable
-              className="w-full bg-[#A0B194] rounded-lg py-4 mb-4 items-center justify-center"
-              onPress={handleAcceptCookies}
-            >
-              <Text className="text-white text-base font-bold">
-                Accept All Cookies
+          <ModalBody>
+            <View className="flex-col w-full px-6 py-4 items-center">
+              {/* Title */}
+              <Text className="text-[#333A31] text-xl font-medium mb-4">
+                Privacy Notice
               </Text>
-            </Pressable>
 
-            {/* Cookies Settings Link */}
-            <Pressable onPress={handleCookiesSettings}>
-              <Text className="text-[#A0B194] text-base font-bold underline">
-                Cookies Settings
+              {/* Description */}
+              <Text className="text-[#333A31] text-xs text-center leading-5 mb-6">
+                By selecting "Accept All", you agree to the app storing information to enhance device navigation, analyze usage, and assist in our marketing efforts
               </Text>
-            </Pressable>
-          </VStack>
-        </ActionsheetContent>
-      </Actionsheet>
+
+              {/* Accept All Cookies Button */}
+              <Pressable
+                className="w-full bg-[#A0B194] rounded-lg py-4 mb-4 items-center justify-center"
+                onPress={handleAcceptCookies}
+              >
+                <Text className="text-white text-base font-bold">
+                  Accept All Cookies
+                </Text>
+              </Pressable>
+
+              {/* Cookies Settings Link */}
+              <Pressable onPress={handleCookiesSettings}>
+                <Text className="text-[#A0B194] text-base font-bold underline">
+                  Cookies Settings
+                </Text>
+              </Pressable>
+            </View>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 }

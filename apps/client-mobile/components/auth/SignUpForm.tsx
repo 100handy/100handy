@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import { Image } from 'react-native';
-import { Box } from '@/components/ui/box';
-import { HStack } from '@/components/ui/hstack';
+import { View, Text, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronDown, X, Eye, EyeOff } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { type SignUpData, signUpWithPhone } from '@shared/supabase/auth';
@@ -59,10 +56,10 @@ export default function SignUpForm({
   };
 
   return (
-    <Box className="px-5">
+    <View className="px-5">
       {/* First Name and Last Name Row */}
-      <HStack className="mb-3 gap-4">
-        <Box className="flex-1">
+      <View className="mb-3 gap-4 flex-row">
+        <View className="flex-1">
           <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
             First Name
           </Text>
@@ -70,7 +67,7 @@ export default function SignUpForm({
             control={control}
             name="firstName"
             render={({ field: { onChange, onBlur, value } }) => (
-              <Box>
+              <View>
                 <Input
                   variant="outline"
                   className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
@@ -90,11 +87,11 @@ export default function SignUpForm({
                     {errors.firstName.message}
                   </Text>
                 )}
-              </Box>
+              </View>
             )}
           />
-        </Box>
-        <Box className="flex-1">
+        </View>
+        <View className="flex-1">
           <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
             Last Name
           </Text>
@@ -102,7 +99,7 @@ export default function SignUpForm({
             control={control}
             name="lastName"
             render={({ field: { onChange, onBlur, value } }) => (
-              <Box>
+              <View>
                 <Input
                   variant="outline"
                   className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
@@ -122,14 +119,14 @@ export default function SignUpForm({
                     {errors.lastName.message}
                   </Text>
                 )}
-              </Box>
+              </View>
             )}
           />
-        </Box>
-      </HStack>
+        </View>
+      </View>
 
       {/* Email */}
-      <Box className="mb-3">
+      <View className="mb-3">
         <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
           Email
         </Text>
@@ -137,7 +134,7 @@ export default function SignUpForm({
           control={control}
           name="email"
           render={({ field: { onChange, onBlur, value } }) => (
-            <Box>
+            <View>
               <Input
                 variant="outline"
                 className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
@@ -159,13 +156,13 @@ export default function SignUpForm({
                   {errors.email.message}
                 </Text>
               )}
-            </Box>
+            </View>
           )}
         />
-      </Box>
+      </View>
 
       {/* Password */}
-      <Box className="mb-3">
+      <View className="mb-3">
         <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
           Password
         </Text>
@@ -173,7 +170,7 @@ export default function SignUpForm({
           control={control}
           name="password"
           render={({ field: { onChange, onBlur, value } }) => (
-            <Box>
+            <View>
               <Input
                 variant="outline"
                 className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
@@ -201,13 +198,13 @@ export default function SignUpForm({
                   {errors.password.message}
                 </Text>
               )}
-            </Box>
+            </View>
           )}
         />
-      </Box>
+      </View>
 
       {/* Phone Number */}
-      <Box className="mb-3">
+      <View className="mb-3">
         <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
           Phone Number
         </Text>
@@ -215,16 +212,16 @@ export default function SignUpForm({
           control={control}
           name="phone"
           render={({ field: { onChange, onBlur, value } }) => (
-            <Box>
+            <View>
               <Input
                 variant="outline"
                 className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
               >
-                <HStack className="items-center flex-1">
-                  <Image 
+                <View className="items-center flex-1 flex-row">
+                  <Image
                     source={require('@/assets/images/uk-flag.png')}
                     className="w-7 h-4 mr-2"
-                    resizeMode="contain"
+                    contentFit="contain"
                   />
                   <Pressable className="flex-row items-center mr-3">
                     <Text className="text-[15px] font-worksans-bold mr-1" style={{ color: '#30352D' }}>
@@ -245,26 +242,26 @@ export default function SignUpForm({
                   {value.length > 0 && (
                     <InputSlot className="pr-0">
                       <Pressable onPress={() => onChange('')} className="p-1">
-                        <Box className="bg-gray-800 rounded-full w-5 h-5 items-center justify-center">
+                        <View className="bg-gray-800 rounded-full w-5 h-5 items-center justify-center">
                           <X size={14} color="white" />
-                        </Box>
+                        </View>
                       </Pressable>
                     </InputSlot>
                   )}
-                </HStack>
+                </View>
               </Input>
               {errors.phone && (
                 <Text className="text-xs text-red-600 mt-1 font-worksans">
                   {errors.phone.message}
                 </Text>
               )}
-            </Box>
+            </View>
           )}
         />
-      </Box>
+      </View>
 
       {/* Post code */}
-      <Box className="mb-3">
+      <View className="mb-3">
         <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
           Post code
         </Text>
@@ -272,7 +269,7 @@ export default function SignUpForm({
           control={control}
           name="postcode"
           render={({ field: { onChange, onBlur, value } }) => (
-            <Box>
+            <View>
               <Input
                 variant="outline"
                 className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
@@ -293,10 +290,10 @@ export default function SignUpForm({
                   {errors.postcode.message}
                 </Text>
               )}
-            </Box>
+            </View>
           )}
         />
-      </Box>
+      </View>
 
       {/* Help Text */}
       <Text className="text-[12px] font-worksans-medium mb-5 leading-5" style={{ color: '#30352D' }}>
@@ -322,7 +319,7 @@ export default function SignUpForm({
       </Button>
 
       {/* Terms and Privacy */}
-      <Box className="mb-6">
+      <View className="mb-6">
         <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
           By singing up, you agree to the{' '}
           <Text style={{ color: '#C1856A' }}>Term of service</Text>
@@ -332,7 +329,7 @@ export default function SignUpForm({
           {'\n'}
           Manage <Text style={{ color: '#C1856A' }}>privacy settings</Text>
         </Text>
-      </Box>
+      </View>
 
       {/* Login Link */}
       <Pressable onPress={() => router.push(`/(auth)/(${userRole})/sign-in`)}>
@@ -341,6 +338,6 @@ export default function SignUpForm({
           <Text style={{ color: '#C1856A' }}>Log in</Text>
         </Text>
       </Pressable>
-    </Box>
+    </View>
   );
 }

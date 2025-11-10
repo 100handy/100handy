@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Pressable as RNPressable } from 'react-native';
-import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetDragIndicator,
-} from '@/components/ui/actionsheet';
-  import { Input, InputField } from '@/components/ui/input';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
+import { ScrollView, View, Pressable as RNPressable, Text } from 'react-native';
+import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
+import { Input, InputField } from '@/components/ui/input';
 import { ChevronLeft } from 'lucide-react-native';
 import {
   useLocationStore,
@@ -56,13 +47,13 @@ function SelectionStep({
   return (
     <>
       <ScrollView className="w-full flex-1" showsVerticalScrollIndicator={false}>
-        <VStack className="px-5 pt-4 pb-6">
+        <View className="px-5 pt-4 pb-6 flex-col">
           <Text className="text-3xl font-bold text-[#30352d] text-center mb-10">{title}</Text>
-          <VStack space="sm" className="mb-6">
+          <View className="mb-6 flex-col">
             <Text className="text-xl font-semibold text-black">{question}</Text>
             {description && <Text className="text-sm text-gray-500">{description}</Text>}
-          </VStack>
-          <VStack space="md">
+          </View>
+          <View className="flex-col">
             {options.map((option) => {
               const selected = isSelected(option);
               return (
@@ -81,11 +72,11 @@ function SelectionStep({
                 </RNPressable>
               );
             })}
-          </VStack>
-        </VStack>
+          </View>
+        </View>
       </ScrollView>
 
-      <VStack className="px-5 py-6 w-full border-t border-gray-100">
+      <View className="px-5 py-6 w-full border-t border-gray-100 flex-col">
         <RNPressable
           onPress={onContinue}
           disabled={isDisabled}
@@ -93,7 +84,7 @@ function SelectionStep({
         >
           <Text className="text-lg font-bold text-white">Continue</Text>
         </RNPressable>
-      </VStack>
+      </View>
     </>
   );
 }
@@ -151,7 +142,7 @@ function LocationStep({
         className="w-full flex-1"
         showsVerticalScrollIndicator={false}
       >
-        <VStack className="px-5 pt-4 pb-6">
+        <View className="px-5 pt-4 pb-6 flex-col">
           {/* Task Title */}
           <Text className="text-3xl font-bold text-black text-center mb-10">
             {title}
@@ -163,7 +154,7 @@ function LocationStep({
           </Text>
 
           {/* Street Address Input with Autocomplete */}
-          <VStack className="mb-5">
+          <View className="mb-5 flex-col">
             <LocationAutocomplete
               value={streetAddress}
               onChangeText={setStreetAddress}
@@ -172,10 +163,10 @@ function LocationStep({
               placeholder="Enter street address"
               showClearButton={true}
             />
-          </VStack>
+          </View>
 
           {/* Unit Number Input */}
-          <VStack className="mb-8">
+          <View className="mb-8 flex-col">
             <Text
               className="text-sm font-normal mb-2 text-gray-400"
             >
@@ -194,7 +185,7 @@ function LocationStep({
                 className="text-base px-4 text-black"
               />
             </Input>
-          </VStack>
+          </View>
 
           {/* Divider */}
           <View
@@ -203,7 +194,7 @@ function LocationStep({
 
           {/* Default Address Section */}
           {location && (
-            <VStack className="mb-8">
+            <View className="mb-8 flex-col">
               <Text
                 className="text-sm font-normal mb-4 text-gray-400"
               >
@@ -221,13 +212,13 @@ function LocationStep({
                   {location.unitNumber && `\n${location.unitNumber}`}
                 </Text>
               </RNPressable>
-            </VStack>
+            </View>
           )}
-        </VStack>
+        </View>
       </ScrollView>
 
       {/* Continue Button - Fixed at Bottom */}
-      <VStack className="px-5 py-6 w-full border-t border-gray-100">
+      <View className="px-5 py-6 w-full border-t border-gray-100 flex-col">
         <RNPressable
           onPress={handleContinue}
           disabled={!streetAddress.trim()}
@@ -237,7 +228,7 @@ function LocationStep({
             Continue
           </Text>
         </RNPressable>
-      </VStack>
+      </View>
     </>
   );
 }
@@ -379,20 +370,21 @@ export default function LocationSelectionSheet({
   };
 
   return (
-    <Actionsheet isOpen={isOpen} onClose={onClose}>
-      <ActionsheetBackdrop />
-      <ActionsheetContent className="bg-white" style={{ minHeight: '90%' }}>
-        <ActionsheetDragIndicatorWrapper>
-          <ActionsheetDragIndicator className="bg-gray-300" />
-        </ActionsheetDragIndicatorWrapper>
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
+      <ModalBackdrop />
+      <ModalContent className="bg-white" style={{ minHeight: '90%', maxHeight: '95%' }}>
+        {/* Drag Indicator */}
+        <View className="w-full items-center pt-2 pb-1">
+          <View className="w-12 h-1 rounded-full bg-gray-300" />
+        </View>
 
         {/* Header with Back Button and Progress Dots */}
-        <HStack className="w-full items-center px-5 pt-4 pb-2">
+        <View className="w-full items-center px-5 pt-4 pb-2 flex-row">
           <RNPressable onPress={handlePrevStep} className="mr-4">
             <ChevronLeft size={28} color="#000000" strokeWidth={2} />
           </RNPressable>
 
-          <HStack className="flex-1 items-center justify-center gap-2 mr-8">
+          <View className="flex-1 items-center justify-center gap-2 mr-8 flex-row">
             {Array.from({ length: 5 }).map((_, index) => (
               <View
                 key={index}
@@ -402,13 +394,13 @@ export default function LocationSelectionSheet({
                 }}
               />
             ))}
-          </HStack>
-        </HStack>
+          </View>
+        </View>
 
         {step === 1 && <LocationStep title={categoryName} onContinue={handleNextStep} />}
         {step === 2 && <TaskSizeStep title={categoryName} onContinue={handleNextStep} />}
         {step === 3 && <VehicleRequirementStep title={categoryName} onContinue={handleNextStep} />}
-      </ActionsheetContent>
-    </Actionsheet>
+      </ModalContent>
+    </Modal>
   );
 }

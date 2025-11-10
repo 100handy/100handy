@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Loader } from '@/components/ui/loader';
-import { View } from 'react-native';
-import { Text } from '@/components/ui/text';
+import { View, Text } from 'react-native';
 
 /**
  * Auth Callback Route

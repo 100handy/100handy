@@ -1,9 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { HStack } from '@/components/ui/hstack';
-import { VStack } from '@/components/ui/vstack';
+import { View, Text } from 'react-native';
 import { SupportMessage } from '@shared/supabase';
 import { format } from 'date-fns';
 
@@ -22,21 +18,21 @@ export const MessageBubble = ({ message, showTimestamp = true }: MessageBubblePr
   // System messages are centered
   if (isSystemMessage) {
     return (
-      <VStack className="px-6 py-2">
-        <Box className="bg-[#F5F5F5] rounded-lg p-4 self-center max-w-[85%]">
+      <View className="px-6 py-2 flex-col">
+        <View className="bg-[#F5F5F5] rounded-lg p-4 self-center max-w-[85%]">
           <Text className="text-[14px] text-[#333333] leading-5">{message.message}</Text>
-        </Box>
+        </View>
         {showTimestamp && (
           <Text className="text-[11px] text-[#999999] text-center mt-1">{timestamp}</Text>
         )}
-      </VStack>
+      </View>
     );
   }
 
   // User messages on right, support messages on left
   return (
-    <VStack className={`px-6 py-2 ${isFromUser ? 'items-end' : 'items-start'}`}>
-      <Box
+    <View className={`px-6 py-2 flex-col ${isFromUser ? 'items-end' : 'items-start'}`}>
+      <View
         className={`rounded-2xl px-4 py-3 max-w-[85%] ${
           isFromUser ? 'bg-white border border-gray-200' : 'bg-[#F5F5F5]'
         }`}
@@ -51,27 +47,27 @@ export const MessageBubble = ({ message, showTimestamp = true }: MessageBubblePr
 
         {/* Attachment if present */}
         {message.attachment_url && (
-          <Box className="mt-2 p-2 bg-gray-100 rounded">
+          <View className="mt-2 p-2 bg-gray-100 rounded">
             <Text className="text-[13px] text-[#666666]">
               📎 {message.attachment_name || 'Attachment'}
             </Text>
-          </Box>
+          </View>
         )}
 
         {/* Interactive elements from metadata */}
         {message.message_type === 'interactive' && message.metadata?.options && (
-          <Box className="mt-2">
+          <View className="mt-2">
             {message.metadata.options.map((option: string, index: number) => (
-              <Box
+              <View
                 key={index}
                 className="mt-1 p-2 bg-white border border-gray-300 rounded"
               >
                 <Text className="text-[14px] text-[#333333]">{option}</Text>
-              </Box>
+              </View>
             ))}
-          </Box>
+          </View>
         )}
-      </Box>
+      </View>
 
       {/* Timestamp */}
       {showTimestamp && (
@@ -80,6 +76,6 @@ export const MessageBubble = ({ message, showTimestamp = true }: MessageBubblePr
           {message.read_at && isFromUser && ' · Read'}
         </Text>
       )}
-    </VStack>
+    </View>
   );
 };

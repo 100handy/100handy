@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, KeyboardAvoidingView, Platform, View, Text, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Textarea } from '@/components/ui/textarea';
-import { TextareaInput } from '@/components/ui/textarea';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
 import { useProfessionalProfileStore } from '@shared/supabase';
 
@@ -39,7 +33,7 @@ export default function AboutMeScreen() {
         className="flex-1"
       >
         {/* Header */}
-        <HStack className="items-center px-5 py-4">
+        <View className="flex-row items-center px-5 py-4">
           <Pressable onPress={() => router.back()}>
             <ChevronLeft size={24} color="#000" />
           </Pressable>
@@ -49,16 +43,16 @@ export default function AboutMeScreen() {
           >
             About Me
           </Text>
-        </HStack>
+        </View>
 
         <ScrollView 
           className="flex-1" 
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <VStack className="px-5 py-6 gap-6">
+          <View className="flex-col px-5 py-6 gap-6">
             {/* Section Title */}
-            <VStack className="gap-2">
+            <View className="flex-col gap-2">
               <Text 
                 className="text-xl font-bold text-[#333A31]" 
                 style={{ fontFamily: 'WorkSans_700Bold' }}
@@ -71,48 +65,44 @@ export default function AboutMeScreen() {
               >
                 Why are you a Tasker? Tell your story..
               </Text>
-            </VStack>
+            </View>
 
             {/* Text Input */}
-            <VStack className="gap-2">
-              <Textarea
-                className="min-h-[200px] border border-[#E5E5E5] rounded-lg p-4"
-              >
-                <TextareaInput
-                  placeholder="For example, what supplies are needed, where to park, or timing restrictions."
-                  value={text}
-                  onChangeText={(value) => {
-                    if (value.length <= MAX_CHARACTERS) {
-                      setText(value);
-                    }
-                  }}
-                  multiline
-                  numberOfLines={8}
-                  maxLength={MAX_CHARACTERS}
-                  className="text-base text-[#333A31]"
-                  placeholderTextColor="#999999"
-                  style={{ 
-                    fontFamily: 'WorkSans_400Regular',
-                    textAlignVertical: 'top',
-                  }}
-                />
-              </Textarea>
+            <View className="flex-col gap-2">
+              <TextInput
+                placeholder="For example, what supplies are needed, where to park, or timing restrictions."
+                value={text}
+                onChangeText={(value) => {
+                  if (value.length <= MAX_CHARACTERS) {
+                    setText(value);
+                  }
+                }}
+                multiline
+                numberOfLines={8}
+                maxLength={MAX_CHARACTERS}
+                placeholderTextColor="#999999"
+                className="min-h-[200px] border border-[#E5E5E5] rounded-lg p-4 text-base text-[#333A31]"
+                style={{
+                  fontFamily: 'WorkSans_400Regular',
+                  textAlignVertical: 'top',
+                }}
+              />
               
               {/* Character Counter */}
-              <HStack className="justify-end">
+              <View className="flex-row justify-end">
                 <Text 
                   className="text-sm text-[#666666]" 
                   style={{ fontFamily: 'WorkSans_400Regular' }}
                 >
                   {text.length}/{MAX_CHARACTERS}
                 </Text>
-              </HStack>
-            </VStack>
-          </VStack>
+              </View>
+            </View>
+          </View>
         </ScrollView>
 
         {/* Save Button */}
-        <VStack className="px-5 pb-8 pt-4">
+        <View className="flex-col px-5 pb-8 pt-4">
           <Pressable
             onPress={handleSave}
             className="bg-[#D17852] rounded-full py-4 items-center active:opacity-90"
@@ -124,7 +114,7 @@ export default function AboutMeScreen() {
               Save
             </Text>
           </Pressable>
-        </VStack>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

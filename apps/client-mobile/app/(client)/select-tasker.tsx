@@ -1,23 +1,11 @@
 import React, { useState } from 'react';
-import { ScrollView, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker';
-import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetDragIndicator,
-  ActionsheetItem,
-  ActionsheetItemText,
-} from '@/components/ui/actionsheet';
 import { useHandymenByCategory, type HandymanFilters } from '@shared/supabase';
+import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
 // Mock data for taskers - in production, this would come from an API
 const mockTaskers: TaskerData[] = [
@@ -207,11 +195,10 @@ export default function SelectTaskerScreen() {
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: '#F9FAFB' }}>
       {/* Header */}
-      <VStack
-        className="px-5 pt-4 pb-4 bg-white"
+      <View className="flex-col px-5 pt-4 pb-4 bg-white"
         style={{ borderBottomWidth: 1, borderBottomColor: '#E5E7EB' }}
       >
-        <HStack className="items-center justify-between">
+        <View className="flex-row items-center justify-between">
           <Pressable onPress={() => router.back()}>
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
@@ -226,11 +213,11 @@ export default function SelectTaskerScreen() {
           <Pressable onPress={() => setShowSortSheet(true)}>
             <SlidersHorizontal size={24} color="#000000" strokeWidth={2} />
           </Pressable>
-        </HStack>
-      </VStack>
+        </View>
+      </View>
 
       {/* Filter Chips */}
-      <VStack className="px-5 pt-4 pb-3 bg-white">
+      <View className="flex-col px-5 pt-4 pb-3 bg-white">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -245,19 +232,19 @@ export default function SelectTaskerScreen() {
             />
           ))}
         </ScrollView>
-      </VStack>
+      </View>
 
       {/* Sorted By Label */}
-      <HStack className="items-center justify-center px-5 pb-4 bg-white">
-        <VStack style={{ height: 1, flex: 1, backgroundColor: '#E5E7EB' }} />
+      <View className="flex-row items-center justify-center px-5 pb-4 bg-white">
+        <View className="flex-col" style={{ height: 1, flex: 1, backgroundColor: '#E5E7EB' }} />
         <Text
           className="text-xs px-3"
           style={{ color: '#9CA3AF', fontWeight: '400' }}
         >
           Sorted by: {selectedSort}
         </Text>
-        <VStack style={{ height: 1, flex: 1, backgroundColor: '#E5E7EB' }} />
-      </HStack>
+        <View className="flex-col" style={{ height: 1, flex: 1, backgroundColor: '#E5E7EB' }} />
+      </View>
 
       {/* Taskers List */}
       <ScrollView
@@ -266,30 +253,30 @@ export default function SelectTaskerScreen() {
         showsVerticalScrollIndicator={false}
       >
         {isLoading ? (
-          <VStack className="items-center justify-center py-20">
+          <View className="flex-col items-center justify-center py-20">
             <ActivityIndicator size="large" color="#000000" />
             <Text className="text-sm text-gray-600 mt-3">Loading taskers...</Text>
-          </VStack>
+          </View>
         ) : isError ? (
-          <VStack className="items-center justify-center py-20 px-6">
+          <View className="flex-col items-center justify-center py-20 px-6">
             <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
               Error loading taskers
             </Text>
             <Text className="text-sm text-gray-600 text-center">
               Please try again later
             </Text>
-          </VStack>
+          </View>
         ) : taskers.length === 0 ? (
-          <VStack className="items-center justify-center py-20 px-6">
+          <View className="flex-col items-center justify-center py-20 px-6">
             <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
               No taskers found
             </Text>
             <Text className="text-sm text-gray-600 text-center">
               Try adjusting your filters or search in a different category
             </Text>
-          </VStack>
+          </View>
         ) : (
-          <VStack className="px-5 pt-2 pb-6">
+          <View className="flex-col px-5 pt-2 pb-6">
             {taskers.map((tasker) => (
               <TaskerCard
                 key={tasker.id}
@@ -298,63 +285,66 @@ export default function SelectTaskerScreen() {
                 onSeeProfile={() => handleSeeProfile(tasker.id)}
               />
             ))}
-          </VStack>
+          </View>
         )}
       </ScrollView>
 
-      {/* Sort Options Action Sheet */}
-      <Actionsheet isOpen={showSortSheet} onClose={() => setShowSortSheet(false)}>
-        <ActionsheetBackdrop />
-        <ActionsheetContent style={{ backgroundColor: '#FFFFFF' }}>
-          <ActionsheetDragIndicatorWrapper>
-            <ActionsheetDragIndicator style={{ backgroundColor: '#D1D5DB' }} />
-          </ActionsheetDragIndicatorWrapper>
-          
-          {/* Header */}
-          <VStack className="w-full pb-4 pt-2">
-            <Text
-              className="text-center text-base"
-              style={{ fontWeight: '600', color: '#6B7280' }}
-            >
-              Sort by:
-            </Text>
-          </VStack>
+      {/* Sort Options Modal */}
+      <Modal isOpen={showSortSheet} onClose={() => setShowSortSheet(false)}>
+        <ModalBackdrop />
+        <ModalContent style={{ backgroundColor: '#FFFFFF' }}>
+          <ModalBody>
+            {/* Drag Indicator */}
+            <View className="w-full items-center pt-2 pb-1">
+              <View className="w-12 h-1 rounded-full bg-gray-300" />
+            </View>
 
-          {/* Sort Options */}
-          <VStack className="w-full">
-            {sortOptions.map((option) => {
-              const isSelected = selectedSort === option;
-              return (
-                <ActionsheetItem
-                  key={option}
-                  onPress={() => handleSortSelect(option)}
-                  style={{
-                    paddingVertical: 16,
-                    paddingHorizontal: 20,
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#F3F4F6',
-                  }}
-                >
-                  <HStack className="flex-1 items-center justify-between">
-                    <ActionsheetItemText
-                      style={{
-                        color: isSelected ? '#0D9488' : '#1F2937',
-                        fontWeight: isSelected ? '600' : '400',
-                        fontSize: 16,
-                      }}
-                    >
-                      {option}
-                    </ActionsheetItemText>
-                    {isSelected && (
-                      <Check size={20} color="#0D9488" strokeWidth={2.5} />
-                    )}
-                  </HStack>
-                </ActionsheetItem>
-              );
-            })}
-          </VStack>
-        </ActionsheetContent>
-      </Actionsheet>
+            {/* Header */}
+            <View className="flex-col w-full pb-4 pt-2">
+              <Text
+                className="text-center text-base"
+                style={{ fontWeight: '600', color: '#6B7280' }}
+              >
+                Sort by:
+              </Text>
+            </View>
+
+            {/* Sort Options */}
+            <View className="flex-col w-full">
+              {sortOptions.map((option) => {
+                const isSelected = selectedSort === option;
+                return (
+                  <Pressable
+                    key={option}
+                    onPress={() => handleSortSelect(option)}
+                    style={{
+                      paddingVertical: 16,
+                      paddingHorizontal: 20,
+                      borderBottomWidth: 1,
+                      borderBottomColor: '#F3F4F6',
+                    }}
+                  >
+                    <View className="flex-row flex-1 items-center justify-between">
+                      <Text
+                        style={{
+                          color: isSelected ? '#0D9488' : '#1F2937',
+                          fontWeight: isSelected ? '600' : '400',
+                          fontSize: 16,
+                        }}
+                      >
+                        {option}
+                      </Text>
+                      {isSelected && (
+                        <Check size={20} color="#0D9488" strokeWidth={2.5} />
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 }

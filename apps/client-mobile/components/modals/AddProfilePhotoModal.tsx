@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, Image } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
+import { Image } from 'expo-image';
 import { Modal } from '@/components/ui/modal';
 import { ModalBackdrop } from '@/components/ui/modal';
 import { ModalContent } from '@/components/ui/modal';
@@ -48,51 +44,51 @@ export default function AddProfilePhotoModal({
       <ModalContent className="h-full w-full">
         <SafeAreaView className="flex-1 bg-white">
           {/* Header */}
-          <HStack className="items-center px-5 py-4 border-b border-gray-100">
+          <View className="items-center px-5 py-4 border-b border-gray-100 flex-row">
             <Pressable onPress={onClose} className="mr-4">
               <ChevronLeft size={24} color="#000" />
             </Pressable>
             <Text className="text-lg font-semibold text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
               Add profile photo
             </Text>
-          </HStack>
+          </View>
 
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-            <VStack className="px-5 py-8 gap-6">
+            <View className="px-5 py-8 gap-6 flex-col">
               {/* Title */}
               <Text className="text-xl font-semibold text-center text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
                 Show off your best self!
               </Text>
 
               {/* Sample Photos */}
-              <HStack className="justify-center gap-4">
-                <Box className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+              <View className="justify-center gap-4 flex-row">
+                <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
                   <Image
                     source={{ uri: 'https://i.pravatar.cc/150?img=33' }}
                     style={{ width: 96, height: 96 }}
                   />
-                </Box>
-                <Box className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+                </View>
+                <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
                   <Image
                     source={{ uri: 'https://i.pravatar.cc/150?img=47' }}
                     style={{ width: 96, height: 96 }}
                   />
-                </Box>
-                <Box className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+                </View>
+                <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
                   <Image
                     source={{ uri: 'https://i.pravatar.cc/150?img=29' }}
                     style={{ width: 96, height: 96 }}
                   />
-                </Box>
-              </HStack>
+                </View>
+              </View>
 
               {/* Tips */}
-              <VStack className="gap-4">
+              <View className="gap-4 flex-col">
                 <Text className="text-center text-sm text-[#333A31]" style={{ fontFamily: 'WorkSans_400Regular' }}>
                   A great photo increases your chances of being hired. Some tips:
                 </Text>
 
-                <VStack className="gap-2">
+                <View className="gap-2 flex-col">
                   <Text className="text-center text-sm text-[#666666]" style={{ fontFamily: 'WorkSans_400Regular' }}>
                     • Center yourself and smile at the camera
                   </Text>
@@ -102,8 +98,8 @@ export default function AddProfilePhotoModal({
                   <Text className="text-center text-sm text-[#666666]" style={{ fontFamily: 'WorkSans_400Regular' }}>
                     • Make sure it's focused and well - lit.
                   </Text>
-                </VStack>
-              </VStack>
+                </View>
+              </View>
 
               {/* Add Photo Button */}
               <Pressable
@@ -114,18 +110,18 @@ export default function AddProfilePhotoModal({
                   Add Photo
                 </Text>
               </Pressable>
-            </VStack>
+            </View>
           </ScrollView>
 
           {/* Bottom Sheet for Select Photo Options */}
           {showOptions && (
-            <Box className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg">
-              <VStack className="px-6 py-8 gap-6">
+            <View className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg">
+              <View className="px-6 py-8 gap-6 flex-col">
                 <Text className="text-xl font-semibold text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
                   Select a Photo
                 </Text>
 
-                <HStack className="gap-4">
+                <View className="gap-4 flex-row">
                   {/* Library Button */}
                   <Pressable
                     onPress={() => handleSelectOption('library')}
@@ -145,9 +141,9 @@ export default function AddProfilePhotoModal({
                       Take a photo
                     </Text>
                   </Pressable>
-                </HStack>
-              </VStack>
-            </Box>
+                </View>
+              </View>
+            </View>
           )}
 
           {/* Background overlay when options are shown */}

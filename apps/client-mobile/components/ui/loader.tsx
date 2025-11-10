@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { Text } from '@/components/ui/text';
+import { View, Text, ActivityIndicator } from 'react-native';
 
 interface LoaderProps {
   text?: string;

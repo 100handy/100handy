@@ -1,24 +1,18 @@
 import React, { useState } from 'react';
-import { ScrollView, TextInput } from 'react-native';
+import { ScrollView, TextInput, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MapPinIcon } from 'lucide-react-native';
 
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
 import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Pressable } from '@/components/ui/pressable';
-import { Divider } from '@/components/ui/divider';
 import Header from '@/components/Header';
 
 // Component for rendering the Visa logo
 const VisaIcon = () => (
-  <Box className="bg-blue-900 rounded-sm w-10 h-6 justify-center items-center">
+  <View className="bg-blue-900 rounded-sm w-10 h-6 justify-center items-center">
     <Text className="text-white font-bold italic text-xs">VISA</Text>
-  </Box>
+  </View>
 );
 
 export default function TaskDetailsScreen() {
@@ -35,7 +29,7 @@ export default function TaskDetailsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <Box className="flex-1 bg-gray-custom-100">
+      <View className="flex-1 bg-gray-custom-100">
         <Header 
           title="Task Details" 
           onBackPress={() => router.back()} 
@@ -43,16 +37,16 @@ export default function TaskDetailsScreen() {
         />
 
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
-          <VStack className="space-y-4">
+          <View className="flex-col space-y-4">
             {/* Task Description Card */}
-            <VStack className="space-y-2 bg-white p-4 rounded-xl">
-              <HStack className="items-center">
+            <View className="flex-col space-y-2 bg-white p-4 rounded-xl">
+              <View className="flex-row items-center">
                 <Text size="sm" className="font-semibold text-text-primary">
                   Task Description
                 </Text>
                 <Text className="text-red-500 ml-1">*</Text>
-              </HStack>
-              <Box className="h-24 border border-input-border rounded-lg p-2">
+              </View>
+              <View className="h-24 border border-input-border rounded-lg p-2">
                 <TextInput
                   placeholder="Tell us about the task (what, where, any access instructions)."
                   value={description}
@@ -62,83 +56,83 @@ export default function TaskDetailsScreen() {
                   textAlignVertical="top"
                   className="flex-1 text-sm text-text-tertiary leading-5"
                 />
-              </Box>
+              </View>
               <Text className="text-xs text-right text-gray-custom-400">
                 {description.length}/500 characters
               </Text>
-            </VStack>
+            </View>
 
             {/* Date & Time and Address Card */}
-            <VStack className="bg-white p-4 rounded-xl space-y-4 my-4">
+            <View className="flex-col bg-white p-4 rounded-xl space-y-4 my-4">
               {/* Date & Time */}
-              <HStack className="items-center justify-between">
-                <VStack>
+              <View className="flex-row items-center justify-between">
+                <View className="flex-col">
                   <Text className="text-sm text-text-secondary mb-1">
                     Date & Time
                   </Text>
                   <Text className="text-sm font-semibold text-text-primary">
                     Tomorrow, 2:00 PM - 4:00 PM
                   </Text>
-                </VStack>
+                </View>
                 <Pressable onPress={() => console.log('Change date/time')}>
                   <Text className="text-sm font-semibold text-clayOrange">
                     Change
                   </Text>
                 </Pressable>
-              </HStack>
+              </View>
 
-              <Divider className="h-px my-4 bg-gray-200" />
-              
+              <View className="h-px my-4 bg-gray-200" />
+
               {/* Address */}
-              <HStack className="items-center justify-between">
-                <HStack className="items-center space-x-3">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center space-x-3">
                   <MapPinIcon size={20} className="text-black" />
-                  <VStack>
+                  <View className="flex-col">
                     <Text className="text-sm text-text-secondary mb-1">
                       Address
                     </Text>
                     <Text className="text-sm font-semibold text-text-primary leading-5">
                       123 Main Street{'\n'}London SW1A 1AA
                     </Text>
-                  </VStack>
-                </HStack>
+                  </View>
+                </View>
                 <Pressable onPress={() => console.log('Edit address')}>
                   <Text className="text-sm font-semibold text-clayOrange">
                     Edit
                   </Text>
                 </Pressable>
-              </HStack>
-            </VStack>
+              </View>
+            </View>
 
             {/* Payment Method Card */}
-            <VStack className="bg-white p-4 rounded-xl space-y-4 my-4">
+            <View className="flex-col bg-white p-4 rounded-xl space-y-4 my-4">
               {/* Payment Method */}
-              <HStack className="items-center justify-between">
-                <VStack>
+              <View className="flex-row items-center justify-between">
+                <View className="flex-col">
                   <Text className="text-sm text-text-secondary mb-1">
                     Payment Method
                   </Text>
-                  <HStack className="w-full justify-between space-x-3 my-2">
-                    <HStack>
+                  <View className="flex-row w-full justify-between space-x-3 my-2">
+                    <View className="flex-row">
                       <VisaIcon />
                     <Text className="text-sm font-semibold text-text-primary tracking-widest ml-2">
                       •••• 4242
                     </Text>
-                    </HStack>
+                    </View>
                       <Pressable onPress={() => console.log('Change payment')} className='mt-2'>
                   <Text className="text-sm font-semibold text-clayOrange">
                     Change
                   </Text>
                 </Pressable>
-                  </HStack>
-                </VStack>
+                  </View>
+                </View>
               
-              </HStack>
+              </View>
 
-              <Divider className="h-px my-4 bg-gray-200" />
-              
+              <View className="h-px my-4 bg-gray-200" />
+
               {/* Promo Code */}
-              <HStack className="items-center space-x-3">
+              <View className="flex-row items-center space-x-3">
                 <Input className="w-[70%] bg-white rounded-lg border border-input-border">
                   <InputField
                     placeholder="Promo code"
@@ -155,28 +149,28 @@ export default function TaskDetailsScreen() {
                     Apply
                   </ButtonText>
                 </Button>
-              </HStack>
-            </VStack>
+              </View>
+            </View>
 
             {/* Estimated Total */}
-            <VStack className="bg-bg-highlight p-4 rounded-xl space-y-1 border-border-highlight border-2">
-              <HStack className="items-center justify-between w-full">
+            <View className="flex-col bg-bg-highlight p-4 rounded-xl space-y-1 border-border-highlight border-2">
+              <View className="flex-row items-center justify-between w-full">
                 <Text size="md" className="font-semibold text-text-primary">
                   Estimated Total
                 </Text>
                 <Text className="text-xl font-bold text-text-primary">
                   £45.00
                 </Text>
-              </HStack>
+              </View>
               <Text className="text-xs text-text-secondary">
                 Final price may vary based on actual time spent
               </Text>
-            </VStack>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
 
-        <Box className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
-          <HStack className="space-x-4">
+        <View className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
+          <View className="flex-row space-x-4">
             <Button
               variant="outline"
               className="w-[45%] rounded-lg border-clayOrange"
@@ -194,9 +188,9 @@ export default function TaskDetailsScreen() {
                 Next
               </ButtonText>
             </Button>
-          </HStack>
-        </Box>
-      </Box>
+          </View>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }

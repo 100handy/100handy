@@ -1,7 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { FlatList, RefreshControl, View } from 'react-native';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
+import { FlatList, RefreshControl, View, Text } from 'react-native';
 import { SupportMessage } from '@shared/supabase';
 import { MessageBubble } from './MessageBubble';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
@@ -18,11 +16,11 @@ interface MessageWithDate extends SupportMessage {
 }
 
 const DateSeparator = ({ label }: { label: string }) => (
-  <Box className="items-center py-3">
-    <Box className="bg-gray-200 rounded-full px-3 py-1">
+  <View className="items-center py-3">
+    <View className="bg-gray-200 rounded-full px-3 py-1">
       <Text className="text-[12px] text-[#666666]">{label}</Text>
-    </Box>
-  </Box>
+    </View>
+  </View>
 );
 
 export const MessageList = ({ messages, loading = false, onRefresh }: MessageListProps) => {
@@ -68,7 +66,7 @@ export const MessageList = ({ messages, loading = false, onRefresh }: MessageLis
   });
 
   const renderMessage = ({ item }: { item: MessageWithDate }) => (
-    <Box>
+    <View>
       {item.showDateSeparator && item.dateLabel && (
         <DateSeparator label={item.dateLabel} />
       )}
@@ -76,15 +74,15 @@ export const MessageList = ({ messages, loading = false, onRefresh }: MessageLis
         message={item}
         showTimestamp={true}
       />
-    </Box>
+    </View>
   );
 
   const renderEmpty = () => (
-    <Box className="flex-1 items-center justify-center p-6">
+    <View className="flex-1 items-center justify-center p-6">
       <Text className="text-[16px] text-[#999999] text-center">
         No messages yet. Start the conversation!
       </Text>
-    </Box>
+    </View>
   );
 
   return (

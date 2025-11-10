@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, Image as RNImage } from 'react-native';
+import { ScrollView, Image as RNImage, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Pressable } from '@/components/ui/pressable';
 import { Star, MapPin, Calendar } from 'lucide-react-native';
 
 interface EmptyStateProps {
@@ -19,7 +14,7 @@ function TaskersEmptyState({ activeTab }: EmptyStateProps) {
     : "Your previously booked taskers\nwill appear here.";
 
   return (
-    <VStack className="items-center justify-center py-12 px-8">
+    <View className="flex-col items-center justify-center py-12 px-8">
       {/* Empty state illustration */}
       <RNImage
         source={require('@/assets/tasks-empty-state.png')}
@@ -51,7 +46,7 @@ function TaskersEmptyState({ activeTab }: EmptyStateProps) {
       >
         {description}
       </Text>
-    </VStack>
+    </View>
   );
 }
 
@@ -115,14 +110,14 @@ const TaskersScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <VStack className="flex-1">
+      <View className="flex-col flex-1">
         {/* Header */}
-        <Box className="items-center py-4 border-b border-gray-200">
+        <View className="items-center py-4 border-b border-gray-200">
           <Text className="text-lg font-bold text-[#30352d]">Tasks</Text>
-        </Box>
+        </View>
 
         {/* Tabs */}
-        <HStack className="border-b border-gray-200">
+        <View className="flex-row border-b border-gray-200">
           <Pressable
             onPress={() => setActiveTab('favourite')}
             className="flex-1 py-3 items-center"
@@ -153,17 +148,17 @@ const TaskersScreen = () => {
               Past Taskers
             </Text>
           </Pressable>
-        </HStack>
+        </View>
 
         {/* Taskers List */}
         <ScrollView className="flex-1">
           {taskers.length === 0 ? (
             <TaskersEmptyState activeTab={activeTab} />
           ) : (
-            <VStack className="px-6 pt-4">
+            <View className="flex-col px-6 pt-4">
               {taskers.map((tasker) => (
                 <Pressable key={tasker.id} className="mb-4">
-                  <Box
+                  <View
                     className="bg-white rounded-2xl"
                     style={{
                       padding: 18,
@@ -175,7 +170,7 @@ const TaskersScreen = () => {
                     }}
                   >
                     {/* Top Section: Avatar + Name/Specialty */}
-                    <HStack className="items-start mb-6">
+                    <View className="flex-row items-start mb-6">
                       {/* Avatar */}
                       <RNImage
                         source={{ uri: tasker.avatarUrl }}
@@ -188,7 +183,7 @@ const TaskersScreen = () => {
                       />
 
                       {/* Name and Specialty */}
-                      <VStack className="flex-1 ml-3">
+                      <View className="flex-col flex-1 ml-3">
                         {/* Name */}
                         <Text
                           style={{ 
@@ -211,13 +206,13 @@ const TaskersScreen = () => {
                         >
                           {tasker.specialty}
                         </Text>
-                      </VStack>
-                    </HStack>
+                      </View>
+                    </View>
 
                     {/* Bottom Section: Details stacked */}
-                    <VStack style={{ gap: 8 }}>
+                    <View className="flex-col" style={{ gap: 8 }}>
                       {/* Rating */}
-                      <HStack className="items-center" style={{ gap: 6 }}>
+                      <View className="flex-row items-center" style={{ gap: 6 }}>
                         <Star size={16} color="#000000" fill="#000000" strokeWidth={0} />
                         <Text
                           style={{ 
@@ -228,10 +223,10 @@ const TaskersScreen = () => {
                         >
                           {tasker.rating.toFixed(1)} ({tasker.reviewCount} reviews)
                         </Text>
-                      </HStack>
+                      </View>
 
                       {/* Location */}
-                      <HStack className="items-center" style={{ gap: 6 }}>
+                      <View className="flex-row items-center" style={{ gap: 6 }}>
                         <MapPin size={16} color="#333a31" />
                         <Text
                           style={{ 
@@ -242,10 +237,10 @@ const TaskersScreen = () => {
                         >
                           {tasker.location}
                         </Text>
-                      </HStack>
+                      </View>
 
                       {/* Last Booked */}
-                      <HStack className="items-center" style={{ gap: 6 }}>
+                      <View className="flex-row items-center" style={{ gap: 6 }}>
                         <Calendar size={16} color="#333a31" />
                         <Text
                           style={{ 
@@ -256,7 +251,7 @@ const TaskersScreen = () => {
                         >
                           Last booked: {tasker.lastBooked}
                         </Text>
-                      </HStack>
+                      </View>
 
                       {/* Availability */}
                       <Text
@@ -269,14 +264,14 @@ const TaskersScreen = () => {
                       >
                       {tasker.availability}
                     </Text>
-                  </VStack>
-                </Box>
+                  </View>
+                </View>
               </Pressable>
             ))}
-            </VStack>
+            </View>
           )}
         </ScrollView>
-      </VStack>
+      </View>
     </SafeAreaView>
   );
 };

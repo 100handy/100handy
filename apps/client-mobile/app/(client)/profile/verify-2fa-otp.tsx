@@ -2,15 +2,9 @@ import React, { useState, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { Icon } from '@/components/ui/icon';
 import { Input, InputField } from '@/components/ui/input';
 import { supabase, enable2FA } from '@shared/supabase';
-import { Alert, TextInput, ActivityIndicator } from 'react-native';
+import { Alert, TextInput, ActivityIndicator, View, Text, Pressable } from 'react-native';
 
 export default function Verify2FAOtpScreen() {
   const router = useRouter();
@@ -134,27 +128,27 @@ export default function Verify2FAOtpScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Header */}
-        <HStack className="items-center p-4 border-b border-gray-200">
+        <View className="flex-row items-center p-4 border-b border-gray-200">
           <Pressable onPress={() => router.back()} className="p-2">
-            <Icon as={ChevronLeft} size="xl" />
+            <ChevronLeft size={28} color="#000000" />
           </Pressable>
           <Text className="flex-1 text-center text-lg font-semibold">Verify Code</Text>
-          <Box className="w-8" />
-        </HStack>
+          <View className="w-8" />
+        </View>
 
         {/* Content */}
-        <VStack className="p-6 space-y-6 flex-1">
-          <VStack space="md">
+        <View className="flex-col p-6 space-y-6 flex-1">
+          <View className="flex-col" space="md">
             <Text className="text-2xl font-bold text-gray-800">Enter verification code</Text>
             <Text className="text-base text-gray-600">
               We've sent a 6-digit code to {params.email}
             </Text>
-          </VStack>
+          </View>
 
           {/* OTP Input */}
-          <HStack className="justify-between mt-8">
+          <View className="flex-row justify-between mt-8">
             {otp.map((digit, index) => (
               <Input
                 key={index}
@@ -172,13 +166,13 @@ export default function Verify2FAOtpScreen() {
                 />
               </Input>
             ))}
-          </HStack>
+          </View>
 
           {/* Error Message */}
           {error && (
-            <Box className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <View className="bg-red-50 border border-red-200 rounded-lg p-4">
               <Text className="text-red-600 text-sm">{error}</Text>
-            </Box>
+            </View>
           )}
 
           {/* Resend Code */}
@@ -188,7 +182,7 @@ export default function Verify2FAOtpScreen() {
             </Text>
           </Pressable>
 
-          <Box className="flex-1" />
+          <View className="flex-1" />
 
           {/* Verify Button */}
           <Pressable
@@ -197,16 +191,16 @@ export default function Verify2FAOtpScreen() {
             disabled={isLoading || otp.join('').length !== 6}
           >
             {isLoading ? (
-              <HStack className="items-center gap-2">
+              <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" color="white" />
                 <Text className="text-white text-lg font-bold">Verifying...</Text>
-              </HStack>
+              </View>
             ) : (
               <Text className="text-white text-lg font-bold">Verify & Enable 2FA</Text>
             )}
           </Pressable>
-        </VStack>
-      </Box>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }

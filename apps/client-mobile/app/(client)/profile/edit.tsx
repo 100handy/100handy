@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { ScrollView, TouchableOpacity, ActivityIndicator, Alert, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 
 // Import gluestack-ui components
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Image } from '@/components/ui/image';
-import { Pressable } from '@/components/ui/pressable';
+import { Image } from 'expo-image';
 import { Input, InputField } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 
@@ -101,10 +96,10 @@ export default function EditProfileScreen() {
   if (profileLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <Box className="flex-1 justify-center items-center">
+        <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#C1856A" />
           <Text className="mt-4 text-gray-500">Loading profile...</Text>
-        </Box>
+        </View>
       </SafeAreaView>
     );
   }
@@ -113,9 +108,9 @@ export default function EditProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Header */}
-        <HStack className="items-center justify-between px-6 py-4 border-b border-gray-200">
+        <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-200">
           <Pressable onPress={() => router.back()} className="flex-row items-center">
             <ChevronLeft size={24} color="#333A31" />
             <Text className="text-lg font-semibold text-[#333A31] ml-2">Profile</Text>
@@ -129,7 +124,7 @@ export default function EditProfileScreen() {
               <Text className="text-[#333A31] font-medium">Edit</Text>
             </Pressable>
           ) : (
-            <HStack className="gap-2">
+            <View className="flex-row gap-2">
               <Pressable
                 onPress={handleCancel}
                 className="px-4 py-2 border border-gray-300 rounded-lg"
@@ -148,20 +143,20 @@ export default function EditProfileScreen() {
                   <Text className="text-white font-medium">Save</Text>
                 )}
               </Pressable>
-            </HStack>
+            </View>
           )}
-        </HStack>
+        </View>
 
         <ScrollView className="flex-1">
-          <VStack className="p-6 gap-6">
+          <View className="flex-col p-6 gap-6">
             {/* Avatar Section */}
-            <VStack className="items-center gap-4">
+            <View className="flex-col items-center gap-4">
               <TouchableOpacity
                 onPress={handleAvatarUpload}
                 disabled={!isEditing || isLoading}
                 className="relative"
               >
-                <Box className="w-32 h-32 rounded-full overflow-hidden bg-gray-200">
+                <View className="w-32 h-32 rounded-full overflow-hidden bg-gray-200">
                   {profile?.avatar_url ? (
                     <Image
                       source={{ uri: profile.avatar_url }}
@@ -169,18 +164,18 @@ export default function EditProfileScreen() {
                       className="w-full h-full"
                     />
                   ) : (
-                    <Box className="w-full h-full items-center justify-center bg-[#C1856A]">
+                    <View className="w-full h-full items-center justify-center bg-[#C1856A]">
                       <Text className="text-white text-4xl font-bold">
                         {profile?.first_name?.[0] || profile?.email?.[0]?.toUpperCase() || 'U'}
                       </Text>
-                    </Box>
+                    </View>
                   )}
                   {isEditing && (
-                    <Box className="absolute inset-0 bg-black/50 items-center justify-center">
+                    <View className="absolute inset-0 bg-black/50 items-center justify-center">
                       <Upload size={32} color="white" />
-                    </Box>
+                    </View>
                   )}
-                </Box>
+                </View>
               </TouchableOpacity>
 
               {isEditing && (
@@ -188,16 +183,16 @@ export default function EditProfileScreen() {
                   Tap to change profile picture
                 </Text>
               )}
-            </VStack>
+            </View>
 
             {/* Form Fields */}
-            <VStack className="gap-4">
+            <View className="flex-col gap-4">
               {/* First Name */}
-              <VStack className="gap-2">
-                <HStack className="items-center gap-2">
+              <View className="flex-col gap-2">
+                <View className="flex-row items-center gap-2">
                   <User size={16} color="#333A31" />
                   <Text className="text-sm font-medium text-[#333A31]">First Name</Text>
-                </HStack>
+                </View>
                 <Input
                   variant="outline"
                   size="md"
@@ -210,14 +205,14 @@ export default function EditProfileScreen() {
                     placeholder="Enter first name"
                   />
                 </Input>
-              </VStack>
+              </View>
 
               {/* Last Name */}
-              <VStack className="gap-2">
-                <HStack className="items-center gap-2">
+              <View className="flex-col gap-2">
+                <View className="flex-row items-center gap-2">
                   <User size={16} color="#333A31" />
                   <Text className="text-sm font-medium text-[#333A31]">Last Name</Text>
-                </HStack>
+                </View>
                 <Input
                   variant="outline"
                   size="md"
@@ -230,14 +225,14 @@ export default function EditProfileScreen() {
                     placeholder="Enter last name"
                   />
                 </Input>
-              </VStack>
+              </View>
 
               {/* Phone */}
-              <VStack className="gap-2">
-                <HStack className="items-center gap-2">
+              <View className="flex-col gap-2">
+                <View className="flex-row items-center gap-2">
                   <Phone size={16} color="#333A31" />
                   <Text className="text-sm font-medium text-[#333A31]">Phone</Text>
-                </HStack>
+                </View>
                 <Input
                   variant="outline"
                   size="md"
@@ -251,14 +246,14 @@ export default function EditProfileScreen() {
                     keyboardType="phone-pad"
                   />
                 </Input>
-              </VStack>
+              </View>
 
               {/* Postcode */}
-              <VStack className="gap-2">
-                <HStack className="items-center gap-2">
+              <View className="flex-col gap-2">
+                <View className="flex-row items-center gap-2">
                   <Home size={16} color="#333A31" />
                   <Text className="text-sm font-medium text-[#333A31]">Postcode</Text>
-                </HStack>
+                </View>
                 <Input
                   variant="outline"
                   size="md"
@@ -271,10 +266,10 @@ export default function EditProfileScreen() {
                     placeholder="Enter postcode"
                   />
                 </Input>
-              </VStack>
+              </View>
 
               {/* Email (read-only) */}
-              <VStack className="gap-2">
+              <View className="flex-col gap-2">
                 <Text className="text-sm font-medium text-[#333A31]">Email</Text>
                 <Input
                   variant="outline"
@@ -288,11 +283,11 @@ export default function EditProfileScreen() {
                   />
                 </Input>
                 <Text className="text-xs text-gray-500">Email cannot be changed</Text>
-              </VStack>
-            </VStack>
-          </VStack>
+              </View>
+            </View>
+          </View>
         </ScrollView>
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

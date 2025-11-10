@@ -1,7 +1,5 @@
 import React from 'react';
-import { ScrollView, Dimensions } from 'react-native';
-import { VStack } from '@/components/ui/vstack';
-import { Heading } from '@/components/ui/heading';
+import { View, Text, ScrollView, Dimensions } from 'react-native';
 import { CategoryCard } from './CategoryCard';
 
 interface ServiceItem {
@@ -30,12 +28,12 @@ export function ServiceSection({ title, services }: ServiceSectionProps) {
     : { paddingHorizontal: 0, gap: 12 };
 
   return (
-    <VStack className="mb-6">
-      <Heading size="lg" className="text-[20px] text-theme-font text-center mb-4 font-worksans-bold">
+    <View className="mb-6 flex-col">
+      <Text className="text-[20px] text-theme-font text-center mb-4 font-worksans-bold">
         {title}
-      </Heading>
-      <ScrollView 
-        horizontal 
+      </Text>
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={contentContainerStyle}
         className="mb-4"
@@ -52,6 +50,6 @@ export function ServiceSection({ title, services }: ServiceSectionProps) {
           />
         ))}
       </ScrollView>
-    </VStack>
+    </View>
   );
 }

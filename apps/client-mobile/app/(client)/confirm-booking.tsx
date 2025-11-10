@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft, MapPin, Calendar, Clock, Edit } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput } from '@shared/supabase';
@@ -111,10 +107,10 @@ export default function ConfirmBookingScreen() {
   if (profileLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <VStack className="flex-1 items-center justify-center">
+        <View className="flex-col flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#C1856A" />
           <Text className="text-sm text-gray-600 mt-3">Loading...</Text>
-        </VStack>
+        </View>
       </SafeAreaView>
     );
   }
@@ -122,191 +118,191 @@ export default function ConfirmBookingScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <VStack className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
-        <HStack className="items-center">
+      <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+        <View className="flex-row items-center">
           <Pressable onPress={() => router.back()} className="mr-4">
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
           <Text className="flex-1 text-lg font-semibold text-black">
             Confirm Booking
           </Text>
-        </HStack>
-      </VStack>
+        </View>
+      </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <VStack className="px-5 py-6 gap-6">
+        <View className="flex-col px-5 py-6 gap-6">
           {/* Tasker Info */}
-          <VStack className="bg-white rounded-lg border border-gray-300 p-5">
+          <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
             <Text className="text-base font-semibold text-[#30352D] mb-4">
               Your Tasker
             </Text>
-            <HStack className="items-center gap-3">
+            <View className="flex-row items-center gap-3">
               <Image
                 source={{ uri: profile?.avatar_url || `https://i.pravatar.cc/150?u=${taskerId}` }}
                 className="w-16 h-16 rounded-full bg-gray-100"
               />
-              <VStack className="flex-1">
+              <View className="flex-col flex-1">
                 <Text className="text-lg font-semibold text-[#30352D]">
                   {profile?.display_name || 'Tasker'}
                 </Text>
                 {profile?.verified && (
-                  <HStack className="items-center gap-1 mt-1">
-                    <VStack className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#82BE56' }} />
+                  <View className="flex-row items-center gap-1 mt-1">
+                    <View className="flex-col w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#82BE56' }} />
                     <Text className="text-xs font-medium" style={{ color: '#82BE56' }}>
                       Verified Pro
                     </Text>
-                  </HStack>
+                  </View>
                 )}
-              </VStack>
+              </View>
               <Text className="text-lg font-bold" style={{ color: '#C1856A' }}>
                 £{hourlyRate.toFixed(2)}/hr
               </Text>
-            </HStack>
-          </VStack>
+            </View>
+          </View>
 
           {/* Task Details */}
-          <VStack className="bg-white rounded-lg border border-gray-300 p-5">
-            <HStack className="items-center justify-between mb-4">
+          <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
+            <View className="flex-row items-center justify-between mb-4">
               <Text className="text-base font-semibold text-[#30352D]">
                 Task Details
               </Text>
               <Pressable onPress={() => router.back()}>
                 <Edit size={18} color="#C1856A" />
               </Pressable>
-            </HStack>
+            </View>
 
-            <VStack className="gap-3">
+            <View className="flex-col gap-3">
               {/* Category */}
-              <VStack>
+              <View className="flex-col">
                 <Text className="text-xs font-medium text-gray-600 mb-1">
                   Service
                 </Text>
                 <Text className="text-sm text-[#30352D]">
                   {categoryName}
                 </Text>
-              </VStack>
+              </View>
 
               {/* Location */}
-              <VStack>
+              <View className="flex-col">
                 <Text className="text-xs font-medium text-gray-600 mb-1">
                   Location
                 </Text>
-                <HStack className="items-start gap-2">
+                <View className="flex-row items-start gap-2">
                   <MapPin size={14} color="#6B7280" className="mt-0.5" />
                   <Text className="flex-1 text-sm text-[#30352D]">
                     {location?.streetAddress}
                     {location?.unitNumber ? `, ${location.unitNumber}` : ''}
                   </Text>
-                </HStack>
-              </VStack>
+                </View>
+              </View>
 
               {/* Date & Time */}
-              <HStack className="gap-4">
-                <VStack className="flex-1">
+              <View className="flex-row gap-4">
+                <View className="flex-col flex-1">
                   <Text className="text-xs font-medium text-gray-600 mb-1">
                     Date
                   </Text>
-                  <HStack className="items-center gap-2">
+                  <View className="flex-row items-center gap-2">
                     <Calendar size={14} color="#6B7280" />
                     <Text className="text-sm text-[#30352D]">
                       {formatDate(selectedDate)}
                     </Text>
-                  </HStack>
-                </VStack>
+                  </View>
+                </View>
 
-                <VStack className="flex-1">
+                <View className="flex-col flex-1">
                   <Text className="text-xs font-medium text-gray-600 mb-1">
                     Time
                   </Text>
-                  <HStack className="items-center gap-2">
+                  <View className="flex-row items-center gap-2">
                     <Clock size={14} color="#6B7280" />
                     <Text className="text-sm text-[#30352D]">
                       {selectedTime}
                     </Text>
-                  </HStack>
-                </VStack>
-              </HStack>
+                  </View>
+                </View>
+              </View>
 
               {/* Task Size */}
-              <VStack>
+              <View className="flex-col">
                 <Text className="text-xs font-medium text-gray-600 mb-1">
                   Task Size
                 </Text>
                 <Text className="text-sm text-[#30352D] capitalize">
                   {taskSize} ({estimatedHours} {estimatedHours === 1 ? 'hour' : 'hours'})
                 </Text>
-              </VStack>
+              </View>
 
               {/* Vehicle */}
-              <VStack>
+              <View className="flex-col">
                 <Text className="text-xs font-medium text-gray-600 mb-1">
                   Vehicle Requirement
                 </Text>
                 <Text className="text-sm text-[#30352D] capitalize">
                   {vehicleRequirement === 'not-needed' ? 'Not needed' : vehicleRequirement}
                 </Text>
-              </VStack>
+              </View>
 
               {/* Additional Details */}
               {taskDetails && (
-                <VStack>
+                <View className="flex-col">
                   <Text className="text-xs font-medium text-gray-600 mb-1">
                     Additional Details
                   </Text>
                   <Text className="text-sm text-[#30352D]">
                     {taskDetails}
                   </Text>
-                </VStack>
+                </View>
               )}
-            </VStack>
-          </VStack>
+            </View>
+          </View>
 
           {/* Price Estimate */}
-          <VStack className="bg-[#F9FAFB] rounded-lg border border-gray-300 p-5">
+          <View className="flex-col bg-[#F9FAFB] rounded-lg border border-gray-300 p-5">
             <Text className="text-base font-semibold text-[#30352D] mb-4">
               Price Estimate
             </Text>
 
-            <VStack className="gap-2">
-              <HStack className="items-center justify-between">
+            <View className="flex-col gap-2">
+              <View className="flex-row items-center justify-between">
                 <Text className="text-sm text-gray-600">
                   Hourly Rate
                 </Text>
                 <Text className="text-sm text-[#30352D]">
                   £{hourlyRate.toFixed(2)}/hr
                 </Text>
-              </HStack>
+              </View>
 
-              <HStack className="items-center justify-between">
+              <View className="flex-row items-center justify-between">
                 <Text className="text-sm text-gray-600">
                   Estimated Hours
                 </Text>
                 <Text className="text-sm text-[#30352D]">
                   {estimatedHours} {estimatedHours === 1 ? 'hour' : 'hours'}
                 </Text>
-              </HStack>
+              </View>
 
-              <VStack className="h-px bg-gray-300 my-2" />
+              <View className="flex-col h-px bg-gray-300 my-2" />
 
-              <HStack className="items-center justify-between">
+              <View className="flex-row items-center justify-between">
                 <Text className="text-base font-semibold text-[#30352D]">
                   Estimated Total
                 </Text>
                 <Text className="text-xl font-bold" style={{ color: '#C1856A' }}>
                   £{estimatedPrice.toFixed(2)}
                 </Text>
-              </HStack>
-            </VStack>
+              </View>
+            </View>
 
             <Text className="text-xs text-gray-600 mt-3">
               Final price will be calculated based on actual time spent
             </Text>
-          </VStack>
-        </VStack>
+          </View>
+        </View>
       </ScrollView>
 
       {/* Bottom Confirm Button */}
-      <VStack className="px-5 py-4 bg-white border-t border-gray-200">
+      <View className="flex-col px-5 py-4 bg-white border-t border-gray-200">
         <Pressable
           onPress={handleCreateBooking}
           disabled={isSubmitting}
@@ -325,7 +321,7 @@ export default function ConfirmBookingScreen() {
         <Text className="text-xs text-center text-gray-600 mt-3">
           By confirming, you agree to our Terms of Service
         </Text>
-      </VStack>
+      </View>
     </SafeAreaView>
   );
 }

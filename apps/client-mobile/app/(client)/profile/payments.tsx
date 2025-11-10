@@ -1,15 +1,9 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 // Import gluestack-ui components
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { Icon } from '@/components/ui/icon';
 
 // Import lucide-react-native icons
 import { ChevronRight } from 'lucide-react-native';
@@ -31,32 +25,32 @@ export default function PaymentsScreen() {
             />
 
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-                <VStack className="flex-1">
+                <View className="flex-col flex-1">
                     {/* Redemptions Section */}
-                    <Pressable 
+                    <Pressable
                         onPress={() => {
                             // Navigate to redemptions screen
                             console.log('Navigate to Redemptions');
                         }}
                         className="border-b border-gray-200"
                     >
-                        <HStack className="items-center justify-between px-6 py-5">
+                        <View className="flex-row items-center justify-between px-6 py-5">
                             <Text className="font-work-sans text-xl font-bold" style={{ color: '#30352D' }}>
                                 Redemptions
                             </Text>
-                            <Icon as={ChevronRight} size="lg" className="text-gray-400" />
-                        </HStack>
+                            <ChevronRight size={24} color="#9ca3af" />
+                        </View>
                     </Pressable>
 
                     {/* Add Payment Method Section Header */}
-                    <Box className="px-6 py-4 bg-white border-b border-gray-200">
+                    <View className="px-6 py-4 bg-white border-b border-gray-200">
                         <Text className="font-work-sans text-xs font-medium tracking-wider" style={{ color: '#333A31' }}>
                             ADD PAYMENT METHOD
                         </Text>
-                    </Box>
+                    </View>
 
                     {/* Credit Card Option */}
-                    <Pressable 
+                    <Pressable
                         onPress={() => {
                             // Navigate to credit card screen
                             console.log('Navigate to Credit Card');
@@ -64,47 +58,47 @@ export default function PaymentsScreen() {
                         }}
                         className="border-b border-gray-200"
                     >
-                        <HStack className="items-center justify-between px-6 py-5">
+                        <View className="flex-row items-center justify-between px-6 py-5">
                             <Text className="font-work-sans text-xl font-bold" style={{ color: '#30352D' }}>
                                 Credit Card
                             </Text>
-                            <Icon as={ChevronRight} size="lg" className="text-gray-400" />
-                        </HStack>
+                            <ChevronRight size={24} color="#9ca3af" />
+                        </View>
                     </Pressable>
 
                     {/* Apple Pay Option */}
-                    <Pressable 
+                    <Pressable
                         onPress={() => {
                             // Navigate to Apple Pay screen
                             console.log('Navigate to Apple Pay');
                         }}
                         className="border-b border-gray-200"
                     >
-                        <HStack className="items-center justify-between px-6 py-5">
-                            <HStack className="items-center gap-2">
-                                <Box className="rounded bg-black px-1.5 py-0.5 flex-row items-center justify-center">
+                        <View className="flex-row items-center justify-between px-6 py-5">
+                            <View className="flex-row items-center gap-2">
+                                <View className="rounded bg-black px-1.5 py-0.5 flex-row items-center justify-center">
                                     <Text className="text-white text-[10px] font-medium">
                                         🍎
                                     </Text>
                                     <Text className="text-white text-[10px] font-medium">
                                         Pay
                                     </Text>
-                                </Box>
+                                </View>
                                 <Text className="font-work-sans text-lg font-light" style={{ color: '#30352D' }}>
                                     Apple Pay
                                 </Text>
-                            </HStack>
-                            <Icon as={ChevronRight} size="lg" className="text-gray-400" />
-                        </HStack>
+                            </View>
+                            <ChevronRight size={24} color="#9ca3af" />
+                        </View>
                     </Pressable>
 
                     {/* Footer Note */}
-                    <Box className="px-6 py-6">
+                    <View className="px-6 py-6">
                         <Text className="font-work-sans text-[13px] font-medium leading-5" style={{ color: '#333A31' }}>
                             Payment method will update for all tasks, including the ones currently open.
                         </Text>
-                    </Box>
-                </VStack>
+                    </View>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );

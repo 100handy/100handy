@@ -1,9 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { FlatList, ActivityIndicator, Platform } from 'react-native';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
+import { FlatList, ActivityIndicator, Platform, View, Text, Pressable } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { MapPin, X } from 'lucide-react-native';
 import debounce from 'lodash/debounce';
@@ -106,7 +102,7 @@ export function LocationAutocomplete({
   };
 
   return (
-    <VStack>
+    <View className="flex-col">
       {label && (
         <Text className="font-worksans text-[14px] text-[#30352D] mb-2">
           {label}
@@ -142,8 +138,8 @@ export function LocationAutocomplete({
 
       {/* Suggestions List */}
       {showSuggestions && predictions.length > 0 && (
-        <VStack
-          className="mt-2 bg-white border border-[#E5E5E5] rounded-lg overflow-hidden"
+        <View
+          className="mt-2 bg-white border border-[#E5E5E5] rounded-lg overflow-hidden flex-col"
           style={{
             maxHeight: 250,
             ...Platform.select({
@@ -170,22 +166,22 @@ export function LocationAutocomplete({
                   index !== predictions.length - 1 ? 'border-b border-[#F0F0F0]' : ''
                 }`}
               >
-                <HStack className="items-start gap-3">
+                <View className="items-start gap-3 flex-row">
                   <MapPin size={18} color="#6B6B6B" strokeWidth={2} style={{ marginTop: 2 }} />
-                  <VStack className="flex-1">
+                  <View className="flex-1 flex-col">
                     <Text className="font-worksans-semibold text-[15px] text-[#30352D] mb-0.5">
                       {item.structured_formatting.main_text}
                     </Text>
                     <Text className="font-worksans text-[13px] text-[#6B6B6B]">
                       {item.structured_formatting.secondary_text}
                     </Text>
-                  </VStack>
-                </HStack>
+                  </View>
+                </View>
               </Pressable>
             )}
           />
-        </VStack>
+        </View>
       )}
-    </VStack>
+    </View>
   );
 }

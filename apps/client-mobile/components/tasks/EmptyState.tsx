@@ -1,7 +1,5 @@
 import React from 'react';
-import { Image } from 'react-native';
-import { VStack } from '@/components/ui/vstack';
-import { Text } from '@/components/ui/text';
+import { Image, View, Text } from 'react-native';
 
 interface EmptyStateProps {
   title?: string;
@@ -13,7 +11,7 @@ export function EmptyState({
   description = "Let us help you get the job done.\nBook a task and see it here."
 }: EmptyStateProps) {
   return (
-    <VStack className="items-center justify-center py-12 px-8">
+    <View className="items-center justify-center py-12 px-8 flex-col">
       {/* Clock illustration */}
       <Image
         source={require('@/assets/tasks-empty-state.png')}
@@ -30,7 +28,7 @@ export function EmptyState({
       <Text className="text-sm font-work-sans text-text-primary text-center leading-5">
         {description}
       </Text>
-    </VStack>
+    </View>
   );
 }
 

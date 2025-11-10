@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Switch } from 'react-native';
+import { ScrollView, Switch, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
 import { useProfessionalProfileStore } from '@shared/supabase';
 
@@ -31,7 +27,7 @@ export default function CalendarSettingsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <HStack className="items-center px-5 py-4">
+      <View className="flex-row items-center px-5 py-4">
         <Pressable onPress={() => router.back()}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
@@ -41,12 +37,12 @@ export default function CalendarSettingsScreen() {
         >
           Calendar Settings
         </Text>
-      </HStack>
+      </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <VStack className="px-5 py-6">
+        <View className="flex-col px-5 py-6">
           {/* Sync Calendars Setting */}
-          <HStack className="items-center justify-between py-4 border-b border-[#E5E5E5]">
+          <View className="flex-row items-center justify-between py-4 border-b border-[#E5E5E5]">
             <Text 
               className="text-base text-[#333A31]" 
               style={{ fontFamily: 'WorkSans_400Regular' }}
@@ -63,10 +59,10 @@ export default function CalendarSettingsScreen() {
               thumbColor="#FFFFFF"
               ios_backgroundColor="#E5E5E5"
             />
-          </HStack>
+          </View>
 
           {/* Add more settings items here if needed */}
-        </VStack>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import SignInForm from '@/components/auth/SignInForm';
@@ -35,37 +30,37 @@ export default function ClientSignIn() {
   };
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
-        <ScrollView 
+        <ScrollView
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <VStack className="flex-1 justify-between">
-            <Box>
+          <View className="flex-col flex-1 justify-between">
+            <View>
               {/* Header */}
-              <HStack className="items-center justify-between px-5 pt-2 pb-4">
+              <View className="flex-row items-center justify-between px-5 pt-2 pb-4">
                 <Pressable onPress={() => router.back()}>
                   <ChevronLeft size={24} color="#333A31" />
                 </Pressable>
                 <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
                   Log in
                 </Text>
-                <Box className="w-6" />
-              </HStack>
+                <View className="w-6" />
+              </View>
 
               {/* Logo */}
-              <Box className="items-center my-12">
-                <VStack className="items-center">
+              <View className="items-center my-12">
+                <View className="flex-col items-center">
                   <Text className="text-5xl font-cardo-regular tracking-widest" style={{ color: '#30352D' }}>
                     100
                   </Text>
                   <Text className="text-5xl font-cardo-bold tracking-widest" style={{ color: '#30352D' }}>
                     HANDY
                   </Text>
-                </VStack>
-              </Box>
+                </View>
+              </View>
 
               {/* Form Container */}
               <SignInForm
@@ -73,11 +68,11 @@ export default function ClientSignIn() {
                 isLoading={isLoading}
                 userRole="client"
               />
-            </Box>
+            </View>
             <AuthFooter />
-          </VStack>
+          </View>
         </ScrollView>
       </SafeAreaView>
-    </Box>
+    </View>
   );
 }

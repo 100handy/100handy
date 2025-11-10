@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { ScrollView, TextInput, Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useProfessionalProfileStore } from '@shared/supabase';
@@ -65,20 +61,20 @@ export default function ClosingMessageScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
-      <HStack className="py-4 px-5 items-center justify-between border-b border-gray-100">
+      <View className="flex-row py-4 px-5 items-center justify-between border-b border-gray-100">
         <Pressable className="w-10 items-start" onPress={() => router.back()}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-xl text-theme-font">
           {title}
         </Text>
-        <Box className="w-10" />
-      </HStack>
+        <View className="w-10" />
+      </View>
 
       <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
         {/* Text Input Container */}
-        <Box className="mx-5 mt-6">
-          <Box className="border border-gray-200 rounded-lg p-4" style={{ minHeight: 200 }}>
+        <View className="mx-5 mt-6">
+          <View className="border border-gray-200 rounded-lg p-4" style={{ minHeight: 200 }}>
             <TextInput
               value={message}
               onChangeText={setMessage}
@@ -95,17 +91,17 @@ export default function ClosingMessageScreen() {
                 minHeight: 160,
               }}
             />
-          </Box>
+          </View>
           
           {/* Character Count */}
           <Text className="text-right mt-2 text-gray-500 font-worksans text-sm">
             {message.length}/{maxLength}
           </Text>
-        </Box>
+        </View>
       </ScrollView>
 
       {/* Fixed Bottom Button */}
-      <Box className="px-5 pb-6 pt-4 bg-white">
+      <View className="px-5 pb-6 pt-4 bg-white">
         <Pressable
           className={`rounded-full py-4 items-center ${isSaving ? 'bg-gray-400' : 'bg-[#D17852]'}`}
           onPress={handleSave}
@@ -129,7 +125,7 @@ export default function ClosingMessageScreen() {
             </Text>
           )}
         </Pressable>
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

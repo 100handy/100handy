@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ActivityIndicator, Alert } from 'react-native';
+import { ActivityIndicator, Alert, View, Text, Pressable } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { ChevronLeft } from 'lucide-react-native';
 import { MessageList } from '@/components/support/MessageList';
 import { MessageInput } from '@/components/support/MessageInput';
@@ -123,38 +118,38 @@ export default function MessageSupportScreen() {
   if (isInitializing || isCreatingTicket) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <Box className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#C1856A" />
           <Text className="text-[16px] text-[#666666] mt-4">
             {isCreatingTicket ? 'Creating support ticket...' : 'Loading...'}
           </Text>
-        </Box>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Header */}
-        <HStack className="items-center px-6 py-4 border-b border-gray-200 bg-[#2C5F5D]">
+        <View className="flex-row items-center px-6 py-4 border-b border-gray-200 bg-[#2C5F5D]">
           <Pressable onPress={handleBack} className="flex-row items-center">
-            <Icon as={ChevronLeft} size="lg" className="text-white" />
+            <ChevronLeft size={24} color="#FFFFFF" />
           </Pressable>
-          <Box className="flex-1 items-center">
+          <View className="flex-1 items-center">
             <Text className="text-[18px] font-bold text-white">
               100 Handy Support
             </Text>
             <Text className="text-[12px] text-white/80">
               We're here to help
             </Text>
-          </Box>
+          </View>
           {/* Spacer for centering */}
-          <Box className="w-6" />
-        </HStack>
+          <View className="w-6" />
+        </View>
 
         {/* Messages */}
-        <Box className="flex-1">
+        <View className="flex-1">
           <MessageList
             messages={messages}
             loading={isLoadingMessages}
@@ -164,7 +159,7 @@ export default function MessageSupportScreen() {
               }
             }}
           />
-        </Box>
+        </View>
 
         {/* Input */}
         <MessageInput
@@ -172,7 +167,7 @@ export default function MessageSupportScreen() {
           disabled={isSendingMessage || !activeTicket}
           placeholder="Type a message"
         />
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

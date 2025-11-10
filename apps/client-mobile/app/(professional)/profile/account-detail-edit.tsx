@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Image, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, Image, Alert, KeyboardAvoidingView, Platform, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
 import { Input } from '@/components/ui/input';
 import { InputField } from '@/components/ui/input';
 import { useRouter } from 'expo-router';
@@ -166,7 +161,7 @@ export default function AccountDetailEditScreen() {
         className="flex-1"
       >
         {/* Header */}
-        <HStack className="py-4 px-6 items-center justify-between border-b border-gray-100">
+        <View className="flex-row py-4 px-6 items-center justify-between border-b border-gray-100">
           <Pressable onPress={() => router.back()} className="w-10">
             <ChevronLeft color="#30352D" size={24} strokeWidth={1.5} />
           </Pressable>
@@ -182,7 +177,7 @@ export default function AccountDetailEditScreen() {
               {isSaving ? 'Saving...' : 'Save'}
             </Text>
           </Pressable>
-        </HStack>
+        </View>
 
         <ScrollView
           className="flex-1 bg-white"
@@ -190,8 +185,8 @@ export default function AccountDetailEditScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Profile Photo Section */}
-          <VStack className="px-6 py-8 items-center gap-3">
-            <Box className="w-[120px] h-[120px] rounded-full overflow-hidden bg-gray-300 relative">
+          <View className="flex-col px-6 py-8 items-center gap-3">
+            <View className="w-[120px] h-[120px] rounded-full overflow-hidden bg-gray-300 relative">
               {selectedImage ? (
                 <>
                   <Image
@@ -207,13 +202,13 @@ export default function AccountDetailEditScreen() {
                   </Pressable>
                 </>
               ) : (
-                <Box className="w-full h-full items-center justify-center bg-[#D17852]/20">
+                <View className="w-full h-full items-center justify-center bg-[#D17852]/20">
                   <Text className="font-worksans-bold text-4xl text-[#D17852]">
                     {formData.first_name?.[0] || '?'}
                   </Text>
-                </Box>
+                </View>
               )}
-            </Box>
+            </View>
 
             <Pressable
               onPress={showPhotoOptions}
@@ -224,12 +219,12 @@ export default function AccountDetailEditScreen() {
                 {selectedImage ? 'Change Photo' : 'Add Photo'}
               </Text>
             </Pressable>
-          </VStack>
+          </View>
 
           {/* Form Fields */}
-          <VStack className="px-6 gap-6 pb-8">
+          <View className="flex-col px-6 gap-6 pb-8">
             {/* First Name */}
-            <VStack className="gap-2">
+            <View className="flex-col gap-2">
               <Text className="font-worksans-medium text-sm text-gray-600">
                 First Name *
               </Text>
@@ -242,10 +237,10 @@ export default function AccountDetailEditScreen() {
                   style={{ fontFamily: 'WorkSans_400Regular' }}
                 />
               </Input>
-            </VStack>
+            </View>
 
             {/* Last Name */}
-            <VStack className="gap-2">
+            <View className="flex-col gap-2">
               <Text className="font-worksans-medium text-sm text-gray-600">
                 Last Name *
               </Text>
@@ -258,10 +253,10 @@ export default function AccountDetailEditScreen() {
                   style={{ fontFamily: 'WorkSans_400Regular' }}
                 />
               </Input>
-            </VStack>
+            </View>
 
             {/* Email (Read-only) */}
-            <VStack className="gap-2">
+            <View className="flex-col gap-2">
               <Text className="font-worksans-medium text-sm text-gray-600">
                 Email
               </Text>
@@ -276,10 +271,10 @@ export default function AccountDetailEditScreen() {
               <Text className="font-worksans text-xs text-gray-500">
                 Contact support to change your email
               </Text>
-            </VStack>
+            </View>
 
             {/* Phone */}
-            <VStack className="gap-2">
+            <View className="flex-col gap-2">
               <Text className="font-worksans-medium text-sm text-gray-600">
                 Mobile Phone
               </Text>
@@ -293,10 +288,10 @@ export default function AccountDetailEditScreen() {
                   style={{ fontFamily: 'WorkSans_400Regular' }}
                 />
               </Input>
-            </VStack>
+            </View>
 
             {/* Postcode */}
-            <VStack className="gap-2">
+            <View className="flex-col gap-2">
               <Text className="font-worksans-medium text-sm text-gray-600">
                 Postcode
               </Text>
@@ -310,8 +305,8 @@ export default function AccountDetailEditScreen() {
                   style={{ fontFamily: 'WorkSans_400Regular' }}
                 />
               </Input>
-            </VStack>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 

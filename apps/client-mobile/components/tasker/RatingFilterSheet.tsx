@@ -1,15 +1,10 @@
 import React from 'react';
+import { View, Text, Pressable } from 'react-native';
 import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetDragIndicator,
-  ActionsheetItem,
-} from '@/components/ui/actionsheet';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+} from '@/components/ui/modal';
 import { Check, ChevronUp } from 'lucide-react-native';
 
 export type RatingFilter = 'All ratings' | 'All mounting' | 'Only TV Mounting';
@@ -34,32 +29,33 @@ export default function RatingFilterSheet({
   onSelectFilter,
 }: RatingFilterSheetProps) {
   return (
-    <Actionsheet isOpen={isOpen} onClose={onClose}>
-      <ActionsheetBackdrop />
-      <ActionsheetContent className="bg-white">
-        <ActionsheetDragIndicatorWrapper>
-          <ActionsheetDragIndicator className="bg-gray-300" />
-        </ActionsheetDragIndicatorWrapper>
-        
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalBackdrop />
+      <ModalContent className="bg-white">
+        {/* Drag Indicator */}
+        <View className="w-full items-center pt-2 pb-1">
+          <View className="w-12 h-1 rounded-full bg-gray-300" />
+        </View>
+
         {/* Header */}
-        <VStack className="w-full pb-4 pt-2">
+        <View className="w-full pb-4 pt-2 flex-col">
           <Text className="text-center text-base font-semibold text-black">
             Rating & reviews
           </Text>
-        </VStack>
+        </View>
 
         {/* Filter Options */}
-        <VStack className="w-full">
+        <View className="w-full flex-col">
           {ratingFilterOptions.map((option) => {
             const isSelected = selectedValue === option;
             return (
-              <ActionsheetItem
+              <Pressable
                 key={option}
                 onPress={() => onSelectFilter(option)}
                 className="border-b border-gray-100"
                 style={{ paddingVertical: 16, paddingHorizontal: 20 }}
               >
-                <HStack className="flex-1 items-center justify-between">
+                <View className="flex-1 items-center justify-between flex-row">
                   <Text
                     className="text-base"
                     style={{
@@ -72,25 +68,25 @@ export default function RatingFilterSheet({
                   {isSelected && (
                     <Check size={20} color="#333A31" strokeWidth={2.5} />
                   )}
-                </HStack>
-              </ActionsheetItem>
+                </View>
+              </Pressable>
             );
           })}
-          
+
           {/* More Button */}
-          <ActionsheetItem
+          <Pressable
             onPress={onClose}
             className="pt-4 pb-2"
           >
-            <HStack className="flex-1 items-center justify-center gap-2">
+            <View className="flex-1 items-center justify-center gap-2 flex-row">
               <Text className="text-base font-semibold text-black">
                 More
               </Text>
               <ChevronUp size={20} color="#000000" strokeWidth={2} />
-            </HStack>
-          </ActionsheetItem>
-        </VStack>
-      </ActionsheetContent>
-    </Actionsheet>
+            </View>
+          </Pressable>
+        </View>
+      </ModalContent>
+    </Modal>
   );
 }

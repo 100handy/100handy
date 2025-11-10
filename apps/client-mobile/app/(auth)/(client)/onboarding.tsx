@@ -106,42 +106,42 @@ const onboardingData = [
       </>
     ),
     content: (
-      <VStack className="gap-4 mt-12">
+      <View className="flex-col gap-4 mt-12">
         {/* Chat Message 1 - Right aligned */}
-        <HStack className="justify-end">
-          <VStack className="bg-white rounded-2xl px-4 py-3 max-w-[50%] shadow-sm">
+        <View className="flex-row justify-end">
+          <View className="flex-col bg-white rounded-2xl px-4 py-3 max-w-[50%] shadow-sm">
             <Text className="text-[13px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>Hi there!</Text>
             <Text className="text-[10px] font-worksans-medium" style={{ color: COLORS.themeFont }}>11:00am</Text>
-          </VStack>
-        </HStack>
+          </View>
+        </View>
 
         {/* Chat Message 2 with Avatar - Left aligned */}
-        <HStack className="items-end gap-2">
+        <View className="flex-row items-end gap-2">
           <Image
             source={require('@/assets/images/avatar-lukas.png')}
             className="w-10 h-10 rounded-full"
           />
-          <VStack className="bg-white rounded-2xl px-4 py-3 max-w-[65%] shadow-sm">
+          <View className="flex-col bg-white rounded-2xl px-4 py-3 max-w-[65%] shadow-sm">
             <Text className="text-[13px] font-worksans-medium" style={{ color: COLORS.themeFont }}>
               I&apos;ve got all the tools for the{'\n'}Job. Does 3 pm still work{'\n'}for you?
             </Text>
-          </VStack>
-        </HStack>
+          </View>
+        </View>
 
         {/* Chat Message 3 - Right aligned with avatar */}
-        <HStack className="justify-end items-end gap-2">
-          <VStack className="bg-clay-orange rounded-2xl px-4 py-3 max-w-[60%] shadow-sm">
+        <View className="flex-row justify-end items-end gap-2">
+          <View className="flex-col bg-clay-orange rounded-2xl px-4 py-3 max-w-[60%] shadow-sm">
             <Text className="text-[13px] font-worksans-medium text-white mb-1">
               Yes, that&apos;s great{'\n'}See you soon!
             </Text>
             <Text className="text-[10px] font-worksans-medium text-white/90">11:00am</Text>
-          </VStack>
+          </View>
           <Image
             source={require('@/assets/images/avatar-jana.png')}
             className="w-10 h-10 rounded-full"
           />
-        </HStack>
-      </VStack>
+        </View>
+      </View>
     ),
   },
   {
@@ -157,84 +157,84 @@ const onboardingData = [
       </>
     ),
     content: (
-      <VStack className="gap-4 mt-12">
+      <View className="flex-col gap-4 mt-12">
         {/* Task Card 1 - Help move my bags */}
         <View className="bg-white rounded-2xl p-4 shadow-sm">
-          <HStack className="justify-between">
-            <VStack className="flex-1">
+          <View className="flex-row justify-between">
+            <View className="flex-col flex-1">
               <Text className="text-[8px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>Help move my bags</Text>
-              <HStack className="items-center gap-1 mb-0.5">
+              <View className="flex-row items-center gap-1 mb-0.5">
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>
                   St John&apos;s Wood, Greater London, NW8 9
                 </Text>
-              </HStack>
-              <HStack className="items-center gap-1 mb-1">
+              </View>
+              <View className="flex-row items-center gap-1 mb-1">
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>Today</Text>
-              </HStack>
+              </View>
               <Text className="text-[9px] font-worksans-medium" style={{ color: '#C1856A' }}>Open</Text>
-            </VStack>
-            <VStack className="items-end justify-between">
+            </View>
+            <View className="flex-col items-end justify-between">
               <Text className="text-[10px] font-worksans-bold" style={{ color: COLORS.themeFont }}>£50</Text>
               <Image
                 source={require('@/assets/images/avatar-lukas.png')}
                 className="w-[21px] h-[21px] rounded-full"
               />
-            </VStack>
-          </HStack>
+            </View>
+          </View>
         </View>
 
         {/* Task Card 2 - Carpet fitted */}
         <View className="bg-white rounded-2xl p-4 shadow-sm">
-          <HStack className="justify-between">
-            <VStack className="flex-1">
+          <View className="flex-row justify-between">
+            <View className="flex-col flex-1">
               <Text className="text-[8px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>Carpet fitted</Text>
-              <HStack className="items-center gap-1 mb-0.5">
+              <View className="flex-row items-center gap-1 mb-0.5">
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>
                   Redbridge, Wanstead E11 3DF
                 </Text>
-              </HStack>
-              <HStack className="items-center gap-1 mb-1">
+              </View>
+              <View className="flex-row items-center gap-1 mb-1">
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>Flexible</Text>
-              </HStack>
+              </View>
               <Text className="text-[9px] font-worksans-medium" style={{ color: '#C1856A' }}>Open</Text>
-            </VStack>
-            <VStack className="items-end justify-between">
+            </View>
+            <View className="flex-col items-end justify-between">
               <Text className="text-[8px] font-worksans-bold" style={{ color: COLORS.themeFont }}>£150</Text>
               <Image
                 source={require('@/assets/images/avatar-jana.png')}
                 className="w-[21px] h-[21px] rounded-full"
               />
-            </VStack>
-          </HStack>
+            </View>
+          </View>
         </View>
 
         {/* Task Card 3 - Recliner mechanism broken */}
         <View className="bg-white rounded-2xl p-4 shadow-sm opacity-[0.428]">
-          <HStack className="justify-between">
-            <VStack className="flex-1">
+          <View className="flex-row justify-between">
+            <View className="flex-col flex-1">
               <Text className="text-[8px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>
                 Recliner mechanism broken
               </Text>
-              <HStack className="items-center gap-1 mb-0.5">
+              <View className="flex-row items-center gap-1 mb-0.5">
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>
                   Woolwich, SE 18
                 </Text>
-              </HStack>
-              <HStack className="items-center gap-1 mb-1">
+              </View>
+              <View className="flex-row items-center gap-1 mb-1">
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>On Thu, 4 Sep</Text>
-              </HStack>
+              </View>
               <Text className="text-[9px] font-worksans-medium" style={{ color: '#C1856A' }}>Open</Text>
-            </VStack>
-            <VStack className="items-end justify-between">
+            </View>
+            <View className="flex-col items-end justify-between">
               <Text className="text-[8px] font-worksans-bold" style={{ color: COLORS.themeFont }}>£100</Text>
               <Image
                 source={require('@/assets/images/avatar-lukas.png')}
                 className="w-[21px] h-[22px] rounded-full"
               />
-            </VStack>
-          </HStack>
+            </View>
+          </View>
         </View>
-      </VStack>
+      </View>
     ),
   },
 ];
@@ -315,33 +315,33 @@ export default function ClientOnboarding() {
 
   const renderItem = ({ item }: { item: typeof onboardingData[number] }) => (
     <View style={{ width: SCREEN_WIDTH }}>
-      <VStack className="flex-1 items-start px-6" style={{ paddingTop: 120 }}>
+      <View className="flex-col flex-1 items-start px-6" style={{ paddingTop: 120 }}>
         {/* Logo (for first slide only) - positioned to match Figma design */}
         {/* @ts-ignore - SVG component type inference issue */}
         {item.id === 0 ? renderLogo() : null}
 
         {/* Title (for other slides if needed) */}
         {'title' in item && item.title && (
-          <VStack className="items-start mb-6">
+          <View className="flex-col items-start mb-6">
             {item.title as React.ReactNode}
-          </VStack>
+          </View>
         )}
 
         {/* Description */}
-        <VStack className="items-start mb-4" style={{ marginLeft: SCREEN_WIDTH * 0.0585 }}>
+        <View className="flex-col items-start mb-4" style={{ marginLeft: SCREEN_WIDTH * 0.0585 }}>
           {item.description}
-        </VStack>
+        </View>
 
         {/* Additional Content (cards, chat, etc.) */}
         {'content' in item && item.content}
-      </VStack>
+      </View>
     </View>
   );
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1" edges={['bottom']}>
-        <VStack className="flex-1">
+        <View className="flex-col flex-1">
           {/* Background Decorative Shapes Layer */}
           <View className="absolute w-full h-full overflow-hidden">
             {/* Top Left Sage Green Shape - Rectangle 92 (rotated) */}
@@ -374,13 +374,13 @@ export default function ClientOnboarding() {
           </View>
 
           {/* Skip Button - positioned on top right */}
-          <Box className="absolute top-[40px] right-[24px] z-20">
+          <View className="absolute top-[40px] right-[24px] z-20">
             <Pressable onPress={handleSkip}>
               <Text className="text-[14px] font-worksans-medium text-white">
                 Skip
               </Text>
             </Pressable>
-          </Box>
+          </View>
 
           {/* Main Content - Swipeable */}
           <FlatList
@@ -397,10 +397,10 @@ export default function ClientOnboarding() {
           />
 
           {/* Bottom Section */}
-          <Box className="px-6 pb-8 z-20">
-            <HStack className="justify-between items-center">
+          <View className="px-6 pb-8 z-20">
+            <View className="flex-row justify-between items-center">
               {/* Pagination Dots */}
-              <HStack className="gap-2">
+              <View className="flex-row gap-2">
                 {Array.from({ length: totalSteps }).map((_, index) => (
                   <View
                     key={index}
@@ -414,21 +414,21 @@ export default function ClientOnboarding() {
                     }}
                   />
                 ))}
-              </HStack>
+              </View>
 
               {/* Got it Button */}
               <Pressable onPress={handleGotIt}>
-                <HStack className="items-center gap-1">
+                <View className="flex-row items-center gap-1">
                   <Text className="text-[18px] font-worksans-medium" style={{ color: COLORS.sageGreenFigma }}>
                     Got it
                   </Text>
                   <ChevronRight size={18} color={COLORS.sageGreenFigma} />
-                </HStack>
+                </View>
               </Pressable>
-            </HStack>
-          </Box>
-        </VStack>
+            </View>
+          </View>
+        </View>
       </SafeAreaView>
-    </Box>
+    </View>
   );
 }

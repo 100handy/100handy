@@ -1,12 +1,6 @@
 import React from 'react';
-import { ScrollView, RefreshControl } from 'react-native';
+import { ScrollView, RefreshControl, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { Divider } from '@/components/ui/divider';
 import { Loader } from '@/components/ui/loader';
 import { WrenchIcon, PaintbrushIcon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -121,7 +115,7 @@ export default function TasksScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-secondary">
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Top App Bar */}
         <Header 
           title="Tasks" 
@@ -131,15 +125,15 @@ export default function TasksScreen() {
           showBellIcon={true}
         />
 
-        <Divider className="h-px bg-border opacity-80" />
+        <View className="h-px bg-border opacity-80" />
 
         {/* Segmented Tabs */}
-        <HStack className="bg-bg-primary">
+        <View className="flex-row bg-bg-primary">
           <Tab id="redemptions" label="Redemptions" active={activeTab === 'redemptions'} onPress={setActiveTab} />
           <Tab id="complated" label="Complated" active={activeTab === 'complated'} onPress={setActiveTab} />
-        </HStack>
+        </View>
 
-        <Divider className="h-px bg-border opacity-80" />
+        <View className="h-px bg-border opacity-80" />
 
         {/* Content */}
         <ScrollView
@@ -149,29 +143,29 @@ export default function TasksScreen() {
           }
         >
           {user?.id ? (
-            <VStack className="items-center justify-center py-12">
+            <View className="flex-col items-center justify-center py-12">
               <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
                 Please sign in
               </Text>
               <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
                 You need to be signed in to view your tasks.
               </Text>
-            </VStack>
+            </View>
           ) : showLoading ? (
             <Loader text="Loading tasks..." />
           ) : isError ? (
-            <VStack className="items-center justify-center py-12">
+            <View className="flex-col items-center justify-center py-12">
               <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
                 Error loading tasks
               </Text>
               <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
                 {error?.message || 'Something went wrong. Please try again.'}
               </Text>
-            </VStack>
+            </View>
           ) : getCurrentBookings().length === 0 ? (
             <EmptyState />
           ) : (
-            <VStack className="space-y-2">
+            <View className="flex-col space-y-2">
               {getCurrentTaskCards().map((taskCardProps, index) => (
                 <TaskCard
                   key={`${activeTab}-${taskCardProps.bookingId || taskCardProps.id || index}`}
@@ -181,15 +175,15 @@ export default function TasksScreen() {
               ))}
 
               {/* Helper text when there are tasks */}
-              <HStack className="justify-center pt-6">
+              <View className="flex-row justify-center pt-6">
                 <Text className="text-xs font-work-sans text-text-tertiary leading-4">
                   Tap to view details
                 </Text>
-              </HStack>
-            </VStack>
+              </View>
+            </View>
           )}
         </ScrollView>
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

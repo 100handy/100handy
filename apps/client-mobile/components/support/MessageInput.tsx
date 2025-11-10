@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, TextInput, Alert } from 'react-native';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
-import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
+import { KeyboardAvoidingView, Platform, TextInput, Alert, View, Text, Pressable } from 'react-native';
 import { Paperclip, Send } from 'lucide-react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -93,31 +89,31 @@ export const MessageInput = ({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={90}
     >
-      <Box className="bg-white border-t border-gray-200 px-4 py-3">
+      <View className="bg-white border-t border-gray-200 px-4 py-3">
         {/* Show attachment preview if present */}
         {attachment && (
-          <Box className="mb-2 p-2 bg-gray-100 rounded flex-row items-center justify-between">
-            <Box className="text-[13px] text-[#666666]">
+          <View className="mb-2 p-2 bg-gray-100 rounded flex-row items-center justify-between">
+            <Text className="text-[13px] text-[#666666]">
               📎 {attachment.name || 'Attachment'}
-            </Box>
+            </Text>
             <Pressable onPress={() => setAttachment(null)}>
-              <Box className="text-[13px] text-[#C1856A]">Remove</Box>
+              <Text className="text-[13px] text-[#C1856A]">Remove</Text>
             </Pressable>
-          </Box>
+          </View>
         )}
 
-        <HStack className="items-center gap-2">
+        <View className="items-center gap-2 flex-row">
           {/* Attachment button */}
           <Pressable
             onPress={handleAttachment}
             disabled={disabled}
             className="p-2"
           >
-            <Icon as={Paperclip} size="lg" className="text-[#666666]" />
+            <Paperclip size={24} color="#666666" />
           </Pressable>
 
           {/* Text input */}
-          <Box className="flex-1 bg-gray-100 rounded-full px-4 py-2">
+          <View className="flex-1 bg-gray-100 rounded-full px-4 py-2">
             <TextInput
               value={message}
               onChangeText={(text) => {
@@ -137,7 +133,7 @@ export const MessageInput = ({
                 handleSend();
               }}
             />
-          </Box>
+          </View>
 
           {/* Send button */}
           <Pressable
@@ -153,18 +149,17 @@ export const MessageInput = ({
             }`}
             style={{ zIndex: 999 }}
           >
-            <Icon
-              as={Send}
-              size="md"
-              className={
+            <Send
+              size={20}
+              color={
                 disabled || (!message.trim() && !attachment)
-                  ? 'text-gray-500'
-                  : 'text-white'
+                  ? '#6B7280'
+                  : '#FFFFFF'
               }
             />
           </Pressable>
-        </HStack>
-      </Box>
+        </View>
+      </View>
     </KeyboardAvoidingView>
   );
 };

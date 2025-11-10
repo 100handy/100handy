@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Linking, ActivityIndicator } from 'react-native';
+import { ScrollView, Linking, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft } from 'lucide-react-native';
 import { getUserSkills, UserSkill } from '@shared/supabase/profile';
 
@@ -45,7 +41,7 @@ export default function BusinessPhotosScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <HStack className="items-center px-5 py-4">
+      <View className="flex-row items-center px-5 py-4">
         <Pressable onPress={() => router.back()}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
@@ -55,13 +51,13 @@ export default function BusinessPhotosScreen() {
         >
           Business Photos
         </Text>
-      </HStack>
+      </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <VStack className="px-5 py-6 gap-6">
+        <View className="flex-col px-5 py-6 gap-6">
           {/* Empty State - Show when no skills */}
           {skills.length === 0 && (
-            <VStack className="gap-4 items-center py-8">
+            <View className="flex-col gap-4 items-center py-8">
             {/* Title */}
             <Text 
               className="text-lg font-semibold text-[#333A31] text-center" 
@@ -92,8 +88,8 @@ export default function BusinessPhotosScreen() {
             </Pressable>
 
             {/* Policy Link */}
-            <VStack className="mt-4 items-center">
-              <HStack className="flex-wrap justify-center">
+            <View className="flex-col mt-4 items-center">
+              <View className="flex-row flex-wrap justify-center">
                 <Text 
                   className="text-sm text-[#666666]" 
                   style={{ fontFamily: 'WorkSans_400Regular' }}
@@ -114,14 +110,14 @@ export default function BusinessPhotosScreen() {
                 >
                   .
                 </Text>
-              </HStack>
-            </VStack>
-            </VStack>
+              </View>
+            </View>
+            </View>
           )}
 
           {/* Skills-based Photo Upload - Show when skills exist */}
           {skills.length > 0 && (
-            <VStack className="gap-4">
+            <View className="flex-col gap-4">
               <Text
                 className="text-sm text-[#666666] leading-5"
                 style={{ fontFamily: 'WorkSans_400Regular' }}
@@ -131,7 +127,7 @@ export default function BusinessPhotosScreen() {
 
               {/* Skills List with Photo Upload */}
               {skills.map(userSkill => (
-                <VStack key={userSkill.id} className="gap-2">
+                <View key={userSkill.id} className="flex-col gap-2">
                   {/* Skill Name */}
                   <Text
                     className="text-base font-semibold text-[#333A31]"
@@ -155,12 +151,12 @@ export default function BusinessPhotosScreen() {
                       + Add Photos
                     </Text>
                   </Pressable>
-                </VStack>
+                </View>
               ))}
 
               {/* Policy Link */}
-              <VStack className="mt-2 items-center">
-                <HStack className="flex-wrap justify-center">
+              <View className="flex-col mt-2 items-center">
+                <View className="flex-row flex-wrap justify-center">
                   <Text
                     className="text-sm text-[#666666]"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
@@ -181,11 +177,11 @@ export default function BusinessPhotosScreen() {
                   >
                     .
                   </Text>
-                </HStack>
-              </VStack>
-            </VStack>
+                </View>
+              </View>
+            </View>
           )}
-        </VStack>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

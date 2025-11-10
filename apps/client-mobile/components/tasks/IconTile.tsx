@@ -1,5 +1,5 @@
 import React from 'react';
-import { Center } from '@/components/ui/center';
+import { View } from 'react-native';
 
 interface IconTileProps {
   tone?: 'sage' | 'orange' | 'taupe';
@@ -19,9 +19,9 @@ export function IconTile({ tone = 'sage', children }: IconTileProps) {
   };
 
   return (
-    <Center className={`w-10 h-10 rounded-lg ${getBgClass(tone)}`}>
+    <View className={`w-10 h-10 rounded-lg items-center justify-center ${getBgClass(tone)}`}>
       {children}
-    </Center>
+    </View>
   );
 }
 

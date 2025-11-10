@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Box } from '@/components/ui/box';
 
 export default function WorkAreaTab() {
   const router = useRouter();
@@ -9,5 +9,5 @@ export default function WorkAreaTab() {
     router.replace('/(professional)/set-work-area');
   }, []);
 
-  return <Box className="flex-1 bg-white" />;
+  return <View className="flex-1 bg-white" />;
 }

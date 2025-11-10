@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react-native';
@@ -56,7 +52,7 @@ export default function LocationScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
-      <HStack className="items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
+      <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
         <Pressable onPress={() => router.back()}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
@@ -64,12 +60,12 @@ export default function LocationScreen() {
           Location
         </Text>
         <Pressable onPress={() => router.back()} className="w-7" />
-      </HStack>
+      </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <VStack className="px-5 pt-6 pb-8">
+        <View className="flex-col px-5 pt-6 pb-8">
           {/* Street Address with Autocomplete */}
-          <VStack className="mb-6">
+          <View className="flex-col mb-6">
             <LocationAutocomplete
               value={streetAddress}
               onChangeText={setStreetAddress}
@@ -77,10 +73,10 @@ export default function LocationScreen() {
               label="Street address"
               placeholder="Enter your address"
             />
-          </VStack>
+          </View>
 
           {/* Optional Unit Number */}
-          <VStack className="mb-8">
+          <View className="flex-col mb-8">
             <Text className="font-worksans text-[14px] text-[#30352D] mb-2">
               Optional unit or apt #
             </Text>
@@ -97,11 +93,11 @@ export default function LocationScreen() {
                 style={{ color: '#30352D', fontSize: 15 }}
               />
             </Input>
-          </VStack>
+          </View>
 
           {/* Current/Default Section */}
           {location && location.streetAddress && (
-            <VStack>
+            <View className="flex-col">
               <Text className="font-worksans text-[14px] text-[#30352D] mb-3">
                 Current Location
               </Text>
@@ -113,13 +109,13 @@ export default function LocationScreen() {
                   Unit/Apt: {location.unitNumber}
                 </Text>
               )}
-            </VStack>
+            </View>
           )}
-        </VStack>
+        </View>
       </ScrollView>
 
       {/* Save Button */}
-      <VStack className="px-5 pb-6">
+      <View className="flex-col px-5 pb-6">
         <Button
           onPress={handleSave}
           className="bg-[#4A5347] rounded-full"
@@ -129,7 +125,7 @@ export default function LocationScreen() {
             Save
           </ButtonText>
         </Button>
-      </VStack>
+      </View>
     </SafeAreaView>
   );
 }

@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { ChevronLeft, Lock, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -86,7 +81,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalBackdrop className="bg-black/40" />
       <ModalContent className="bg-white rounded-2xl mx-5" style={{ maxWidth: 350, padding: 28 }}>
-        <VStack>
+        <View className="flex-col">
           {/* Title */}
           <Text className="text-[24px] font-worksans-bold text-center mb-4" style={{ color: '#30352D' }}>
             Confirm your info
@@ -98,34 +93,34 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
           </Text>
 
           {/* Info Sections */}
-          <VStack className="mb-4">
-            <Box className="mb-3">
+          <View className="flex-col mb-4">
+            <View className="mb-3">
               <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
                 LEGAL FULL NAME:
               </Text>
               <Text className="text-[16px] font-worksans-medium" style={{ color: '#30352D' }}>
                 {formData.firstName} {formData.lastName}
               </Text>
-            </Box>
+            </View>
 
-            <Box className="mb-3">
+            <View className="mb-3">
               <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
                 DATE OF BIRTH
               </Text>
               <Text className="text-[16px] font-worksans-medium" style={{ color: '#30352D' }}>
                 {formData.dateOfBirth}
               </Text>
-            </Box>
+            </View>
 
-            <Box className="mb-3">
+            <View className="mb-3">
               <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
                 HOME ADDRESS
               </Text>
               <Text className="text-[16px] font-worksans-medium leading-[20px]" style={{ color: '#30352D' }}>
                 {formData.streetAddress}, {formData.apt}, {formData.city}, {formData.county} {formData.postcode}
               </Text>
-            </Box>
-          </VStack>
+            </View>
+          </View>
 
           {/* Warning Text */}
           <Text className="text-[15px] font-worksans-medium text-center leading-[18px] mb-5" style={{ color: '#30352D' }}>
@@ -133,7 +128,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
           </Text>
 
           {/* Buttons */}
-          <HStack className="gap-3">
+          <View className="flex-row gap-3">
             <Pressable 
               className="flex-1 rounded-full py-4 border-2"
               style={{ borderColor: '#C1856A' }}
@@ -154,8 +149,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
                 Confirm
               </ButtonText>
             </Button>
-          </HStack>
-        </VStack>
+          </View>
+        </View>
       </ModalContent>
     </Modal>
   );
@@ -286,16 +281,16 @@ export default function VerifyInformation() {
   };
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
         <ScrollView 
           className="flex-1"
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <VStack className="flex-1">
+          <View className="flex-col flex-1">
             {/* Header */}
-            <HStack className="items-center justify-between px-5 pt-2 pb-5">
+            <View className="flex-row items-center justify-between px-5 pt-2 pb-5">
               <Pressable onPress={() => router.back()}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
@@ -305,10 +300,10 @@ export default function VerifyInformation() {
               <Pressable>
                 <FileText size={22} color="#333A31" />
               </Pressable>
-            </HStack>
+            </View>
 
             {/* Info Text */}
-            <Box className="px-8 pb-6">
+            <View className="px-8 pb-6">
               <Text className="text-[15px] font-worksans-medium leading-[20px] mb-2" style={{ color: '#30352D' }}>
                 Let's set up your payment account! Details should match your bank.
               </Text>
@@ -317,12 +312,12 @@ export default function VerifyInformation() {
                   Why do we need this?
                 </Text>
               </Pressable>
-            </Box>
+            </View>
 
             {/* Form */}
-            <Box className="px-5">
+            <View className="px-5">
               {/* First Name */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   First Name
                 </Text>
@@ -338,10 +333,10 @@ export default function VerifyInformation() {
                     placeholder=""
                   />
                 </Input>
-              </Box>
+              </View>
 
               {/* Surname */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   Surname
                 </Text>
@@ -357,10 +352,10 @@ export default function VerifyInformation() {
                     placeholder=""
                   />
                 </Input>
-              </Box>
+              </View>
 
               {/* Date of birth */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   Date of birth
                 </Text>
@@ -377,10 +372,10 @@ export default function VerifyInformation() {
                     placeholderTextColor="#9CA3AF"
                   />
                 </Input>
-              </Box>
+              </View>
 
               {/* Street Number and Name */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   Street Number and Name
                 </Text>
@@ -392,11 +387,11 @@ export default function VerifyInformation() {
                   showClearButton={false}
                   inputClassName="border-0 border-b border-gray-300 rounded-none px-0 h-9"
                 />
-              </Box>
+              </View>
 
               {/* Apt/Suite and City Row */}
-              <HStack className="mb-4 gap-4">
-                <Box className="flex-1">
+              <View className="flex-row mb-4 gap-4">
+                <View className="flex-1">
                   <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                     Apt / Suite
                   </Text>
@@ -412,8 +407,8 @@ export default function VerifyInformation() {
                       placeholder=""
                     />
                   </Input>
-                </Box>
-                <Box className="flex-1">
+                </View>
+                <View className="flex-1">
                   <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                     City
                   </Text>
@@ -429,12 +424,12 @@ export default function VerifyInformation() {
                       placeholder=""
                     />
                   </Input>
-                </Box>
-              </HStack>
+                </View>
+              </View>
 
               {/* County and Postcode Row */}
-              <HStack className="mb-6 gap-4">
-                <Box className="flex-1">
+              <View className="flex-row mb-6 gap-4">
+                <View className="flex-1">
                   <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                     County
                   </Text>
@@ -450,8 +445,8 @@ export default function VerifyInformation() {
                       placeholder=""
                     />
                   </Input>
-                </Box>
-                <Box className="flex-1">
+                </View>
+                <View className="flex-1">
                   <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                     Postcode
                   </Text>
@@ -468,16 +463,16 @@ export default function VerifyInformation() {
                       autoCapitalize="characters"
                     />
                   </Input>
-                </Box>
-              </HStack>
+                </View>
+              </View>
 
               {/* Security Notice */}
-              <HStack className="items-start mb-7 px-1">
+              <View className="flex-row items-start mb-7 px-1">
                 <Lock size={14} color="#C1856A" style={{ marginTop: 3, marginRight: 6 }} />
                 <Text className="flex-1 text-[15px] font-worksans-medium leading-[20px]" style={{ color: '#C1856A' }}>
                   Your personal information is securely stored and kept confidential.
                 </Text>
-              </HStack>
+              </View>
 
               {/* Signup Button */}
               <Button
@@ -490,8 +485,8 @@ export default function VerifyInformation() {
                   {isLoading ? 'Saving...' : 'Signup'}
                 </ButtonText>
               </Button>
-            </Box>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
 
@@ -502,6 +497,6 @@ export default function VerifyInformation() {
         onConfirm={handleConfirm}
         formData={formData}
       />
-    </Box>
+    </View>
   );
 }

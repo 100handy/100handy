@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, Image, ActivityIndicator } from 'react-native';
+import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { ChevronLeft, Star, SlidersHorizontal, Check, ChevronUp, X } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -132,20 +128,20 @@ export default function TaskerProfileScreen() {
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <VStack className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
-          <HStack className="items-center">
+        <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+          <View className="flex-row items-center">
             <Pressable onPress={() => router.back()} className="mr-4">
               <ChevronLeft size={24} color="#000000" strokeWidth={2} />
             </Pressable>
             <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
               Tasker Profile
             </Text>
-          </HStack>
-        </VStack>
-        <VStack className="flex-1 items-center justify-center">
+          </View>
+        </View>
+        <View className="flex-col flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#000000" />
           <Text className="text-sm text-gray-600 mt-3">Loading profile...</Text>
-        </VStack>
+        </View>
       </SafeAreaView>
     );
   }
@@ -153,24 +149,24 @@ export default function TaskerProfileScreen() {
   if (profileError || !profile) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <VStack className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
-          <HStack className="items-center">
+        <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+          <View className="flex-row items-center">
             <Pressable onPress={() => router.back()} className="mr-4">
               <ChevronLeft size={24} color="#000000" strokeWidth={2} />
             </Pressable>
             <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
               Tasker Profile
             </Text>
-          </HStack>
-        </VStack>
-        <VStack className="flex-1 items-center justify-center px-6">
+          </View>
+        </View>
+        <View className="flex-col flex-1 items-center justify-center px-6">
           <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
             Profile not found
           </Text>
           <Text className="text-sm text-gray-600 text-center">
             This tasker's profile could not be loaded
           </Text>
-        </VStack>
+        </View>
       </SafeAreaView>
     );
   }
@@ -178,8 +174,8 @@ export default function TaskerProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <VStack className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
-        <HStack className="items-center">
+      <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+        <View className="flex-row items-center">
           <Pressable onPress={() => router.back()} className="mr-4">
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
@@ -187,16 +183,16 @@ export default function TaskerProfileScreen() {
           <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
             Tasker Profile
           </Text>
-        </HStack>
-      </VStack>
+        </View>
+      </View>
 
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Section */}
-        <VStack className="px-5 pt-5 pb-4">
-          <HStack className="items-start mb-3">
+        <View className="flex-col px-5 pt-5 pb-4">
+          <View className="flex-row items-start mb-3">
             {/* Avatar */}
             <Image
               source={{ uri: profile.avatar_url || `https://i.pravatar.cc/150?u=${profile.user_id}` }}
@@ -204,43 +200,42 @@ export default function TaskerProfileScreen() {
             />
 
             {/* Name and Badge */}
-            <VStack>
+            <View className="flex-col">
               <Text className="text-xl font-semibold text-black mb-2">
                 {profile.display_name}
               </Text>
 
               {profile.verified && (
-                <HStack
-                  className="items-center px-2 py-1 rounded self-start"
+                <View className="flex-row items-center px-2 py-1 rounded self-start"
                   style={{ backgroundColor: '#7EC04B' }}
                 >
                   <Text className="text-xs font-semibold text-white">
                     ⚡ Super Tasker
                   </Text>
-                </HStack>
+                </View>
               )}
-            </VStack>
-          </HStack>
+            </View>
+          </View>
 
           {/* Rating */}
-          <HStack className="items-center gap-1 mb-1">
+          <View className="flex-row items-center gap-1 mb-1">
             <Star size={14} color="#000000" fill="#000000" strokeWidth={0} />
             <Text className="text-sm font-bold text-black">
               {profile.rating.toFixed(1)} ({profile.review_count} reviews)
             </Text>
-          </HStack>
+          </View>
 
           {/* Task Count */}
           <Text className="text-xs font-bold text-black">
             {profile.jobs_completed} tasks completed
           </Text>
-        </VStack>
+        </View>
 
         {/* Divider */}
-        <VStack style={{ height: 8, backgroundColor: '#F9FAFB' }} />
+        <View className="flex-col" style={{ height: 8, backgroundColor: '#F9FAFB' }} />
 
         {/* Skill & Experience Section */}
-        <VStack className="px-5 pt-5 pb-4">
+        <View className="flex-col px-5 pt-5 pb-4">
           <Text className="text-base font-semibold text-black mb-2">
             Skill & experience
           </Text>
@@ -270,32 +265,32 @@ export default function TaskerProfileScreen() {
 
           {/* Portfolio Images - would need separate endpoint */}
           {/* For now, showing placeholder */}
-        </VStack>
+        </View>
 
         {/* Divider */}
-        <VStack style={{ height: 8, backgroundColor: '#F9FAFB' }} />
+        <View className="flex-col" style={{ height: 8, backgroundColor: '#F9FAFB' }} />
 
         {/* Rating & Reviews Section */}
-        <VStack className="px-5 pt-5 pb-4">
+        <View className="flex-col px-5 pt-5 pb-4">
           <Text className="text-base font-semibold text-black mb-3">
             Rating & reviews
           </Text>
 
           {/* Overall Rating with Filter */}
-          <HStack className="items-center justify-between mb-3">
-            <HStack className="items-center gap-1">
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-center gap-1">
               <Star size={14} color="#000000" fill="#000000" strokeWidth={0} />
               <Text className="text-sm font-bold text-black">
                 {profile.rating.toFixed(1)} ({reviews?.length || 0} reviews)
               </Text>
-            </HStack>
+            </View>
 
             <Pressable
               className="px-2 py-1 bg-white border border-gray-300"
               style={{ borderRadius: 4 }}
               onPress={() => setShowFilterSheet(true)}
             >
-              <HStack className="items-center gap-[3px]">
+              <View className="flex-row items-center gap-[3px]">
                 <SlidersHorizontal
                   size={9}
                   color="#333A31"
@@ -305,16 +300,16 @@ export default function TaskerProfileScreen() {
                 <Text className="text-xs font-medium" style={{ color: '#333A31' }}>
                   {selectedFilter}
                 </Text>
-              </HStack>
+              </View>
             </Pressable>
-          </HStack>
+          </View>
 
           {/* Rating Breakdown */}
-          <VStack className="mb-5 gap-1.5">
+          <View className="flex-col mb-5 gap-1.5">
             {[5, 4, 3, 2, 1].map((stars) => {
               const percentage = taskerProfile.ratingBreakdown[stars as keyof typeof taskerProfile.ratingBreakdown];
               return (
-                <HStack key={stars} className="items-center gap-2">
+                <View className="flex-row" key={stars} className="items-center gap-2">
                   <Text
                     className="text-xs font-bold w-10"
                     style={{ color: '#C1856A' }}
@@ -322,18 +317,16 @@ export default function TaskerProfileScreen() {
                     {stars} star
                   </Text>
                   
-                  <VStack
-                    className="flex-1 bg-gray-200 overflow-hidden"
+                  <View className="flex-col flex-1 bg-gray-200 overflow-hidden"
                     style={{ height: 5, borderRadius: 2.5 }}
                   >
-                    <VStack
-                      className="h-full"
+                    <View className="flex-col h-full"
                       style={{
                         width: `${percentage}%`,
                         backgroundColor: '#FF6B35',
                       }}
                     />
-                  </VStack>
+                  </View>
                   
                   <Text
                     className="text-xs text-right w-8"
@@ -341,13 +334,13 @@ export default function TaskerProfileScreen() {
                   >
                     {percentage}%
                   </Text>
-                </HStack>
+                </View>
               );
             })}
-          </VStack>
+          </View>
 
           {/* Reviews List */}
-          <VStack className="gap-5">
+          <View className="flex-col gap-5">
             {reviews && reviews.length > 0 ? (
               reviews.map((review: any) => {
                 const reviewerName = review.profiles
@@ -359,9 +352,9 @@ export default function TaskerProfileScreen() {
                 });
 
                 return (
-                  <VStack key={review.id}>
-                    <HStack className="items-start justify-between mb-2">
-                      <HStack className="flex-1 items-start gap-2.5">
+                  <View className="flex-col" key={review.id}>
+                    <View className="flex-row items-start justify-between mb-2">
+                      <View className="flex-row flex-1 items-start gap-2.5">
                         {/* Reviewer Avatar */}
                         <Image
                           source={{ uri: `https://i.pravatar.cc/150?u=${review.id}` }}
@@ -369,7 +362,7 @@ export default function TaskerProfileScreen() {
                         />
 
                         {/* Reviewer Info */}
-                        <VStack className="flex-1">
+                        <View className="flex-col flex-1">
                           <Text
                             className="text-base font-bold mb-1"
                             style={{ color: '#333A31' }}
@@ -377,25 +370,25 @@ export default function TaskerProfileScreen() {
                             {reviewerName}
                           </Text>
 
-                          <HStack className="items-center gap-1.5 mb-1">
+                          <View className="flex-row items-center gap-1.5 mb-1">
                             <Text
                               className="text-xs font-light"
                               style={{ color: '#333A31' }}
                             >
                               {reviewDate}
                             </Text>
-                          </HStack>
-                        </VStack>
-                      </HStack>
+                          </View>
+                        </View>
+                      </View>
 
                       {/* Review Rating */}
-                      <HStack className="items-center gap-0.5">
+                      <View className="flex-row items-center gap-0.5">
                         <Star size={12} color="#000000" fill="#000000" strokeWidth={0} />
                         <Text className="text-xs font-medium text-black">
                           {review.rating.toFixed(1)}
                         </Text>
-                      </HStack>
-                    </HStack>
+                      </View>
+                    </View>
 
                     {/* Review Comment */}
                     {review.comment && (
@@ -406,7 +399,7 @@ export default function TaskerProfileScreen() {
                         {review.comment}
                       </Text>
                     )}
-                  </VStack>
+                  </View>
                 );
               })
             ) : (
@@ -414,16 +407,16 @@ export default function TaskerProfileScreen() {
                 No reviews yet
               </Text>
             )}
-          </VStack>
-        </VStack>
+          </View>
+        </View>
 
         {/* Bottom spacing for fixed button */}
-        <VStack style={{ height: 100 }} />
+        <View className="flex-col" style={{ height: 100 }} />
       </ScrollView>
 
       {/* Bottom Fixed Bar */}
-      <VStack className="px-5 py-4 bg-white border-t border-gray-200">
-        <HStack className="items-center justify-between">
+      <View className="flex-col px-5 py-4 bg-white border-t border-gray-200">
+        <View className="flex-row items-center justify-between">
           <Text
             className="text-base font-bold"
             style={{ color: '#333A31' }}
@@ -440,8 +433,8 @@ export default function TaskerProfileScreen() {
               Select
             </Text>
           </Pressable>
-        </HStack>
-      </VStack>
+        </View>
+      </View>
 
       {/* Schedule Selection Action Sheet */}
       <ScheduleSelectionSheet

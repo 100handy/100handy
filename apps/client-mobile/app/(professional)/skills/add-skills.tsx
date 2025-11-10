@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft, ChevronDown, ChevronRight, X } from 'lucide-react-native';
 import { getSkillsByCategory, getUserSkills, addUserSkill, Skill } from '@shared/supabase/profile';
 
@@ -83,7 +78,7 @@ export default function AddSkillsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <HStack className="items-center justify-between px-5 py-4 border-b border-gray-100">
+      <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-100">
         <Pressable onPress={() => router.back()} className="w-10">
           <ChevronLeft size={24} color="#000" />
         </Pressable>
@@ -96,22 +91,22 @@ export default function AddSkillsScreen() {
         <Pressable onPress={() => router.back()} className="w-10 items-end">
           <X size={24} color="#000" />
         </Pressable>
-      </HStack>
+      </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <VStack className="py-4">
+        <View className="flex-col py-4">
           {Object.entries(skillsByCategory).map(([category, skills]) => {
             const isExpanded = expandedCategories.has(category);
 
             return (
-              <VStack key={category} className="border-b border-gray-100">
+              <View key={category} className="flex-col border-b border-gray-100">
                 {/* Category Header */}
                 <Pressable
                   onPress={() => toggleCategory(category)}
                   className="px-5 py-4"
                 >
-                  <HStack className="items-center justify-between">
-                    <HStack className="items-center gap-3 flex-1">
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-3 flex-1">
                       <Text className="text-xl">{CATEGORY_ICONS[category] || '📌'}</Text>
                       <Text
                         className="text-base font-semibold text-[#333A31]"
@@ -119,18 +114,18 @@ export default function AddSkillsScreen() {
                       >
                         {category}
                       </Text>
-                    </HStack>
+                    </View>
                     {isExpanded ? (
                       <ChevronDown size={20} color="#333A31" strokeWidth={2} />
                     ) : (
                       <ChevronRight size={20} color="#333A31" strokeWidth={2} />
                     )}
-                  </HStack>
+                  </View>
                 </Pressable>
 
                 {/* Expanded Skills List */}
                 {isExpanded && (
-                  <VStack className="pb-2">
+                  <View className="flex-col pb-2">
                     {skills.map(skill => {
                       const isSelected = userSkillIds.has(skill.id);
 
@@ -143,7 +138,7 @@ export default function AddSkillsScreen() {
                             isSelected ? 'bg-[#E8D5C4]' : 'bg-gray-50'
                           }`}
                         >
-                          <HStack className="items-center justify-between">
+                          <View className="flex-row items-center justify-between">
                             <Text
                               className={`text-base ${
                                 isSelected ? 'font-semibold text-[#333A31]' : 'text-[#666666]'
@@ -157,25 +152,25 @@ export default function AddSkillsScreen() {
                               {skill.name}
                             </Text>
                             {skill.is_in_demand && (
-                              <Box className="bg-[#8B4513] rounded px-2 py-0.5">
+                              <View className="bg-[#8B4513] rounded px-2 py-0.5">
                                 <Text
                                   className="text-[10px] font-medium text-white"
                                   style={{ fontFamily: 'WorkSans_500Medium' }}
                                 >
                                   IN DEMAND
                                 </Text>
-                              </Box>
+                              </View>
                             )}
-                          </HStack>
+                          </View>
                         </Pressable>
                       );
                     })}
-                  </VStack>
+                  </View>
                 )}
-              </VStack>
+              </View>
             );
           })}
-        </VStack>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

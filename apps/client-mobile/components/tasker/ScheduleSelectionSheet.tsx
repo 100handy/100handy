@@ -1,16 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
+import { View, Text, Pressable } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
 import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetDragIndicator,
-} from '@/components/ui/actionsheet';
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+} from '@/components/ui/modal';
 import {
   Select,
   SelectTrigger,
@@ -103,25 +98,26 @@ export function ScheduleSelectionSheet({
   const selectedDateLabel = dateOptions.find(opt => opt.value === selectedDate)?.label || 'Tomorrow';
 
   return (
-    <Actionsheet isOpen={isOpen} onClose={onClose}>
-      <ActionsheetBackdrop />
-      <ActionsheetContent style={{ backgroundColor: '#FFFFFF', maxHeight: '60%' }}>
-        <ActionsheetDragIndicatorWrapper>
-          <ActionsheetDragIndicator style={{ backgroundColor: '#D1D5DB' }} />
-        </ActionsheetDragIndicatorWrapper>
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalBackdrop />
+      <ModalContent style={{ backgroundColor: '#FFFFFF', maxHeight: '60%' }}>
+        {/* Drag Indicator */}
+        <View className="w-full items-center pt-2 pb-1">
+          <View className="w-12 h-1 rounded-full bg-gray-300" />
+        </View>
 
-        <VStack className="w-full px-5 pt-4 pb-6">
+        <View className="w-full px-5 pt-4 pb-6 flex-col">
           {/* Header */}
-          <VStack className="mb-6">
+          <View className="mb-6 flex-col">
             <Text className="text-xl font-bold text-[#30352D] mb-2">
               {taskerName}'s Schedule, GMT
             </Text>
-          </VStack>
+          </View>
 
           {/* Date and Time Selects */}
-          <HStack className="gap-3 mb-6">
+          <View className="gap-3 mb-6 flex-row">
             {/* Date Select */}
-            <VStack className="flex-1">
+            <View className="flex-1 flex-col">
               <Select selectedValue={selectedDate} onValueChange={setSelectedDate}>
                 <SelectTrigger
                   variant="outline"
@@ -153,10 +149,10 @@ export function ScheduleSelectionSheet({
                   </SelectContent>
                 </SelectPortal>
               </Select>
-            </VStack>
+            </View>
 
             {/* Time Select */}
-            <VStack className="flex-1">
+            <View className="flex-1 flex-col">
               <Select selectedValue={selectedTime} onValueChange={setSelectedTime}>
                 <SelectTrigger
                   variant="outline"
@@ -187,8 +183,8 @@ export function ScheduleSelectionSheet({
                   </SelectContent>
                 </SelectPortal>
               </Select>
-            </VStack>
-          </HStack>
+            </View>
+          </View>
 
           {/* Select & Continue Button */}
           <Pressable
@@ -200,8 +196,8 @@ export function ScheduleSelectionSheet({
               Select & Continue
             </Text>
           </Pressable>
-        </VStack>
-      </ActionsheetContent>
-    </Actionsheet>
+        </View>
+      </ModalContent>
+    </Modal>
   );
 }

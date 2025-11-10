@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
-import { ScrollView, Switch } from 'react-native';
+import { ScrollView, Switch, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 // Import gluestack-ui components
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Heading } from '@/components/ui/heading';
-import { Pressable } from '@/components/ui/pressable';
-import { Icon } from '@/components/ui/icon';
 
 // Import lucide-react-native icons
 import { ChevronLeft, Edit } from 'lucide-react-native';
@@ -28,15 +21,15 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({
   value,
   onValueChange,
 }) => (
-  <HStack className="justify-between items-center py-3">
-    <VStack className="flex-1 pr-4">
+  <View className="flex-row justify-between items-center py-3">
+    <View className="flex-col flex-1 pr-4">
       <Text className="font-work-sans text-base text-notification-text-primary leading-6">
         {title}
       </Text>
       <Text className="font-work-sans text-sm text-notification-text-secondary leading-5 mt-1">
         {subtitle}
       </Text>
-    </VStack>
+    </View>
     <Switch
       value={value}
       onValueChange={onValueChange}
@@ -49,7 +42,7 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({
         transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
       }}
     />
-  </HStack>
+  </View>
 );
 
 interface NotificationSectionProps {
@@ -63,19 +56,19 @@ const NotificationSection: React.FC<NotificationSectionProps> = ({
   children,
   footerNote,
 }) => (
-  <VStack className="mb-6">
+  <View className="flex-col mb-6">
     <Text className="font-work-sans text-xs font-semibold text-notification-text-secondary uppercase tracking-wider leading-4 mb-4">
       {title}
     </Text>
-    <VStack className="space-y-0">
+    <View className="flex-col space-y-0">
       {children}
-    </VStack>
+    </View>
     {footerNote && (
       <Text className="font-work-sans text-sm text-notification-text-secondary leading-5 mt-4">
         {footerNote}
       </Text>
     )}
-  </VStack>
+  </View>
 );
 
 export default function NotificationsScreen() {
@@ -103,23 +96,23 @@ export default function NotificationsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-notification-bg-primary">
       {/* Header */}
-      <HStack className="justify-between items-center px-4 py-3 bg-notification-bg-primary">
+      <View className="flex-row justify-between items-center px-4 py-3 bg-notification-bg-primary">
         <Pressable
           onPress={() => router.back()}
           className="flex-row items-center"
         >
-          <Icon as={ChevronLeft} size="lg" className="text-notification-text-primary" />
+          <ChevronLeft size={24} color="#1F2937" />
           <Text className="font-work-sans text-base text-notification-text-primary ml-1">
             Edit
           </Text>
         </Pressable>
         
-        <Box className="flex-1" />
+        <View className="flex-1" />
         
         <Text className="font-work-sans text-lg font-semibold text-notification-text-primary leading-7">
           Notification
         </Text>
-      </HStack>
+      </View>
 
       <ScrollView 
         className="flex-1 bg-notification-bg-primary"
@@ -142,7 +135,7 @@ export default function NotificationsScreen() {
         </NotificationSection>
 
         {/* Divider */}
-        <Box className="h-px bg-notification-border mb-6" />
+        <View className="h-px bg-notification-border mb-6" />
 
         {/* Text Messages Section */}
         <NotificationSection title="Text Messages">
@@ -156,7 +149,7 @@ export default function NotificationsScreen() {
           />
           
           {/* Divider between items */}
-          <Box className="h-px bg-notification-border my-3" />
+          <View className="h-px bg-notification-border my-3" />
           
           <NotificationToggle
             title="Task Ideas and Offers"
@@ -169,7 +162,7 @@ export default function NotificationsScreen() {
         </NotificationSection>
 
         {/* Divider */}
-        <Box className="h-px bg-notification-border mb-6" />
+        <View className="h-px bg-notification-border mb-6" />
 
         {/* Email Notifications Section */}
         <NotificationSection
@@ -187,7 +180,7 @@ export default function NotificationsScreen() {
         </NotificationSection>
 
         {/* Divider */}
-        <Box className="h-px bg-notification-border mb-6" />
+        <View className="h-px bg-notification-border mb-6" />
 
         {/* Test Push Notifications Section */}
         <NotificationSection title="Test Push Notifications">

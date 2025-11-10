@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ScrollView, View, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
-import { Text } from '@/components/ui/text';
+import { ScrollView, View, Text, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;

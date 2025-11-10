@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
 import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
 import {
   ChevronLeft,
@@ -172,8 +167,8 @@ export default function SearchServicesScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header with Search */}
-      <VStack className="px-5 py-3 bg-white border-b border-gray-200">
-        <HStack className="items-center gap-3">
+      <View className="flex-col px-5 py-3 bg-white border-b border-gray-200">
+        <View className="flex-row items-center gap-3">
           <Pressable onPress={() => router.back()}>
             <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
           </Pressable>
@@ -195,36 +190,36 @@ export default function SearchServicesScreen() {
               autoFocus
             />
           </Input>
-        </HStack>
-      </VStack>
+        </View>
+      </View>
 
       {/* Categories List */}
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {isLoading ? (
-          <VStack className="items-center justify-center py-20">
+          <View className="flex-col items-center justify-center py-20">
             <ActivityIndicator size="large" color="#30352D" />
             <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-3">Loading categories...</Text>
-          </VStack>
+          </View>
         ) : isError ? (
-          <VStack className="items-center justify-center py-20 px-6">
+          <View className="flex-col items-center justify-center py-20 px-6">
             <Text className="font-worksans-semibold text-[16px] text-[#30352D] mb-2 text-center">
               Error loading categories
             </Text>
             <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center">
               Please try again later
             </Text>
-          </VStack>
+          </View>
         ) : Object.keys(groupedCategories).length > 0 ? (
-          <VStack className="py-4">
+          <View className="flex-col py-4">
             {Object.entries(groupedCategories).map(([group, categoryList]) => (
-              <VStack key={group} className="mb-6">
+              <View className="flex-col" key={group} className="mb-6">
                 {/* Group Header */}
                 <Text className="font-worksans-bold text-[16px] text-[#30352D] px-5 mb-3">
                   {group}
                 </Text>
 
                 {/* Category Items */}
-                <VStack>
+                <View className="flex-col">
                   {categoryList.map((category) => {
                     const Icon = category.icon;
                     return (
@@ -233,36 +228,36 @@ export default function SearchServicesScreen() {
                         className="px-5 py-4 border-b border-gray-100"
                         onPress={() => handleCategoryPress(category.id, category.name)}
                       >
-                        <HStack className="items-center justify-between">
-                          <HStack className="items-center gap-3 flex-1">
-                            <Box className="w-10 h-10 bg-[#F5F5F5] rounded-full items-center justify-center">
+                        <View className="flex-row items-center justify-between">
+                          <View className="flex-row items-center gap-3 flex-1">
+                            <View className="w-10 h-10 bg-[#F5F5F5] rounded-full items-center justify-center">
                               <Icon size={20} color="#30352D" strokeWidth={1.5} />
-                            </Box>
+                            </View>
                             <Text className="font-worksans text-[15px] text-[#30352D] flex-1">
                               {category.name}
                             </Text>
-                          </HStack>
+                          </View>
                           <ChevronRight size={20} color="#BDBDBD" strokeWidth={2} />
-                        </HStack>
+                        </View>
                       </Pressable>
                     );
                   })}
-                </VStack>
-              </VStack>
+                </View>
+              </View>
             ))}
-          </VStack>
+          </View>
         ) : (
-          <VStack className="items-center justify-center py-20 px-6">
-            <Box className="w-16 h-16 bg-[#F5F5F5] rounded-full items-center justify-center mb-4">
+          <View className="flex-col items-center justify-center py-20 px-6">
+            <View className="w-16 h-16 bg-[#F5F5F5] rounded-full items-center justify-center mb-4">
               <Search size={32} color="#6B6B6B" strokeWidth={1.5} />
-            </Box>
+            </View>
             <Text className="font-worksans-semibold text-[16px] text-[#30352D] mb-2 text-center">
               No services found
             </Text>
             <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center">
               Try searching with different keywords
             </Text>
-          </VStack>
+          </View>
         )}
       </ScrollView>
 

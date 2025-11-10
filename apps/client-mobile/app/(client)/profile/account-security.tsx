@@ -2,15 +2,9 @@ import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Mail } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { Icon } from '@/components/ui/icon';
 import { supabase } from '@shared/supabase';
 import { useAuthStore } from '@shared/supabase';
-import { Alert, ActivityIndicator } from 'react-native';
+import { Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
 
 export default function AccountSecurityScreen() {
   const router = useRouter();
@@ -62,19 +56,19 @@ export default function AccountSecurityScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Header */}
-        <HStack className="items-center p-4 border-b border-gray-200">
+        <View className="flex-row items-center p-4 border-b border-gray-200">
           <Pressable onPress={() => router.back()} className="p-2">
-            <Icon as={ChevronLeft} size="xl" />
+            <ChevronLeft size={24} color="#000000" />
           </Pressable>
           <Text className="flex-1 text-center text-lg font-semibold">Account Security</Text>
-          <Box className="w-8" />
-        </HStack>
+          <View className="w-8" />
+        </View>
 
         {/* Content */}
-        <VStack className="p-6 space-y-6 flex-1">
-          <VStack space="md">
+        <View className="flex-col p-6 space-y-6 flex-1">
+          <View className="flex-col" space="md">
             <Text className="text-2xl font-bold text-gray-800">Two-factor authentication</Text>
             <Text className="text-base text-gray-600">
               To keep your account secure, set up two-factor authentication.
@@ -83,29 +77,29 @@ export default function AccountSecurityScreen() {
               We'll send a verification code to your email address to activate two-factor
               authentication.
             </Text>
-          </VStack>
+          </View>
 
           {/* Email Display */}
-          <Box className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-            <HStack className="items-center gap-3">
-              <Box className="w-12 h-12 bg-[#C1856A]/10 rounded-full items-center justify-center">
-                <Icon as={Mail} size="xl" className="text-[#C1856A]" />
-              </Box>
-              <VStack className="flex-1">
+          <View className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+            <View className="flex-row items-center gap-3">
+              <View className="w-12 h-12 bg-[#C1856A]/10 rounded-full items-center justify-center">
+                <Mail size={24} color="#C1856A" />
+              </View>
+              <View className="flex-col flex-1">
                 <Text className="text-sm text-gray-500 mb-1">Verification code will be sent to</Text>
                 <Text className="text-base font-semibold text-gray-800">{user?.email}</Text>
-              </VStack>
-            </HStack>
-          </Box>
+              </View>
+            </View>
+          </View>
 
           {/* Error Message */}
           {error && (
-            <Box className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <View className="bg-red-50 border border-red-200 rounded-lg p-4">
               <Text className="text-red-600 text-sm">{error}</Text>
-            </Box>
+            </View>
           )}
 
-          <Box className="flex-1" />
+          <View className="flex-1" />
 
           {/* Send Code Button */}
           <Pressable
@@ -114,16 +108,16 @@ export default function AccountSecurityScreen() {
             disabled={isLoading}
           >
             {isLoading ? (
-              <HStack className="items-center gap-2">
+              <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" color="white" />
                 <Text className="text-white text-lg font-bold">Sending...</Text>
-              </HStack>
+              </View>
             ) : (
               <Text className="text-white text-lg font-bold">Send Verification Code</Text>
             )}
           </Pressable>
-        </VStack>
-      </Box>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }

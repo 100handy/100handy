@@ -1,13 +1,7 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, Alert } from 'react-native';
+import { ScrollView, Alert, View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
 import { ChevronLeft } from 'lucide-react-native';
 
 interface MenuItemProps {
@@ -17,14 +11,14 @@ interface MenuItemProps {
 }
 
 const MenuItem = ({ title, onPress, showDivider = true }: MenuItemProps) => (
-  <Box>
+  <View>
     <Pressable onPress={onPress}>
-      <Box className="px-6 py-4">
+      <View className="px-6 py-4">
         <Text className="text-[20px] font-bold text-[#30352D]">{title}</Text>
-      </Box>
+      </View>
     </Pressable>
-    {showDivider && <Box className="h-[1px] bg-gray-200" />}
-  </Box>
+    {showDivider && <View className="h-[1px] bg-gray-200" />}
+  </View>
 );
 
 export default function SupportScreen() {
@@ -66,20 +60,20 @@ export default function SupportScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Header */}
-        <HStack className="items-center px-6 py-4 border-b border-gray-200">
+        <View className="flex-row items-center px-6 py-4 border-b border-gray-200">
           <Pressable onPress={() => router.back()} className="flex-row items-center">
-            <Icon as={ChevronLeft} size="lg" className="text-[#30352D]" />
+            <ChevronLeft size={24} color="#30352D" />
             <Text className="text-[18px] text-[#30352D] ml-2">Profile</Text>
           </Pressable>
           <Text className="flex-1 text-center text-[18px] font-bold text-[#30352D] mr-16">
             Support
           </Text>
-        </HStack>
+        </View>
 
         <ScrollView className="flex-1">
-          <VStack className="pt-6">
+          <View className="flex-col pt-6">
             <MenuItem
               title="Message Support"
               onPress={handleMessageSupport}
@@ -106,14 +100,14 @@ export default function SupportScreen() {
               showDivider={false}
             />
 
-            <Box className="px-6 mt-8">
+            <View className="px-6 mt-8">
               <Text className="text-[13px] text-[#333A31]">
                 Version 1.2.0 (100 Handy)
               </Text>
-            </Box>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }
