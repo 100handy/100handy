@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, Linking } from 'react-native';
+import { ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
@@ -8,47 +8,60 @@ import { Pressable } from '@/components/ui/pressable';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { ChevronLeft, Mail, Phone, MessageCircle, HelpCircle, ChevronRight } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
 
-interface SupportOptionProps {
-  icon: any;
+interface MenuItemProps {
   title: string;
-  description: string;
   onPress: () => void;
+  showDivider?: boolean;
 }
 
-const SupportOption = ({ icon, title, description, onPress }: SupportOptionProps) => (
-  <Pressable onPress={onPress}>
-    <HStack className="items-center py-4 border-b border-gray-200">
-      <Box className="w-12 h-12 bg-[#FBF4ED] rounded-full items-center justify-center mr-4">
-        <Icon as={icon} size="lg" className="text-[#C1856A]" />
+const MenuItem = ({ title, onPress, showDivider = true }: MenuItemProps) => (
+  <Box>
+    <Pressable onPress={onPress}>
+      <Box className="px-6 py-4">
+        <Text className="text-[20px] font-bold text-[#30352D]">{title}</Text>
       </Box>
-      <VStack className="flex-1">
-        <Text className="text-base font-semibold text-[#333333] mb-1">{title}</Text>
-        <Text className="text-sm text-[#666666]">{description}</Text>
-      </VStack>
-      <Icon as={ChevronRight} size="md" className="text-gray-400" />
-    </HStack>
-  </Pressable>
+    </Pressable>
+    {showDivider && <Box className="h-[1px] bg-gray-200" />}
+  </Box>
 );
 
 export default function SupportScreen() {
   const router = useRouter();
 
-  const handleEmailSupport = () => {
-    Linking.openURL('mailto:support@100handy.com');
+  const handleMessageSupport = () => {
+    router.push('/(client)/support/message-support');
   };
 
-  const handlePhoneSupport = () => {
-    Linking.openURL('tel:+442012345678');
+  const handleSupportCenter = () => {
+    // Navigate to support center or open URL
+    console.log('Open Support Center');
   };
 
-  const handleLiveChat = () => {
-    console.log('Open live chat');
+  const handleBecomeTasker = () => {
+    // Navigate to become a tasker flow
+    console.log('Open Become a Tasker');
   };
 
-  const handleFAQ = () => {
-    console.log('Open FAQ');
+  const handleCancellationPolicy = () => {
+    // Navigate to cancellation policy
+    console.log('Open Cancellation Policy');
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => console.log('Delete account confirmed')
+        }
+      ]
+    );
   };
 
   return (
@@ -57,67 +70,45 @@ export default function SupportScreen() {
         {/* Header */}
         <HStack className="items-center px-6 py-4 border-b border-gray-200">
           <Pressable onPress={() => router.back()} className="flex-row items-center">
-            <Icon as={ChevronLeft} size="lg" className="text-[#333333]" />
-            <Text className="text-base text-[#333333] ml-2">Profile</Text>
+            <Icon as={ChevronLeft} size="lg" className="text-[#30352D]" />
+            <Text className="text-[18px] text-[#30352D] ml-2">Profile</Text>
           </Pressable>
-          <Text className="flex-1 text-center text-lg font-semibold text-[#333333] mr-16">
+          <Text className="flex-1 text-center text-[18px] font-bold text-[#30352D] mr-16">
             Support
           </Text>
         </HStack>
 
         <ScrollView className="flex-1">
-          <VStack className="px-6 py-6">
-            <Text className="text-2xl font-bold text-[#333333] mb-2">How can we help?</Text>
-            <Text className="text-sm text-[#666666] mb-6">
-              Choose the best way to get support
-            </Text>
-
-            <SupportOption
-              icon={Mail}
-              title="Email Support"
-              description="Get help via email - we'll respond within 24 hours"
-              onPress={handleEmailSupport}
+          <VStack className="pt-6">
+            <MenuItem
+              title="Message Support"
+              onPress={handleMessageSupport}
             />
 
-            <SupportOption
-              icon={Phone}
-              title="Phone Support"
-              description="Call us Monday-Friday, 9am-6pm"
-              onPress={handlePhoneSupport}
+            <MenuItem
+              title="Support Center"
+              onPress={handleSupportCenter}
             />
 
-            <SupportOption
-              icon={MessageCircle}
-              title="Live Chat"
-              description="Chat with us in real-time"
-              onPress={handleLiveChat}
+            <MenuItem
+              title="Become a Tasker"
+              onPress={handleBecomeTasker}
             />
 
-            <SupportOption
-              icon={HelpCircle}
-              title="Help Center & FAQ"
-              description="Browse common questions and answers"
-              onPress={handleFAQ}
+            <MenuItem
+              title="Cancellation Policy"
+              onPress={handleCancellationPolicy}
             />
 
-            <Box className="mt-8 p-4 bg-[#FBF4ED] rounded-lg">
-              <Text className="text-base font-semibold text-[#333333] mb-2">
-                Need urgent help?
-              </Text>
-              <Text className="text-sm text-[#666666] mb-4">
-                For urgent matters related to active tasks, please contact your tasker directly through the task chat.
-              </Text>
-              <Pressable
-                className="bg-[#C1856A] rounded-full py-3 items-center"
-                onPress={() => console.log('Go to active tasks')}
-              >
-                <Text className="text-white font-semibold">View Active Tasks</Text>
-              </Pressable>
-            </Box>
+            <MenuItem
+              title="Delete Account"
+              onPress={handleDeleteAccount}
+              showDivider={false}
+            />
 
-            <Box className="mt-6 p-4 border border-gray-200 rounded-lg">
-              <Text className="text-xs text-[#666666] text-center">
-                Operating Hours: Monday - Friday, 9:00 AM - 6:00 PM GMT
+            <Box className="px-6 mt-8">
+              <Text className="text-[13px] text-[#333A31]">
+                Version 1.2.0 (100 Handy)
               </Text>
             </Box>
           </VStack>

@@ -59,3 +59,14 @@ export {
   type HandymanProfile,
   type HandymanFilters,
 } from './hooks/useHandymen';
+
+// Support hooks and utilities
+export {
+  useSupportTickets,
+  useSupportTicket,
+  useTicketMessages,
+  useCreateSupportTicket,
+  useSendMessage,
+  useInvalidateSupport,
+  supportKeys,
+} from './hooks/useSupport';

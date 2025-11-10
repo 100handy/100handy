@@ -31,22 +31,29 @@ export default function Index() {
     if (isLoading) return;
 
     checkOnboardingStatus();
-  }, [isLoading, isAuthenticated, userRole, isEmailVerified, hasCompletedOnboarding]);
+  }, [isLoading, isAuthenticated, user, userRole, isEmailVerified, hasCompletedOnboarding]);
 
   const checkOnboardingStatus = async () => {
     try {
+      // Priority 1: If user is authenticated, route them appropriately
+      if (isAuthenticated && user) {
+        // Set the onboarding flag if not already set (for future visits)
+        const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
+        if (hasSeenOnboarding !== 'true') {
+          await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+        }
+        // Route authenticated user
+        await routeAuthenticatedUser();
+        return;
+      }
+
+      // Priority 2: User is not authenticated - check if they've seen onboarding before
       const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
       
       if (hasSeenOnboarding === 'true') {
-        // Returning user - route based on auth state
-        if (isAuthenticated && user) {
-          // User is authenticated - route to appropriate screen based on role
-          await routeAuthenticatedUser();
-        } else {
-          // Not authenticated - redirect to login
-          router.replace('/(auth)/role-selection');
-          setIsChecking(false);
-        }
+        // Returning user but not authenticated - redirect to login
+        router.replace('/(auth)/role-selection');
+        setIsChecking(false);
       } else {
         // First time user - show welcome flow
         router.replace('/(auth)/role-selection');
@@ -54,9 +61,13 @@ export default function Index() {
       }
     } catch (error) {
       console.error('Error checking onboarding status:', error);
-      // On error, show onboarding to be safe
-      router.replace('/(auth)/role-selection');
-      setIsChecking(false);
+      // On error, check auth state first
+      if (isAuthenticated && user) {
+        await routeAuthenticatedUser();
+      } else {
+        router.replace('/(auth)/role-selection');
+        setIsChecking(false);
+      }
     }
   };
 

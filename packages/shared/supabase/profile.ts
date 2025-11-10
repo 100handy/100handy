@@ -11,6 +11,7 @@ export interface UserProfile {
   avatar_url?: string;
   rating?: number;
   jobs_completed?: number;
+  two_factor_enabled: boolean;
   created_at: string;
   // Auth user data
   email: string;
@@ -618,6 +619,96 @@ export async function deleteChatTemplate(
     return true;
   } catch (error) {
     console.error('Error in deleteChatTemplate:', error);
+    return false;
+  }
+}
+
+// ============= TWO-FACTOR AUTHENTICATION FUNCTIONS =============
+
+/**
+ * Enable two-factor authentication for the current user (email-based)
+ */
+export async function enable2FA(): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    // Update user metadata
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: {
+        two_factor_email_enabled: true,
+      },
+    });
+
+    if (metadataError) {
+      console.error('Error updating user metadata:', metadataError);
+      return false;
+    }
+
+    // Update profiles table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        two_factor_enabled: true,
+      })
+      .eq('user_id', user.id);
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error enabling 2FA:', error);
+    return false;
+  }
+}
+
+/**
+ * Disable two-factor authentication for the current user
+ */
+export async function disable2FA(): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    // Update user metadata
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: {
+        two_factor_email_enabled: false,
+      },
+    });
+
+    if (metadataError) {
+      console.error('Error updating user metadata:', metadataError);
+      return false;
+    }
+
+    // Update profiles table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        two_factor_enabled: false,
+      })
+      .eq('user_id', user.id);
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error disabling 2FA:', error);
     return false;
   }
 }

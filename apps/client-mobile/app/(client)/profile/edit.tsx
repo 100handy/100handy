@@ -28,14 +28,16 @@ export default function EditProfileScreen() {
   const uploadAvatarMutation = useUploadAvatar();
 
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Initialize formData with profile data if available, otherwise empty strings
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    phone: '',
-    postcode: '',
+    first_name: profile?.first_name || '',
+    last_name: profile?.last_name || '',
+    phone: profile?.phone || '',
+    postcode: profile?.postcode || '',
   });
 
-  // Update form when profile loads
+  // Update form when profile loads or changes
   useEffect(() => {
     if (profile) {
       setFormData({

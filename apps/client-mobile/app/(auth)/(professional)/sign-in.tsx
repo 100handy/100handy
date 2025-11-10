@@ -13,20 +13,23 @@ import { signIn } from '@shared/supabase/auth';
 import { type SignInFormData } from '@shared/schemas/auth';
 import AuthFooter from '@/components/auth/AuthFooter';
 import { useToast } from '@/components/ui/toast';
+import { useAuthStore } from '@shared/supabase';
 
 export default function ProfessionalSignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
+  const checkAuth = useAuthStore((state) => state.checkAuth);
 
   const handleSignIn = async (data: SignInFormData): Promise<void> => {
     setIsLoading(true);
     try {
       await signIn(data.email, data.password);
-      // AuthWrapper will handle navigation automatically
+      // Update auth state and then navigate to root so index.tsx can handle routing
+      await checkAuth();
+      router.replace('/');
     } catch (error) {
       console.error('Sign in error:', error);
       toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');
-    } finally {
       setIsLoading(false);
     }
   };
