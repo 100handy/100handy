@@ -11,8 +11,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   RatingFilter,
   RatingFilterSheet,
+  ScheduleSelectionSheet,
 } from '@/components/tasker';
-import DateTimeSelectionSheet from '@/components/tasker/DateTimeSelectionSheet';
 import { useHandymanProfile, useHandymanReviews } from '@shared/supabase';
 
 // Mock data - in production would come from API
@@ -94,7 +94,7 @@ export default function TaskerProfileScreen() {
   const taskDetails = params.taskDetails as string;
 
   const [showFilterSheet, setShowFilterSheet] = useState(false);
-  const [showDateTimeSheet, setShowDateTimeSheet] = useState(false);
+  const [showScheduleSheet, setShowScheduleSheet] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<RatingFilter>('All mounting');
 
   // Fetch tasker profile and reviews
@@ -104,10 +104,10 @@ export default function TaskerProfileScreen() {
   const isLoading = profileLoading || reviewsLoading;
 
   const handleSelect = () => {
-    setShowDateTimeSheet(true);
+    setShowScheduleSheet(true);
   };
 
-  const handleDateTimeSelect = (date: string, time: string) => {
+  const handleScheduleSelect = (date: string, time: string) => {
     // Navigate to confirm-booking screen with all task details
     router.push({
       pathname: '/(client)/confirm-booking',
@@ -443,11 +443,11 @@ export default function TaskerProfileScreen() {
         </HStack>
       </VStack>
 
-      {/* Date/Time Selection Action Sheet */}
-      <DateTimeSelectionSheet
-        isOpen={showDateTimeSheet}
-        onClose={() => setShowDateTimeSheet(false)}
-        onSelectDateTime={handleDateTimeSelect}
+      {/* Schedule Selection Action Sheet */}
+      <ScheduleSelectionSheet
+        isOpen={showScheduleSheet}
+        onClose={() => setShowScheduleSheet(false)}
+        onSelectSchedule={handleScheduleSelect}
         taskerName={profile?.display_name || 'Tasker'}
       />
 

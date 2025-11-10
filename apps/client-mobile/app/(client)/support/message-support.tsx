@@ -28,7 +28,6 @@ export default function MessageSupportScreen() {
     openTicket,
     closeActiveTicket,
     sendTicketMessage,
-    subscribeToMessages,
     unsubscribeFromMessages,
   } = useSupportStore();
 
