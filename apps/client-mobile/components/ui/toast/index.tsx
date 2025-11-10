@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert } from 'react-native';
+import Toast, { BaseToast, ErrorToast, InfoToast, BaseToastProps, type ToastConfig } from 'react-native-toast-message';
 
 export interface ToastProps {
   id?: string;
@@ -10,17 +10,106 @@ export interface ToastProps {
 }
 
 /**
- * Simple toast hook using React Native Alert for now
- * Can be replaced with proper toast UI component once dependencies are installed
+ * Toast configuration with custom styling using mobile design system
+ */
+export const toastConfig: ToastConfig = {
+  success: (props: BaseToastProps) => (
+    <BaseToast
+      {...props}
+      style={{
+        borderLeftColor: '#A3B899', // sage-green
+        backgroundColor: '#FFFFFF',
+      }}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
+      text1Style={{
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333A31', // text-primary
+      }}
+      text2Style={{
+        fontSize: 14,
+        color: '#4B5563', // text-secondary
+      }}
+    />
+  ),
+  error: (props: BaseToastProps) => (
+    <ErrorToast
+      {...props}
+      style={{
+        borderLeftColor: '#DC2626', // status-danger
+        backgroundColor: '#FFFFFF',
+      }}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
+      text1Style={{
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333A31', // text-primary
+      }}
+      text2Style={{
+        fontSize: 14,
+        color: '#4B5563', // text-secondary
+      }}
+    />
+  ),
+  info: (props: BaseToastProps) => (
+    <InfoToast
+      {...props}
+      style={{
+        borderLeftColor: '#3B82F6', // status-info
+        backgroundColor: '#FFFFFF',
+      }}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
+      text1Style={{
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333A31', // text-primary
+      }}
+      text2Style={{
+        fontSize: 14,
+        color: '#4B5563', // text-secondary
+      }}
+    />
+  ),
+  warning: (props: BaseToastProps) => (
+    <BaseToast
+      {...props}
+      style={{
+        borderLeftColor: '#A16207', // status-warning
+        backgroundColor: '#FFFFFF',
+      }}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
+      text1Style={{
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333A31', // text-primary
+      }}
+      text2Style={{
+        fontSize: 14,
+        color: '#4B5563', // text-secondary
+      }}
+    />
+  ),
+};
+
+/**
+ * Toast hook with same API as Gluestack useToast
+ * Compatible with existing codebase usage
  */
 export const useToast = () => {
   const show = ({
     title,
     description,
     action = 'info',
-  }: Omit<ToastProps, 'id' | 'duration'>) => {
-    const displayTitle = title || (action === 'error' ? 'Error' : action === 'success' ? 'Success' : 'Info');
-    Alert.alert(displayTitle, description);
+    duration = 4000,
+  }: Omit<ToastProps, 'id'>) => {
+    Toast.show({
+      type: action,
+      text1: title,
+      text2: description,
+      visibilityTime: duration,
+      position: 'top',
+      topOffset: 60,
+    });
   };
 
   return {
@@ -33,6 +122,20 @@ export const useToast = () => {
       show({ title, description, action: 'info' }),
     warning: (title: string, description?: string) =>
       show({ title, description, action: 'warning' }),
+    hide: () => Toast.hide(),
   };
 };
 
+/**
+ * Toast component - must be placed at the root of the app
+ */
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <>
+      {children}
+      <Toast config={toastConfig} />
+    </>
+  );
+};
+
+export default Toast;

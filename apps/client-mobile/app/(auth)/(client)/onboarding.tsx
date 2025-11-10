@@ -1,11 +1,7 @@
 import React, { useState, useRef, type ReactNode } from 'react';
-import { View, Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent, Image } from 'react-native';
+import { View, Text, Pressable, Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronRight } from 'lucide-react-native';
 import { router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
@@ -64,37 +60,37 @@ const onboardingData = [
       </>
     ),
     content: (
-      <VStack className="gap-4 mt-12">
+      <View className="flex-col gap-4 mt-12">
         {/* Review Card 1 - Lukas Ernest */}
         <View className="bg-[#F7F1EC] rounded-2xl p-4 shadow-sm">
-          <HStack className="items-center gap-3">
+          <View className="flex-row items-center gap-3">
             <Image
               source={require('@/assets/images/avatar-lukas.png')}
               className="w-10 h-10 rounded-full"
             />
-            <VStack className="flex-1">
+            <View className="flex-col flex-1">
               <Text className="text-[10px] font-worksans-medium" style={{ color: COLORS.themeFont }}>Lukas Ernest</Text>
               <Text className="text-[8px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>140 Handyman Task</Text>
               <StarRating width={114} height={16} />
-            </VStack>
-          </HStack>
+            </View>
+          </View>
         </View>
 
         {/* Review Card 2 - Jana Rado */}
         <View className="bg-[#F7F1EC] rounded-2xl p-4 shadow-sm">
-          <HStack className="items-center gap-3">
+          <View className="flex-row items-center gap-3">
             <Image
               source={require('@/assets/images/avatar-jana.png')}
               className="w-10 h-10 rounded-full"
             />
-            <VStack className="flex-1">
+            <View className="flex-col flex-1">
               <Text className="text-[10px] font-worksans-medium" style={{ color: COLORS.themeFont }}>Jana Rado</Text>
               <Text className="text-[8px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>45 Delivery Tasks</Text>
               <StarRating width={114} height={16} />
-            </VStack>
-          </HStack>
+            </View>
+          </View>
         </View>
-      </VStack>
+      </View>
     ),
   },
   {
