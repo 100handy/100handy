@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Loader } from '@/components/ui/loader';
 import { WrenchIcon, PaintbrushIcon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import Header from '@/components/Header';
 import { TaskCard, Tab, EmptyState } from '@/components/tasks';
 import { useUserBookings } from '@shared/supabase/query';
 import { useAuthStore } from '@shared/supabase';
@@ -116,16 +115,10 @@ export default function TasksScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg-secondary">
       <View className="flex-1">
-        {/* Top App Bar */}
-        <Header 
-          title="Tasks" 
-          onBackPress={() => {}} 
-          onBellPress={() => {}} 
-          showFilterIcon={false}
-          showBellIcon={true}
-        />
-
-        <View className="h-px bg-border opacity-80" />
+        {/* Header */}
+        <View className="items-center py-4 border-b border-gray-200">
+          <Text className="text-lg font-bold text-[#30352d]">Tasks</Text>
+        </View>
 
         {/* Segmented Tabs */}
         <View className="flex-row bg-bg-primary">
@@ -142,7 +135,7 @@ export default function TasksScreen() {
             <RefreshControl refreshing={showLoading} onRefresh={onRefresh} />
           }
         >
-          {user?.id ? (
+          {!user?.id ? (
             <View className="flex-col items-center justify-center py-12">
               <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
                 Please sign in

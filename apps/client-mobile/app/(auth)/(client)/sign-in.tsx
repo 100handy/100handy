@@ -21,7 +21,7 @@ export default function ClientSignIn() {
       await signIn(data.email, data.password);
       // Update auth state and then navigate to root so index.tsx can handle routing
       await checkAuth();
-      router.replace('/');
+      router.replace('/(client)/(tabs)/home');
     } catch (error) {
       console.error('Sign in error:', error);
       toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');

@@ -70,3 +70,16 @@ export {
   useInvalidateSupport,
   supportKeys,
 } from './hooks/useSupport';
+
+// Favorites hooks and utilities
+export {
+  useFavoriteHandymen,
+  useAddFavorite,
+  useRemoveFavorite,
+  useIsFavorite,
+  useInvalidateFavorites,
+  favoriteKeys,
+} from './hooks/useFavorites';
+
+// Favorites types
+export type { Favorite } from '../supabase/favorites';

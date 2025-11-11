@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { ScrollView, Image as RNImage, View, Text, Pressable } from 'react-native';
+import { ScrollView, RefreshControl, Image as RNImage, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Star, MapPin, Calendar } from 'lucide-react-native';
+import { useFavoriteHandymen } from '@shared/supabase/query';
+import { useUserBookings, useAuthStore } from '@shared/supabase';
+import { Loader } from '@/components/ui/loader';
+import { getPastTaskersFromBookings, handymenProfilesToTaskers, type Tasker } from '@/lib/taskers';
+import { useRouter } from 'expo-router';
 
 interface EmptyStateProps {
   activeTab: 'favourite' | 'past';
@@ -50,70 +55,54 @@ function TaskersEmptyState({ activeTab }: EmptyStateProps) {
   );
 }
 
-interface Tasker {
-  id: string;
-  name: string;
-  specialty: string;
-  avatarUrl: string;
-  rating: number;
-  reviewCount: number;
-  location: string;
-  lastBooked: string;
-  availability: string;
-}
-
-const MOCK_FAVOURITE_TASKERS: Tasker[] = [
-  {
-    id: '1',
-    name: 'Maria Lopez',
-    specialty: 'Cleaning Specialist',
-    avatarUrl: 'https://i.pravatar.cc/150?img=1',
-    rating: 5.0,
-    reviewCount: 124,
-    location: 'Leytonstone, E11',
-    lastBooked: '15 Oct 2025',
-    availability: 'Available next week',
-  },
-  {
-    id: '2',
-    name: 'Anton Lee',
-    specialty: 'Cleaning Specialist',
-    avatarUrl: 'https://i.pravatar.cc/150?img=2',
-    rating: 5.0,
-    reviewCount: 124,
-    location: 'Leytonstone, E11',
-    lastBooked: '15 Oct 2025',
-    availability: 'Available this week',
-  },
-];
-
-const MOCK_PAST_TASKERS: Tasker[] = [
-  // Empty by default to show empty state
-  // Uncomment to test with data:
-  // {
-  //   id: '3',
-  //   name: 'Sarah Johnson',
-  //   specialty: 'Handyman',
-  //   avatarUrl: 'https://i.pravatar.cc/150?img=3',
-  //   rating: 4.9,
-  //   reviewCount: 98,
-  //   location: 'Stratford, E15',
-  //   lastBooked: '8 Oct 2025',
-  //   availability: 'Available next month',
-  // },
-];
-
 const TaskersScreen = () => {
   const [activeTab, setActiveTab] = useState<'favourite' | 'past'>('favourite');
+  const router = useRouter();
 
-  const taskers = activeTab === 'favourite' ? MOCK_FAVOURITE_TASKERS : MOCK_PAST_TASKERS;
+  // Get user from auth store
+  const { user } = useAuthStore();
+
+  // Fetch favorite handymen
+  const {
+    data: favoriteHandymen,
+    isLoading: favLoading,
+    isError: favError,
+    refetch: refetchFavorites
+  } = useFavoriteHandymen(user?.id || '');
+
+  // Fetch past bookings for past taskers
+  const {
+    past,
+    cancelled,
+    isLoading: bookingsLoading,
+    isError: bookingsError,
+    refetch: refetchBookings
+  } = useUserBookings(user?.id || '');
+
+  // Transform data
+  const favoriteTaskers: Tasker[] = favoriteHandymen ? handymenProfilesToTaskers(favoriteHandymen) : [];
+  const pastTaskers: Tasker[] = getPastTaskersFromBookings([...past, ...cancelled]);
+
+  // Determine which data to show
+  const taskers = activeTab === 'favourite' ? favoriteTaskers : pastTaskers;
+  const isLoading = activeTab === 'favourite' ? favLoading : bookingsLoading;
+  const isError = activeTab === 'favourite' ? favError : bookingsError;
+
+  // Pull to refresh handler
+  const onRefresh = () => {
+    if (activeTab === 'favourite') {
+      refetchFavorites();
+    } else {
+      refetchBookings();
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-col flex-1">
         {/* Header */}
         <View className="items-center py-4 border-b border-gray-200">
-          <Text className="text-lg font-bold text-[#30352d]">Tasks</Text>
+          <Text className="text-lg font-bold text-[#30352d]">Taskers</Text>
         </View>
 
         {/* Tabs */}
@@ -151,13 +140,51 @@ const TaskersScreen = () => {
         </View>
 
         {/* Taskers List */}
-        <ScrollView className="flex-1">
-          {taskers.length === 0 ? (
+        <ScrollView
+          className="flex-1"
+          refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
+          }
+        >
+          {!user?.id ? (
+            <View className="flex-col items-center justify-center py-12 px-8">
+              <Text className="text-lg font-medium text-[#333a31] mb-2">
+                Please sign in
+              </Text>
+              <Text className="text-sm text-[#666] text-center">
+                You need to be signed in to view your taskers.
+              </Text>
+            </View>
+          ) : isLoading ? (
+            <Loader text="Loading taskers..." />
+          ) : isError ? (
+            <View className="flex-col items-center justify-center py-12 px-8">
+              <Text className="text-lg font-medium text-[#333a31] mb-2">
+                Error loading taskers
+              </Text>
+              <Text className="text-sm text-[#666] text-center mb-4">
+                Something went wrong. Please try again.
+              </Text>
+              <Pressable
+                onPress={onRefresh}
+                className="bg-[#c1856a] px-6 py-3 rounded-full"
+              >
+                <Text className="text-white font-semibold">Retry</Text>
+              </Pressable>
+            </View>
+          ) : taskers.length === 0 ? (
             <TaskersEmptyState activeTab={activeTab} />
           ) : (
             <View className="flex-col px-6 pt-4">
               {taskers.map((tasker) => (
-                <Pressable key={tasker.id} className="mb-4">
+                <Pressable
+                  key={tasker.id}
+                  className="mb-4"
+                  onPress={() => {
+                    // Navigate to handyman details screen
+                    router.push(`/(tabs)/professionals/${tasker.id}`);
+                  }}
+                >
                   <View
                     className="bg-white rounded-2xl"
                     style={{
