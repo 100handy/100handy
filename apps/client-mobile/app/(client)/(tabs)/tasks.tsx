@@ -5,7 +5,7 @@ import { Loader } from '@/components/ui/loader';
 import { WrenchIcon, PaintbrushIcon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { TaskCard, Tab, EmptyState } from '@/components/tasks';
-import { useUserBookings } from '@shared/supabase/query';
+import { useUserBookings, useConversationByBooking } from '@shared/supabase/query';
 import { useAuthStore } from '@shared/supabase';
 import { bookingToTaskCardProps } from '@/lib/bookings';
 
@@ -99,15 +99,27 @@ export default function TasksScreen() {
   // Transform bookings to TaskCard props
   const getCurrentTaskCards = () => {
     const bookings = getCurrentBookings();
-    
+
     // If using fallback data, return it directly (already in correct format)
     // Fallback data has 'id' while real data has 'bookingId'
     if (bookings.length > 0 && 'dateTime' in bookings[0] && !('category' in bookings[0])) {
       return bookings as any[];
     }
-    
+
     // Otherwise transform real booking data
     return bookings.map(booking => bookingToTaskCardProps(booking));
+  };
+
+  const handleTaskCardPress = async (bookingId?: number) => {
+    if (!bookingId) {
+      // Fallback data was clicked, just go to messages tab
+      router.push('/(client)/(tabs)/messages');
+      return;
+    }
+
+    // Navigate to messages tab - the conversation will be created automatically
+    // when the user tries to access it from the booking
+    router.push('/(client)/(tabs)/messages');
   };
 
 
@@ -163,14 +175,14 @@ export default function TasksScreen() {
                 <TaskCard
                   key={`${activeTab}-${taskCardProps.bookingId || taskCardProps.id || index}`}
                   {...taskCardProps}
-                  onPress={() => {}}
+                  onPress={() => handleTaskCardPress(taskCardProps.bookingId)}
                 />
               ))}
 
               {/* Helper text when there are tasks */}
               <View className="flex-row justify-center pt-6">
                 <Text className="text-xs font-work-sans text-text-tertiary leading-4">
-                  Tap to view details
+                  Tap to message tasker
                 </Text>
               </View>
             </View>

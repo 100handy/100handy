@@ -87,7 +87,6 @@ export default function TaskerProfileScreen() {
   const categoryName = params.categoryName as string;
   const taskSize = params.taskSize as string;
   const vehicleRequirement = params.vehicleRequirement as string;
-  const taskDetails = params.taskDetails as string;
 
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [showScheduleSheet, setShowScheduleSheet] = useState(false);
@@ -95,7 +94,10 @@ export default function TaskerProfileScreen() {
 
   // Fetch tasker profile and reviews
   const { data: profile, isLoading: profileLoading, isError: profileError } = useHandymanProfile(taskerId);
-  const { data: reviews, isLoading: reviewsLoading } = useHandymanReviews(taskerId, 10);
+  const { data: apiReviews, isLoading: reviewsLoading } = useHandymanReviews(taskerId, 10);
+
+  // Use API reviews if available, otherwise fallback to mock data
+  const reviews = (apiReviews && apiReviews.length > 0) ? apiReviews : taskerProfile.reviews;
 
   const isLoading = profileLoading || reviewsLoading;
 
@@ -104,16 +106,15 @@ export default function TaskerProfileScreen() {
   };
 
   const handleScheduleSelect = (date: string, time: string) => {
-    // Navigate to confirm-booking screen with all task details
+    // Navigate to task-details screen with all task details
     router.push({
-      pathname: '/(client)/confirm-booking',
+      pathname: '/(client)/task-details',
       params: {
         taskerId,
         categoryId,
         categoryName,
         taskSize,
         vehicleRequirement,
-        taskDetails: taskDetails || '',
         selectedDate: date,
         selectedTime: time,
       },
@@ -309,14 +310,14 @@ export default function TaskerProfileScreen() {
             {[5, 4, 3, 2, 1].map((stars) => {
               const percentage = taskerProfile.ratingBreakdown[stars as keyof typeof taskerProfile.ratingBreakdown];
               return (
-                <View className="flex-row" key={stars} className="items-center gap-2">
+                <View key={stars} className="flex-row items-center gap-2">
                   <Text
                     className="text-xs font-bold w-10"
                     style={{ color: '#C1856A' }}
                   >
                     {stars} star
                   </Text>
-                  
+
                   <View className="flex-col flex-1 bg-gray-200 overflow-hidden"
                     style={{ height: 5, borderRadius: 2.5 }}
                   >
@@ -327,7 +328,7 @@ export default function TaskerProfileScreen() {
                       }}
                     />
                   </View>
-                  
+
                   <Text
                     className="text-xs text-right w-8"
                     style={{ color: '#333A31' }}
@@ -340,9 +341,9 @@ export default function TaskerProfileScreen() {
           </View>
 
           {/* Reviews List */}
-          <View className="flex-col gap-5">
+          <View className="flex-col">
             {reviews && reviews.length > 0 ? (
-              reviews.map((review: any) => {
+              reviews.map((review: any, index: number) => {
                 const reviewerName = review.profiles
                   ? `${review.profiles.first_name} ${review.profiles.last_name?.charAt(0) || ''}.`
                   : 'Customer';
@@ -352,52 +353,74 @@ export default function TaskerProfileScreen() {
                 });
 
                 return (
-                  <View className="flex-col" key={review.id}>
-                    <View className="flex-row items-start justify-between mb-2">
-                      <View className="flex-row flex-1 items-start gap-2.5">
-                        {/* Reviewer Avatar */}
-                        <Image
-                          source={{ uri: `https://i.pravatar.cc/150?u=${review.id}` }}
-                          className="w-10 h-10 rounded-full bg-gray-100"
-                        />
+                  <View key={review.id}>
+                    <View className="flex-col py-4">
+                      <View className="flex-row items-start justify-between mb-2">
+                        <View className="flex-row flex-1 items-start gap-2.5">
+                          {/* Reviewer Avatar */}
+                          <Image
+                            source={{ uri: `https://i.pravatar.cc/150?u=${review.id}` }}
+                            className="w-12 h-12 rounded-full bg-gray-100"
+                          />
 
-                        {/* Reviewer Info */}
-                        <View className="flex-col flex-1">
-                          <Text
-                            className="text-base font-bold mb-1"
-                            style={{ color: '#333A31' }}
-                          >
-                            {reviewerName}
-                          </Text>
-
-                          <View className="flex-row items-center gap-1.5 mb-1">
+                          {/* Reviewer Info */}
+                          <View className="flex-col flex-1">
                             <Text
-                              className="text-xs font-light"
+                              className="text-base font-bold mb-2"
                               style={{ color: '#333A31' }}
                             >
-                              {reviewDate}
+                              {reviewerName}
                             </Text>
+
+                            {/* Task Type Badge and Date */}
+                            <View className="flex-row items-center gap-2 mb-1">
+                              {/* Green Task Type Badge */}
+                              <View
+                                className="px-2 py-0.5 rounded"
+                                style={{ backgroundColor: '#7EC04B' }}
+                              >
+                                <Text className="text-[9px] font-medium text-white">
+                                  {categoryName || 'TV mounting'}
+                                </Text>
+                              </View>
+
+                              {/* Date */}
+                              <Text
+                                className="text-xs font-light"
+                                style={{ color: '#333A31' }}
+                              >
+                                {reviewDate}
+                              </Text>
+                            </View>
                           </View>
+                        </View>
+
+                        {/* Review Rating */}
+                        <View className="flex-row items-center gap-0.5">
+                          <Star size={12} color="#000000" fill="#000000" strokeWidth={0} />
+                          <Text className="text-xs font-medium text-black">
+                            {review.rating.toFixed(1)}
+                          </Text>
                         </View>
                       </View>
 
-                      {/* Review Rating */}
-                      <View className="flex-row items-center gap-0.5">
-                        <Star size={12} color="#000000" fill="#000000" strokeWidth={0} />
-                        <Text className="text-xs font-medium text-black">
-                          {review.rating.toFixed(1)}
+                      {/* Review Comment */}
+                      {review.comment && (
+                        <Text
+                          className="text-xs font-light pl-[62px]"
+                          style={{ color: '#333A31', lineHeight: 16 }}
+                        >
+                          {review.comment}
                         </Text>
-                      </View>
+                      )}
                     </View>
 
-                    {/* Review Comment */}
-                    {review.comment && (
-                      <Text
-                        className="text-xs font-light"
-                        style={{ color: '#333A31', lineHeight: 16 }}
-                      >
-                        {review.comment}
-                      </Text>
+                    {/* Divider Line (except for last item) */}
+                    {index < reviews.length - 1 && (
+                      <View
+                        className="w-full"
+                        style={{ height: 1, backgroundColor: '#E5E7EB' }}
+                      />
                     )}
                   </View>
                 );

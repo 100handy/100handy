@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, MapPin, Calendar, Clock, Edit } from 'lucide-react-native';
+import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput } from '@shared/supabase';
 import { useAuthStore } from '@shared/supabase';
@@ -75,21 +75,20 @@ export default function ConfirmBookingScreen() {
         estimated_hours: estimatedHours,
       };
 
-      await createBookingMutation.mutateAsync(bookingInput);
+      const newBooking = await createBookingMutation.mutateAsync(bookingInput);
 
-      Alert.alert(
-        'Success!',
-        'Your booking has been created successfully',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navigate to bookings or home
-              router.push('/(tabs)/home');
-            },
-          },
-        ]
-      );
+      // Navigate to success screen
+      router.push({
+        pathname: '/(client)/booking-success',
+        params: {
+          taskerName: profile.display_name || 'Tasker',
+          taskerAvatar: profile.avatar_url || '',
+          categoryName,
+          selectedDate,
+          selectedTime,
+          bookingId: newBooking.id,
+        },
+      });
     } catch (error: any) {
       console.error('Error creating booking:', error);
       Alert.alert('Error', error.message || 'Failed to create booking. Please try again.');
@@ -123,8 +122,8 @@ export default function ConfirmBookingScreen() {
           <Pressable onPress={() => router.back()} className="mr-4">
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
-          <Text className="flex-1 text-lg font-semibold text-black">
-            Confirm Booking
+          <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
+            Review and confirm
           </Text>
         </View>
       </View>
@@ -166,7 +165,19 @@ export default function ConfirmBookingScreen() {
               <Text className="text-base font-semibold text-[#30352D]">
                 Task Details
               </Text>
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => router.push({
+                pathname: '/(client)/task-form',
+                params: {
+                  taskerId,
+                  categoryId,
+                  categoryName,
+                  taskSize,
+                  vehicleRequirement,
+                  taskDetails: taskDetails || '',
+                  selectedDate,
+                  selectedTime,
+                },
+              })}>
                 <Edit size={18} color="#C1856A" />
               </Pressable>
             </View>
@@ -257,45 +268,71 @@ export default function ConfirmBookingScreen() {
             </View>
           </View>
 
-          {/* Price Estimate */}
-          <View className="flex-col bg-[#F9FAFB] rounded-lg border border-gray-300 p-5">
-            <Text className="text-base font-semibold text-[#30352D] mb-4">
-              Price Estimate
+          {/* Payment Method */}
+          <Pressable
+            onPress={() => router.push('/profile/payments')}
+            className="flex-row items-center justify-between py-4 border-b border-gray-200"
+          >
+            <Text className="text-lg font-semibold text-[#30352D]">
+              Payment
+            </Text>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-base" style={{ color: '#C1856A' }}>
+                Add payment
+              </Text>
+              <ChevronRight size={20} color="#C1856A" />
+            </View>
+          </Pressable>
+
+          {/* Promo Code */}
+          <Pressable
+            onPress={() => router.push('/profile/promotions')}
+            className="flex-row items-center justify-between py-4 border-b border-gray-200"
+          >
+            <Text className="text-lg font-semibold text-[#30352D]">
+              Promos
+            </Text>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-base" style={{ color: '#C1856A' }}>
+                Add code
+              </Text>
+              <ChevronRight size={20} color="#C1856A" />
+            </View>
+          </Pressable>
+
+          {/* Hourly Rate */}
+          <View className="flex-row items-center justify-between py-4">
+            <Text className="text-lg font-semibold text-[#30352D]">
+              Hourly Rate
+            </Text>
+            <Text className="text-lg font-semibold text-[#30352D]">
+              £{hourlyRate.toFixed(2)}/hr
+            </Text>
+          </View>
+
+          {/* Payment Hold Notice */}
+          <View className="flex-col py-6">
+            <Text className="text-sm text-gray-600 leading-5 mb-4">
+              You may see a temporary hold on your payment method in the amount of £{hourlyRate.toFixed(2)}/hr. Don't worry -- you're only billed when your task is complete!
             </Text>
 
-            <View className="flex-col gap-2">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-600">
-                  Hourly Rate
-                </Text>
-                <Text className="text-sm text-[#30352D]">
-                  £{hourlyRate.toFixed(2)}/hr
-                </Text>
-              </View>
+            <Text className="text-sm text-gray-600 leading-5 mb-4">
+              Pricing is inclusive of a{' '}
+              <Text style={{ color: '#C1856A' }}>£7.46/hr Trust and Support fee</Text>, as well as VAT, which is billed on the TaskRabbit's fees.
+            </Text>
 
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-600">
-                  Estimated Hours
-                </Text>
-                <Text className="text-sm text-[#30352D]">
-                  {estimatedHours} {estimatedHours === 1 ? 'hour' : 'hours'}
-                </Text>
-              </View>
+            <Text className="text-sm text-gray-600 leading-5">
+              You will not be billed until the task is complete and can cancel at any time. Tasks cancelled less than 24 hours before the start time may be billed a cancellation fee of one hour. Tasks have a one-hour minimum.
+            </Text>
+          </View>
 
-              <View className="flex-col h-px bg-gray-300 my-2" />
-
-              <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-[#30352D]">
-                  Estimated Total
-                </Text>
-                <Text className="text-xl font-bold" style={{ color: '#C1856A' }}>
-                  £{estimatedPrice.toFixed(2)}
-                </Text>
-              </View>
-            </View>
-
-            <Text className="text-xs text-gray-600 mt-3">
-              Final price will be calculated based on actual time spent
+          {/* Billing Assurance */}
+          <View className="flex-row items-center px-4 py-3 rounded-lg mb-4"
+            style={{ backgroundColor: '#FFF4ED' }}
+          >
+            <CreditCard size={20} color="#C1856A" className="mr-3" />
+            <Text className="flex-1 text-sm" style={{ color: '#C1856A' }}>
+              You won't be billed until your task is complete.
             </Text>
           </View>
         </View>
@@ -313,14 +350,10 @@ export default function ConfirmBookingScreen() {
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <Text className="text-base font-semibold text-white">
-              Confirm & Book
+              Confirm and chat
             </Text>
           )}
         </Pressable>
-
-        <Text className="text-xs text-center text-gray-600 mt-3">
-          By confirming, you agree to our Terms of Service
-        </Text>
       </View>
     </SafeAreaView>
   );

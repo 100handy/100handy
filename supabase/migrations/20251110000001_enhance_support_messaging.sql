@@ -80,11 +80,17 @@ GRANT ALL ON TABLE public.support_messages TO authenticated;
 GRANT ALL ON TABLE public.support_tickets TO authenticated;
 
 -- Create storage bucket for support attachments if it doesn't exist
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('support-attachments', 'support-attachments', false)
+INSERT INTO storage.buckets (id, name)
+VALUES ('support-attachments', 'support-attachments')
 ON CONFLICT (id) DO NOTHING;
 
+-- Drop existing storage policies if they exist to avoid function dependency conflicts
+DROP POLICY IF EXISTS "Users can upload their own support attachments" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view their own support attachments" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can view all support attachments" ON storage.objects;
+
 -- Create storage policies for support attachments
+-- Note: Policies are dropped first to avoid conflicts with storage schema migrations
 CREATE POLICY "Users can upload their own support attachments"
   ON storage.objects
   FOR INSERT

@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 
 // Define types based on the database schema we saw
 export interface Booking {
-  id: number;
+  id: string; // TEXT nanoid (migrated from bigint)
   customer_id: string;
   handy_id: string | null;
   category_id: string | null;
@@ -10,7 +10,7 @@ export interface Booking {
   task_details: string | null;
   scheduled_date: string;
   scheduled_time: string;
-  address_id: number | null;
+  address_id: string | null; // TEXT nanoid (migrated from bigint)
   hourly_rate_cents: number;
   estimated_hours: number;
   status: BookingStatus;
@@ -28,7 +28,7 @@ export interface Category {
 }
 
 export interface Address {
-  id: number;
+  id: string; // TEXT nanoid (migrated from bigint)
   user_id: string | null;
   street: string;
   apartment: string | null;
@@ -129,7 +129,7 @@ export async function getCancelledBookings(userId: string): Promise<BookingWithR
   });
 }
 
-export async function getBookingById(bookingId: number): Promise<BookingWithRelations | null> {
+export async function getBookingById(bookingId: string): Promise<BookingWithRelations | null> {
   try {
     const { data, error } = await supabase
       .from('bookings')

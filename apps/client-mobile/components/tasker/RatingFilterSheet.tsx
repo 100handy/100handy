@@ -29,38 +29,52 @@ export default function RatingFilterSheet({
   onSelectFilter,
 }: RatingFilterSheetProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
       <ModalBackdrop />
-      <ModalContent className="bg-white">
-        {/* Drag Indicator */}
-        <View className="w-full items-center pt-2 pb-1">
-          <View className="w-12 h-1 rounded-full bg-gray-300" />
-        </View>
-
+      <ModalContent
+        size="full"
+        className="bg-white"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          maxHeight: '50%',
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          margin: 0,
+          marginHorizontal: 0,
+          padding: 0,
+        }}
+      >
         {/* Header */}
-        <View className="w-full pb-4 pt-2 flex-col">
-          <Text className="text-center text-base font-semibold text-black">
+        <View className="w-full pb-4 pt-6 px-5 flex-col border-b border-gray-200">
+          <Text className="text-center text-xl font-medium" style={{ color: '#333A31' }}>
             Rating & reviews
           </Text>
         </View>
 
         {/* Filter Options */}
         <View className="w-full flex-col">
-          {ratingFilterOptions.map((option) => {
+          {ratingFilterOptions.map((option, index) => {
             const isSelected = selectedValue === option;
             return (
               <Pressable
                 key={option}
                 onPress={() => onSelectFilter(option)}
-                className="border-b border-gray-100"
-                style={{ paddingVertical: 16, paddingHorizontal: 20 }}
+                style={{
+                  paddingVertical: 16,
+                  paddingHorizontal: 20,
+                  borderBottomWidth: index < ratingFilterOptions.length - 1 ? 1 : 0,
+                  borderBottomColor: '#E5E7EB',
+                }}
               >
                 <View className="flex-1 items-center justify-between flex-row">
                   <Text
                     className="text-base"
                     style={{
-                      color: isSelected ? '#333A31' : '#4B5563',
-                      fontWeight: isSelected ? '600' : '400',
+                      color: '#333A31',
+                      fontWeight: '400',
                     }}
                   >
                     {option}
@@ -76,13 +90,18 @@ export default function RatingFilterSheet({
           {/* More Button */}
           <Pressable
             onPress={onClose}
-            className="pt-4 pb-2"
+            style={{
+              paddingVertical: 16,
+              paddingHorizontal: 20,
+              borderTopWidth: 1,
+              borderTopColor: '#E5E7EB',
+            }}
           >
-            <View className="flex-1 items-center justify-center gap-2 flex-row">
-              <Text className="text-base font-semibold text-black">
+            <View className="flex-row items-center justify-center gap-2">
+              <Text className="text-xs font-bold text-black">
                 More
               </Text>
-              <ChevronUp size={20} color="#000000" strokeWidth={2} />
+              <ChevronUp size={16} color="#000000" strokeWidth={2} />
             </View>
           </Pressable>
         </View>

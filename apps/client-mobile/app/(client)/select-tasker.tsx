@@ -290,28 +290,38 @@ export default function SelectTaskerScreen() {
       </ScrollView>
 
       {/* Sort Options Modal */}
-      <Modal isOpen={showSortSheet} onClose={() => setShowSortSheet(false)}>
+      <Modal isOpen={showSortSheet} onClose={() => setShowSortSheet(false)} size="full">
         <ModalBackdrop />
-        <ModalContent style={{ backgroundColor: '#FFFFFF' }}>
-          <ModalBody>
-            {/* Drag Indicator */}
-            <View className="w-full items-center pt-2 pb-1">
-              <View className="w-12 h-1 rounded-full bg-gray-300" />
-            </View>
-
+        <ModalContent
+          size="full"
+          style={{
+            backgroundColor: '#FFFFFF',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            maxHeight: '60%',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            margin: 0,
+            marginHorizontal: 0,
+            padding: 0,
+          }}
+        >
+          <ModalBody style={{ padding: 0 }}>
             {/* Header */}
-            <View className="flex-col w-full pb-4 pt-2">
+            <View className="w-full pb-4 pt-6 px-5 border-b border-gray-200">
               <Text
-                className="text-center text-base"
-                style={{ fontWeight: '600', color: '#6B7280' }}
+                className="text-center text-xl"
+                style={{ fontWeight: '500', color: '#333A31' }}
               >
-                Sort by:
+                Sort by
               </Text>
             </View>
 
             {/* Sort Options */}
             <View className="flex-col w-full">
-              {sortOptions.map((option) => {
+              {sortOptions.map((option, index) => {
                 const isSelected = selectedSort === option;
                 return (
                   <Pressable
@@ -320,22 +330,22 @@ export default function SelectTaskerScreen() {
                     style={{
                       paddingVertical: 16,
                       paddingHorizontal: 20,
-                      borderBottomWidth: 1,
-                      borderBottomColor: '#F3F4F6',
+                      borderBottomWidth: index < sortOptions.length - 1 ? 1 : 0,
+                      borderBottomColor: '#E5E7EB',
                     }}
                   >
                     <View className="flex-row flex-1 items-center justify-between">
                       <Text
                         style={{
-                          color: isSelected ? '#0D9488' : '#1F2937',
-                          fontWeight: isSelected ? '600' : '400',
+                          color: '#333A31',
+                          fontWeight: '400',
                           fontSize: 16,
                         }}
                       >
                         {option}
                       </Text>
                       {isSelected && (
-                        <Check size={20} color="#0D9488" strokeWidth={2.5} />
+                        <Check size={20} color="#333A31" strokeWidth={2.5} />
                       )}
                     </View>
                   </Pressable>

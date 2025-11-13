@@ -83,3 +83,23 @@ export {
 
 // Favorites types
 export type { Favorite } from '../supabase/favorites';
+
+// Conversation hooks and utilities
+export {
+  useConversations,
+  useConversation,
+  useConversationByBooking,
+  useConversationMessages,
+  useSendConversationMessage,
+  useMarkAsRead,
+  useInvalidateConversations,
+  conversationKeys,
+} from './hooks/useConversations';
+
+// Conversation types
+export type {
+  Conversation,
+  ConversationMessage,
+  ConversationWithProfiles,
+  SendConversationMessageInput,
+} from '../supabase/conversations';

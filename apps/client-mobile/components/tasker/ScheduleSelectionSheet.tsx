@@ -1,23 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { ChevronDown } from 'lucide-react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
+import { ChevronDown, Check } from 'lucide-react-native';
 import {
   Modal,
   ModalBackdrop,
   ModalContent,
 } from '@/components/ui/modal';
-import {
-  Select,
-  SelectTrigger,
-  SelectInput,
-  SelectIcon,
-  SelectPortal,
-  SelectBackdrop,
-  SelectContent,
-  SelectDragIndicator,
-  SelectDragIndicatorWrapper,
-  SelectItem,
-} from '@/components/ui/select';
 
 interface ScheduleSelectionSheetProps {
   isOpen: boolean;
@@ -88,115 +76,202 @@ export function ScheduleSelectionSheet({
 
   const [selectedDate, setSelectedDate] = useState(defaultDate);
   const [selectedTime, setSelectedTime] = useState('17:00');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const handleConfirm = () => {
     onSelectSchedule(selectedDate, selectedTime);
     onClose();
   };
 
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date);
+    setShowDatePicker(false);
+  };
+
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
+    setShowTimePicker(false);
+  };
+
   // Find the label for the selected date
   const selectedDateLabel = dateOptions.find(opt => opt.value === selectedDate)?.label || 'Tomorrow';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
       <ModalBackdrop />
-      <ModalContent style={{ backgroundColor: '#FFFFFF', maxHeight: '60%' }}>
-        {/* Drag Indicator */}
-        <View className="w-full items-center pt-2 pb-1">
-          <View className="w-12 h-1 rounded-full bg-gray-300" />
-        </View>
-
-        <View className="w-full px-5 pt-4 pb-6 flex-col">
-          {/* Header */}
-          <View className="mb-6 flex-col">
-            <Text className="text-xl font-bold text-[#30352D] mb-2">
-              {taskerName}'s Schedule, GMT
-            </Text>
-          </View>
-
-          {/* Date and Time Selects */}
-          <View className="gap-3 mb-6 flex-row">
-            {/* Date Select */}
-            <View className="flex-1 flex-col">
-              <Select selectedValue={selectedDate} onValueChange={setSelectedDate}>
-                <SelectTrigger
-                  variant="outline"
-                  className="h-12 bg-white border-gray-300 rounded-lg flex-row items-center justify-between px-4"
-                >
-                  <SelectInput
-                    placeholder="Select date"
-                    value={selectedDateLabel}
-                    className="text-sm font-medium text-[#30352D] flex-1"
-                    editable={false}
-                  />
-                  <SelectIcon className="ml-2">
-                    <ChevronDown size={20} color="#6B7280" />
-                  </SelectIcon>
-                </SelectTrigger>
-                <SelectPortal>
-                  <SelectBackdrop />
-                  <SelectContent style={{ backgroundColor: '#FFFFFF' }}>
-                    <SelectDragIndicatorWrapper>
-                      <SelectDragIndicator style={{ backgroundColor: '#D1D5DB' }} />
-                    </SelectDragIndicatorWrapper>
-                    {dateOptions.map((option) => (
-                      <SelectItem
-                        key={option.value}
-                        label={option.label}
-                        value={option.value}
-                      />
-                    ))}
-                  </SelectContent>
-                </SelectPortal>
-              </Select>
+      <ModalContent
+        size="full"
+        style={{
+          backgroundColor: '#FFFFFF',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          maxHeight: '50%',
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          margin: 0,
+          marginHorizontal: 0,
+          padding: 0,
+        }}
+      >
+        {!showDatePicker && !showTimePicker ? (
+          <View className="w-full px-5 pt-6 pb-6 flex-col">
+            {/* Header */}
+            <View className="mb-6 flex-col">
+              <Text className="text-xl font-bold text-[#30352D]">
+                {taskerName}'s Schedule, GMT
+              </Text>
             </View>
 
-            {/* Time Select */}
-            <View className="flex-1 flex-col">
-              <Select selectedValue={selectedTime} onValueChange={setSelectedTime}>
-                <SelectTrigger
-                  variant="outline"
-                  className="h-12 bg-white border-gray-300 rounded-lg flex-row items-center justify-between px-4"
-                >
-                  <SelectInput
-                    placeholder="Select time"
-                    className="text-sm font-medium text-[#30352D] flex-1"
-                    editable={false}
-                  />
-                  <SelectIcon className="ml-2">
-                    <ChevronDown size={20} color="#6B7280" />
-                  </SelectIcon>
-                </SelectTrigger>
-                <SelectPortal>
-                  <SelectBackdrop />
-                  <SelectContent style={{ backgroundColor: '#FFFFFF' }}>
-                    <SelectDragIndicatorWrapper>
-                      <SelectDragIndicator style={{ backgroundColor: '#D1D5DB' }} />
-                    </SelectDragIndicatorWrapper>
-                    {timeSlots.map((time) => (
-                      <SelectItem
-                        key={time}
-                        label={time}
-                        value={time}
-                      />
-                    ))}
-                  </SelectContent>
-                </SelectPortal>
-              </Select>
-            </View>
-          </View>
+            {/* Date and Time Selects */}
+            <View className="gap-3 mb-6 flex-row">
+              {/* Date Select */}
+              <Pressable
+                onPress={() => setShowDatePicker(true)}
+                className="flex-1"
+                style={{
+                  height: 48,
+                  backgroundColor: '#FFFFFF',
+                  borderWidth: 1,
+                  borderColor: '#D1D5DB',
+                  borderRadius: 8,
+                  paddingHorizontal: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text className="text-sm font-medium text-[#30352D]">
+                  {selectedDateLabel}
+                </Text>
+                <ChevronDown size={20} color="#6B7280" />
+              </Pressable>
 
-          {/* Select & Continue Button */}
-          <Pressable
-            onPress={handleConfirm}
-            className="w-full py-4 rounded-full items-center"
-            style={{ backgroundColor: '#2C5F5D' }}
-          >
-            <Text className="text-base font-semibold text-white">
-              Select & Continue
-            </Text>
-          </Pressable>
-        </View>
+              {/* Time Select */}
+              <Pressable
+                onPress={() => setShowTimePicker(true)}
+                className="flex-1"
+                style={{
+                  height: 48,
+                  backgroundColor: '#FFFFFF',
+                  borderWidth: 1,
+                  borderColor: '#D1D5DB',
+                  borderRadius: 8,
+                  paddingHorizontal: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text className="text-sm font-medium text-[#30352D]">
+                  {selectedTime}
+                </Text>
+                <ChevronDown size={20} color="#6B7280" />
+              </Pressable>
+            </View>
+
+            {/* Select & Continue Button */}
+            <Pressable
+              onPress={handleConfirm}
+              className="w-full py-4 rounded-full items-center"
+              style={{ backgroundColor: '#C1856A' }}
+            >
+              <Text className="text-base font-semibold text-white">
+                Select & Continue
+              </Text>
+            </Pressable>
+          </View>
+        ) : showDatePicker ? (
+          <View className="w-full flex-col">
+            {/* Date Picker Header */}
+            <View className="px-5 pt-6 pb-4 border-b border-gray-200">
+              <Text className="text-lg font-semibold text-[#30352D]">
+                Select Date
+              </Text>
+            </View>
+
+            {/* Date Options */}
+            <ScrollView className="flex-1" style={{ maxHeight: 300 }}>
+              {dateOptions.map((option) => {
+                const isSelected = selectedDate === option.value;
+                return (
+                  <Pressable
+                    key={option.value}
+                    onPress={() => handleDateSelect(option.value)}
+                    style={{
+                      paddingVertical: 16,
+                      paddingHorizontal: 20,
+                      borderBottomWidth: 1,
+                      borderBottomColor: '#E5E7EB',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text
+                      className="text-base"
+                      style={{
+                        color: '#333A31',
+                        fontWeight: isSelected ? '600' : '400',
+                      }}
+                    >
+                      {option.label}
+                    </Text>
+                    {isSelected && (
+                      <Check size={20} color="#333A31" strokeWidth={2.5} />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        ) : (
+          <View className="w-full flex-col">
+            {/* Time Picker Header */}
+            <View className="px-5 pt-6 pb-4 border-b border-gray-200">
+              <Text className="text-lg font-semibold text-[#30352D]">
+                Select Time
+              </Text>
+            </View>
+
+            {/* Time Options */}
+            <ScrollView className="flex-1" style={{ maxHeight: 300 }}>
+              {timeSlots.map((time) => {
+                const isSelected = selectedTime === time;
+                return (
+                  <Pressable
+                    key={time}
+                    onPress={() => handleTimeSelect(time)}
+                    style={{
+                      paddingVertical: 16,
+                      paddingHorizontal: 20,
+                      borderBottomWidth: 1,
+                      borderBottomColor: '#E5E7EB',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Text
+                      className="text-base"
+                      style={{
+                        color: '#333A31',
+                        fontWeight: isSelected ? '600' : '400',
+                      }}
+                    >
+                      {time}
+                    </Text>
+                    {isSelected && (
+                      <Check size={20} color="#333A31" strokeWidth={2.5} />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
       </ModalContent>
     </Modal>
   );
