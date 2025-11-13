@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { ScrollView, Image as RNImage } from 'react-native';
+import { ScrollView, RefreshControl, Image as RNImage, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Pressable } from '@/components/ui/pressable';
 import { Star, MapPin, Calendar } from 'lucide-react-native';
+import { useFavoriteHandymen } from '@shared/supabase/query';
+import { useUserBookings, useAuthStore } from '@shared/supabase';
+import { Loader } from '@/components/ui/loader';
+import { getPastTaskersFromBookings, handymenProfilesToTaskers, type Tasker } from '@/lib/taskers';
+import { useRouter } from 'expo-router';
 
 interface EmptyStateProps {
   activeTab: 'favourite' | 'past';
@@ -19,7 +19,7 @@ function TaskersEmptyState({ activeTab }: EmptyStateProps) {
     : "Your previously booked taskers\nwill appear here.";
 
   return (
-    <VStack className="items-center justify-center py-12 px-8">
+    <View className="flex-col items-center justify-center py-12 px-8">
       {/* Empty state illustration */}
       <RNImage
         source={require('@/assets/tasks-empty-state.png')}
@@ -51,78 +51,62 @@ function TaskersEmptyState({ activeTab }: EmptyStateProps) {
       >
         {description}
       </Text>
-    </VStack>
+    </View>
   );
 }
 
-interface Tasker {
-  id: string;
-  name: string;
-  specialty: string;
-  avatarUrl: string;
-  rating: number;
-  reviewCount: number;
-  location: string;
-  lastBooked: string;
-  availability: string;
-}
-
-const MOCK_FAVOURITE_TASKERS: Tasker[] = [
-  {
-    id: '1',
-    name: 'Maria Lopez',
-    specialty: 'Cleaning Specialist',
-    avatarUrl: 'https://i.pravatar.cc/150?img=1',
-    rating: 5.0,
-    reviewCount: 124,
-    location: 'Leytonstone, E11',
-    lastBooked: '15 Oct 2025',
-    availability: 'Available next week',
-  },
-  {
-    id: '2',
-    name: 'Anton Lee',
-    specialty: 'Cleaning Specialist',
-    avatarUrl: 'https://i.pravatar.cc/150?img=2',
-    rating: 5.0,
-    reviewCount: 124,
-    location: 'Leytonstone, E11',
-    lastBooked: '15 Oct 2025',
-    availability: 'Available this week',
-  },
-];
-
-const MOCK_PAST_TASKERS: Tasker[] = [
-  // Empty by default to show empty state
-  // Uncomment to test with data:
-  // {
-  //   id: '3',
-  //   name: 'Sarah Johnson',
-  //   specialty: 'Handyman',
-  //   avatarUrl: 'https://i.pravatar.cc/150?img=3',
-  //   rating: 4.9,
-  //   reviewCount: 98,
-  //   location: 'Stratford, E15',
-  //   lastBooked: '8 Oct 2025',
-  //   availability: 'Available next month',
-  // },
-];
-
 const TaskersScreen = () => {
   const [activeTab, setActiveTab] = useState<'favourite' | 'past'>('favourite');
+  const router = useRouter();
 
-  const taskers = activeTab === 'favourite' ? MOCK_FAVOURITE_TASKERS : MOCK_PAST_TASKERS;
+  // Get user from auth store
+  const { user } = useAuthStore();
+
+  // Fetch favorite handymen
+  const {
+    data: favoriteHandymen,
+    isLoading: favLoading,
+    isError: favError,
+    refetch: refetchFavorites
+  } = useFavoriteHandymen(user?.id || '');
+
+  // Fetch past bookings for past taskers
+  const {
+    past,
+    cancelled,
+    isLoading: bookingsLoading,
+    isError: bookingsError,
+    refetch: refetchBookings
+  } = useUserBookings(user?.id || '');
+
+  // Transform data
+  const favoriteTaskers: Tasker[] = favoriteHandymen ? handymenProfilesToTaskers(favoriteHandymen) : [];
+  const pastTaskers: Tasker[] = getPastTaskersFromBookings([...past, ...cancelled]);
+
+  // Determine which data to show
+  const taskers = activeTab === 'favourite' ? favoriteTaskers : pastTaskers;
+  const isLoading = activeTab === 'favourite' ? favLoading : bookingsLoading;
+  const isError = activeTab === 'favourite' ? favError : bookingsError;
+
+  // Pull to refresh handler
+  const onRefresh = () => {
+    if (activeTab === 'favourite') {
+      refetchFavorites();
+    } else {
+      refetchBookings();
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <VStack className="flex-1">
+      <View className="flex-col flex-1">
         {/* Header */}
-        <Box className="items-center py-4 border-b border-gray-200">
-          <Text className="text-lg font-bold text-[#30352d]">Tasks</Text>
-        </Box>
+        <View className="items-center py-4 border-b border-gray-200">
+          <Text className="text-lg font-bold text-[#30352d]">Taskers</Text>
+        </View>
 
         {/* Tabs */}
-        <HStack className="border-b border-gray-200">
+        <View className="flex-row border-b border-gray-200">
           <Pressable
             onPress={() => setActiveTab('favourite')}
             className="flex-1 py-3 items-center"
@@ -153,17 +137,55 @@ const TaskersScreen = () => {
               Past Taskers
             </Text>
           </Pressable>
-        </HStack>
+        </View>
 
         {/* Taskers List */}
-        <ScrollView className="flex-1">
-          {taskers.length === 0 ? (
+        <ScrollView
+          className="flex-1"
+          refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
+          }
+        >
+          {!user?.id ? (
+            <View className="flex-col items-center justify-center py-12 px-8">
+              <Text className="text-lg font-medium text-[#333a31] mb-2">
+                Please sign in
+              </Text>
+              <Text className="text-sm text-[#666] text-center">
+                You need to be signed in to view your taskers.
+              </Text>
+            </View>
+          ) : isLoading ? (
+            <Loader text="Loading taskers..." />
+          ) : isError ? (
+            <View className="flex-col items-center justify-center py-12 px-8">
+              <Text className="text-lg font-medium text-[#333a31] mb-2">
+                Error loading taskers
+              </Text>
+              <Text className="text-sm text-[#666] text-center mb-4">
+                Something went wrong. Please try again.
+              </Text>
+              <Pressable
+                onPress={onRefresh}
+                className="bg-[#c1856a] px-6 py-3 rounded-full"
+              >
+                <Text className="text-white font-semibold">Retry</Text>
+              </Pressable>
+            </View>
+          ) : taskers.length === 0 ? (
             <TaskersEmptyState activeTab={activeTab} />
           ) : (
-            <VStack className="px-6 pt-4">
+            <View className="flex-col px-6 pt-4">
               {taskers.map((tasker) => (
-                <Pressable key={tasker.id} className="mb-4">
-                  <Box
+                <Pressable
+                  key={tasker.id}
+                  className="mb-4"
+                  onPress={() => {
+                    // Navigate to handyman details screen
+                    router.push(`/(tabs)/professionals/${tasker.id}`);
+                  }}
+                >
+                  <View
                     className="bg-white rounded-2xl"
                     style={{
                       padding: 18,
@@ -175,7 +197,7 @@ const TaskersScreen = () => {
                     }}
                   >
                     {/* Top Section: Avatar + Name/Specialty */}
-                    <HStack className="items-start mb-6">
+                    <View className="flex-row items-start mb-6">
                       {/* Avatar */}
                       <RNImage
                         source={{ uri: tasker.avatarUrl }}
@@ -188,7 +210,7 @@ const TaskersScreen = () => {
                       />
 
                       {/* Name and Specialty */}
-                      <VStack className="flex-1 ml-3">
+                      <View className="flex-col flex-1 ml-3">
                         {/* Name */}
                         <Text
                           style={{ 
@@ -211,13 +233,13 @@ const TaskersScreen = () => {
                         >
                           {tasker.specialty}
                         </Text>
-                      </VStack>
-                    </HStack>
+                      </View>
+                    </View>
 
                     {/* Bottom Section: Details stacked */}
-                    <VStack style={{ gap: 8 }}>
+                    <View className="flex-col" style={{ gap: 8 }}>
                       {/* Rating */}
-                      <HStack className="items-center" style={{ gap: 6 }}>
+                      <View className="flex-row items-center" style={{ gap: 6 }}>
                         <Star size={16} color="#000000" fill="#000000" strokeWidth={0} />
                         <Text
                           style={{ 
@@ -228,10 +250,10 @@ const TaskersScreen = () => {
                         >
                           {tasker.rating.toFixed(1)} ({tasker.reviewCount} reviews)
                         </Text>
-                      </HStack>
+                      </View>
 
                       {/* Location */}
-                      <HStack className="items-center" style={{ gap: 6 }}>
+                      <View className="flex-row items-center" style={{ gap: 6 }}>
                         <MapPin size={16} color="#333a31" />
                         <Text
                           style={{ 
@@ -242,10 +264,10 @@ const TaskersScreen = () => {
                         >
                           {tasker.location}
                         </Text>
-                      </HStack>
+                      </View>
 
                       {/* Last Booked */}
-                      <HStack className="items-center" style={{ gap: 6 }}>
+                      <View className="flex-row items-center" style={{ gap: 6 }}>
                         <Calendar size={16} color="#333a31" />
                         <Text
                           style={{ 
@@ -256,7 +278,7 @@ const TaskersScreen = () => {
                         >
                           Last booked: {tasker.lastBooked}
                         </Text>
-                      </HStack>
+                      </View>
 
                       {/* Availability */}
                       <Text
@@ -269,14 +291,14 @@ const TaskersScreen = () => {
                       >
                       {tasker.availability}
                     </Text>
-                  </VStack>
-                </Box>
+                  </View>
+                </View>
               </Pressable>
             ))}
-            </VStack>
+            </View>
           )}
         </ScrollView>
-      </VStack>
+      </View>
     </SafeAreaView>
   );
 };

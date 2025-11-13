@@ -1,12 +1,7 @@
 import React from 'react';
-import { Image, ScrollView } from 'react-native';
+import { Image, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft, FileText, Star, ShieldCheck } from 'lucide-react-native';
 import { router } from 'expo-router';
 
@@ -26,26 +21,26 @@ export default function VerifyFinalSummary() {
   };
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
         <ScrollView 
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          <VStack className="flex-1">
+          <View className="flex-col flex-1">
             {/* Header */}
-            <HStack className="items-center justify-between px-4 pt-2 pb-6">
+            <View className="flex-row items-center justify-between px-4 pt-2 pb-6">
               <Pressable onPress={handleBack}>
                 <ChevronLeft size={20} color="#30352D" />
               </Pressable>
               <Pressable>
                 <FileText size={20} color="#30352D" />
               </Pressable>
-            </HStack>
+            </View>
 
             {/* Content */}
-            <VStack className="flex-1 px-6">
+            <View className="flex-col flex-1 px-6">
               {/* Title */}
               <Text className="text-center text-[15px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
                 One last thing:
@@ -55,46 +50,46 @@ export default function VerifyFinalSummary() {
               </Text>
 
               {/* Profile Card */}
-              <Box 
+              <View 
                 className="rounded-2xl p-3.5 mb-6"
                 style={{ backgroundColor: '#F6E4D8' }}
               >
-                <HStack className="gap-3">
+                <View className="flex-row gap-3">
                   {/* Profile Image */}
-                  <Box className="w-[110px] h-[110px] rounded-full overflow-hidden">
+                  <View className="w-[110px] h-[110px] rounded-full overflow-hidden">
                     <Image
                       source={require('@/assets/images/profile-mike.png')}
                       style={{ width: 110, height: 110 }}
                       resizeMode="cover"
                     />
-                  </Box>
+                  </View>
 
                   {/* Profile Info */}
-                  <VStack className="flex-1 justify-center gap-1">
+                  <View className="flex-col flex-1 justify-center gap-1">
                     <Text className="text-[23px] font-worksans-medium mb-1" style={{ color: '#333A31' }}>
                       Mike W.
                     </Text>
                     
-                    <HStack className="items-center gap-1.5">
+                    <View className="flex-row items-center gap-1.5">
                       <Star size={14} color="#FFA500" fill="#FFA500" />
                       <Text className="text-[17px] font-worksans" style={{ color: '#333A31' }}>
                         5.0 (124 reviews)
                       </Text>
-                    </HStack>
+                    </View>
 
                     <Text className="text-[17px] font-worksans-bold" style={{ color: '#333A31' }}>
                       124 overall jobs
                     </Text>
 
-                    <HStack className="items-center gap-1.5 mt-0.5">
+                    <View className="flex-row items-center gap-1.5 mt-0.5">
                       <ShieldCheck size={14} color="#C1856A" fill="#C1856A" />
                       <Text className="text-[17px] font-worksans-bold" style={{ color: '#C1856A' }}>
                         ID Verified
                       </Text>
-                    </HStack>
-                  </VStack>
-                </HStack>
-              </Box>
+                    </View>
+                  </View>
+                </View>
+              </View>
 
               {/* Info Text */}
               <Text className="text-[12px] font-worksans-medium leading-[18px] mb-2" style={{ color: '#333A31' }}>
@@ -105,23 +100,23 @@ export default function VerifyFinalSummary() {
               </Text>
 
               {/* Requirements List */}
-              <VStack className="mb-6 gap-1">
-                <HStack className="items-start gap-2">
-                  <Box className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: '#333A31' }} />
+              <View className="flex-col mb-6 gap-1">
+                <View className="flex-row items-start gap-2">
+                  <View className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: '#333A31' }} />
                   <Text className="text-[12px] font-worksans-medium flex-1" style={{ color: '#333A31' }}>
                     DOB, and full address
                   </Text>
-                </HStack>
-                <HStack className="items-start gap-2">
-                  <Box className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: '#333A31' }} />
+                </View>
+                <View className="flex-row items-start gap-2">
+                  <View className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: '#333A31' }} />
                   <Text className="text-[12px] font-worksans-medium flex-1" style={{ color: '#333A31' }}>
                     A government-issued photo ID document
                   </Text>
-                </HStack>
-              </VStack>
+                </View>
+              </View>
 
               {/* Spacer */}
-              <Box className="flex-1" />
+              <View className="flex-1" />
 
               {/* Verify Button */}
               <Button
@@ -144,10 +139,10 @@ export default function VerifyFinalSummary() {
                   Skip for now
                 </Text>
               </Pressable>
-            </VStack>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
-    </Box>
+    </View>
   );
 }

@@ -1,21 +1,67 @@
-import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { ChevronLeft, Lock, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { updateVerificationData } from '@shared/supabase/profile';
+import { updateVerificationData, getUserProfile, getHandyProfile } from '@shared/supabase/profile';
 import { useToast } from '@/components/ui/toast';
+import { LocationAutocomplete, fetchPlaceDetails } from '@/components/location';
+
+/**
+ * Convert date from dd/mm/yyyy format to YYYY-MM-DD format for PostgreSQL
+ */
+function convertDateFormat(dateStr: string): string {
+  if (!dateStr) return '';
+  
+  // Check if date is already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  
+  // Parse dd/mm/yyyy format
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    // Validate and convert to YYYY-MM-DD
+    if (day && month && year) {
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+  }
+  
+  // Return original if format is unrecognized
+  return dateStr;
+}
+
+/**
+ * Convert date from YYYY-MM-DD format (database) to dd/mm/yyyy format (display)
+ */
+function convertDateFromDatabase(dateStr: string): string {
+  if (!dateStr) return '';
+  
+  // Check if date is already in dd/mm/yyyy format
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    return dateStr;
+  }
+  
+  // Parse YYYY-MM-DD format
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    // Validate and convert to dd/mm/yyyy
+    if (day && month && year) {
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+  }
+  
+  // Return original if format is unrecognized
+  return dateStr;
+}
 
 interface ConfirmModalProps {
-  visible: boolean;
+  isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   formData: {
@@ -30,80 +76,81 @@ interface ConfirmModalProps {
   };
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ visible, onClose, onConfirm, formData }) => {
+const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm, formData }) => {
   return (
-    <Modal isOpen={visible} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalBackdrop className="bg-black/40" />
-      <ModalContent className="bg-white rounded-2xl mx-5" style={{ maxWidth: 350, padding: 24 }}>
-        <VStack>
+      <ModalContent className="bg-white rounded-2xl mx-5" style={{ maxWidth: 350, padding: 28 }}>
+        <View className="flex-col">
           {/* Title */}
-          <Text className="text-[20px] font-worksans-bold text-center mb-4" style={{ color: '#30352D' }}>
+          <Text className="text-[24px] font-worksans-bold text-center mb-4" style={{ color: '#30352D' }}>
             Confirm your info
           </Text>
 
           {/* Description */}
-          <Text className="text-[13px] font-worksans-medium text-center leading-[18px] mb-5" style={{ color: '#30352D' }}>
+          <Text className="text-[15px] font-worksans-medium text-center leading-[18px] mb-5" style={{ color: '#30352D' }}>
             Let's set up your payment account! Details should match your bank.
           </Text>
 
           {/* Info Sections */}
-          <VStack className="mb-4">
-            <Box className="mb-3">
-              <Text className="text-[11px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
+          <View className="flex-col mb-4">
+            <View className="mb-3">
+              <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
                 LEGAL FULL NAME:
               </Text>
-              <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
+              <Text className="text-[16px] font-worksans-medium" style={{ color: '#30352D' }}>
                 {formData.firstName} {formData.lastName}
               </Text>
-            </Box>
+            </View>
 
-            <Box className="mb-3">
-              <Text className="text-[11px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
+            <View className="mb-3">
+              <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
                 DATE OF BIRTH
               </Text>
-              <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
+              <Text className="text-[16px] font-worksans-medium" style={{ color: '#30352D' }}>
                 {formData.dateOfBirth}
               </Text>
-            </Box>
+            </View>
 
-            <Box className="mb-3">
-              <Text className="text-[11px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
+            <View className="mb-3">
+              <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
                 HOME ADDRESS
               </Text>
-              <Text className="text-[15px] font-worksans-medium leading-[20px]" style={{ color: '#30352D' }}>
+              <Text className="text-[16px] font-worksans-medium leading-[20px]" style={{ color: '#30352D' }}>
                 {formData.streetAddress}, {formData.apt}, {formData.city}, {formData.county} {formData.postcode}
               </Text>
-            </Box>
-          </VStack>
+            </View>
+          </View>
 
           {/* Warning Text */}
-          <Text className="text-[13px] font-worksans-medium text-center leading-[18px] mb-5" style={{ color: '#30352D' }}>
+          <Text className="text-[15px] font-worksans-medium text-center leading-[18px] mb-5" style={{ color: '#30352D' }}>
             Once you confirm, you will be taken to a Secure identity check. This will only take a few minutes.
           </Text>
 
           {/* Buttons */}
-          <HStack className="gap-3">
+          <View className="flex-row gap-3">
             <Pressable 
-              className="flex-1 rounded-full py-3 border-2"
+              className="flex-1 rounded-full py-4 border-2"
               style={{ borderColor: '#C1856A' }}
               onPress={onClose}
             >
-              <Text className="text-center text-[16px] font-worksans-bold" style={{ color: '#C1856A' }}>
+              <Text className="text-center text-[18px] font-worksans-bold" style={{ color: '#C1856A' }}>
                 Edit
               </Text>
             </Pressable>
 
             <Button
-              className="flex-1 rounded-full py-3"
+              className="flex-1 rounded-full py-4"
+              size="lg"
               style={{ backgroundColor: '#C1856A' }}
               onPress={onConfirm}
             >
-              <ButtonText className="text-[16px] font-worksans-bold">
+              <ButtonText className="text-[18px] font-worksans-bold">
                 Confirm
               </ButtonText>
             </Button>
-          </HStack>
-        </VStack>
+          </View>
+        </View>
       </ModalContent>
     </Modal>
   );
@@ -124,8 +171,76 @@ export default function VerifyInformation() {
     postcode: '',
   });
 
+  // Load user profile data on mount to pre-fill form
+  useEffect(() => {
+    const loadProfileData = async (): Promise<void> => {
+      try {
+        // Get user profile (from signup - first_name, last_name, postcode)
+        const userProfile = await getUserProfile();
+        
+        // Get handy profile (may have existing verification data)
+        // This might fail if profile doesn't exist yet, which is fine
+        const handyProfile = await getHandyProfile().catch(() => null);
+        
+        if (userProfile) {
+          setFormData(prev => ({
+            ...prev,
+            firstName: userProfile.first_name || '',
+            lastName: userProfile.last_name || '',
+            postcode: userProfile.postcode || '',
+          }));
+        }
+        
+        // If handy profile has existing verification data, pre-fill those fields too
+        if (handyProfile) {
+          setFormData(prev => ({
+            ...prev,
+            dateOfBirth: handyProfile.date_of_birth 
+              ? convertDateFromDatabase(handyProfile.date_of_birth) 
+              : prev.dateOfBirth,
+            streetAddress: handyProfile.street_address || prev.streetAddress,
+            apt: handyProfile.apartment || prev.apt,
+            city: handyProfile.city || prev.city,
+            county: handyProfile.county || prev.county,
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+        // Don't show error toast - just continue with empty form
+        // This ensures the form always renders even if profile loading fails
+      }
+    };
+
+    loadProfileData();
+  }, []);
+
   const handleInputChange = (field: string, value: string): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLocationSelect = async (prediction: { place_id: string; description: string }): Promise<void> => {
+    try {
+      // Fetch place details to extract address components
+      const addressComponents = await fetchPlaceDetails(prediction.place_id);
+
+      if (addressComponents) {
+        // Auto-fill all address fields from place details
+        setFormData(prev => ({
+          ...prev,
+          streetAddress: addressComponents.streetAddress || prediction.description,
+          city: addressComponents.city || prev.city,
+          county: addressComponents.county || prev.county,
+          postcode: addressComponents.postcode || prev.postcode,
+        }));
+      } else {
+        // Fallback: use description if place details fetch fails
+        setFormData(prev => ({ ...prev, streetAddress: prediction.description }));
+      }
+    } catch (error) {
+      console.error('Error fetching place details:', error);
+      // Fallback: use description if error occurs
+      setFormData(prev => ({ ...prev, streetAddress: prediction.description }));
+    }
   };
 
   const handleSignup = (): void => {
@@ -138,10 +253,11 @@ export default function VerifyInformation() {
       setIsLoading(true);
 
       // Save verification data to backend
+      // Convert date from dd/mm/yyyy to YYYY-MM-DD format for PostgreSQL
       const success = await updateVerificationData({
         first_name: formData.firstName,
         last_name: formData.lastName,
-        date_of_birth: formData.dateOfBirth,
+        date_of_birth: convertDateFormat(formData.dateOfBirth),
         street_address: formData.streetAddress,
         apartment: formData.apt,
         city: formData.city,
@@ -165,16 +281,16 @@ export default function VerifyInformation() {
   };
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
         <ScrollView 
           className="flex-1"
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <VStack className="flex-1">
+          <View className="flex-col flex-1">
             {/* Header */}
-            <HStack className="items-center justify-between px-5 pt-2 pb-5">
+            <View className="flex-row items-center justify-between px-5 pt-2 pb-5">
               <Pressable onPress={() => router.back()}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
@@ -184,10 +300,10 @@ export default function VerifyInformation() {
               <Pressable>
                 <FileText size={22} color="#333A31" />
               </Pressable>
-            </HStack>
+            </View>
 
             {/* Info Text */}
-            <Box className="px-8 pb-6">
+            <View className="px-8 pb-6">
               <Text className="text-[15px] font-worksans-medium leading-[20px] mb-2" style={{ color: '#30352D' }}>
                 Let's set up your payment account! Details should match your bank.
               </Text>
@@ -196,12 +312,12 @@ export default function VerifyInformation() {
                   Why do we need this?
                 </Text>
               </Pressable>
-            </Box>
+            </View>
 
             {/* Form */}
-            <Box className="px-5">
+            <View className="px-5">
               {/* First Name */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   First Name
                 </Text>
@@ -217,10 +333,10 @@ export default function VerifyInformation() {
                     placeholder=""
                   />
                 </Input>
-              </Box>
+              </View>
 
               {/* Surname */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   Surname
                 </Text>
@@ -236,10 +352,10 @@ export default function VerifyInformation() {
                     placeholder=""
                   />
                 </Input>
-              </Box>
+              </View>
 
               {/* Date of birth */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   Date of birth
                 </Text>
@@ -252,33 +368,30 @@ export default function VerifyInformation() {
                     style={{ color: '#30352D' }}
                     value={formData.dateOfBirth}
                     onChangeText={(value) => handleInputChange('dateOfBirth', value)}
-                    placeholder=""
+                    placeholder="dd/mm/yyyy"
+                    placeholderTextColor="#9CA3AF"
                   />
                 </Input>
-              </Box>
+              </View>
 
               {/* Street Number and Name */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   Street Number and Name
                 </Text>
-                <Input
-                  variant="outline"
-                  className="border-0 border-b border-gray-300 rounded-none px-0 h-9"
-                >
-                  <InputField
-                    className="font-worksans text-[15px]"
-                    style={{ color: '#30352D' }}
-                    value={formData.streetAddress}
-                    onChangeText={(value) => handleInputChange('streetAddress', value)}
-                    placeholder=""
-                  />
-                </Input>
-              </Box>
+                <LocationAutocomplete
+                  value={formData.streetAddress}
+                  onChangeText={(value) => handleInputChange('streetAddress', value)}
+                  onSelectLocation={handleLocationSelect}
+                  placeholder=""
+                  showClearButton={false}
+                  inputClassName="border-0 border-b border-gray-300 rounded-none px-0 h-9"
+                />
+              </View>
 
               {/* Apt/Suite and City Row */}
-              <HStack className="mb-4 gap-4">
-                <Box className="flex-1">
+              <View className="flex-row mb-4 gap-4">
+                <View className="flex-1">
                   <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                     Apt / Suite
                   </Text>
@@ -294,8 +407,8 @@ export default function VerifyInformation() {
                       placeholder=""
                     />
                   </Input>
-                </Box>
-                <Box className="flex-1">
+                </View>
+                <View className="flex-1">
                   <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                     City
                   </Text>
@@ -311,12 +424,12 @@ export default function VerifyInformation() {
                       placeholder=""
                     />
                   </Input>
-                </Box>
-              </HStack>
+                </View>
+              </View>
 
               {/* County and Postcode Row */}
-              <HStack className="mb-6 gap-4">
-                <Box className="flex-1">
+              <View className="flex-row mb-6 gap-4">
+                <View className="flex-1">
                   <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                     County
                   </Text>
@@ -332,8 +445,8 @@ export default function VerifyInformation() {
                       placeholder=""
                     />
                   </Input>
-                </Box>
-                <Box className="flex-1">
+                </View>
+                <View className="flex-1">
                   <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                     Postcode
                   </Text>
@@ -350,16 +463,16 @@ export default function VerifyInformation() {
                       autoCapitalize="characters"
                     />
                   </Input>
-                </Box>
-              </HStack>
+                </View>
+              </View>
 
               {/* Security Notice */}
-              <HStack className="items-start mb-7 px-1">
+              <View className="flex-row items-start mb-7 px-1">
                 <Lock size={14} color="#C1856A" style={{ marginTop: 3, marginRight: 6 }} />
                 <Text className="flex-1 text-[15px] font-worksans-medium leading-[20px]" style={{ color: '#C1856A' }}>
                   Your personal information is securely stored and kept confidential.
                 </Text>
-              </HStack>
+              </View>
 
               {/* Signup Button */}
               <Button
@@ -372,18 +485,18 @@ export default function VerifyInformation() {
                   {isLoading ? 'Saving...' : 'Signup'}
                 </ButtonText>
               </Button>
-            </Box>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
 
       {/* Confirmation Modal */}
       <ConfirmModal
-        visible={showModal}
+        isOpen={showModal}
         onClose={() => setShowModal(false)}
         onConfirm={handleConfirm}
         formData={formData}
       />
-    </Box>
+    </View>
   );
 }

@@ -1,6 +1,5 @@
 import "@/globals.css";
 import { Stack } from "expo-router";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { SplashScreen } from "expo-router";
@@ -9,6 +8,7 @@ import * as Linking from "expo-linking";
 import { supabase } from "@shared/supabase/supabaseClient";
 import { AuthWrapper } from "@/components/AuthWrapper";
 import { QueryProvider } from "@/components/providers";
+import { ToastProvider } from "@/components/ui/toast";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -74,7 +74,7 @@ export default function RootLayout() {
 
   return (
     <QueryProvider>
-      <GluestackUIProvider mode="light">
+      <ToastProvider>
         {/* <AuthWrapper> */}
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
@@ -83,7 +83,7 @@ export default function RootLayout() {
             <Stack.Screen name="(professional)" />
           </Stack>
         {/* </AuthWrapper> */}
-      </GluestackUIProvider>
+      </ToastProvider>
     </QueryProvider>
   );
 }

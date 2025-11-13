@@ -1,18 +1,11 @@
 import React from 'react';
-import { ScrollView, RefreshControl } from 'react-native';
+import { ScrollView, RefreshControl, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { Divider } from '@/components/ui/divider';
 import { Loader } from '@/components/ui/loader';
 import { WrenchIcon, PaintbrushIcon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import Header from '@/components/Header';
 import { TaskCard, Tab, EmptyState } from '@/components/tasks';
-import { useUserBookings } from '@shared/supabase/query';
+import { useUserBookings, useConversationByBooking } from '@shared/supabase/query';
 import { useAuthStore } from '@shared/supabase';
 import { bookingToTaskCardProps } from '@/lib/bookings';
 
@@ -106,40 +99,46 @@ export default function TasksScreen() {
   // Transform bookings to TaskCard props
   const getCurrentTaskCards = () => {
     const bookings = getCurrentBookings();
-    
+
     // If using fallback data, return it directly (already in correct format)
     // Fallback data has 'id' while real data has 'bookingId'
     if (bookings.length > 0 && 'dateTime' in bookings[0] && !('category' in bookings[0])) {
       return bookings as any[];
     }
-    
+
     // Otherwise transform real booking data
     return bookings.map(booking => bookingToTaskCardProps(booking));
+  };
+
+  const handleTaskCardPress = async (bookingId?: number) => {
+    if (!bookingId) {
+      // Fallback data was clicked, just go to messages tab
+      router.push('/(client)/(tabs)/messages');
+      return;
+    }
+
+    // Navigate to messages tab - the conversation will be created automatically
+    // when the user tries to access it from the booking
+    router.push('/(client)/(tabs)/messages');
   };
 
 
 
   return (
     <SafeAreaView className="flex-1 bg-bg-secondary">
-      <Box className="flex-1">
-        {/* Top App Bar */}
-        <Header 
-          title="Tasks" 
-          onBackPress={() => {}} 
-          onBellPress={() => {}} 
-          showFilterIcon={false}
-          showBellIcon={true}
-        />
-
-        <Divider className="h-px bg-border opacity-80" />
+      <View className="flex-1">
+        {/* Header */}
+        <View className="items-center py-4 border-b border-gray-200">
+          <Text className="text-lg font-bold text-[#30352d]">Tasks</Text>
+        </View>
 
         {/* Segmented Tabs */}
-        <HStack className="bg-bg-primary">
+        <View className="flex-row bg-bg-primary">
           <Tab id="redemptions" label="Redemptions" active={activeTab === 'redemptions'} onPress={setActiveTab} />
           <Tab id="complated" label="Complated" active={activeTab === 'complated'} onPress={setActiveTab} />
-        </HStack>
+        </View>
 
-        <Divider className="h-px bg-border opacity-80" />
+        <View className="h-px bg-border opacity-80" />
 
         {/* Content */}
         <ScrollView
@@ -148,48 +147,48 @@ export default function TasksScreen() {
             <RefreshControl refreshing={showLoading} onRefresh={onRefresh} />
           }
         >
-          {user?.id ? (
-            <VStack className="items-center justify-center py-12">
+          {!user?.id ? (
+            <View className="flex-col items-center justify-center py-12">
               <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
                 Please sign in
               </Text>
               <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
                 You need to be signed in to view your tasks.
               </Text>
-            </VStack>
+            </View>
           ) : showLoading ? (
             <Loader text="Loading tasks..." />
           ) : isError ? (
-            <VStack className="items-center justify-center py-12">
+            <View className="flex-col items-center justify-center py-12">
               <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
                 Error loading tasks
               </Text>
               <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
                 {error?.message || 'Something went wrong. Please try again.'}
               </Text>
-            </VStack>
+            </View>
           ) : getCurrentBookings().length === 0 ? (
             <EmptyState />
           ) : (
-            <VStack className="space-y-2">
+            <View className="flex-col space-y-2">
               {getCurrentTaskCards().map((taskCardProps, index) => (
                 <TaskCard
                   key={`${activeTab}-${taskCardProps.bookingId || taskCardProps.id || index}`}
                   {...taskCardProps}
-                  onPress={() => {}}
+                  onPress={() => handleTaskCardPress(taskCardProps.bookingId)}
                 />
               ))}
 
               {/* Helper text when there are tasks */}
-              <HStack className="justify-center pt-6">
+              <View className="flex-row justify-center pt-6">
                 <Text className="text-xs font-work-sans text-text-tertiary leading-4">
-                  Tap to view details
+                  Tap to message tasker
                 </Text>
-              </HStack>
-            </VStack>
+              </View>
+            </View>
           )}
         </ScrollView>
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

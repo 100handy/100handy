@@ -1,8 +1,5 @@
 import React from 'react';
-import { VStack } from '@/components/ui/vstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { Box } from '@/components/ui/box';
+import { View, Text, Pressable } from 'react-native';
 
 interface TabProps {
   id: string;
@@ -14,7 +11,7 @@ interface TabProps {
 export function Tab({ id, label, active, onPress }: TabProps) {
   return (
     <Pressable onPress={() => onPress(id)} className="flex-1 py-3">
-      <VStack className="items-center">
+      <View className="items-center flex-col">
         <Text
           className={`text-sm font-work-sans font-medium leading-4 ${
             active ? 'text-clay-orange' : 'text-text-tertiary'
@@ -22,12 +19,12 @@ export function Tab({ id, label, active, onPress }: TabProps) {
         >
           {label}
         </Text>
-        <Box
+        <View
           className={`mt-2 h-0.5 ${
             active ? 'w-4/5 bg-clay-orange' : 'w-0 bg-transparent'
           }`}
         />
-      </VStack>
+      </View>
     </Pressable>
   );
 }

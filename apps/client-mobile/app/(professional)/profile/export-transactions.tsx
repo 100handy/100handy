@@ -1,23 +1,9 @@
 import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetDragIndicator,
-  ActionsheetItem,
-  ActionsheetItemText,
-  ActionsheetScrollView,
-} from '@/components/ui/actionsheet';
 import { ArrowLeft, Calendar, FileText, Check } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
 const FILE_TYPES = ['CSV', 'PDF', 'Excel'] as const;
 type FileType = typeof FILE_TYPES[number];
@@ -58,36 +44,36 @@ export default function ExportTransactionsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Header */}
-        <Box className="bg-white px-5 py-4 border-b border-gray-100">
-          <HStack className="items-center">
+        <View className="bg-white px-5 py-4 border-b border-gray-100">
+          <View className="flex-row items-center">
             <Pressable onPress={() => router.back()} className="mr-3">
               <ArrowLeft size={24} color="#30352d" />
             </Pressable>
             <Text className="text-[#30352d] text-[18px] font-bold">
               Export Transactions
             </Text>
-          </HStack>
-        </Box>
+          </View>
+        </View>
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <Box className="px-5 pt-6">
+          <View className="px-5 pt-6">
             {/* Instruction Text */}
             <Text className="text-[#30352d] text-[16px] font-medium mb-6">
               Choose a time range and a file type:
             </Text>
 
             {/* Year Selector Section */}
-            <VStack>
+            <View className="flex-col">
               {/* Divider above */}
-              <Box className="h-px bg-gray-200" />
+              <View className="h-px bg-gray-200" />
               
               <Pressable
                 onPress={() => setShowYearSheet(true)}
                 className="py-4"
               >
-                <HStack className="items-center justify-between">
+                <View className="flex-row items-center justify-between">
                   <Text className="text-[#333a31] text-[12px] font-medium mr-4">
                     Year
                   </Text>
@@ -99,11 +85,11 @@ export default function ExportTransactionsScreen() {
                     {selectedYear || 'Choose a year…'}
                   </Text>
                   <Calendar size={20} color="#30352d" />
-                </HStack>
+                </View>
               </Pressable>
               
               {/* Divider below */}
-              <Box className="h-px bg-gray-200" />
+              <View className="h-px bg-gray-200" />
               
               {/* Selected Year Display (centered below) - shows when year is selected */}
               {selectedYear && (
@@ -111,18 +97,18 @@ export default function ExportTransactionsScreen() {
                   {selectedYear}
                 </Text>
               )}
-            </VStack>
+            </View>
 
             {/* File Type Selector Section */}
-            <VStack>
+            <View className="flex-col">
               {/* Divider above */}
-              <Box className="h-px bg-gray-200" />
+              <View className="h-px bg-gray-200" />
               
               <Pressable
                 onPress={() => setShowFileTypeSheet(true)}
                 className="py-4"
               >
-                <HStack className="items-center justify-between">
+                <View className="flex-row items-center justify-between">
                   <Text className="text-[#333a31] text-[12px] font-medium mr-4">
                     File type
                   </Text>
@@ -134,17 +120,17 @@ export default function ExportTransactionsScreen() {
                     {selectedFileType || 'Choose a file type…'}
                   </Text>
                   <FileText size={20} color="#30352d" />
-                </HStack>
+                </View>
               </Pressable>
               
               {/* Divider below */}
-              <Box className="h-px bg-gray-200" />
-            </VStack>
-          </Box>
+              <View className="h-px bg-gray-200" />
+            </View>
+          </View>
         </ScrollView>
 
         {/* Bottom Button */}
-        <Box className="px-5 pb-8 pt-4 border-t border-gray-100">
+        <View className="px-5 pb-8 pt-4 border-t border-gray-100">
           <Pressable
             onPress={handleSendEmail}
             className="bg-clay-orange rounded-full py-4"
@@ -157,100 +143,106 @@ export default function ExportTransactionsScreen() {
               Send to my Email
             </Text>
           </Pressable>
-        </Box>
-      </Box>
+        </View>
+      </View>
 
-      {/* Year Selector ActionSheet */}
-      <Actionsheet isOpen={showYearSheet} onClose={() => setShowYearSheet(false)}>
-        <ActionsheetBackdrop />
-        <ActionsheetContent className="bg-white">
-          <ActionsheetDragIndicatorWrapper>
-            <ActionsheetDragIndicator className="bg-gray-300" />
-          </ActionsheetDragIndicatorWrapper>
-          
-          <Box className="w-full pb-4 pt-2">
-            <Text className="text-center text-base font-semibold text-[#30352d]">
-              Select Year
-            </Text>
-          </Box>
+      {/* Year Selector Modal */}
+      <Modal isOpen={showYearSheet} onClose={() => setShowYearSheet(false)} size="full">
+        <ModalBackdrop />
+        <ModalContent className="bg-white">
+          <ModalBody>
+            {/* Drag Indicator */}
+            <View className="w-full items-center pt-2 pb-1">
+              <View className="w-12 h-1 rounded-full bg-gray-300" />
+            </View>
 
-          <ActionsheetScrollView className="w-full">
-            <VStack className="w-full">
-              {YEARS.map((year) => {
-                const isSelected = selectedYear === year;
+            <View className="w-full pb-4 pt-2">
+              <Text className="text-center text-base font-semibold text-[#30352d]">
+                Select Year
+              </Text>
+            </View>
+
+            <ScrollView className="w-full">
+              <View className="flex-col w-full">
+                {YEARS.map((year) => {
+                  const isSelected = selectedYear === year;
+                  return (
+                    <Pressable
+                      key={year}
+                      onPress={() => handleYearSelect(year)}
+                      className="border-b border-gray-100"
+                      style={{ paddingVertical: 16, paddingHorizontal: 20 }}
+                    >
+                      <View className="flex-row flex-1 items-center justify-between">
+                        <Text
+                          className="text-base"
+                          style={{
+                            color: isSelected ? '#30352d' : '#333a31',
+                            fontWeight: isSelected ? '600' : '400',
+                          }}
+                        >
+                          {year}
+                        </Text>
+                        {isSelected && (
+                          <Check size={20} color="#30352d" strokeWidth={2.5} />
+                        )}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* File Type Selector Modal */}
+      <Modal isOpen={showFileTypeSheet} onClose={() => setShowFileTypeSheet(false)}>
+        <ModalBackdrop />
+        <ModalContent className="bg-white">
+          <ModalBody>
+            {/* Drag Indicator */}
+            <View className="w-full items-center pt-2 pb-1">
+              <View className="w-12 h-1 rounded-full bg-gray-300" />
+            </View>
+
+            <View className="w-full pb-4 pt-2">
+              <Text className="text-center text-base font-semibold text-[#30352d]">
+                Select File Type
+              </Text>
+            </View>
+
+            <View className="flex-col w-full">
+              {FILE_TYPES.map((fileType) => {
+                const isSelected = selectedFileType === fileType;
                 return (
-                  <ActionsheetItem
-                    key={year}
-                    onPress={() => handleYearSelect(year)}
+                  <Pressable
+                    key={fileType}
+                    onPress={() => handleFileTypeSelect(fileType)}
                     className="border-b border-gray-100"
                     style={{ paddingVertical: 16, paddingHorizontal: 20 }}
                   >
-                    <HStack className="flex-1 items-center justify-between">
-                      <ActionsheetItemText
+                    <View className="flex-row flex-1 items-center justify-between">
+                      <Text
                         className="text-base"
                         style={{
                           color: isSelected ? '#30352d' : '#333a31',
                           fontWeight: isSelected ? '600' : '400',
                         }}
                       >
-                        {year}
-                      </ActionsheetItemText>
+                        {fileType}
+                      </Text>
                       {isSelected && (
                         <Check size={20} color="#30352d" strokeWidth={2.5} />
                       )}
-                    </HStack>
-                  </ActionsheetItem>
+                    </View>
+                  </Pressable>
                 );
               })}
-            </VStack>
-          </ActionsheetScrollView>
-        </ActionsheetContent>
-      </Actionsheet>
-
-      {/* File Type Selector ActionSheet */}
-      <Actionsheet isOpen={showFileTypeSheet} onClose={() => setShowFileTypeSheet(false)}>
-        <ActionsheetBackdrop />
-        <ActionsheetContent className="bg-white">
-          <ActionsheetDragIndicatorWrapper>
-            <ActionsheetDragIndicator className="bg-gray-300" />
-          </ActionsheetDragIndicatorWrapper>
-          
-          <Box className="w-full pb-4 pt-2">
-            <Text className="text-center text-base font-semibold text-[#30352d]">
-              Select File Type
-            </Text>
-          </Box>
-
-          <VStack className="w-full">
-            {FILE_TYPES.map((fileType) => {
-              const isSelected = selectedFileType === fileType;
-              return (
-                <ActionsheetItem
-                  key={fileType}
-                  onPress={() => handleFileTypeSelect(fileType)}
-                  className="border-b border-gray-100"
-                  style={{ paddingVertical: 16, paddingHorizontal: 20 }}
-                >
-                  <HStack className="flex-1 items-center justify-between">
-                    <ActionsheetItemText
-                      className="text-base"
-                      style={{
-                        color: isSelected ? '#30352d' : '#333a31',
-                        fontWeight: isSelected ? '600' : '400',
-                      }}
-                    >
-                      {fileType}
-                    </ActionsheetItemText>
-                    {isSelected && (
-                      <Check size={20} color="#30352d" strokeWidth={2.5} />
-                    )}
-                  </HStack>
-                </ActionsheetItem>
-              );
-            })}
-          </VStack>
-        </ActionsheetContent>
-      </Actionsheet>
+            </View>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 }

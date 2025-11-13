@@ -1,7 +1,6 @@
 import React from 'react';
-import { HStack } from '@/components/ui/hstack';
+import { View } from 'react-native';
 import { Input, InputField } from '@/components/ui/input';
-import { Pressable } from '@/components/ui/pressable';
 import { MapPinIcon, SearchIcon } from 'lucide-react-native';
 
 interface SearchBarProps {
@@ -12,8 +11,8 @@ interface SearchBarProps {
 
 export function SearchBar({ searchQuery, onSearchChange }: SearchBarProps) {
   return (
-    <HStack className="bg-white rounded-xl p-3 mx-4 mb-6 shadow-sm items-center space-x-3">
-      
+    <View className="bg-white rounded-xl p-3 mx-4 mb-6 shadow-sm items-center space-x-3 flex-row">
+
       <Input className="flex-1 border-0">
         <InputField
           placeholder="Search for services..."
@@ -22,6 +21,6 @@ export function SearchBar({ searchQuery, onSearchChange }: SearchBarProps) {
           className="text-sm font-worksans placeholder:text-typography-400"
         />
       </Input>
-    </HStack>
+    </View>
   );
 }

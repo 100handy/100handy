@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
-import { Image, ScrollView } from 'react-native';
+import { Image, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Pressable } from '@/components/ui/pressable';
 import { X } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { CancelVerificationModal } from '@/components/verification';
@@ -31,25 +27,25 @@ export default function VerifyGettingStarted() {
   };
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
         <ScrollView 
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          <VStack className="flex-1">
+          <View className="flex-col flex-1">
             {/* Header with Close */}
-            <Box className="px-6 pt-3 pb-4">
-              <Box className="items-end">
+            <View className="px-6 pt-3 pb-4">
+              <View className="items-end">
                 <Pressable onPress={handleClose}>
                   <X size={20} color="#30352D" />
                 </Pressable>
-              </Box>
-            </Box>
+              </View>
+            </View>
 
             {/* Content */}
-            <VStack className="flex-1 px-8">
+            <View className="flex-col flex-1 px-8">
               {/* Title */}
               <Text className="text-[22px] font-worksans-bold mb-3" style={{ color: '#30352D' }}>
                 Getting Started
@@ -61,13 +57,13 @@ export default function VerifyGettingStarted() {
               </Text>
 
               {/* Illustration */}
-              <Box className="items-center mb-10">
+              <View className="items-center mb-10">
                 <Image
                   source={require('@/assets/images/id-verification-illustration.png')}
                   style={{ width: 190, height: 190 }}
                   resizeMode="contain"
                 />
-              </Box>
+              </View>
 
               {/* Legal Text */}
               <Text className="text-[12px] font-worksans leading-[16px] text-center mb-8" style={{ color: '#30352D' }}>
@@ -77,7 +73,7 @@ export default function VerifyGettingStarted() {
               </Text>
 
               {/* Spacer */}
-              <Box className="flex-1" />
+              <View className="flex-1" />
 
               {/* Begin Button */}
               <Button
@@ -89,18 +85,18 @@ export default function VerifyGettingStarted() {
                   Begin verifying
                 </ButtonText>
               </Button>
-            </VStack>
+            </View>
 
             {/* Gray Footer with Persona Logo */}
-            <Box className="py-4" style={{ backgroundColor: '#F5F5F5' }}>
-              <Box className="items-center">
+            <View className="py-4" style={{ backgroundColor: '#F5F5F5' }}>
+              <View className="items-center">
                 <Text className="text-[11px] font-worksans" style={{ color: '#9CA3AF' }}>
                   powered by{' '}
                   <Text className="font-worksans-bold">persona</Text>
                 </Text>
-              </Box>
-            </Box>
-          </VStack>
+              </View>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
 
@@ -110,6 +106,6 @@ export default function VerifyGettingStarted() {
         onResume={handleResume}
         onCancel={handleCancel}
       />
-    </Box>
+    </View>
   );
 }

@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
-import { Image, ScrollView } from 'react-native';
+import { Image, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronDown } from 'lucide-react-native';
 import { router } from 'expo-router';
 
@@ -14,18 +9,18 @@ export default function ProfessionalWelcome() {
   const [selectedCountry, setSelectedCountry] = useState('GB');
 
   return (
-    <Box className="flex-1" style={{ backgroundColor: '#3E433D' }}>
+    <View className="flex-1" style={{ backgroundColor: '#3E433D' }}>
       <SafeAreaView className="flex-1">
         <ScrollView 
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          <VStack className="flex-1">
+          <View className="flex-col flex-1">
           {/* Dark Top Section */}
-          <VStack style={{ backgroundColor: '#3E433D' }} className="pb-10">
+          <View className="flex-col pb-10" style={{ backgroundColor: '#3E433D' }}>
             {/* Country Selector */}
-            <Box className="items-center pt-4 pb-12">
+            <View className="items-center pt-4 pb-12">
               <Pressable className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
                 <Image 
                   source={require('@/assets/images/uk-flag.png')}
@@ -37,52 +32,52 @@ export default function ProfessionalWelcome() {
                 </Text>
                 <ChevronDown size={16} color="white" />
               </Pressable>
-            </Box>
+            </View>
 
             {/* Logo Container */}
-            <Box className="items-center">
-              <Box className="bg-white rounded-[32px] shadow-lg overflow-hidden" style={{ width: 175, height: 175 }}>
+            <View className="items-center">
+              <View className="bg-white rounded-[32px] shadow-lg overflow-hidden" style={{ width: 175, height: 175 }}>
                 {/* 100 HANDY Text */}
-                <VStack className="items-center pt-6 pb-3">
+                <View className="flex-col items-center pt-6 pb-3">
                   <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider" style={{ color: '#30352D' }}>
                     100
                   </Text>
                   <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider" style={{ color: '#30352D' }}>
                     HANDY
                   </Text>
-                </VStack>
+                </View>
                 
                 {/* Task Button */}
-                <Box className="items-center px-4 pb-4">
-                  <Box className="bg-clay-orange rounded-full px-7 py-2.5 shadow-md" style={{ transform: [{ rotate: '-9deg' }] }}>
+                <View className="items-center px-4 pb-4">
+                  <View className="bg-clay-orange rounded-full px-7 py-2.5 shadow-md" style={{ transform: [{ rotate: '-9deg' }] }}>
                     <Text className="text-white text-[30px] font-worksans-bold tracking-wide">
                       Task
                     </Text>
-                  </Box>
-                </Box>
-              </Box>
+                  </View>
+                </View>
+              </View>
 
               {/* By Text - OUTSIDE the white card, below it */}
-              <HStack className="items-center mt-3">
+              <View className="flex-row items-center mt-3">
                 <Text className="font-worksans-medium text-[16px] mr-1.5 text-white">
                   By
                 </Text>
                 <Text className="font-worksans-bold text-[16px] tracking-wide text-white">
                   100 HANDY
                 </Text>
-              </HStack>
-            </Box>
-          </VStack>
+              </View>
+            </View>
+          </View>
 
           {/* Light Bottom Section */}
-          <VStack className="flex-1" style={{ backgroundColor: '#FFFFFF' }}>
+          <View className="flex-col flex-1" style={{ backgroundColor: '#FFFFFF' }}>
             {/* Welcome Text */}
             <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8" style={{ color: '#30352D' }}>
               Welcome to 100 Handy Task
             </Text>
 
             {/* Create Account Button */}
-            <Box className="px-5">
+            <View className="px-5">
               <Button
                 className="rounded-full shadow-md mb-4"
                 style={{ backgroundColor: '#C1856A' }}
@@ -105,7 +100,7 @@ export default function ProfessionalWelcome() {
               </Pressable>
 
               {/* Terms and Privacy */}
-              <Box className="pb-10">
+              <View className="pb-10">
                 <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
                   By singing up, you agree to the{' '}
                   <Text style={{ color: '#C1856A' }}>Term of service</Text>
@@ -115,12 +110,12 @@ export default function ProfessionalWelcome() {
                   {'\n'}
                   Manage <Text style={{ color: '#C1856A' }}>privacy settings</Text>
                 </Text>
-              </Box>
-            </Box>
-          </VStack>
-        </VStack>
+              </View>
+            </View>
+          </View>
+        </View>
         </ScrollView>
       </SafeAreaView>
-    </Box>
+    </View>
   );
 }

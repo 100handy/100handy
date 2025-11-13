@@ -1,17 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { ScrollView, Pressable as RNPressable } from 'react-native';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
+import { ScrollView, Pressable as RNPressable, View, Text, Pressable } from 'react-native';
 import { Check } from 'lucide-react-native';
 import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetDragIndicator,
-} from '@/components/ui/actionsheet';
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+} from '@/components/ui/modal';
 
 interface DateTimeSelectionSheetProps {
   isOpen: boolean;
@@ -78,31 +72,32 @@ export default function DateTimeSelectionSheet({
   };
 
   return (
-    <Actionsheet isOpen={isOpen} onClose={onClose}>
-      <ActionsheetBackdrop />
-      <ActionsheetContent style={{ backgroundColor: '#FFFFFF', maxHeight: '90%' }}>
-        <ActionsheetDragIndicatorWrapper>
-          <ActionsheetDragIndicator style={{ backgroundColor: '#D1D5DB' }} />
-        </ActionsheetDragIndicatorWrapper>
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
+      <ModalBackdrop />
+      <ModalContent style={{ backgroundColor: '#FFFFFF', maxHeight: '90%' }}>
+        {/* Drag Indicator */}
+        <View className="w-full items-center pt-2 pb-1">
+          <View className="w-12 h-1 rounded-full bg-gray-300" />
+        </View>
 
         <ScrollView className="w-full px-5 pt-4 pb-6" showsVerticalScrollIndicator={false}>
           {/* Header */}
-          <VStack className="mb-6">
+          <View className="mb-6 flex-col">
             <Text className="text-xl font-bold text-[#30352D] mb-3">
               Choose your task date and time
             </Text>
             <Text className="text-sm text-[#30352D]">
               {taskerName}'s Availability
             </Text>
-          </VStack>
+          </View>
 
           {/* Date Selection */}
-          <VStack className="mb-6">
+          <View className="mb-6 flex-col">
             <Text className="text-base font-semibold text-[#30352D] mb-3">
               Select Date
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <HStack className="gap-3">
+              <View className="gap-3 flex-row">
                 {availableDates.map((date, index) => {
                   const { month, day, dayOfWeek } = formatDisplayDate(date);
                   const isSelected = isSameDay(date, selectedDate);
@@ -139,16 +134,16 @@ export default function DateTimeSelectionSheet({
                     </RNPressable>
                   );
                 })}
-              </HStack>
+              </View>
             </ScrollView>
-          </VStack>
+          </View>
 
           {/* Time Selection */}
-          <VStack className="mb-6">
+          <View className="mb-6 flex-col">
             <Text className="text-base font-semibold text-[#30352D] mb-3">
               Select Start Time
             </Text>
-            <VStack className="gap-2">
+            <View className="gap-2 flex-col">
               {timeSlots.map((time) => {
                 const isSelected = selectedTime === time;
                 return (
@@ -171,18 +166,18 @@ export default function DateTimeSelectionSheet({
                   </RNPressable>
                 );
               })}
-            </VStack>
-          </VStack>
+            </View>
+          </View>
 
           {/* Selected Summary */}
-          <VStack className="bg-[#F9FAFB] rounded-lg p-4 mb-6">
+          <View className="bg-[#F9FAFB] rounded-lg p-4 mb-6 flex-col">
             <Text className="text-xs font-medium text-gray-600 mb-2">
               Request for:
             </Text>
             <Text className="text-base font-semibold text-[#30352D]">
               {formatDisplayDate(selectedDate).month} {selectedDate.getDate()}, {selectedDate.getFullYear()} at {selectedTime}
             </Text>
-          </VStack>
+          </View>
 
           {/* Confirm Button */}
           <Pressable
@@ -196,14 +191,14 @@ export default function DateTimeSelectionSheet({
           </Pressable>
 
           {/* Info Text */}
-          <HStack className="items-start gap-2 mt-4 px-2">
+          <View className="items-start gap-2 mt-4 px-2 flex-row">
             <Check size={18} color="#82BE56" strokeWidth={2} className="mt-0.5" />
             <Text className="flex-1 text-xs text-gray-600 leading-relaxed">
               Next, confirm your details to get connected with your Tasker.
             </Text>
-          </HStack>
+          </View>
         </ScrollView>
-      </ActionsheetContent>
-    </Actionsheet>
+      </ModalContent>
+    </Modal>
   );
 }

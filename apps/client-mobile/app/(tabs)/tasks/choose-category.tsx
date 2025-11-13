@@ -1,15 +1,8 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Import gluestack-ui components
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Heading } from '@/components/ui/heading';
-import { Pressable } from '@/components/ui/pressable';
-import { Icon } from '@/components/ui/icon';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 
 // Import lucide-react-native icons
@@ -53,49 +46,49 @@ const navItems = [
 export default function ChooseCategoryScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <Box className="flex-1 bg-gray-50">
+      <View className="flex-1 bg-gray-50">
         {/* Header */}
-        <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
+        <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
           <Pressable>
-            <Icon as={ArrowLeft} size="xl" color="#1F2937" />
+            <ArrowLeft size={28} color="#1F2937" />
           </Pressable>
-          <Heading size="md" className="font-semibold">Choose Category</Heading>
+          <Text className="text-base font-semibold">Choose Category</Text>
           {/* Spacer to keep title centered */}
-          <Box className="w-6" />
-        </HStack>
+          <View className="w-6" />
+        </View>
 
         {/* Search Bar */}
-        <Box className="p-4 bg-white">
+        <View className="p-4 bg-white">
             <Input className="bg-gray-100 rounded-lg border-0" size="lg">
                 <InputField placeholder="Search categories..." />
                 <InputSlot className="pr-3">
-                    <Icon as={Search} size="lg" color="#9CA3AF" />
+                    <Search size={24} color="#9CA3AF" />
                 </InputSlot>
             </Input>
-        </Box>
+        </View>
 
         {/* Category List */}
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-          <VStack className="space-y-3">
+          <View className="flex-col space-y-3">
             {categoryData.map((category) => (
               <Pressable key={category.title} className='my-2'>
-                <HStack className="bg-white p-4 rounded-xl items-center">
-                    <Box style={{ backgroundColor: category.color }} className="w-14 h-14 rounded-xl items-center justify-center">
-                        <Icon as={category.icon} color="white" size="xl"/>
-                    </Box>
-                    <VStack className="flex-1 ml-4">
-                        <Heading size="sm">{category.title}</Heading>
-                        <Text size="sm" className="text-gray-500 mt-1">{category.description}</Text>
-                    </VStack>
-                    <Icon as={ChevronRight} size="lg" color="#CBD5E0" />
-                </HStack>
+                <View className="flex-row bg-white p-4 rounded-xl items-center">
+                    <View style={{ backgroundColor: category.color }} className="w-14 h-14 rounded-xl items-center justify-center">
+                        {React.createElement(category.icon, { size: 28, color: 'white' })}
+                    </View>
+                    <View className="flex-col flex-1 ml-4">
+                        <Text className="text-sm font-semibold">{category.title}</Text>
+                        <Text className="text-sm text-gray-500 mt-1">{category.description}</Text>
+                    </View>
+                    <ChevronRight size={24} color="#CBD5E0" />
+                </View>
               </Pressable>
             ))}
-          </VStack>
+          </View>
         </ScrollView>
         
       
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

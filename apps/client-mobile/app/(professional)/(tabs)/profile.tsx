@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Image, Alert } from 'react-native';
+import { ScrollView, Image, Alert, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
 import {
   User,
   FileText,
@@ -166,16 +161,16 @@ export default function ProfessionalProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
-      <Box className="py-6 px-5 items-center border-b border-gray-100">
+      <View className="py-6 px-5 items-center border-b border-gray-100">
         <Text className="font-worksans-bold text-2xl text-theme-font">
           Profile
         </Text>
-      </Box>
+      </View>
 
       <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
         {/* Profile Photo Section */}
-        <VStack className="px-6 py-8 items-center gap-4 border-b border-gray-100">
-          <Box className="w-[100px] h-[100px] rounded-full overflow-hidden bg-gray-300 relative">
+        <View className="flex-col px-6 py-8 items-center gap-4 border-b border-gray-100">
+          <View className="w-[100px] h-[100px] rounded-full overflow-hidden bg-gray-300 relative">
             {profile?.avatar_url ? (
               <Image
                 source={{ uri: profile.avatar_url }}
@@ -183,15 +178,15 @@ export default function ProfessionalProfileScreen() {
                 style={{ width: 100, height: 100 }}
               />
             ) : (
-              <Box className="w-full h-full items-center justify-center bg-[#D17852]/20">
+              <View className="w-full h-full items-center justify-center bg-[#D17852]/20">
                 <Text className="font-worksans-bold text-3xl text-[#D17852]">
                   {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'}
                 </Text>
-              </Box>
+              </View>
             )}
-          </Box>
+          </View>
 
-          <VStack className="items-center gap-1">
+          <View className="flex-col items-center gap-1">
             <Text className="font-worksans-bold text-xl text-theme-font">
               {profile?.first_name && profile?.last_name
                 ? `${profile.first_name} ${profile.last_name}`
@@ -202,7 +197,7 @@ export default function ProfessionalProfileScreen() {
                 {profile.email}
               </Text>
             )}
-          </VStack>
+          </View>
 
           <Pressable
             onPress={() => setShowPhotoModal(true)}
@@ -213,21 +208,21 @@ export default function ProfessionalProfileScreen() {
               {profile?.avatar_url ? 'Change Photo' : 'Add Photo'}
             </Text>
           </Pressable>
-        </VStack>
+        </View>
 
         {/* Menu Items */}
-        <VStack className="">
+        <View className="flex-col ">
           {menuItems.map((item, index) => (
             <Pressable
               key={index}
               className="px-5 py-5 border-b border-gray-100"
               onPress={item.onPress}
             >
-              <HStack className="items-center justify-between">
-                <HStack className="items-center flex-1">
-                  <Box className="w-6 h-6 items-center justify-center mr-4">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center flex-1">
+                  <View className="w-6 h-6 items-center justify-center mr-4">
                     {item.icon}
-                  </Box>
+                  </View>
                   <Text 
                     className={`font-worksans text-lg ${
                       item.isLogout ? 'text-clay-orange' : 'text-theme-font'
@@ -235,14 +230,14 @@ export default function ProfessionalProfileScreen() {
                   >
                     {item.label}
                   </Text>
-                </HStack>
+                </View>
                 {!item.isLogout && (
                   <ChevronRight color="#BDBDBD" size={22} strokeWidth={2} />
                 )}
-              </HStack>
+              </View>
             </Pressable>
           ))}
-        </VStack>
+        </View>
       </ScrollView>
 
       {/* Add Profile Photo Modal */}

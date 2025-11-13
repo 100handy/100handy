@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, View, TextInput, Alert } from 'react-native';
+import { ScrollView, View, TextInput, Alert, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Icon } from '@/components/ui/icon';
-import { Image } from '@/components/ui/image';
+import { Image } from 'expo-image';
 import { ChevronLeft, CreditCard, Shield } from 'lucide-react-native';
 
 interface FormData {
@@ -84,11 +78,10 @@ const InputField = ({
     </Text>
     <View className="flex-row items-center border-b border-gray-200">
       {showIcon && (
-        <Icon 
-          as={CreditCard} 
-          size="sm" 
-          className="text-gray-400 mr-2" 
-          style={{ width: 20, height: 20 }}
+        <CreditCard
+          size={16}
+          color="#9ca3af"
+          style={{ width: 20, height: 20, marginRight: 8 }}
         />
       )}
       <TextInput
@@ -170,24 +163,22 @@ export default function CreditCardScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Header */}
-        <HStack 
-          className="items-center justify-center px-4 bg-white border-b border-gray-100"
+        <View className="flex-row items-center justify-center px-4 bg-white border-b border-gray-100"
           style={{ height: 74, paddingHorizontal: 16 }}
         >
-          <Pressable 
-            onPress={() => router.back()} 
+          <Pressable
+            onPress={() => router.back()}
             className="flex-row items-center absolute left-6"
             style={{ left: 23 }}
           >
-            <Icon 
-              as={ChevronLeft} 
-              size="sm" 
-              className="text-theme-font" 
+            <ChevronLeft
+              size={16}
+              color="#333A31"
               style={{ width: 20, height: 20 }}
             />
-            <Text 
+            <Text
               className="text-theme-font ml-1"
               style={{
                 fontFamily: 'Work Sans',
@@ -210,12 +201,11 @@ export default function CreditCardScreen() {
           >
             Credit Card
           </Text>
-        </HStack>
+        </View>
 
         <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }}>
           {/* Card Logos */}
-          <HStack 
-            className="items-center px-5 py-4"
+          <View className="flex-row items-center px-5 py-4"
             style={{ 
               paddingHorizontal: 20, 
               paddingVertical: 16, 
@@ -225,10 +215,10 @@ export default function CreditCardScreen() {
             {supportedCards.map((cardType) => (
               <CreditCardLogo key={cardType} cardType={cardType} />
             ))}
-          </HStack>
+          </View>
 
           {/* Form Container */}
-          <VStack style={{ paddingHorizontal: 20, paddingTop: 24 }}>
+          <View className="flex-col" style={{ paddingHorizontal: 20, paddingTop: 24 }}>
             {/* Cardholder Name */}
             <InputField
               label="Cardholder's name"
@@ -250,7 +240,7 @@ export default function CreditCardScreen() {
             />
 
             {/* Expiry Date and CVV Row */}
-            <HStack style={{ gap: 16, marginBottom: 20 }}>
+            <View className="flex-row" style={{ gap: 16, marginBottom: 20 }}>
               <InputField
                 label="Expiry date"
                 placeholder="MM/YY"
@@ -270,7 +260,7 @@ export default function CreditCardScreen() {
                 secureTextEntry={true}
                 style={{ flex: 1 }}
               />
-            </HStack>
+            </View>
 
             {/* Postcode */}
             <InputField
@@ -282,8 +272,7 @@ export default function CreditCardScreen() {
             />
 
             {/* Security Note */}
-            <HStack 
-              className="items-start p-4 bg-gray-50 rounded-lg mt-4"
+            <View className="flex-row items-start p-4 bg-gray-50 rounded-lg mt-4"
               style={{
                 paddingHorizontal: 20,
                 paddingVertical: 16,
@@ -291,15 +280,14 @@ export default function CreditCardScreen() {
                 marginTop: 16
               }}
             >
-              <Icon 
-                as={Shield} 
-                size="xs" 
-                className="text-gray-500 mr-2 mt-1"
-                style={{ 
-                  width: 16, 
-                  height: 16, 
-                  marginRight: 8, 
-                  marginTop: 2 
+              <Shield
+                size={16}
+                color="#6b7280"
+                style={{
+                  width: 16,
+                  height: 16,
+                  marginRight: 8,
+                  marginTop: 2
                 }}
               />
               <Text
@@ -314,8 +302,8 @@ export default function CreditCardScreen() {
               >
                 Security is important to us. Your information is private and protected.
               </Text>
-            </HStack>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
 
         {/* Save Button */}
@@ -350,7 +338,7 @@ export default function CreditCardScreen() {
             Save
           </Text>
         </Pressable>
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

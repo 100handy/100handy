@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { View, Text, Pressable } from 'react-native';
 // You would install this library: npm install react-native-calendars
 import { Calendar } from 'react-native-calendars';
 
-// Import gluestack-ui components
+// Import modal components
 import {
   Modal,
   ModalBackdrop,
@@ -16,12 +17,6 @@ import {
 // Import lucide-react-native icons
 import { X } from 'lucide-react-native';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Heading } from '@/components/ui/heading';
-import { Icon } from '@/components/ui/icon';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Pressable } from '@/components/ui/pressable';
-import { Text } from '@/components/ui/text';
 
 // CORRECTED: Time slots now match the image
 const timeSlots = [
@@ -65,9 +60,9 @@ export default function SelectDateTimeModal({
         <ModalContent className="w-full rounded-t-2xl bottom-0 absolute h-auto">
           {/* CORRECTED: Header now has no border and updated title */}
           <ModalHeader className="border-b-0">
-            <Heading size="lg" className="text-gray-800">Select date & time</Heading>
+            <Text className="text-gray-800 text-lg font-semibold">Select date & time</Text>
             <ModalCloseButton>
-              <Icon as={X} size="lg" className="text-gray-500" />
+              <X size={24} className="text-gray-500" />
             </ModalCloseButton>
           </ModalHeader>
           <ModalBody>
@@ -102,15 +97,15 @@ export default function SelectDateTimeModal({
             />
             
             {/* Time Slots Section */}
-            <VStack className="mt-6">
-                <Heading size="md" className="mb-4 text-gray-800">Available times</Heading>
-                <HStack className="flex-wrap justify-between">
+            <View className="mt-6 flex-col">
+                <Text className="mb-4 text-gray-800 text-base font-medium">Available times</Text>
+                <View className="flex-row flex-wrap justify-between">
                     {timeSlots.map(time => {
                         const isSelected = selectedTime === time;
                         // CORRECTED: Styling now uses the new colors
                         return (
-                            <Pressable 
-                                key={time} 
+                            <Pressable
+                                key={time}
                                 onPress={() => handleTimePress(time)}
                                 style={{
                                     backgroundColor: isSelected ? colors.sageGreen : 'white',
@@ -127,25 +122,25 @@ export default function SelectDateTimeModal({
                             </Pressable>
                         )
                     })}
-                </HStack>
-            </VStack>
+                </View>
+            </View>
 
           </ModalBody>
           {/* CORRECTED: Footer now has two buttons */}
           <ModalFooter className="border-t-0">
-             <HStack className="w-full space-x-4">
+             <View className="w-full flex-row space-x-4">
                 <Button variant="outline" className="flex-1 border-gray-300" size="lg" onPress={onClose}>
                     <ButtonText className="text-gray-700">Cancel</ButtonText>
                 </Button>
-                <Button 
-                    className="flex-1" 
+                <Button
+                    className="flex-1"
                     size="lg"
                     style={{backgroundColor: colors.clayOrange}}
                     onPress={onClose}
                 >
                     <ButtonText className="text-center">Select &{'\n'}Continue</ButtonText>
                 </Button>
-             </HStack>
+             </View>
           </ModalFooter>
         </ModalContent>
       </Modal>

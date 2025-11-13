@@ -1,11 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { View, Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { View, Text, Pressable, Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { X, ChevronRight, Image as ImageIcon, CheckCircle2 } from 'lucide-react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 
@@ -75,26 +70,26 @@ const welcomeScreens = [
         <Text className="text-white text-base font-bold mb-4 text-left">
           These data points work together to:
         </Text>
-        <VStack className="gap-3">
-          <HStack className="items-start gap-3">
+        <View className="gap-3 flex-col">
+          <View className="items-start gap-3 flex-row">
             <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Show your business's potential.
             </Text>
-          </HStack>
-          <HStack className="items-start gap-3">
+          </View>
+          <View className="items-start gap-3 flex-row">
             <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Give you a snapshot of how you stack up against other Taskers.
             </Text>
-          </HStack>
-          <HStack className="items-start gap-3">
+          </View>
+          <View className="items-start gap-3 flex-row">
             <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Allow you insight into your performance and give tips on helping you achieve your goals.
             </Text>
-          </HStack>
-        </VStack>
+          </View>
+        </View>
       </>
     ),
   },
@@ -110,26 +105,26 @@ const welcomeScreens = [
         <Text className="text-white text-base font-bold mb-4 text-left">
           With these new Analytics you can:
         </Text>
-        <VStack className="gap-3">
-          <HStack className="items-start gap-3">
+        <View className="gap-3 flex-col">
+          <View className="items-start gap-3 flex-row">
             <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Learn how to level up
             </Text>
-          </HStack>
-          <HStack className="items-start gap-3">
+          </View>
+          <View className="items-start gap-3 flex-row">
             <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               See where you place among your peers
             </Text>
-          </HStack>
-          <HStack className="items-start gap-3">
+          </View>
+          <View className="items-start gap-3 flex-row">
             <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Keep a better pulse on your business
             </Text>
-          </HStack>
-        </VStack>
+          </View>
+        </View>
       </>
     ),
   },
@@ -140,32 +135,32 @@ const welcomeScreens = [
     showCloseButton: true,
     content: (
       <>
-        <VStack className="gap-4">
-          <HStack className="items-start gap-3">
+        <View className="gap-4 flex-col">
+          <View className="items-start gap-3 flex-row">
             <CheckCircle2 size={20} color="#A0B194" strokeWidth={2} />
             <Text className="text-[#F3E3D3] text-[14px] leading-[17px] flex-1 text-left">
               Include well-lit photos that show off work you're proud of.
             </Text>
-          </HStack>
-          <HStack className="items-start gap-3">
+          </View>
+          <View className="items-start gap-3 flex-row">
             <CheckCircle2 size={20} color="#A0B194" strokeWidth={2} />
             <Text className="text-[#F3E3D3] text-[14px] leading-[17px] flex-1 text-left">
               Make sure you have your Client's permission before taking photos inside their home.
             </Text>
-          </HStack>
-          <HStack className="items-start gap-3">
+          </View>
+          <View className="items-start gap-3 flex-row">
             <CheckCircle2 size={20} color="#A0B194" strokeWidth={2} />
             <Text className="text-[#F3E3D3] text-[14px] leading-[17px] flex-1 text-left">
               Don't include any images that include other people.
             </Text>
-          </HStack>
-          <HStack className="items-start gap-3">
+          </View>
+          <View className="items-start gap-3 flex-row">
             <CheckCircle2 size={20} color="#A0B194" strokeWidth={2} />
             <Text className="text-[#F3E3D3] text-[14px] leading-[17px] flex-1 text-left">
               Don't share images with personal information or inappropriate content.
             </Text>
-          </HStack>
-        </VStack>
+          </View>
+        </View>
         <Text className="text-[#F3E3D3] text-[14px] leading-[17px] text-center mt-6">
           Learn more about our accepted photo policy here.
         </Text>
@@ -223,32 +218,32 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
   const renderItem = ({ item }: { item: typeof welcomeScreens[0] }) => (
     <View style={{ width: SCREEN_WIDTH }}>
       <SafeAreaView className="flex-1" edges={['top']}>
-        <Box className="flex-1 bg-[#4A5347]">
+        <View className="flex-1 bg-[#4A5347]">
           {/* Close/Skip button - only show if explicitly set to true */}
           {item.showCloseButton === true && (
-            <HStack className="items-center justify-end pt-4 pr-6">
+            <View className="items-center justify-end pt-4 pr-6 flex-row">
               <Pressable onPress={handleSkip}>
                 <X size={24} color="white" />
               </Pressable>
-            </HStack>
+            </View>
           )}
 
-          <VStack className="flex-1 justify-between px-6 pb-8">
+          <View className="flex-1 justify-between px-6 pb-8 flex-col">
             {/* Main Content */}
-            <VStack className="flex-1 justify-center">
+            <View className="flex-1 justify-center flex-col">
               {/* Icon (for first and fourth screens) */}
               {item.icon && (
-                <VStack className="items-center mb-6">
+                <View className="items-center mb-6 flex-col">
                   {item.id === 0 ? (
                     // First screen icon has built-in circular background
                     item.icon
                   ) : item.id === 3 ? (
                     // Fourth screen icon needs circular background wrapper
-                    <Box className="w-[90px] h-[90px] rounded-full bg-[#3D4239] items-center justify-center">
+                    <View className="w-[90px] h-[90px] rounded-full bg-[#3D4239] items-center justify-center">
                       {item.icon}
-                    </Box>
+                    </View>
                   ) : null}
-                </VStack>
+                </View>
               )}
 
               {/* Title */}
@@ -266,25 +261,25 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
               )}
 
               {/* Body/Content */}
-              <VStack className="flex-1">
+              <View className="flex-1 flex-col">
                 {item.body || item.content}
-              </VStack>
-            </VStack>
+              </View>
+            </View>
 
             {/* Navigation Dots and Button */}
-            <VStack className="items-center gap-6 mt-8">
+            <View className="items-center gap-6 mt-8 flex-col">
               {/* Only show navigation dots for first 3 screens */}
               {currentStep < 3 && (
-                <HStack className="gap-2">
+                <View className="gap-2 flex-row">
                   {[0, 1, 2].map((index) => (
-                    <Box
+                    <View
                       key={index}
                       className={`w-2 h-2 rounded-full ${
                         index === currentStep ? 'bg-[#B8926A]' : 'bg-white opacity-30'
                       }`}
                     />
                   ))}
-                </HStack>
+                </View>
               )}
 
               {/* Only show "Got it" button on the last screen */}
@@ -298,15 +293,15 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
                   </Text>
                 </Pressable>
               )}
-            </VStack>
-          </VStack>
-        </Box>
+            </View>
+          </View>
+        </View>
       </SafeAreaView>
     </View>
   );
 
   return (
-    <Box className="flex-1">
+    <View className="flex-1">
       <FlatList
         ref={flatListRef}
         data={welcomeScreens}
@@ -323,7 +318,7 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
           index,
         })}
       />
-    </Box>
+    </View>
   );
 }
 

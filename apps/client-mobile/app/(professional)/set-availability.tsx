@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, Pressable as RNPressable } from 'react-native';
+import { ScrollView, Pressable as RNPressable, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
 import { Button, ButtonText } from '@/components/ui/button';
 import {
   Modal,
@@ -79,19 +74,19 @@ export default function SetAvailability() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
-      <HStack className="items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
+      <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
         <Pressable onPress={() => router.push('/(professional)/(tabs)/dashboard')}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-[#30352D]">
           Set Availability
         </Text>
-        <Box className="w-7" />
-      </HStack>
+        <View className="w-7" />
+      </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Days Selector */}
-        <HStack className="px-5 py-4 gap-2">
+        <View className="flex-row px-5 py-4 gap-2">
           {DAYS_OF_WEEK.map((day, index) => (
             <Pressable
               key={day.short}
@@ -116,51 +111,51 @@ export default function SetAvailability() {
               </Text>
             </Pressable>
           ))}
-        </HStack>
+        </View>
 
         {/* Time Slots Display */}
-        <VStack className="px-5 py-4">
+        <View className="flex-col px-5 py-4">
           {currentDaySlots.length > 0 ? (
             <>
               <Text className="font-worksans-bold text-[14px] text-[#30352D] mb-3">
                 Available Time Slots
               </Text>
               {currentDaySlots.map((slot) => (
-                <HStack
+                <View className="flex-row"
                   key={slot.id}
                   className="items-center justify-between py-4 px-4 mb-3 bg-[#F5F5F5] rounded-lg"
                 >
-                  <HStack className="items-center gap-2">
-                    <Box className="w-1 h-12 bg-[#4A5347] rounded-full" />
-                    <VStack>
+                  <View className="flex-row items-center gap-2">
+                    <View className="w-1 h-12 bg-[#4A5347] rounded-full" />
+                    <View className="flex-col">
                       <Text className="font-worksans-semibold text-[16px] text-[#30352D]">
                         {slot.startTime} - {slot.endTime}
                       </Text>
                       <Text className="font-worksans text-[12px] text-[#6B6B6B]">
                         {DAYS_OF_WEEK[selectedDay].short}, {DAYS_OF_WEEK[selectedDay].date}
                       </Text>
-                    </VStack>
-                  </HStack>
+                    </View>
+                  </View>
                   <Pressable onPress={() => removeTimeSlot(slot.id)} className="p-2">
                     <Trash2 color="#D17852" size={20} strokeWidth={2} />
                   </Pressable>
-                </HStack>
+                </View>
               ))}
             </>
           ) : (
-            <VStack className="items-center justify-center py-16">
-              <Box className="w-16 h-16 items-center justify-center bg-[#F5F5F5] rounded-full mb-4">
+            <View className="flex-col items-center justify-center py-16">
+              <View className="w-16 h-16 items-center justify-center bg-[#F5F5F5] rounded-full mb-4">
                 <Calendar color="#6B6B6B" size={32} strokeWidth={1.5} />
-              </Box>
+              </View>
               <Text className="font-worksans-semibold text-[16px] text-[#30352D] mb-2">
                 No availability set
               </Text>
               <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center">
                 Tap the + button to add your{'\n'}available time slots
               </Text>
-            </VStack>
+            </View>
           )}
-        </VStack>
+        </View>
       </ScrollView>
 
       {/* Floating Add Button */}
@@ -175,67 +170,67 @@ export default function SetAvailability() {
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} size="full">
         <ModalBackdrop />
         <ModalContent className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-0 m-0 max-w-none w-full">
-          <VStack className="p-6">
+          <View className="flex-col p-6">
             {/* Modal Header */}
-            <VStack className="items-center mb-6">
-              <Box className="w-12 h-1 bg-[#E5E5E5] rounded-full mb-4" />
+            <View className="flex-col items-center mb-6">
+              <View className="w-12 h-1 bg-[#E5E5E5] rounded-full mb-4" />
               <Text className="font-worksans-bold text-[20px] text-[#30352D]">
                 Add Availability
               </Text>
-            </VStack>
+            </View>
 
             {/* Time Display */}
-            <HStack className="items-center justify-center gap-3 mb-6">
-              <Box className="px-6 py-3 rounded-lg bg-[#F5E6DC]">
+            <View className="flex-row items-center justify-center gap-3 mb-6">
+              <View className="px-6 py-3 rounded-lg bg-[#F5E6DC]">
                 <Text className="font-worksans-semibold text-[20px] text-[#30352D]">
                   {startHour}:{startMinute}
                 </Text>
-              </Box>
+              </View>
               <Text className="font-worksans text-[16px] text-[#6B6B6B]">to</Text>
-              <Box className="px-6 py-3 rounded-lg bg-[#F5F5F5]">
+              <View className="px-6 py-3 rounded-lg bg-[#F5F5F5]">
                 <Text className="font-worksans-semibold text-[20px] text-[#30352D]">
                   {endHour}:{endMinute}
                 </Text>
-              </Box>
-            </HStack>
+              </View>
+            </View>
 
             {/* Time Picker Wheels */}
-            <HStack className="items-center justify-center gap-6 mb-8">
+            <View className="flex-row items-center justify-center gap-6 mb-8">
               {/* Start Time Pickers */}
-              <VStack className="items-center gap-2">
+              <View className="flex-col items-center gap-2">
                 <TimePickerWheel
                   values={HOURS}
                   selectedValue={startHour}
                   onValueChange={setStartHour}
                 />
-              </VStack>
-              <VStack className="items-center gap-2">
+              </View>
+              <View className="flex-col items-center gap-2">
                 <TimePickerWheel
                   values={MINUTES}
                   selectedValue={startMinute}
                   onValueChange={setStartMinute}
                 />
-              </VStack>
+              </View>
 
               {/* End Time Pickers */}
-              <VStack className="items-center gap-2">
+              <View className="flex-col items-center gap-2">
                 <TimePickerWheel
                   values={HOURS}
                   selectedValue={endHour}
                   onValueChange={setEndHour}
                 />
-              </VStack>
-              <VStack className="items-center gap-2">
+              </View>
+              <View className="flex-col items-center gap-2">
                 <TimePickerWheel
                   values={MINUTES}
                   selectedValue={endMinute}
                   onValueChange={setEndMinute}
                 />
-              </VStack>
-            </HStack>
+              </View>
+            </View>
 
             {/* Buttons */}
-            <VStack className="gap-4">
+            <View className="flex-col gap-4">
               <Button
                 onPress={addTimeSlot}
                 className="bg-[#D17852] rounded-full"
@@ -253,8 +248,8 @@ export default function SetAvailability() {
                   Discard
                 </Text>
               </Pressable>
-            </VStack>
-          </VStack>
+            </View>
+          </View>
         </ModalContent>
       </Modal>
     </SafeAreaView>

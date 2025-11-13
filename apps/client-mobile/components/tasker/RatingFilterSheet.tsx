@@ -1,15 +1,10 @@
 import React from 'react';
+import { View, Text, Pressable } from 'react-native';
 import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetDragIndicator,
-  ActionsheetItem,
-} from '@/components/ui/actionsheet';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+} from '@/components/ui/modal';
 import { Check, ChevronUp } from 'lucide-react-native';
 
 export type RatingFilter = 'All ratings' | 'All mounting' | 'Only TV Mounting';
@@ -34,37 +29,52 @@ export default function RatingFilterSheet({
   onSelectFilter,
 }: RatingFilterSheetProps) {
   return (
-    <Actionsheet isOpen={isOpen} onClose={onClose}>
-      <ActionsheetBackdrop />
-      <ActionsheetContent className="bg-white">
-        <ActionsheetDragIndicatorWrapper>
-          <ActionsheetDragIndicator className="bg-gray-300" />
-        </ActionsheetDragIndicatorWrapper>
-        
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
+      <ModalBackdrop />
+      <ModalContent
+        size="full"
+        className="bg-white"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          maxHeight: '50%',
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          margin: 0,
+          marginHorizontal: 0,
+          padding: 0,
+        }}
+      >
         {/* Header */}
-        <VStack className="w-full pb-4 pt-2">
-          <Text className="text-center text-base font-semibold text-black">
+        <View className="w-full pb-4 pt-6 px-5 flex-col border-b border-gray-200">
+          <Text className="text-center text-xl font-medium" style={{ color: '#333A31' }}>
             Rating & reviews
           </Text>
-        </VStack>
+        </View>
 
         {/* Filter Options */}
-        <VStack className="w-full">
-          {ratingFilterOptions.map((option) => {
+        <View className="w-full flex-col">
+          {ratingFilterOptions.map((option, index) => {
             const isSelected = selectedValue === option;
             return (
-              <ActionsheetItem
+              <Pressable
                 key={option}
                 onPress={() => onSelectFilter(option)}
-                className="border-b border-gray-100"
-                style={{ paddingVertical: 16, paddingHorizontal: 20 }}
+                style={{
+                  paddingVertical: 16,
+                  paddingHorizontal: 20,
+                  borderBottomWidth: index < ratingFilterOptions.length - 1 ? 1 : 0,
+                  borderBottomColor: '#E5E7EB',
+                }}
               >
-                <HStack className="flex-1 items-center justify-between">
+                <View className="flex-1 items-center justify-between flex-row">
                   <Text
                     className="text-base"
                     style={{
-                      color: isSelected ? '#333A31' : '#4B5563',
-                      fontWeight: isSelected ? '600' : '400',
+                      color: '#333A31',
+                      fontWeight: '400',
                     }}
                   >
                     {option}
@@ -72,25 +82,30 @@ export default function RatingFilterSheet({
                   {isSelected && (
                     <Check size={20} color="#333A31" strokeWidth={2.5} />
                   )}
-                </HStack>
-              </ActionsheetItem>
+                </View>
+              </Pressable>
             );
           })}
-          
+
           {/* More Button */}
-          <ActionsheetItem
+          <Pressable
             onPress={onClose}
-            className="pt-4 pb-2"
+            style={{
+              paddingVertical: 16,
+              paddingHorizontal: 20,
+              borderTopWidth: 1,
+              borderTopColor: '#E5E7EB',
+            }}
           >
-            <HStack className="flex-1 items-center justify-center gap-2">
-              <Text className="text-base font-semibold text-black">
+            <View className="flex-row items-center justify-center gap-2">
+              <Text className="text-xs font-bold text-black">
                 More
               </Text>
-              <ChevronUp size={20} color="#000000" strokeWidth={2} />
-            </HStack>
-          </ActionsheetItem>
-        </VStack>
-      </ActionsheetContent>
-    </Actionsheet>
+              <ChevronUp size={16} color="#000000" strokeWidth={2} />
+            </View>
+          </Pressable>
+        </View>
+      </ModalContent>
+    </Modal>
   );
 }

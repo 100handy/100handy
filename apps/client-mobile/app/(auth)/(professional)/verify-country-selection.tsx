@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
-import { Image, ScrollView } from 'react-native';
+import { Image, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft, ChevronDown, X } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { CancelVerificationModal } from '@/components/verification';
@@ -37,26 +32,26 @@ export default function VerifyCountrySelection() {
   };
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
         <ScrollView 
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
-          <VStack className="flex-1">
+          <View className="flex-col flex-1">
             {/* Header */}
-            <HStack className="items-center justify-between px-4 pt-2 pb-6">
+            <View className="flex-row items-center justify-between px-4 pt-2 pb-6">
               <Pressable onPress={handleBack}>
                 <ChevronLeft size={20} color="#30352D" />
               </Pressable>
               <Pressable onPress={handleClose}>
                 <X size={20} color="#30352D" />
               </Pressable>
-            </HStack>
+            </View>
 
             {/* Content */}
-            <VStack className="flex-1 px-6">
+            <View className="flex-col flex-1 px-6">
               {/* Title */}
               <Text className="text-[20px] font-worksans-bold leading-[26px] mb-3" style={{ color: '#30352D' }}>
                 What country is your government{'\n'}ID from?
@@ -72,8 +67,8 @@ export default function VerifyCountrySelection() {
                 className="rounded-xl border px-4 py-3.5 mb-6"
                 style={{ borderColor: '#E5E5E5' }}
               >
-                <HStack className="items-center justify-between">
-                  <HStack className="items-center gap-3">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-3">
                     <Image
                       source={require('@/assets/images/uk-flag.png')}
                       className="w-7 h-5"
@@ -82,13 +77,13 @@ export default function VerifyCountrySelection() {
                     <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
                       {selectedCountry}
                     </Text>
-                  </HStack>
+                  </View>
                   <ChevronDown size={18} color="#30352D" />
-                </HStack>
+                </View>
               </Pressable>
 
               {/* Spacer */}
-              <Box className="flex-1" />
+              <View className="flex-1" />
 
               {/* Select Button */}
               <Button
@@ -100,8 +95,8 @@ export default function VerifyCountrySelection() {
                   Select
                 </ButtonText>
               </Button>
-            </VStack>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
 
@@ -111,6 +106,6 @@ export default function VerifyCountrySelection() {
         onResume={handleResume}
         onCancel={handleCancel}
       />
-    </Box>
+    </View>
   );
 }

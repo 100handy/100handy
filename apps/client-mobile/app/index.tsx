@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { Loader } from "@/components/ui/loader";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@shared/supabase';
+import { getHandyProfile } from '@shared/supabase/profile';
 
 const ONBOARDING_KEY = '@hasSeenOnboarding';
 
@@ -11,15 +12,14 @@ const ONBOARDING_KEY = '@hasSeenOnboarding';
  * 
  * Checks if user has seen onboarding before:
  * - First time: Show welcome screens
- * - Returning: Wait for auth check, then let AuthWrapper handle routing
+ * - Returning: Wait for auth check, then route appropriately
  * 
- * Authenticated users are handled by AuthWrapper which will
- * route them to the appropriate home screen based on their role.
+ * Authenticated users are routed to their appropriate home screen based on role.
  */
 export default function Index() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
-  const { isAuthenticated, isLoading, initialize } = useAuthStore();
+  const { isAuthenticated, isLoading, initialize, userRole, isEmailVerified, hasCompletedOnboarding, user } = useAuthStore();
 
   useEffect(() => {
     // Initialize auth first
@@ -31,30 +31,91 @@ export default function Index() {
     if (isLoading) return;
 
     checkOnboardingStatus();
-  }, [isLoading]);
+  }, [isLoading, isAuthenticated, user, userRole, isEmailVerified, hasCompletedOnboarding]);
 
   const checkOnboardingStatus = async () => {
     try {
+      // Priority 1: If user is authenticated, route them appropriately
+      if (isAuthenticated && user) {
+        // Set the onboarding flag if not already set (for future visits)
+        const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
+        if (hasSeenOnboarding !== 'true') {
+          await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+        }
+        // Route authenticated user
+        await routeAuthenticatedUser();
+        return;
+      }
+
+      // Priority 2: User is not authenticated - check if they've seen onboarding before
       const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
       
       if (hasSeenOnboarding === 'true') {
-        // Returning user - let AuthWrapper handle routing based on auth state
-        // If authenticated, AuthWrapper will route to appropriate screen
-        // If not authenticated, redirect to login
-        if (isAuthenticated) {
-          // AuthWrapper will handle the redirect based on role and onboarding
-          return;
-        } else {
-          // Not authenticated - redirect to login
-          router.replace('/(auth)/role-selection');
-        }
+        // Returning user but not authenticated - redirect to login
+        router.replace('/(auth)/role-selection');
+        setIsChecking(false);
       } else {
         // First time user - show welcome flow
         router.replace('/(auth)/role-selection');
+        setIsChecking(false);
       }
     } catch (error) {
       console.error('Error checking onboarding status:', error);
-      // On error, show onboarding to be safe
+      // On error, check auth state first
+      if (isAuthenticated && user) {
+        await routeAuthenticatedUser();
+      } else {
+        router.replace('/(auth)/role-selection');
+        setIsChecking(false);
+      }
+    }
+  };
+
+  const routeAuthenticatedUser = async () => {
+    try {
+      // Check email verification
+      if (!isEmailVerified) {
+        router.replace({
+          pathname: '/(auth)/verify-email',
+          params: { email: user?.email || '' },
+        });
+        setIsChecking(false);
+        return;
+      }
+
+      // Email verified - check role and onboarding
+      const isClient = userRole === 'customer';
+      const isProfessional = userRole === 'handy';
+
+      if (isProfessional) {
+        // Check professional onboarding status
+        try {
+          const handyProfile = await getHandyProfile();
+          const onboardingComplete = handyProfile?.onboarding_completed || false;
+
+          if (!onboardingComplete) {
+            router.replace('/(auth)/(professional)/verify-info');
+          } else {
+            router.replace('/(professional)/(tabs)/dashboard');
+          }
+        } catch (error) {
+          console.error('Error checking professional onboarding:', error);
+          // If error, assume not completed and send to verification
+          router.replace('/(auth)/(professional)/verify-info');
+        }
+      } else if (isClient) {
+        // Client - check onboarding
+        if (!hasCompletedOnboarding) {
+          router.replace('/(auth)/(client)/onboarding');
+        } else {
+          router.replace('/(client)/(tabs)/home');
+        }
+      } else {
+        // Unknown role - redirect to role selection
+        router.replace('/(auth)/role-selection');
+      }
+    } catch (error) {
+      console.error('Error routing authenticated user:', error);
       router.replace('/(auth)/role-selection');
     } finally {
       setIsChecking(false);
@@ -65,5 +126,6 @@ export default function Index() {
     return <Loader />;
   }
 
-  return <Loader />;
+  // This should not be reached, but return null as fallback
+  return null;
 }

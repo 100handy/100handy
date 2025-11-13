@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import { StatusBar, ScrollView } from 'react-native';
+import { StatusBar, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Checkbox, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Image } from 'expo-image';
 import { CheckIcon, ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { Pressable } from '@/components/ui/pressable';
+
+// TODO: Implement checkbox with React Native component
 
 export default function TermsAndPrivacyScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -26,29 +22,29 @@ export default function TermsAndPrivacyScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <StatusBar barStyle="dark-content" />
-      
+
       {/* Header */}
-      <HStack className="items-center justify-between px-6 pt-4 pb-2">
+      <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
         <Pressable onPress={() => router.back()}>
           <ChevronLeft size={24} color="#333A31" />
         </Pressable>
         <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>
           Term & Privacy
         </Text>
-        <Box className="w-6" />
-      </HStack>
+        <View className="w-6" />
+      </View>
 
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <VStack className="flex-1 items-center px-6 pt-8">
+        <View className="flex-col flex-1 items-center px-6 pt-8">
           {/* Logo */}
-          <VStack className="items-center mb-8">
+          <View className="flex-col items-center mb-8">
             <Text className="text-[44px] leading-[44px] font-worksans-medium" style={{ color: '#30352D' }}>
               100
             </Text>
             <Text className="text-[44px] leading-[44px] font-worksans-medium tracking-[2px]" style={{ color: '#30352D' }}>
               HANDY
             </Text>
-          </VStack>
+          </View>
 
           {/* Illustration */}
           <Image
@@ -59,57 +55,47 @@ export default function TermsAndPrivacyScreen() {
           />
 
           {/* Checkboxes */}
-          <VStack className="w-full mb-8">
-            <Checkbox
-              value="terms"
-              isChecked={termsAccepted}
-              onChange={setTermsAccepted}
-              size="md"
-              aria-label="Accept terms and conditions"
-              className="mb-6"
+          <View className="flex-col w-full mb-8">
+            {/* TODO: Implement checkbox with React Native component */}
+            <Pressable
+              onPress={() => setTermsAccepted(!termsAccepted)}
+              className="flex-row items-center mb-6"
             >
-              <CheckboxIndicator 
-                className="mr-3 w-6 h-6 border-2 rounded"
+              <View
+                className="mr-3 w-6 h-6 border-2 rounded items-center justify-center"
                 style={{
                   borderColor: '#30352D',
                   backgroundColor: termsAccepted ? '#D9896C' : 'transparent'
                 }}
               >
                 {termsAccepted && <CheckIcon color="white" size={16} />}
-              </CheckboxIndicator>
-              <CheckboxLabel>
-                <Text className="text-[15px] font-worksans-light leading-5" style={{ color: '#30352D' }}>
-                  I agree to the Terms of Service and have {'\n'}reviewed the Privacy Policy.
-                </Text>
-              </CheckboxLabel>
-            </Checkbox>
+              </View>
+              <Text className="flex-1 text-[15px] font-worksans-light leading-5" style={{ color: '#30352D' }}>
+                I agree to the Terms of Service and have {'\n'}reviewed the Privacy Policy.
+              </Text>
+            </Pressable>
 
-            <Checkbox
-              value="marketing"
-              isChecked={marketingAccepted}
-              onChange={setMarketingAccepted}
-              size="md"
-              aria-label="Marketing communications"
+            <Pressable
+              onPress={() => setMarketingAccepted(!marketingAccepted)}
+              className="flex-row items-center"
             >
-              <CheckboxIndicator 
-                className="mr-3 w-6 h-6 border-2 rounded"
+              <View
+                className="mr-3 w-6 h-6 border-2 rounded items-center justify-center"
                 style={{
                   borderColor: '#30352D',
                   backgroundColor: marketingAccepted ? '#D9896C' : 'transparent'
                 }}
               >
                 {marketingAccepted && <CheckIcon color="white" size={16} />}
-              </CheckboxIndicator>
-              <CheckboxLabel>
-                <Text className="text-[15px] font-worksans-light leading-5" style={{ color: '#30352D' }}>
-                  I do not wish to receive promotional {'\n'}communications from 100 Handy.
-                </Text>
-              </CheckboxLabel>
-            </Checkbox>
-          </VStack>
+              </View>
+              <Text className="flex-1 text-[15px] font-worksans-light leading-5" style={{ color: '#30352D' }}>
+                I do not wish to receive promotional {'\n'}communications from 100 Handy.
+              </Text>
+            </Pressable>
+          </View>
 
           {/* Continue Button */}
-          <Box className="w-full px-6 pb-8">
+          <View className="w-full px-6 pb-8">
             <Button
               size="xl"
               className="h-[60px] rounded-full"
@@ -126,8 +112,8 @@ export default function TermsAndPrivacyScreen() {
                 Continue
               </ButtonText>
             </Button>
-          </Box>
-        </VStack>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

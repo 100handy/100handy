@@ -1,7 +1,5 @@
 import React from 'react';
-import { ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { VStack } from '@/components/ui/vstack';
-import { Text } from '@/components/ui/text';
+import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import {
   MapPin,
   Search,
@@ -34,13 +32,10 @@ import {
   Hand,
   Droplets,
   UserCircle,
-  Building,
   Snowflake,
   Wifi,
   LucideIcon,
 } from 'lucide-react-native';
-import { HStack } from '../ui/hstack';
-import { Pressable } from '../ui/pressable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useLocationStore, useTopLevelCategories } from '@shared/supabase';
@@ -176,32 +171,32 @@ export function ServicesHomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
-        <VStack className="flex-1">
+        <View className="flex-1 flex-col">
         {/* Header Section */}
-        <VStack className="bg-white px-5 pt-4 pb-4">
-          <HStack className="items-center justify-between">
-            <VStack className="gap-0">
+        <View className="bg-white px-5 pt-4 pb-4 flex-col">
+          <View className="items-center justify-between flex-row">
+            <View className="gap-0 flex-col">
               <Text className="text-xs text-gray-500" style={{ fontWeight: '400' }}>100</Text>
               <Text className="text-2xl text-stone-900" style={{ fontWeight: '700', letterSpacing: 0.5 }}>HANDY</Text>
-            </VStack>
+            </View>
             <Pressable onPress={() => router.push('/(client)/location')}>
-              <VStack className="items-end gap-0">
-                <HStack className="items-center gap-1">
+              <View className="items-end gap-0 flex-col">
+                <View className="items-center gap-1 flex-row">
                   <Text className="text-xs text-stone-800" style={{ fontWeight: '400' }} numberOfLines={1}>
                     {locationDisplay.line1}
                   </Text>
                   <MapPin size={16} color="#ff6b35" />
-                </HStack>
+                </View>
                 <Text className="text-xs text-stone-800" style={{ fontWeight: '400' }} numberOfLines={1}>
                   {locationDisplay.line2}
                 </Text>
-              </VStack>
+              </View>
             </Pressable>
-          </HStack>
-        </VStack>
+          </View>
+        </View>
 
         {/* Search Section with Dark Background */}
-        <VStack className="px-5 pt-5 pb-4" style={{ backgroundColor: '#30352D' }}>
+        <View className="px-5 pt-5 pb-4 flex-col" style={{ backgroundColor: '#30352D' }}>
           <Text className="text-xl font-bold text-white mb-4">
             What task do you need done?
           </Text>
@@ -214,20 +209,20 @@ export function ServicesHomeScreen() {
               router.push('/(client)/search-services');
             }}
           >
-            <HStack
-              className="rounded-xl px-4 py-3 items-center gap-3"
+            <View
+              className="rounded-xl px-4 py-3 items-center gap-3 flex-row"
               style={{ backgroundColor: '#4a4e4d', borderWidth: 1, borderColor: '#5a5e5d' }}
             >
               <Search size={18} color="#8b9199" />
               <Text style={{ color: '#8b9199', fontSize: 15 }}>
                 Try: painting, moving, repairs
               </Text>
-            </HStack>
+            </View>
           </TouchableOpacity>
-        </VStack>
+        </View>
 
         {/* Horizontal Scrollable Service Chips */}
-        <VStack className="py-3 gap-2.5" style={{ backgroundColor: '#30352D' }}>
+        <View className="py-3 gap-2.5 flex-col" style={{ backgroundColor: '#30352D' }}>
           {serviceChips.map((row, rowIndex) => (
             <ScrollView
               key={rowIndex}
@@ -266,30 +261,30 @@ export function ServicesHomeScreen() {
               ))}
             </ScrollView>
           ))}
-        </VStack>
+        </View>
 
         {/* Section Title */}
-        <VStack className="px-5 pt-5 pb-4 bg-white">
+        <View className="px-5 pt-5 pb-4 bg-white flex-col">
           <Text className="text-xl text-stone-900 mb-1" style={{ fontWeight: '700' }}>
             Need Something done?
           </Text>
           <Text className="text-sm text-gray-600" style={{ fontWeight: '400' }}>
             Browse our top trending categories
           </Text>
-        </VStack>
+        </View>
 
         {/* Service Cards Grid */}
-        <VStack className="px-5 pb-6 bg-white">
+        <View className="px-5 pb-6 bg-white flex-col">
           {isLoading ? (
-            <VStack className="items-center justify-center py-12">
+            <View className="items-center justify-center py-12 flex-col">
               <ActivityIndicator size="large" color="#30352d" />
               <Text className="text-sm text-gray-600 mt-3">Loading categories...</Text>
-            </VStack>
+            </View>
           ) : (
-            <VStack className="gap-3">
+            <View className="gap-3 flex-col">
               {Array.from({ length: Math.ceil(serviceCards.length / 2) }).map((_, rowIndex) => (
-                <HStack key={rowIndex} className="gap-3">
-                  {serviceCards.slice(rowIndex * 2, rowIndex * 2 + 2).map((service, index) => {
+                <View key={rowIndex} className="gap-3 flex-row">
+                  {serviceCards.slice(rowIndex * 2, rowIndex * 2 + 2).map((service) => {
                     const Icon = service.icon;
                     const serviceId = ('id' in service && service.id) ? String(service.id) : service.title;
 
@@ -312,21 +307,21 @@ export function ServicesHomeScreen() {
                           }
                         }}
                       >
-                        <VStack className="items-center gap-2">
+                        <View className="items-center gap-2 flex-col">
                           <Icon size={36} color="white" strokeWidth={1.5} />
                           <Text className="text-white font-medium text-sm text-center">
                             {service.title}
                           </Text>
-                        </VStack>
+                        </View>
                       </Pressable>
                     );
                   })}
-                </HStack>
+                </View>
               ))}
-            </VStack>
+            </View>
           )}
-        </VStack>
-      </VStack>
+        </View>
+      </View>
     </ScrollView>
 
     {/* Booking Action Sheet */}

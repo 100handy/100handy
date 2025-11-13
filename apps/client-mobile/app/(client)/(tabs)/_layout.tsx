@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Briefcase, Heart, User } from 'lucide-react-native';
+import { Home, Briefcase, MessageCircle, Heart, User } from 'lucide-react-native';
 
 export default function ClientTabLayout() {
   return (
@@ -30,6 +30,13 @@ export default function ClientTabLayout() {
         }}
       />
       <Tabs.Screen
+        name="messages"
+        options={{
+          title: "Messages",
+          tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="taskers"
         options={{
           title: "My Taskers",
@@ -51,6 +58,7 @@ export default function ClientTabLayout() {
       <Tabs.Screen name="booking/address" options={{ href: null }} />
       <Tabs.Screen name="professionals/available" options={{ href: null }} />
       <Tabs.Screen name="professionals/details" options={{ href: null }} />
+      <Tabs.Screen name="chat/conversation" options={{ href: null }} />
     </Tabs>
   );
 }

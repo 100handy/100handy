@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, Alert } from 'react-native';
-import { Box } from '@/components/ui/box';
+import { ScrollView, Alert, View, Text, Pressable } from 'react-native';
 import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
-import { Checkbox, CheckboxIndicator, CheckboxIcon, CheckboxLabel } from '@/components/ui/checkbox';
 import { Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectItem } from '@/components/ui/select';
 import { EyeIcon, EyeOffIcon, CheckIcon, ChevronDownIcon } from 'lucide-react-native';
 import { signUp } from '@shared/supabase/auth';
@@ -84,19 +81,19 @@ export default function Signup() {
 
   return (
     <ScrollView>
-      <Box className="flex-1 bg-theme-background min-h-full">
-        <Box className="flex-1 justify-center items-center p-4">
-          <Box className="w-full max-w-[390px] bg-theme-background">
+      <View className="flex-1 bg-theme-background min-h-full">
+        <View className="flex-1 justify-center items-center p-4">
+          <View className="w-full max-w-[390px] bg-theme-background">
             {/* Header */}
-            <Box className="pt-24 pb-8 px-6">
+            <View className="pt-24 pb-8 px-6">
               <Text className="text-center text-xl font-worksans-semibold text-theme-font leading-7">
                 Create your account
               </Text>
-            </Box>
+            </View>
 
             {/* Form Container */}
-            <Box className="px-6 pb-6">
-              <Box className="space-y-4">
+            <View className="px-6 pb-6">
+              <View className="space-y-4">
                 {/* First Name */}
                 <Input
                   variant="outline"
@@ -141,9 +138,9 @@ export default function Signup() {
                 </Input>
 
                 {/* Phone Number */}
-                <Box className="flex-row space-x-2 my-2">
+                <View className="flex-row space-x-2 my-2">
                   {/* Country Code Selector */}
-                  <Box className="w-28">
+                  <View className="w-28">
                     <Select selectedValue={countryCode} onValueChange={setCountryCode}>
                       <SelectTrigger
                         variant="outline"
@@ -172,10 +169,10 @@ export default function Signup() {
                         </SelectContent>
                       </SelectPortal>
                     </Select>
-                  </Box>
+                  </View>
 
                   {/* Phone Input */}
-                  <Box className="flex-1 ml-1">
+                  <View className="flex-1 ml-1">
                     <Input
                       variant="outline"
                       size="xl"
@@ -189,8 +186,8 @@ export default function Signup() {
                         className="text-base text-typography-black font-worksans placeholder-typography-400"
                       />
                     </Input>
-                  </Box>
-                </Box>
+                  </View>
+                </View>
 
                 {/* Password */}
                 <Input
@@ -226,49 +223,43 @@ export default function Signup() {
                     className="text-base text-typography-black font-worksans placeholder-typography-400"
                   />
                 </Input>
-              </Box>
+              </View>
 
               {/* Checkboxes */}
-              <Box className="space-y-3 mt-8">
+              <View className="space-y-3 mt-8">
                 {/* Terms and Conditions */}
-                <Checkbox
-                  value="terms"
-                  isChecked={termsAccepted}
-                  onChange={setTermsAccepted}
-                  size="sm"
-                  className="items-start"
+                <Pressable
+                  onPress={() => setTermsAccepted(!termsAccepted)}
+                  className="flex-row items-start"
                 >
-                  <CheckboxIndicator className="mr-3 mt-1">
-                    <CheckboxIcon as={CheckIcon} />
-                  </CheckboxIndicator>
-                  <CheckboxLabel>
+                  <View className={`w-5 h-5 rounded border-2 mr-3 mt-1 items-center justify-center ${termsAccepted ? 'bg-clayOrange border-clayOrange' : 'border-typography-300'}`}>
+                    {termsAccepted && <CheckIcon size={14} color="white" />}
+                  </View>
+                  <View className="flex-1">
                     <Text className="text-sm leading-6 font-worksans">
                       <Text className="text-typography-500">I agree to the</Text>
                       <Text className="text-clayOrange underline"> Terms and Conditions</Text>
                       <Text className="text-typography-500"> and</Text>
                       <Text className="text-clayOrange underline"> Privacy Policy</Text>
                     </Text>
-                  </CheckboxLabel>
-                </Checkbox>
+                  </View>
+                </Pressable>
 
                 {/* Marketing Communications */}
-                <Checkbox
-                  value="marketing"
-                  isChecked={marketingAccepted}
-                  onChange={setMarketingAccepted}
-                  size="sm"
-                  className="items-start"
+                <Pressable
+                  onPress={() => setMarketingAccepted(!marketingAccepted)}
+                  className="flex-row items-start"
                 >
-                  <CheckboxIndicator className="mr-3 mt-1">
-                    <CheckboxIcon as={CheckIcon} />
-                  </CheckboxIndicator>
-                  <CheckboxLabel>
+                  <View className={`w-5 h-5 rounded border-2 mr-3 mt-1 items-center justify-center ${marketingAccepted ? 'bg-clayOrange border-clayOrange' : 'border-typography-300'}`}>
+                    {marketingAccepted && <CheckIcon size={14} color="white" />}
+                  </View>
+                  <View className="flex-1">
                     <Text className="text-sm text-typography-500 leading-6 font-worksans">
                       I would like to receive marketing communications and special offers
                     </Text>
-                  </CheckboxLabel>
-                </Checkbox>
-              </Box>
+                  </View>
+                </Pressable>
+              </View>
 
               {/* Sign Up Button */}
               <Button
@@ -283,7 +274,7 @@ export default function Signup() {
               </Button>
 
               {/* Login Link */}
-              <Box className="items-center mt-8">
+              <View className="items-center mt-8">
                 <Text className="text-sm text-typography-500 font-worksans">
                   Already have an account?
                   <Text 
@@ -291,11 +282,11 @@ export default function Signup() {
                     onPress={() => router.push('/(auth)/role-selection')}
                   > Log in</Text>
                 </Text>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
     </ScrollView>
   );
 }

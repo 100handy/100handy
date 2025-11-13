@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
+import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Pressable } from '@/components/ui/pressable';
 import { Mail } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@shared/supabase/supabaseClient';
@@ -42,11 +39,11 @@ export default function VerifyEmail() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <VStack className="flex-1 justify-center items-center px-6">
+      <View className="flex-col flex-1 justify-center items-center px-6">
         {/* Icon */}
-        <Box className="w-20 h-20 bg-sage-green rounded-full items-center justify-center mb-8">
+        <View className="w-20 h-20 bg-sage-green rounded-full items-center justify-center mb-8">
           <Mail size={40} color="white" />
-        </Box>
+        </View>
 
         {/* Title */}
         <Text className="text-2xl font-worksans-bold text-center mb-4" style={{ color: '#30352D' }}>
@@ -86,12 +83,12 @@ export default function VerifyEmail() {
         </Pressable>
 
         {/* Help Text */}
-        <Box className="mt-12 px-4">
+        <View className="mt-12 px-4">
           <Text className="text-xs font-worksans text-center text-typography-400 leading-5">
             Didn't receive the email? Check your spam folder or try resending.
           </Text>
-        </Box>
-      </VStack>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }

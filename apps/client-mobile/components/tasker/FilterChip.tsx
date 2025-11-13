@@ -1,6 +1,5 @@
 import React from 'react';
-import { Pressable } from '../ui/pressable';
-import { Text } from '../ui/text';
+import { Pressable, Text } from 'react-native';
 
 interface FilterChipProps {
   label: string;

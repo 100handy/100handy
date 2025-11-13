@@ -1,14 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, PanResponder, GestureResponderEvent } from 'react-native';
+import { View, StyleSheet, Dimensions, PanResponder, GestureResponderEvent, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Circle, Region, Polygon, LatLng } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { ArrowLeft, MapPin, Plus, Minus, Pencil, Circle as CircleIcon, Trash2 } from 'lucide-react-native';
 import Slider from '@react-native-community/slider';
 
@@ -176,9 +171,9 @@ export default function SetWorkAreaScreen() {
   if (!region) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        <Box className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center">
           <Text className="text-[#30352D] text-lg">Loading map...</Text>
-        </Box>
+        </View>
       </SafeAreaView>
     );
   }
@@ -189,28 +184,28 @@ export default function SetWorkAreaScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <Box className="flex-1">
+      <View className="flex-1">
         {/* Header */}
-        <Box className="bg-white px-6 py-4 border-b border-gray-200 z-10">
-          <HStack className="items-center justify-between">
+        <View className="bg-white px-6 py-4 border-b border-gray-200 z-10">
+          <View className="flex-row items-center justify-between">
             <Pressable onPress={() => router.push('/(professional)/(tabs)/dashboard')}>
               <ArrowLeft size={24} color="#30352D" />
             </Pressable>
             <Text className="text-[#30352D] text-lg font-bold">Set Work Area</Text>
-            <Box className="w-6" />
-          </HStack>
-        </Box>
+            <View className="w-6" />
+          </View>
+        </View>
 
         {/* Mode Selector */}
-        <Box className="bg-[#F5F5F5] px-6 py-4 border-b border-gray-200">
-          <HStack className="gap-3">
+        <View className="bg-[#F5F5F5] px-6 py-4 border-b border-gray-200">
+          <View className="flex-row gap-3">
             <Pressable
               onPress={switchToCircleMode}
               className={`flex-1 rounded-xl py-3 items-center ${
                 drawMode === 'circle' ? 'bg-[#C1856A]' : 'bg-white border border-gray-300'
               }`}
             >
-              <HStack className="items-center gap-2">
+              <View className="flex-row items-center gap-2">
                 <CircleIcon
                   size={20}
                   color={drawMode === 'circle' ? 'white' : '#30352D'}
@@ -223,7 +218,7 @@ export default function SetWorkAreaScreen() {
                 >
                   Radius
                 </Text>
-              </HStack>
+              </View>
             </Pressable>
 
             <Pressable
@@ -232,7 +227,7 @@ export default function SetWorkAreaScreen() {
                 drawMode === 'draw' ? 'bg-[#C1856A]' : 'bg-white border border-gray-300'
               }`}
             >
-              <HStack className="items-center gap-2">
+              <View className="flex-row items-center gap-2">
                 <Pencil
                   size={20}
                   color={drawMode === 'draw' ? 'white' : '#30352D'}
@@ -245,9 +240,9 @@ export default function SetWorkAreaScreen() {
                 >
                   Draw
                 </Text>
-              </HStack>
+              </View>
             </Pressable>
-          </HStack>
+          </View>
 
           {/* Instructions */}
           <Text className="text-[#30352D] text-xs text-center mt-3">
@@ -257,7 +252,7 @@ export default function SetWorkAreaScreen() {
               ? 'Tap on the map to draw your work area boundary'
               : 'Tap "Start Drawing" to create a custom work area'}
           </Text>
-        </Box>
+        </View>
 
         {/* Map Container */}
         <View style={{ flex: 1, position: 'relative' }}>
@@ -315,7 +310,7 @@ export default function SetWorkAreaScreen() {
 
           {/* Center Pin Indicator - Only for Circle Mode */}
           {drawMode === 'circle' && (
-            <Box
+            <View
               className="absolute items-center justify-center"
               style={{
                 left: width / 2 - 15,
@@ -324,37 +319,37 @@ export default function SetWorkAreaScreen() {
               }}
             >
               <MapPin size={30} color="#C1856A" fill="#C1856A" />
-            </Box>
+            </View>
           )}
 
           {/* Drawing Mode Indicator */}
           {drawMode === 'draw' && isDrawing && (
-            <Box
+            <View
               className="absolute top-4 left-0 right-0 items-center"
               style={{ pointerEvents: 'none' }}
             >
-              <Box className="bg-[#C1856A] px-4 py-2 rounded-full">
+              <View className="bg-[#C1856A] px-4 py-2 rounded-full">
                 <Text className="text-white text-sm font-bold">
                   Tap on map to draw • {currentDrawingPath.length} points
                 </Text>
-              </Box>
-            </Box>
+              </View>
+            </View>
           )}
         </View>
 
         {/* Control Panel */}
-        <Box className="bg-white px-6 py-6 border-t border-gray-200">
+        <View className="bg-white px-6 py-6 border-t border-gray-200">
           {drawMode === 'circle' ? (
             /* Circle Mode Controls */
-            <VStack className="gap-4">
-              <HStack className="items-center justify-between">
+            <View className="flex-col gap-4">
+              <View className="flex-row items-center justify-between">
                 <Text className="text-[#30352D] text-base font-bold">Work Area Radius</Text>
                 <Text className="text-[#C1856A] text-xl font-bold">
                   {radiusMiles} {radiusMiles === 1 ? 'mile' : 'miles'}
                 </Text>
-              </HStack>
+              </View>
 
-              <HStack className="items-center gap-4">
+              <View className="flex-row items-center gap-4">
                 <Pressable
                   onPress={decreaseRadius}
                   className="w-12 h-12 bg-[#F5F5F5] rounded-full items-center justify-center"
@@ -366,7 +361,7 @@ export default function SetWorkAreaScreen() {
                   />
                 </Pressable>
 
-                <Box className="flex-1">
+                <View className="flex-1">
                   <Slider
                     style={{ width: '100%', height: 40 }}
                     minimumValue={MIN_RADIUS_MILES}
@@ -378,7 +373,7 @@ export default function SetWorkAreaScreen() {
                     maximumTrackTintColor="#E5E5E5"
                     thumbTintColor="#C1856A"
                   />
-                </Box>
+                </View>
 
                 <Pressable
                   onPress={increaseRadius}
@@ -390,29 +385,29 @@ export default function SetWorkAreaScreen() {
                     color={radiusMiles >= MAX_RADIUS_MILES ? '#CCC' : '#30352D'}
                   />
                 </Pressable>
-              </HStack>
+              </View>
 
               <Text className="text-[#333A31] text-xs text-center">
                 {"You'll receive job requests within this radius from your work area center"}
               </Text>
-            </VStack>
+            </View>
           ) : (
             /* Draw Mode Controls */
-            <VStack className="gap-3">
+            <View className="flex-col gap-3">
               {!isDrawing && drawnCoordinates.length === 0 && (
                 <Pressable
                   onPress={startDrawing}
                   className="bg-[#C1856A] rounded-xl py-4 items-center"
                 >
-                  <HStack className="items-center gap-2">
+                  <View className="flex-row items-center gap-2">
                     <Pencil size={20} color="white" strokeWidth={2} />
                     <Text className="text-white text-base font-bold">Start Drawing</Text>
-                  </HStack>
+                  </View>
                 </Pressable>
               )}
 
               {isDrawing && (
-                <HStack className="gap-3">
+                <View className="flex-row gap-3">
                   <Pressable
                     onPress={finishDrawing}
                     className="flex-1 bg-[#4A5347] rounded-xl py-4 items-center"
@@ -433,11 +428,11 @@ export default function SetWorkAreaScreen() {
                   >
                     <Trash2 size={20} color="#30352D" strokeWidth={2} />
                   </Pressable>
-                </HStack>
+                </View>
               )}
 
               {!isDrawing && drawnCoordinates.length > 0 && (
-                <HStack className="gap-3">
+                <View className="flex-row gap-3">
                   <Pressable
                     onPress={startDrawing}
                     className="flex-1 bg-[#C1856A] rounded-xl py-4 items-center"
@@ -451,7 +446,7 @@ export default function SetWorkAreaScreen() {
                   >
                     <Trash2 size={20} color="#30352D" strokeWidth={2} />
                   </Pressable>
-                </HStack>
+                </View>
               )}
 
               <Text className="text-[#333A31] text-xs text-center">
@@ -459,7 +454,7 @@ export default function SetWorkAreaScreen() {
                   ? 'Tap at least 3 points to create your work area boundary'
                   : "You'll receive job requests within your custom work area"}
               </Text>
-            </VStack>
+            </View>
           )}
 
           {/* Save Button */}
@@ -476,8 +471,8 @@ export default function SetWorkAreaScreen() {
               Save Work Area
             </Text>
           </Pressable>
-        </Box>
-      </Box>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }

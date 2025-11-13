@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Alert } from 'react-native';
+import { ScrollView, Alert, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
 import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Image } from '@/components/ui/image';
-import { Pressable } from '@/components/ui/pressable';
+import { Image } from 'expo-image';
 import { Loader } from '@/components/ui/loader';
 import { Camera, User } from 'lucide-react-native';
 import { useProfileStore } from '@shared/supabase';
@@ -111,10 +106,10 @@ export default function EditProfile() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <Header title="Edit Profile" onBackPress={() => router.back()} showBellIcon={false} />
-        <Box className="flex-1 justify-center items-center">
+        <View className="flex-1 justify-center items-center">
           <Loader size="large" />
           <Text className="mt-4 text-gray-600">Loading profile...</Text>
-        </Box>
+        </View>
       </SafeAreaView>
     );
   }
@@ -124,21 +119,21 @@ export default function EditProfile() {
       <Header title="Edit Profile" onBackPress={() => router.back()} showBellIcon={false} />
       
       <ScrollView className="flex-1">
-        <VStack className="p-6 space-y-6">
+        <View className="flex-col p-6 space-y-6">
           {/* Profile Picture Section */}
-          <VStack className="items-center space-y-4">
-            <Box className="relative">
+          <View className="flex-col items-center space-y-4">
+            <View className="relative">
               <Image
                 source={{ uri: formData.avatar_url || 'https://i.pravatar.cc/150?u=default' }}
                 alt="Profile Picture"
                 className="w-24 h-24 rounded-full"
               />
               {isUploadingImage && (
-                <Box className="absolute inset-0 bg-black/50 rounded-full justify-center items-center">
+                <View className="absolute inset-0 bg-black/50 rounded-full justify-center items-center">
                   <Loader size="small" />
-                </Box>
+                </View>
               )}
-            </Box>
+            </View>
             
             <Pressable 
               onPress={handleImagePicker}
@@ -150,11 +145,11 @@ export default function EditProfile() {
                 {isUploadingImage ? 'Uploading...' : 'Change Photo'}
               </Text>
             </Pressable>
-          </VStack>
+          </View>
 
           {/* Form Fields */}
-          <VStack className="space-y-4">
-            <VStack className="space-y-2">
+          <View className="flex-col space-y-4">
+            <View className="flex-col space-y-2">
               <Text className="text-gray-700 font-medium">First Name</Text>
               <Input className="border border-gray-200 rounded-lg">
                 <InputField
@@ -164,9 +159,9 @@ export default function EditProfile() {
                   className="px-4 py-3"
                 />
               </Input>
-            </VStack>
+            </View>
 
-            <VStack className="space-y-2">
+            <View className="flex-col space-y-2">
               <Text className="text-gray-700 font-medium">Last Name</Text>
               <Input className="border border-gray-200 rounded-lg">
                 <InputField
@@ -176,9 +171,9 @@ export default function EditProfile() {
                   className="px-4 py-3"
                 />
               </Input>
-            </VStack>
+            </View>
 
-            <VStack className="space-y-2">
+            <View className="flex-col space-y-2">
               <Text className="text-gray-700 font-medium">Phone</Text>
               <Input className="border border-gray-200 rounded-lg">
                 <InputField
@@ -189,9 +184,9 @@ export default function EditProfile() {
                   keyboardType="phone-pad"
                 />
               </Input>
-            </VStack>
+            </View>
 
-            <VStack className="space-y-2">
+            <View className="flex-col space-y-2">
               <Text className="text-gray-700 font-medium">Postcode</Text>
               <Input className="border border-gray-200 rounded-lg">
                 <InputField
@@ -201,9 +196,9 @@ export default function EditProfile() {
                   className="px-4 py-3"
                 />
               </Input>
-            </VStack>
+            </View>
 
-            <VStack className="space-y-2">
+            <View className="flex-col space-y-2">
               <Text className="text-gray-700 font-medium">Email</Text>
               <Input className="border border-gray-200 rounded-lg bg-gray-50">
                 <InputField
@@ -214,8 +209,8 @@ export default function EditProfile() {
                 />
               </Input>
               <Text className="text-xs text-gray-500">Email cannot be changed</Text>
-            </VStack>
-          </VStack>
+            </View>
+          </View>
 
           {/* Save Button */}
           <Button 
@@ -224,15 +219,15 @@ export default function EditProfile() {
             className="bg-blue-500 rounded-lg mt-8"
           >
             {isUpdating ? (
-              <HStack className="items-center space-x-2">
+              <View className="flex-row items-center space-x-2">
                 <Loader size="small" />
                 <ButtonText className="text-white">Updating...</ButtonText>
-              </HStack>
+              </View>
             ) : (
               <ButtonText className="text-white font-semibold">Save Changes</ButtonText>
             )}
           </Button>
-        </VStack>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

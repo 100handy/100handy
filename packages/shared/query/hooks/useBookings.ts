@@ -15,7 +15,7 @@ export const bookingKeys = {
   lists: () => [...bookingKeys.all, 'list'] as const,
   list: (filters: { userId: string; status: string }) => [...bookingKeys.lists(), filters] as const,
   details: () => [...bookingKeys.all, 'detail'] as const,
-  detail: (id: number) => [...bookingKeys.details(), id] as const,
+  detail: (id: string) => [...bookingKeys.details(), id] as const,
   upcoming: (userId: string) => [...bookingKeys.lists(), { userId, status: 'upcoming' }] as const,
   past: (userId: string) => [...bookingKeys.lists(), { userId, status: 'past' }] as const,
   cancelled: (userId: string) => [...bookingKeys.lists(), { userId, status: 'cancelled' }] as const,
@@ -55,7 +55,7 @@ export function useCancelledBookings(userId: string) {
 }
 
 // Hook for individual booking details
-export function useBookingById(bookingId: number | null) {
+export function useBookingById(bookingId: string | null) {
   return useQuery({
     queryKey: bookingKeys.detail(bookingId!),
     queryFn: () => getBookingById(bookingId!),
@@ -94,7 +94,7 @@ export function useInvalidateBookings() {
     invalidateUserBookings: (userId: string) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
     },
-    invalidateBooking: (bookingId: number) => {
+    invalidateBooking: (bookingId: string) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) });
     },
     invalidateAllBookings: () => {

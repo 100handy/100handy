@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Box } from '@/components/ui/box';
+import { View, Text, Pressable } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
-import { Pressable } from '@/components/ui/pressable';
 import { router } from 'expo-router';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
@@ -37,14 +35,14 @@ export default function SignInForm({
   });
 
   return (
-    <Box className="px-5">
+    <View className="px-5">
       {/* Email */}
-      <Box className="mb-3">
+      <View className="mb-3">
         <Controller
           control={control}
           name="email"
           render={({ field: { onChange, onBlur, value } }) => (
-            <Box>
+            <View>
               <Input
                 variant="outline"
                 className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
@@ -66,18 +64,18 @@ export default function SignInForm({
                   {errors.email.message}
                 </Text>
               )}
-            </Box>
+            </View>
           )}
         />
-      </Box>
+      </View>
 
       {/* Password */}
-      <Box className="mb-3">
+      <View className="mb-3">
         <Controller
           control={control}
           name="password"
           render={({ field: { onChange, onBlur, value } }) => (
-            <Box>
+            <View>
               <Input
                 variant="outline"
                 className="border-0 border-b border-gray-300 rounded-none px-0 h-10 flex-row items-center"
@@ -105,21 +103,21 @@ export default function SignInForm({
                   {errors.password.message}
                 </Text>
               )}
-            </Box>
+            </View>
           )}
         />
-      </Box>
-      
+      </View>
+
       {/* Login Button */}
-      <Button 
+      <Button
         className="rounded-full shadow-sm my-6"
-        style={{ 
+        style={{
           backgroundColor: isValid ? '#C1856A' : '#E5E7EB',
         }}
         onPress={handleSubmit(onSubmit)}
         isDisabled={!isValid || isLoading}
       >
-        <ButtonText 
+        <ButtonText
           className="text-[18px] font-worksans-bold"
           style={{ color: isValid ? 'white' : '#B7B7B7' }}
         >
@@ -134,6 +132,6 @@ export default function SignInForm({
           <Text style={{ color: '#C1856A' }}>Reset it</Text>
         </Text>
       </Pressable>
-    </Box>
+    </View>
   );
 }

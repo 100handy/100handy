@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, ActivityIndicator, Switch } from 'react-native';
+import { ScrollView, ActivityIndicator, Switch, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft, X, Plus } from 'lucide-react-native';
 import { getUserSkills, updateUserSkill, UserSkill } from '@shared/supabase/profile';
 
@@ -51,7 +46,7 @@ export default function MySkillsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <HStack className="items-center px-5 py-4 border-b border-gray-100">
+      <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
         <Pressable onPress={() => router.back()}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
@@ -61,14 +56,14 @@ export default function MySkillsScreen() {
         >
           My Skills
         </Text>
-      </HStack>
+      </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <VStack className="px-5 py-6 gap-6">
+        <View className="flex-col px-5 py-6 gap-6">
           {/* Info Banner */}
           {showBanner && skills.length > 0 && (
-            <Box className="bg-[#E5E5E5] rounded-lg px-4 py-3">
-              <HStack className="items-start justify-between">
+            <View className="bg-[#E5E5E5] rounded-lg px-4 py-3">
+              <View className="flex-row items-start justify-between">
                 <Text
                   className="flex-1 text-sm text-[#333A31] leading-5"
                   style={{ fontFamily: 'WorkSans_400Regular' }}
@@ -78,13 +73,13 @@ export default function MySkillsScreen() {
                 <Pressable onPress={() => setShowBanner(false)} className="ml-2">
                   <X size={20} color="#333A31" />
                 </Pressable>
-              </HStack>
-            </Box>
+              </View>
+            </View>
           )}
 
           {/* Skills List */}
           {skills.length === 0 ? (
-            <VStack className="items-center py-12 gap-4">
+            <View className="flex-col items-center py-12 gap-4">
               <Text
                 className="text-lg font-semibold text-[#333A31] text-center"
                 style={{ fontFamily: 'WorkSans_600SemiBold' }}
@@ -97,11 +92,11 @@ export default function MySkillsScreen() {
               >
                 Add skills to start receiving job requests
               </Text>
-            </VStack>
+            </View>
           ) : (
-            <VStack className="gap-6">
+            <View className="flex-col gap-6">
               {skills.map(userSkill => (
-                <VStack key={userSkill.id} className="gap-2">
+                <View className="flex-col" key={userSkill.id} className="gap-2">
                   {/* Skill Category Label */}
                   <Text
                     className="text-base font-medium text-[#333A31]"
@@ -111,8 +106,8 @@ export default function MySkillsScreen() {
                   </Text>
 
                   {/* Skill Card */}
-                  <Box className="bg-[#E8D5C4] border-2 border-dashed border-[#D17852] rounded-lg p-4">
-                    <VStack className="gap-3">
+                  <View className="bg-[#E8D5C4] border-2 border-dashed border-[#D17852] rounded-lg p-4">
+                    <View className="flex-col gap-3">
                       {/* Skill Name */}
                       <Text
                         className="text-lg font-semibold text-[#333A31]"
@@ -122,19 +117,19 @@ export default function MySkillsScreen() {
                       </Text>
 
                       {/* Badges and Toggle */}
-                      <HStack className="items-center justify-between">
-                        <HStack className="items-center gap-2">
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-row items-center gap-2">
                           {userSkill.skill?.is_in_demand && (
-                            <Box className="bg-[#8B4513] rounded px-2 py-1">
+                            <View className="bg-[#8B4513] rounded px-2 py-1">
                               <Text
                                 className="text-xs font-medium text-white"
                                 style={{ fontFamily: 'WorkSans_500Medium' }}
                               >
                                 IN DEMAND
                               </Text>
-                            </Box>
+                            </View>
                           )}
-                        </HStack>
+                        </View>
 
                         {/* Active Toggle */}
                         <Pressable
@@ -150,18 +145,18 @@ export default function MySkillsScreen() {
                             {userSkill.is_active ? 'ACTIVE' : 'INACTIVE'}
                           </Text>
                         </Pressable>
-                      </HStack>
-                    </VStack>
-                  </Box>
-                </VStack>
+                      </View>
+                    </View>
+                  </View>
+                </View>
               ))}
-            </VStack>
+            </View>
           )}
-        </VStack>
+        </View>
       </ScrollView>
 
       {/* Add Skills Button */}
-      <Box className="px-5 pb-6 pt-4 bg-white border-t border-gray-100">
+      <View className="px-5 pb-6 pt-4 bg-white border-t border-gray-100">
         <Pressable
           onPress={handleAddSkills}
           className="flex-row items-center justify-center gap-2 py-3"
@@ -174,7 +169,7 @@ export default function MySkillsScreen() {
             Add skills
           </Text>
         </Pressable>
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

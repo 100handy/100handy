@@ -1,14 +1,7 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { Image } from 'expo-image';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Heading } from '@/components/ui/heading';
-import { Image } from '@/components/ui/image';
-import { Pressable } from '@/components/ui/pressable';
-import { Icon } from '@/components/ui/icon';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Home, Search, Heart, User, Star } from 'lucide-react-native';
 import Header from '@/components/Header';
@@ -69,18 +62,16 @@ const navItems = [
 
 // --- Helper Component for Star Rating ---
 const StarRating = ({ rating = 0 }) => (
-  <HStack>
+  <View className="flex-row">
     {[...Array(5)].map((_, i) => (
-      <Icon
+      <Star
         key={i}
-        as={Star}
-        fill={i < rating ? '#FBBF24' : '#E5E7EB'} // Fill logic corrected for solid stars
-        size="sm"
+        fill={i < rating ? '#FBBF24' : '#E5E7EB'}
+        size={16}
         color={i < rating ? '#FBBF24' : '#E5E7EB'}
-        className="stroke-none" // Prevents border on filled stars
       />
     ))}
-  </HStack>
+  </View>
 );
 
 
@@ -91,7 +82,7 @@ export default function AvailableProfessionalsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <Box className="flex-1 bg-gray-custom-50">
+      <View className="flex-1 bg-gray-custom-50">
         {/* Header */}
         <Header 
           title="Available Professionals"
@@ -102,15 +93,15 @@ export default function AvailableProfessionalsScreen() {
         />
 
         {/* Search and Filters */}
-        <VStack className="bg-white pt-2 pb-4 px-4 border-b border-gray-custom-200">
+        <View className="flex-col bg-white pt-2 pb-4 px-4 border-b border-gray-custom-200">
             <Input className="bg-gray-custom-100 rounded-lg border-0 mb-4">
                 <InputSlot className="pl-3">
-                    <Icon as={Search} size="lg" color="#9CA3AF" />
+                    <Search size={24} color="#9CA3AF" />
                 </InputSlot>
                 <InputField placeholder="Search professionals..." className="font-work-sans text-sm text-gray-custom-400" />
             </Input>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <HStack className="space-x-2">
+                <View className="flex-row space-x-2">
                     {filterChips.map((chip) => (
                         <Pressable 
                             key={chip}
@@ -128,42 +119,42 @@ export default function AvailableProfessionalsScreen() {
                             </Text>
                         </Pressable>
                     ))}
-                </HStack>
+                </View>
             </ScrollView>
-        </VStack>
+        </View>
 
         {/* Professionals List */}
         <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
-          <VStack className="p-4">
+          <View className="flex-col p-4">
             {professionalsData.map((prof) => (
-              <Box key={prof.name} className="bg-white rounded-lg border border-gray-custom-200 shadow-sm p-4 mb-4">
-                <HStack>
+              <View key={prof.name} className="bg-white rounded-lg border border-gray-custom-200 shadow-sm p-4 mb-4">
+                <View className="flex-row">
                   <Image source={{ uri: prof.avatarUrl }} alt={prof.name} className="w-16 h-16 rounded-full object-cover" />
-                  <VStack className="flex-1 ml-4">
-                    <Heading className="font-cardo font-semibold text-base text-gray-custom-900">{prof.name}</Heading>
-                    <HStack className="items-center mt-1">
+                  <View className="flex-col flex-1 ml-4">
+                    <Text className="font-cardo font-semibold text-base text-gray-custom-900">{prof.name}</Text>
+                    <View className="flex-row items-center mt-1">
                       <StarRating rating={prof.rating} />
                       <Text className="font-work-sans text-xs text-gray-custom-600 ml-2">{`${prof.rating.toFixed(1)} (${prof.reviews} reviews)`}</Text>
-                    </HStack>
-                  </VStack>
-                  <Heading className="font-cardo font-semibold text-base text-sage">{`$${prof.price}/hr`}</Heading>
-                </HStack>
+                    </View>
+                  </View>
+                  <Text className="font-cardo font-semibold text-base text-sage">{`$${prof.price}/hr`}</Text>
+                </View>
                 <Text className="my-3 font-work-sans text-sm text-gray-custom-600 leading-relaxed">{prof.description}</Text>
-                <HStack className="flex-wrap">
+                <View className="flex-row flex-wrap">
                   {prof.tags.map(tag => {
                     const colors = tagColors[prof.category] || tagColors.handyman;
                     return (
-                        <Box key={tag} style={{backgroundColor: colors.bg}} className="rounded-full py-1 px-3 mr-2 mb-2">
+                        <View key={tag} style={{backgroundColor: colors.bg}} className="rounded-full py-1 px-3 mr-2 mb-2">
                             <Text style={{color: colors.text}} className="font-work-sans font-medium text-xs">{tag}</Text>
-                        </Box>
+                        </View>
                     )
                   })}
-                </HStack>
-              </Box>
+                </View>
+              </View>
             ))}
-          </VStack>
+          </View>
         </ScrollView>
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }

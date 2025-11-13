@@ -1,10 +1,9 @@
 import React from 'react';
-import { Box } from '@/components/ui/box';
-import { Text } from '@/components/ui/text';
+import { View, Text } from 'react-native';
 
 export default function AuthFooter() {
   return (
-    <Box>
+    <View>
       <Text className="text-center text-[12px] font-worksans-medium leading-[18px]" style={{ color: '#30352D' }}>
         By signing up, you agree to the{' '}
         <Text style={{ color: '#C1856A' }}>Term of service</Text>
@@ -14,6 +13,6 @@ export default function AuthFooter() {
         {'\n'}
         Manage <Text style={{ color: '#C1856A' }}>privacy settings</Text>
       </Text>
-    </Box>
+    </View>
   );
 }

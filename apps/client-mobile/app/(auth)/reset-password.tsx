@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView } from 'react-native';
-import { Box } from '@/components/ui/box';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Pressable } from '@/components/ui/pressable';
 import { ChevronLeft, Eye, EyeOff, Lock } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
@@ -50,48 +45,48 @@ export default function ResetPassword() {
   };
 
   return (
-    <Box className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
         <ScrollView
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <VStack className="flex-1">
+          <View className="flex-col flex-1">
             {/* Header */}
-            <HStack className="items-center justify-between px-5 pt-2 pb-4">
+            <View className="flex-row items-center justify-between px-5 pt-2 pb-4">
               <Pressable onPress={() => router.back()}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
                 New Password
               </Text>
-              <Box className="w-6" />
-            </HStack>
+              <View className="w-6" />
+            </View>
 
             {/* Logo */}
-            <Box className="items-center my-12">
-              <VStack className="items-center">
+            <View className="items-center my-12">
+              <View className="flex-col items-center">
                 <Text className="text-5xl font-cardo-regular tracking-widest" style={{ color: '#30352D' }}>
                   100
                 </Text>
                 <Text className="text-5xl font-cardo-bold tracking-widest" style={{ color: '#30352D' }}>
                   HANDY
                 </Text>
-              </VStack>
-            </Box>
+              </View>
+            </View>
 
             {/* Description */}
-            <Box className="px-5 mb-6">
+            <View className="px-5 mb-6">
               <Text className="text-base font-worksans text-typography-600 text-center leading-6">
                 Enter your new password below.
               </Text>
-            </Box>
+            </View>
 
             {/* Form */}
-            <Box className="px-5">
+            <View className="px-5">
               {/* New Password */}
-              <Box className="mb-4">
+              <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   New Password
                 </Text>
@@ -99,7 +94,7 @@ export default function ResetPassword() {
                   control={control}
                   name="password"
                   render={({ field: { onChange, onBlur, value } }) => (
-                    <Box>
+                    <View>
                       <Input
                         variant="outline"
                         className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
@@ -127,13 +122,13 @@ export default function ResetPassword() {
                           {errors.password.message}
                         </Text>
                       )}
-                    </Box>
+                    </View>
                   )}
                 />
-              </Box>
+              </View>
 
               {/* Confirm Password */}
-              <Box className="mb-3">
+              <View className="mb-3">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   Confirm Password
                 </Text>
@@ -141,7 +136,7 @@ export default function ResetPassword() {
                   control={control}
                   name="confirmPassword"
                   render={({ field: { onChange, onBlur, value } }) => (
-                    <Box>
+                    <View>
                       <Input
                         variant="outline"
                         className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
@@ -169,13 +164,13 @@ export default function ResetPassword() {
                           {errors.confirmPassword.message}
                         </Text>
                       )}
-                    </Box>
+                    </View>
                   )}
                 />
-              </Box>
+              </View>
 
               {/* Password Requirements */}
-              <Box className="mb-6 mt-4">
+              <View className="mb-6 mt-4">
                 <Text className="text-xs font-worksans text-typography-500 leading-5">
                   Password must contain:
                   {'\n'}• At least 8 characters
@@ -183,7 +178,7 @@ export default function ResetPassword() {
                   {'\n'}• One lowercase letter
                   {'\n'}• One number
                 </Text>
-              </Box>
+              </View>
 
               <Button
                 className="rounded-full shadow-sm my-6"
@@ -200,11 +195,11 @@ export default function ResetPassword() {
                   {isLoading ? 'Updating...' : 'Update password'}
                 </ButtonText>
               </Button>
-            </Box>
-          </VStack>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
-    </Box>
+    </View>
   );
 }
 

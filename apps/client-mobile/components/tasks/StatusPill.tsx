@@ -1,6 +1,5 @@
 import React from 'react';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
+import { View, Text } from 'react-native';
 
 interface StatusPillProps {
   label: string;
@@ -20,11 +19,11 @@ export function StatusPill({ label, tone = 'neutral' }: StatusPillProps) {
   };
 
   return (
-    <HStack className={`px-2 py-1 rounded-full items-center font-work-sans ${getStatusClasses(tone)}`}>
+    <View className={`px-2 py-1 rounded-full items-center font-work-sans ${getStatusClasses(tone)} flex-row`}>
       <Text className="text-xs font-medium">
         {label}
       </Text>
-    </HStack>
+    </View>
   );
 }
 
