@@ -11,11 +11,17 @@ import { toast } from 'sonner';
  */
 export function useSessionMonitor() {
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const supabase = createClient();
+
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       if (event === 'SIGNED_OUT') {
         toast.error('Your session has expired. Please sign in again.');
         router.push('/sign-in');
@@ -29,6 +35,6 @@ export function useSessionMonitor() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [router, supabase]);
+  }, [router]);
 }
 

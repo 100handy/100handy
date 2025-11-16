@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { UserMenu } from "@/components/auth/user-menu";
 
 export function Header() {
   return (

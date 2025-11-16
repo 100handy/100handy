@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, Alert, View, Text, Pressable } from 'react-native';
+import { ScrollView, Alert, View, Text, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 
@@ -28,19 +28,46 @@ export default function SupportScreen() {
     router.push('/(client)/support/message-support');
   };
 
-  const handleSupportCenter = () => {
-    // Navigate to support center or open URL
-    console.log('Open Support Center');
+  const handleViewTickets = () => {
+    router.push('/(client)/support/tickets');
+  };
+
+  const handleSupportCenter = async () => {
+    const url = 'https://100handy.com/support'; // Replace with actual support center URL
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert('Error', 'Unable to open support center');
+    }
   };
 
   const handleBecomeTasker = () => {
-    // Navigate to become a tasker flow
-    console.log('Open Become a Tasker');
+    Alert.alert(
+      'Become a Tasker',
+      'Interested in earning money by helping others? Join our community of skilled taskers!',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Learn More',
+          onPress: () => {
+            // Navigate to tasker onboarding or open registration URL
+            Linking.openURL('https://100handy.com/become-tasker');
+          }
+        }
+      ]
+    );
   };
 
   const handleCancellationPolicy = () => {
-    // Navigate to cancellation policy
-    console.log('Open Cancellation Policy');
+    Alert.alert(
+      'Cancellation Policy',
+      'Free cancellation up to 24 hours before your booking start time.\n\n' +
+      'Cancellations made less than 24 hours before the booking will incur a 50% cancellation fee.\n\n' +
+      'No-shows will be charged the full booking amount.',
+      [{ text: 'OK' }]
+    );
   };
 
   const handleDeleteAccount = () => {
@@ -77,6 +104,11 @@ export default function SupportScreen() {
             <MenuItem
               title="Message Support"
               onPress={handleMessageSupport}
+            />
+
+            <MenuItem
+              title="View My Tickets"
+              onPress={handleViewTickets}
             />
 
             <MenuItem

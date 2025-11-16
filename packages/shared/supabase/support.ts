@@ -431,3 +431,80 @@ export async function reopenTicket(ticketId: string): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * Delete a support ticket and all its messages
+ */
+export async function deleteTicket(ticketId: string): Promise<void> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      throw new Error('Not authenticated');
+    }
+
+    // First delete all messages associated with the ticket
+    const { error: messagesError } = await supabase
+      .from('support_messages')
+      .delete()
+      .eq('ticket_id', ticketId);
+
+    if (messagesError) {
+      console.error('Error deleting ticket messages:', messagesError);
+      throw new Error(messagesError.message);
+    }
+
+    // Then delete the ticket itself
+    const { error: ticketError } = await supabase
+      .from('support_tickets')
+      .delete()
+      .eq('id', ticketId)
+      .eq('user_id', user.id); // Ensure user can only delete their own tickets
+
+    if (ticketError) {
+      console.error('Error deleting ticket:', ticketError);
+      throw new Error(ticketError.message);
+    }
+  } catch (error) {
+    console.error('Error in deleteTicket:', error);
+    throw error;
+  }
+}
+
+/**
+ * Request AI response for a support message
+ * Calls the AI edge function to generate and save an AI response
+ */
+export async function requestAIResponse(
+  ticketId: string,
+  userMessage: string,
+  conversationHistory: Array<{ role: string; content: string }> = []
+): Promise<SupportMessage | null> {
+  try {
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('User session exists:', !!session);
+    console.log('Requesting AI response for ticket:', ticketId);
+
+    // Use Supabase's functions.invoke() which handles auth automatically
+    const { data, error } = await supabase.functions.invoke('ai-support-response', {
+      body: {
+        ticket_id: ticketId,
+        message: userMessage,
+        conversation_history: conversationHistory,
+      },
+    });
+
+    if (error) {
+      console.error('AI response error details:', JSON.stringify(error, null, 2));
+      return null;
+    }
+
+    console.log('AI response received:', data?.message?.id);
+    return data?.message || null;
+  } catch (error) {
+    console.error('Error requesting AI response:', error);
+    // Don't throw - AI response is optional
+    return null;
+  }
+}

@@ -11,6 +11,7 @@ interface MessageBubbleProps {
 export const MessageBubble = ({ message, showTimestamp = true }: MessageBubbleProps) => {
   const isFromUser = message.from_user;
   const isSystemMessage = message.message_type === 'system';
+  const isAIGenerated = message.metadata?.ai_generated === true;
 
   // Format timestamp
   const timestamp = format(new Date(message.created_at), 'h:mm a');
@@ -37,9 +38,13 @@ export const MessageBubble = ({ message, showTimestamp = true }: MessageBubblePr
           isFromUser ? 'bg-white border border-gray-200' : 'bg-[#F5F5F5]'
         }`}
       >
-        {/* Support team label */}
+        {/* Support team label with AI indicator */}
         {!isFromUser && (
-          <Text className="text-[12px] text-[#999999] mb-1">100 Handy Support</Text>
+          <View className="flex-row items-center mb-1">
+            <Text className="text-[12px] text-[#999999]">
+              {isAIGenerated ? '🤖 AI Assistant' : '100 Handy Support'}
+            </Text>
+          </View>
         )}
 
         {/* Message text */}

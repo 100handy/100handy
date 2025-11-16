@@ -11,6 +11,7 @@ export default function MessageSupportScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const ticketId = params.ticketId as string | undefined;
+  const forceNew = params.forceNew === 'true'; // Force create new ticket
 
   const {
     activeTicket,
@@ -35,6 +36,16 @@ export default function MessageSupportScreen() {
         if (ticketId) {
           // Open existing ticket by ID
           await openTicket(ticketId);
+        } else if (forceNew) {
+          // Force create a new ticket (skip open ticket check)
+          console.log('Force creating new ticket');
+          const newTicket = await createTicket({
+            subject: 'General Support',
+            message: 'Support ticket created',
+          });
+
+          // Set the newly created ticket as active and subscribe to messages
+          await openTicket(newTicket.id);
         } else {
           // Check if user has any open tickets first
           await fetchTickets();
@@ -54,7 +65,7 @@ export default function MessageSupportScreen() {
             console.log('No open tickets found, creating new ticket');
             const newTicket = await createTicket({
               subject: 'General Support',
-              message: 'Hello, I need help with something.',
+              message: 'Support ticket created',
             });
 
             // Set the newly created ticket as active and subscribe to messages
@@ -85,7 +96,7 @@ export default function MessageSupportScreen() {
       unsubscribeFromMessages();
       closeActiveTicket();
     };
-  }, [ticketId]);
+  }, [ticketId, forceNew]);
 
   const handleSendMessage = async (message: string, attachment?: any) => {
     try {

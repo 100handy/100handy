@@ -12,6 +12,8 @@ import {
   unsubscribeFromChannel,
   closeTicket,
   reopenTicket,
+  deleteTicket,
+  requestAIResponse,
   SendMessageInput,
   CreateTicketInput,
 } from '../supabase/support';
@@ -45,6 +47,7 @@ interface SupportState {
   addMessage: (message: SupportMessage) => void;
   closeCurrentTicket: () => Promise<void>;
   reopenCurrentTicket: () => Promise<void>;
+  deleteTicket: (ticketId: string) => Promise<void>;
   clearError: () => void;
   reset: () => void;
 }
@@ -157,7 +160,7 @@ export const useSupportStore = create<SupportState>((set, get) => ({
 
   // Send a message in the active ticket
   sendTicketMessage: async (input: Omit<SendMessageInput, 'ticket_id'>) => {
-    const { activeTicket } = get();
+    const { activeTicket, messages } = get();
 
     if (!activeTicket) {
       console.error('No active ticket found');
@@ -181,6 +184,29 @@ export const useSupportStore = create<SupportState>((set, get) => ({
         messages: [...state.messages, message],
         isSendingMessage: false,
       }));
+
+      // Request AI response (non-blocking)
+      // Build conversation history for better AI responses
+      const conversationHistory = messages
+        .filter(msg => msg.message_type === 'text') // Only include text messages
+        .slice(-10) // Last 10 messages for context
+        .map(msg => ({
+          role: msg.from_user ? 'user' : 'assistant',
+          content: msg.message,
+        }));
+
+      // Call AI function asynchronously (don't wait for it)
+      requestAIResponse(activeTicket.id, message.message, conversationHistory)
+        .then(aiMessage => {
+          if (aiMessage) {
+            console.log('AI response received and saved:', aiMessage.id);
+            // AI message will be received via realtime subscription
+          }
+        })
+        .catch(error => {
+          console.error('Failed to get AI response:', error);
+          // Don't show error to user - AI response is optional
+        });
     } catch (error) {
       console.error('Error sending message in store:', error);
       set({
@@ -310,6 +336,27 @@ export const useSupportStore = create<SupportState>((set, get) => ({
       set({
         error: error instanceof Error ? error.message : 'Failed to reopen ticket',
       });
+    }
+  },
+
+  // Delete a ticket
+  deleteTicket: async (ticketId: string) => {
+    try {
+      await deleteTicket(ticketId);
+
+      // Remove from local state
+      set(state => ({
+        tickets: state.tickets.filter(ticket => ticket.id !== ticketId),
+        // Clear active ticket if it's the one being deleted
+        activeTicket: state.activeTicket?.id === ticketId ? null : state.activeTicket,
+        messages: state.activeTicket?.id === ticketId ? [] : state.messages,
+      }));
+    } catch (error) {
+      console.error('Error deleting ticket:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Failed to delete ticket',
+      });
+      throw error;
     }
   },
 

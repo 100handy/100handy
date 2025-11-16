@@ -8,9 +8,9 @@ import Link from 'next/link';
 export function UserMenu() {
   const { user, isAuthenticated, loading } = useAuthContext();
   const router = useRouter();
-  const supabase = createClient();
 
   const handleSignOut = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/');
     router.refresh();
