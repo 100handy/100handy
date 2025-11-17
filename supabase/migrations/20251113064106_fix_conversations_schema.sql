@@ -30,8 +30,18 @@ BEGIN
 END $$;
 
 -- Step 4: Make booking_id nullable in conversations (before we drop it)
-ALTER TABLE public.conversations
-ALTER COLUMN booking_id DROP NOT NULL;
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'conversations'
+        AND column_name = 'booking_id'
+    ) THEN
+        ALTER TABLE public.conversations
+        ALTER COLUMN booking_id DROP NOT NULL;
+    END IF;
+END $$;
 
 -- Step 5: Drop booking_id from conversations table
 ALTER TABLE public.conversations

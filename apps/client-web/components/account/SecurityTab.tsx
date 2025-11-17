@@ -3,58 +3,24 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { enableTwoFactor, verifyTwoFactor, isTwoFactorEnabled } from "@/lib/supabase/security";
-import { createClient } from "@/lib/supabase";
-import { toast } from "sonner";
+import { TwoFactorDialog } from "@/components/TwoFactorDialog";
+import { isTwoFactorEnabled } from "@/lib/supabase/security";
 
 export function SecurityTab() {
   const [twoFactorDialogOpen, setTwoFactorDialogOpen] = useState(false);
-  const [twoFactorActivatedDialogOpen, setTwoFactorActivatedDialogOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
-  const [otpCode, setOtpCode] = useState("");
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
   useEffect(() => {
-    // Get user email and 2FA status
+    // Get 2FA status
     const fetchUserData = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) {
-        setUserEmail(user.email);
-      }
       const enabled = await isTwoFactorEnabled();
       setIs2FAEnabled(enabled);
     };
     fetchUserData();
   }, []);
 
-  const handleEnable2FA = async () => {
-    try {
-      await enableTwoFactor(userEmail);
-      toast.success("Verification code sent to your email");
-      setTwoFactorDialogOpen(false);
-      setTwoFactorActivatedDialogOpen(true);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send verification code");
-    }
-  };
-
-  const handleVerify2FA = async () => {
-    try {
-      await verifyTwoFactor(userEmail, otpCode);
-      toast.success("Two-factor authentication enabled");
-      setTwoFactorActivatedDialogOpen(false);
-      setIs2FAEnabled(true);
-      setOtpCode("");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to verify code");
-    }
+  const handleTwoFactorSuccess = () => {
+    setIs2FAEnabled(true);
   };
 
   return (
@@ -101,89 +67,11 @@ export function SecurityTab() {
       </div>
 
       {/* Two-Factor Authentication Dialog */}
-      <Dialog open={twoFactorDialogOpen} onOpenChange={setTwoFactorDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-brand-dark text-xl font-semibold">
-              Two-Factor Authentication
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            <p className="text-brand-dark text-sm text-center">
-              We'll send a verification code to your email address
-            </p>
-
-            <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
-              <p className="text-brand-dark text-sm font-medium text-center">
-                {userEmail || "Loading..."}
-              </p>
-            </div>
-
-            <div className="flex justify-center">
-              <Button
-                onClick={handleEnable2FA}
-                disabled={!userEmail}
-                className="bg-brand-terracotta hover:bg-brand-coral text-white px-12 disabled:bg-gray-300 disabled:text-gray-500"
-              >
-                Send Code
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Two-Factor Activated Dialog */}
-      <Dialog open={twoFactorActivatedDialogOpen} onOpenChange={setTwoFactorActivatedDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-brand-dark text-xl font-semibold">
-              Verify Authentication Code
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            <p className="text-brand-dark text-sm text-center">
-              Enter the 6-digit code sent to {userEmail}
-            </p>
-
-            <div className="space-y-2">
-              <label className="text-brand-dark text-sm font-medium">Verification Code</label>
-              <input
-                type="text"
-                value={otpCode}
-                onChange={(e) => {
-                  // Only allow numbers
-                  const value = e.target.value.replace(/\D/g, "");
-                  setOtpCode(value);
-                }}
-                placeholder="Enter 6-digit code"
-                maxLength={6}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-brand-terracotta focus:border-brand-terracotta text-brand-dark text-center tracking-widest text-lg"
-              />
-            </div>
-
-            <div className="flex flex-col items-center gap-3">
-              <Button
-                onClick={handleVerify2FA}
-                disabled={!otpCode || otpCode.length < 6}
-                className="bg-brand-terracotta hover:bg-brand-coral text-white px-12 disabled:bg-gray-300 disabled:text-gray-500"
-              >
-                Verify & Activate
-              </Button>
-              <button
-                onClick={() => {
-                  setTwoFactorActivatedDialogOpen(false);
-                  setOtpCode("");
-                }}
-                className="text-brand-dark text-sm hover:underline"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TwoFactorDialog
+        open={twoFactorDialogOpen}
+        onOpenChange={setTwoFactorDialogOpen}
+        onSuccess={handleTwoFactorSuccess}
+      />
     </>
   );
 }

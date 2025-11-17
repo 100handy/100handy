@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { Menu, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -9,15 +9,24 @@ import {
   PasswordTab,
   SecurityTab,
   NotificationsTab,
+  BillingTab,
   BusinessTab,
   BalanceTab,
   TransactionsTab,
   DeleteAccountTab,
 } from "@/components/account";
+import { TwoFactorDialog } from "@/components/TwoFactorDialog";
+import { useSecureNavigation } from "@/hooks/use-secure-navigation";
 
 export default function AccountPage() {
   const [activeSection, setActiveSection] = useState("profile");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [twoFactorDialogOpen, setTwoFactorDialogOpen] = useState(false);
+  const [pendingSection, setPendingSection] = useState<string | null>(null);
+  const { isTwoFactorEnabled, canAccessSection, refreshTwoFactorStatus } = useSecureNavigation();
+
+  // Sections that require 2FA to access
+  const protectedSections = ["balance", "transactions"];
 
   const menuItems = [
     { id: "profile", label: "Profile" },
@@ -28,10 +37,36 @@ export default function AccountPage() {
     { id: "vat", label: "VAT ID" },
     { id: "cancel", label: "Cancel a Task" },
     { id: "business", label: "Business Information" },
-    { id: "balance", label: "Account Balance" },
-    { id: "transactions", label: "Transactions" },
+    { id: "balance", label: "Account Balance", requiresSecurity: true },
+    { id: "transactions", label: "Transactions", requiresSecurity: true },
     { id: "delete", label: "Delete Account" },
   ];
+
+  const handleSectionChange = (sectionId: string) => {
+    const isProtected = protectedSections.includes(sectionId);
+
+    if (isProtected && !canAccessSection(true)) {
+      // Store the section they want to access
+      setPendingSection(sectionId);
+      // Show 2FA dialog
+      setTwoFactorDialogOpen(true);
+      return;
+    }
+
+    // Allow access
+    setActiveSection(sectionId);
+  };
+
+  const handleTwoFactorSuccess = () => {
+    // Refresh 2FA status
+    refreshTwoFactorStatus();
+
+    // Navigate to pending section if there is one
+    if (pendingSection) {
+      setActiveSection(pendingSection);
+      setPendingSection(null);
+    }
+  };
 
   const renderContent = () => {
     switch (activeSection) {
@@ -44,40 +79,7 @@ export default function AccountPage() {
       case "notifications":
         return <NotificationsTab />;
       case "billing":
-        return (
-          <div className="mb-8">
-            <h2 className="text-brand-dark font-bold text-2xl sm:text-[34px] mb-8">Edit Billing Info</h2>
-            <div className="max-w-2xl">
-              <p className="text-brand-dark text-sm mb-4">Stripe integration coming soon...</p>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-brand-dark text-base mb-4">Card Payment</h3>
-                  <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        placeholder="Card Number"
-                        disabled
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded text-sm text-brand-dark placeholder:text-gray-400 bg-gray-100"
-                      />
-                    </div>
-                    <div className="w-full sm:w-40">
-                      <input
-                        type="text"
-                        placeholder="MM / YY CVC"
-                        disabled
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded text-sm text-brand-dark placeholder:text-gray-400 bg-gray-100"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-brand-dark text-xs sm:text-sm">
-                    Payment method will upgrade for all tasks, including the ones currently open.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <BillingTab />;
       case "vat":
         return <BusinessTab mode="vat" />;
       case "cancel":
@@ -171,12 +173,12 @@ export default function AccountPage() {
           <div className="lg:hidden">
             <select
               value={activeSection}
-              onChange={(e) => setActiveSection(e.target.value)}
+              onChange={(e) => handleSectionChange(e.target.value)}
               className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-brand-dark text-base font-medium"
             >
               {menuItems.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.label}
+                  {item.label} {item.requiresSecurity && !isTwoFactorEnabled ? "🔒" : ""}
                 </option>
               ))}
             </select>
@@ -189,14 +191,19 @@ export default function AccountPage() {
                 <Button
                   key={item.id}
                   variant="ghost"
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => handleSectionChange(item.id)}
                   className={cn(
                     "text-sm xl:text-base font-medium text-left px-3 xl:px-4 py-3 hover:bg-gray-50 transition-colors rounded-none justify-start",
                     index < menuItems.length - 1 && "border-b border-gray-200",
                     activeSection === item.id ? "text-brand-terracotta" : "text-brand-dark"
                   )}
                 >
-                  {item.label}
+                  <span className="flex items-center gap-2 w-full">
+                    {item.label}
+                    {item.requiresSecurity && !isTwoFactorEnabled && (
+                      <ShieldCheck className="w-4 h-4 text-gray-400 ml-auto" />
+                    )}
+                  </span>
                 </Button>
               ))}
             </nav>
@@ -208,6 +215,13 @@ export default function AccountPage() {
           </div>
         </div>
       </main>
+
+      {/* Two-Factor Authentication Dialog */}
+      <TwoFactorDialog
+        open={twoFactorDialogOpen}
+        onOpenChange={setTwoFactorDialogOpen}
+        onSuccess={handleTwoFactorSuccess}
+      />
     </div>
   );
 }

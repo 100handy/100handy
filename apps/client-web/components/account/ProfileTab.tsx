@@ -4,7 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Mail, Phone, Home, User, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TwoFactorDialog } from "@/components/TwoFactorDialog";
 import { useProfile } from "@/hooks/use-profile";
+import { useSecureNavigation } from "@/hooks/use-secure-navigation";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
@@ -12,9 +14,11 @@ import { toast } from "sonner";
 export function ProfileTab() {
   const router = useRouter();
   const { profile, updateProfile, uploadAvatar } = useProfile();
+  const { isTwoFactorEnabled, canAccessSection, refreshTwoFactorStatus } = useSecureNavigation();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [twoFactorDialogOpen, setTwoFactorDialogOpen] = useState(false);
   const [profileForm, setProfileForm] = useState({
     first_name: profile?.first_name || "",
     last_name: profile?.last_name || "",
@@ -34,7 +38,19 @@ export function ProfileTab() {
     }
   }, [profile, isEditingProfile]);
 
-  const handleProfileEdit = () => setIsEditingProfile(true);
+  const handleProfileEdit = () => {
+    // Check if 2FA is enabled before allowing edit
+    if (!canAccessSection(true)) {
+      setTwoFactorDialogOpen(true);
+      return;
+    }
+    setIsEditingProfile(true);
+  };
+
+  const handleTwoFactorSuccess = () => {
+    refreshTwoFactorStatus();
+    setIsEditingProfile(true);
+  };
 
   const handleProfileSave = () => {
     updateProfile(profileForm);
@@ -254,6 +270,13 @@ export function ProfileTab() {
           </div>
         </div>
       </div>
+
+      {/* Two-Factor Authentication Dialog */}
+      <TwoFactorDialog
+        open={twoFactorDialogOpen}
+        onOpenChange={setTwoFactorDialogOpen}
+        onSuccess={handleTwoFactorSuccess}
+      />
     </>
   );
 }
