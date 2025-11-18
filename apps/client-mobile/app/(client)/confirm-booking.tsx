@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput } from '@shared/supabase';
+import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput, type FormResponse } from '@shared/supabase';
 import { useAuthStore } from '@shared/supabase';
 
 export default function ConfirmBookingScreen() {
@@ -14,11 +14,17 @@ export default function ConfirmBookingScreen() {
   const taskerId = params.taskerId as string;
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
-  const taskSize = params.taskSize as string;
-  const vehicleRequirement = params.vehicleRequirement as string;
-  const taskDetails = params.taskDetails as string;
   const selectedDate = params.selectedDate as string;
   const selectedTime = params.selectedTime as string;
+
+  // Parse form responses
+  const formResponses: FormResponse = useMemo(() => {
+    try {
+      return params.formResponses ? JSON.parse(params.formResponses as string) : {};
+    } catch {
+      return {};
+    }
+  }, [params.formResponses]);
 
   // Get user from auth store
   const user = useAuthStore((state) => state.user);
@@ -34,8 +40,9 @@ export default function ConfirmBookingScreen() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Calculate estimated price
-  const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'medium' ? 2.5 : 4;
+  // Calculate estimated price from form responses
+  const taskSize = formResponses.task_size as string | undefined;
+  const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'large' ? 4 : 2.5; // Default to medium
   const hourlyRate = profile ? profile.hourly_rate_cents / 100 : 0;
   const estimatedPrice = hourlyRate * estimatedHours;
 
@@ -63,16 +70,17 @@ export default function ConfirmBookingScreen() {
         handy_id: profile.user_id,
         category_id: categoryId,
         task_title: categoryName,
-        task_details: taskDetails || null,
+        task_details: (formResponses.additional_details as string) || undefined,
         scheduled_date: selectedDate,
         scheduled_time: selectedTime,
         address_street: location.streetAddress,
-        address_apartment: location.unitNumber || null,
+        address_apartment: location.unitNumber || undefined,
         address_postcode: location.postalCode || '',
         address_city: location.city || '',
         address_country: location.country || 'UK',
         hourly_rate_cents: profile.hourly_rate_cents,
         estimated_hours: estimatedHours,
+        form_responses: formResponses,
       };
 
       const newBooking = await createBookingMutation.mutateAsync(bookingInput);
@@ -171,11 +179,9 @@ export default function ConfirmBookingScreen() {
                   taskerId,
                   categoryId,
                   categoryName,
-                  taskSize,
-                  vehicleRequirement,
-                  taskDetails: taskDetails || '',
                   selectedDate,
                   selectedTime,
+                  formResponses: JSON.stringify(formResponses),
                 },
               })}>
                 <Edit size={18} color="#C1856A" />
@@ -234,37 +240,42 @@ export default function ConfirmBookingScreen() {
                 </View>
               </View>
 
-              {/* Task Size */}
-              <View className="flex-col">
-                <Text className="text-xs font-medium text-gray-600 mb-1">
-                  Task Size
-                </Text>
-                <Text className="text-sm text-[#30352D] capitalize">
-                  {taskSize} ({estimatedHours} {estimatedHours === 1 ? 'hour' : 'hours'})
-                </Text>
-              </View>
+              {/* Display form responses dynamically */}
+              {Object.entries(formResponses).map(([key, value]) => {
+                // Skip if empty or null
+                if (value === null || value === undefined || value === '') return null;
 
-              {/* Vehicle */}
-              <View className="flex-col">
-                <Text className="text-xs font-medium text-gray-600 mb-1">
-                  Vehicle Requirement
-                </Text>
-                <Text className="text-sm text-[#30352D] capitalize">
-                  {vehicleRequirement === 'not-needed' ? 'Not needed' : vehicleRequirement}
-                </Text>
-              </View>
+                // Format the key into a readable label
+                const label = key
+                  .split('_')
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(' ');
 
-              {/* Additional Details */}
-              {taskDetails && (
-                <View className="flex-col">
-                  <Text className="text-xs font-medium text-gray-600 mb-1">
-                    Additional Details
-                  </Text>
-                  <Text className="text-sm text-[#30352D]">
-                    {taskDetails}
-                  </Text>
-                </View>
-              )}
+                // Format the value based on type
+                let displayValue: string;
+                if (Array.isArray(value)) {
+                  displayValue = value.join(', ');
+                } else if (typeof value === 'boolean') {
+                  displayValue = value ? 'Yes' : 'No';
+                } else if (key === 'task_size') {
+                  displayValue = `${value} (${estimatedHours} ${estimatedHours === 1 ? 'hour' : 'hours'})`;
+                } else if (key === 'vehicle_requirement') {
+                  displayValue = value === 'not_needed' ? 'Not needed' : String(value);
+                } else {
+                  displayValue = String(value);
+                }
+
+                return (
+                  <View key={key} className="flex-col">
+                    <Text className="text-xs font-medium text-gray-600 mb-1">
+                      {label}
+                    </Text>
+                    <Text className="text-sm text-[#30352D] capitalize">
+                      {displayValue}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
           </View>
 

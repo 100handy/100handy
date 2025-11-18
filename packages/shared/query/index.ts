@@ -103,3 +103,6 @@ export type {
   ConversationWithProfiles,
   SendConversationMessageInput,
 } from '../supabase/conversations';
+
+// Form fields hooks and utilities
+export { useCategoryFormFields } from './hooks/useCategoryFormFields';

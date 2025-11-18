@@ -14,6 +14,7 @@ import type { FilterValues } from "@/components/browse-pros/browse-filters";
 import { ConfirmDetails } from "@/components/confirm-booking/confirm-details";
 import { TaskSummary } from "@/components/confirm-booking/task-summary";
 import { LocationAutocomplete } from "@/components/LocationAutocomplete";
+import { DynamicFormRenderer } from "@/components/booking";
 import { getCategoryByName } from "@/lib/supabase/categories";
 import { getHandymenByCategory, type HandymanProfile } from "@/lib/supabase/handymen";
 import { findOrCreateAddress } from "@/lib/supabase/addresses";
@@ -21,6 +22,7 @@ import { createBooking } from "@/lib/supabase/bookings";
 import { createPaymentIntent } from "@/lib/stripe/payment";
 import { createClient } from "@/lib/supabase";
 import type { Category } from "@/lib/supabase/types";
+import type { FormResponse } from "@shared/supabase";
 
 function TaskFormContent() {
   const searchParams = useSearchParams();
@@ -33,9 +35,7 @@ function TaskFormContent() {
   const [streetAddress, setStreetAddress] = useState("");
   const [unitFlat, setUnitFlat] = useState("");
   const [googlePlaceData, setGooglePlaceData] = useState<any>(null);
-  const [taskSize, setTaskSize] = useState("");
-  const [vehicleRequirement, setVehicleRequirement] = useState("");
-  const [taskDetails, setTaskDetails] = useState("");
+  const [formResponses, setFormResponses] = useState<FormResponse>({});
 
   // Flow state
   const [locationConfirmed, setLocationConfirmed] = useState(false);
@@ -61,7 +61,6 @@ function TaskFormContent() {
   const [paymentIntentClientSecret, setPaymentIntentClientSecret] = useState<string>("");
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
 
-  const MAX_TASK_DETAILS_LENGTH = 300;
 
   // Check authentication
   useEffect(() => {
@@ -136,10 +135,11 @@ function TaskFormContent() {
     }
   };
 
-  const handleTaskOptionsContinue = () => {
-    if (taskSize && vehicleRequirement) {
-      setTaskOptionsCompleted(true);
-    }
+  const handleFormSubmit = (responses: FormResponse) => {
+    setFormResponses(responses);
+    setTaskOptionsCompleted(true);
+    // Automatically proceed to browse pros after form is filled
+    handleBrowsePros();
   };
 
   const handleBrowsePros = async () => {
@@ -198,7 +198,8 @@ function TaskFormContent() {
       setError(null);
 
       // Calculate the amount for authorization hold (minimum 2 hours)
-      const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'medium' ? 2.5 : 4;
+      const taskSize = formResponses.task_size as string | undefined;
+      const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'large' ? 4 : 2.5; // Default to medium
       const minimumHours = Math.max(2, estimatedHours); // Minimum 2 hours
       const amount = handyman.hourly_rate_cents * minimumHours;
 
@@ -262,25 +263,22 @@ function TaskFormContent() {
       setIsSubmitting(true);
       setError(null);
 
-      // Estimate hours based on task size
-      let estimatedHours = 2; // Default
-      if (taskSize === 'small') estimatedHours = 1;
-      else if (taskSize === 'medium') estimatedHours = 2.5;
-      else if (taskSize === 'large') estimatedHours = 4;
+      // Estimate hours based on task size from form responses
+      const taskSize = formResponses.task_size as string | undefined;
+      const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'large' ? 4 : 2.5; // Default to medium
 
       const booking = await createBooking({
         customer_id: userId,
         handy_id: selectedHandyman.user_id,
         category_id: category.id,
         task_title: category.name,
-        task_details: taskDetails || null,
+        task_details: (formResponses.additional_details as string) || undefined,
         scheduled_date: selectedDate,
         scheduled_time: selectedTime,
         address_id: addressId,
         hourly_rate_cents: selectedHandyman.hourly_rate_cents,
         estimated_hours: estimatedHours,
-        task_size: taskSize,
-        vehicle_requirement: vehicleRequirement,
+        form_responses: formResponses,
         payment_intent_id: authorizedPaymentIntentId,
       });
 
@@ -439,9 +437,9 @@ function TaskFormContent() {
                 scheduledDate={selectedDate}
                 scheduledTime={selectedTime}
                 address={streetAddress}
-                taskSize={taskSize}
-                vehicleRequirement={vehicleRequirement}
-                taskDetails={taskDetails || 'No details provided'}
+                taskSize={formResponses.task_size as string}
+                vehicleRequirement={formResponses.vehicle_requirement as string}
+                taskDetails={(formResponses.additional_details as string) || 'No details provided'}
                 hourlyRateCents={selectedHandyman?.hourly_rate_cents || 0}
                 onEdit={handleEditTask}
               />
@@ -543,155 +541,23 @@ function TaskFormContent() {
               )}
             </div>
 
-            {/* Task Options */}
-            <div className="bg-white rounded-lg border border-gray-300 p-6">
-              <h2 className="text-brand-dark font-semibold text-lg mb-6">Task options</h2>
+            {/* Dynamic Task Form */}
+            {locationConfirmed && category && (
+              <DynamicFormRenderer
+                categoryId={category.id}
+                categoryName={category.name}
+                initialValues={formResponses}
+                onSubmit={handleFormSubmit}
+                submitButtonText={loading ? 'Loading...' : 'See Taskers & Prices'}
+              />
+            )}
 
-              {locationConfirmed && (
-                <div className="space-y-6">
-                  {/* Task Size */}
-                  <div>
-                    <h3 className="text-brand-dark font-semibold text-base mb-3">
-                      Task Size
-                    </h3>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="taskSize"
-                          value="small"
-                          checked={taskSize === "small"}
-                          onChange={(e) => setTaskSize(e.target.value)}
-                          className="w-4 h-4 text-brand-terracotta focus:ring-brand-terracotta"
-                        />
-                        <span className="text-brand-dark text-sm">Small – Est. 1 hr</span>
-                      </label>
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="taskSize"
-                          value="medium"
-                          checked={taskSize === "medium"}
-                          onChange={(e) => setTaskSize(e.target.value)}
-                          className="w-4 h-4 text-brand-terracotta focus:ring-brand-terracotta"
-                        />
-                        <span className="text-brand-dark text-sm">Medium – Est. 2-3 hrs</span>
-                      </label>
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="taskSize"
-                          value="large"
-                          checked={taskSize === "large"}
-                          onChange={(e) => setTaskSize(e.target.value)}
-                          className="w-4 h-4 text-brand-terracotta focus:ring-brand-terracotta"
-                        />
-                        <span className="text-brand-dark text-sm">Large – Est. 4+ hrs</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Vehicle Requirements */}
-                  <div>
-                    <h3 className="text-brand-dark font-semibold text-base mb-3">
-                      Vehicle Requirements
-                    </h3>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="vehicle"
-                          value="not-needed"
-                          checked={vehicleRequirement === "not-needed"}
-                          onChange={(e) => setVehicleRequirement(e.target.value)}
-                          className="w-4 h-4 text-brand-terracotta focus:ring-brand-terracotta"
-                        />
-                        <span className="text-brand-dark text-sm">Not needed for task</span>
-                      </label>
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="vehicle"
-                          value="car"
-                          checked={vehicleRequirement === "car"}
-                          onChange={(e) => setVehicleRequirement(e.target.value)}
-                          className="w-4 h-4 text-brand-terracotta focus:ring-brand-terracotta"
-                        />
-                        <span className="text-brand-dark text-sm">Task requires a car</span>
-                      </label>
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="vehicle"
-                          value="truck"
-                          checked={vehicleRequirement === "truck"}
-                          onChange={(e) => setVehicleRequirement(e.target.value)}
-                          className="w-4 h-4 text-brand-terracotta focus:ring-brand-terracotta"
-                        />
-                        <span className="text-brand-dark text-sm">Task requires a truck</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Continue Button */}
-                  <div className="flex justify-center pt-4">
-                    <Button
-                      onClick={handleTaskOptionsContinue}
-                      className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full"
-                    >
-                      Continue
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Tell us the details of your task */}
-            <div className="bg-white rounded-lg border border-gray-300 p-6">
-              <h2 className="text-brand-dark font-semibold text-lg mb-4">
-                Tell us the details of your task
-              </h2>
-
-              {taskOptionsCompleted && (
-                <>
-                  <div className="relative">
-                    <textarea
-                      value={taskDetails}
-                      onChange={(e) => {
-                        if (e.target.value.length <= MAX_TASK_DETAILS_LENGTH) {
-                          setTaskDetails(e.target.value);
-                        }
-                      }}
-                      placeholder="For example, what supplies are needed, where to park, or timing restrictions."
-                      className="w-full min-h-[200px] px-4 py-3 border border-gray-300 rounded-lg text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-terracotta focus:border-brand-terracotta resize-none"
-                    />
-                    <div className="flex justify-end mt-2">
-                      <span className="text-sm text-gray-500">
-                        {taskDetails.length}/{MAX_TASK_DETAILS_LENGTH}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* See Taskers & Prices Button */}
-                  <div className="flex justify-center pt-6">
-                    <Button
-                      onClick={handleBrowsePros}
-                      disabled={loading}
-                      className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {loading ? 'Loading...' : 'See Taskers & Prices'}
-                    </Button>
-                  </div>
-
-                  {/* Error Message */}
-                  {error && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-red-800 text-sm">{error}</p>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            {/* Error Message */}
+            {error && locationConfirmed && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
+            )}
           </div>
         ) : (
           /* Browse Pros Section */

@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import type { FormResponse } from './types/forms';
 
 // Define types based on the database schema we saw
 export interface Booking {
@@ -14,10 +15,13 @@ export interface Booking {
   hourly_rate_cents: number;
   estimated_hours: number;
   status: BookingStatus;
+  form_responses: FormResponse; // Category-specific form responses
   created_at: string;
 }
 
-export interface Category {
+// Category interface - not exported to avoid conflict with query/index.ts export
+// This is only used internally for BookingWithRelations type
+interface Category {
   id: string;
   name: string;
   description: string | null;
@@ -168,6 +172,7 @@ export interface CreateBookingInput {
   address_country: string;
   hourly_rate_cents: number;
   estimated_hours: number;
+  form_responses?: FormResponse; // Category-specific form responses
 }
 
 export async function createBooking(input: CreateBookingInput): Promise<Booking> {
@@ -206,6 +211,7 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
         address_id: addressData.id,
         hourly_rate_cents: input.hourly_rate_cents,
         estimated_hours: input.estimated_hours,
+        form_responses: input.form_responses || {},
         status: 'pending',
       })
       .select()

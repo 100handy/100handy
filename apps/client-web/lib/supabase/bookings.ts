@@ -1,18 +1,18 @@
 import { createClient } from '../supabase';
+import type { FormResponse } from '@shared/supabase';
 
 export interface CreateBookingData {
   customer_id: string;
   handy_id: string;
   category_id: string;
   task_title: string;
-  task_details: string | null;
+  task_details?: string | null;
   scheduled_date: string; // YYYY-MM-DD format
   scheduled_time: string; // HH:MM format
   address_id: string;
   hourly_rate_cents: number;
   estimated_hours: number;
-  task_size?: string; // 'small', 'medium', 'large'
-  vehicle_requirement?: string; // 'not-needed', 'car', 'truck'
+  form_responses?: FormResponse; // Category-specific form responses
   payment_intent_id?: string; // Stripe PaymentIntent ID
 }
 
@@ -36,6 +36,7 @@ export interface Booking {
   address_id: string;
   hourly_rate_cents: number;
   estimated_hours: number;
+  form_responses: FormResponse;
   status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
   payment_intent_id: string | null;
   payment_status: 'pending' | 'authorized' | 'captured' | 'failed' | 'refunded';
@@ -66,12 +67,13 @@ export async function createBooking(bookingData: CreateBookingData): Promise<Boo
       handy_id: bookingData.handy_id,
       category_id: bookingData.category_id,
       task_title: bookingData.task_title,
-      task_details: bookingData.task_details,
+      task_details: bookingData.task_details || null,
       scheduled_date: bookingData.scheduled_date,
       scheduled_time: bookingData.scheduled_time,
       address_id: bookingData.address_id,
       hourly_rate_cents: bookingData.hourly_rate_cents,
       estimated_hours: bookingData.estimated_hours,
+      form_responses: bookingData.form_responses || {},
       status: 'pending',
       payment_intent_id: bookingData.payment_intent_id || null,
       payment_status: bookingData.payment_intent_id ? 'authorized' : 'pending',
