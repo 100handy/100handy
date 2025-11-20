@@ -1,16 +1,21 @@
 module.exports = {
   expo: {
     name: '100Handy',
-    slug: 'handy',
+    slug: '100handy',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: 'handy',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
+    extra: {
+      eas: {
+        projectId: 'baf41b27-5045-4fb4-ad35-c66c9a3d1814',
+      },
+    },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.yourco.handy',
+      bundleIdentifier: 'com.oxdpr.handy',
       associatedDomains: ['applinks:auth.yourdomain.com'],
       infoPlist: {
         NSLocationWhenInUseUsageDescription:
@@ -23,7 +28,7 @@ module.exports = {
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
-      package: 'com.yourco.handy',
+      package: 'com.oxdpr.handy',
       permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
       config: {
         googleMaps: {

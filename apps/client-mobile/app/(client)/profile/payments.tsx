@@ -52,9 +52,7 @@ export default function PaymentsScreen() {
                     {/* Credit Card Option */}
                     <Pressable
                         onPress={() => {
-                            // Navigate to credit card screen
-                            console.log('Navigate to Credit Card');
-                            router.push('/profile/credit-card');
+                            router.push('/profile/payment-methods');
                         }}
                         className="border-b border-gray-200"
                     >

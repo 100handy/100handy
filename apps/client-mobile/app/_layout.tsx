@@ -9,6 +9,7 @@ import { supabase } from "@shared/supabase/supabaseClient";
 import { AuthWrapper } from "@/components/AuthWrapper";
 import { QueryProvider } from "@/components/providers";
 import { ToastProvider } from "@/components/ui/toast";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -73,17 +74,19 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryProvider>
-      <ToastProvider>
-        {/* <AuthWrapper> */}
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(client)" />
-            <Stack.Screen name="(professional)" />
-          </Stack>
-        {/* </AuthWrapper> */}
-      </ToastProvider>
-    </QueryProvider>
+    <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''}>
+      <QueryProvider>
+        <ToastProvider>
+          {/* <AuthWrapper> */}
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(client)" />
+              <Stack.Screen name="(professional)" />
+            </Stack>
+          {/* </AuthWrapper> */}
+        </ToastProvider>
+      </QueryProvider>
+    </StripeProvider>
   );
 }

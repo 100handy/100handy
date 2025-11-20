@@ -6,6 +6,7 @@ export * from './bookings';
 export * from './conversations';
 export * from './support';
 export * from './form-fields';
+export * from './payment-methods';
 export * from './types/forms';
 export * from '../store';
 export * from '../query';

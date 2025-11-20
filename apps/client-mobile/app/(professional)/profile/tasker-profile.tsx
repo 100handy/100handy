@@ -9,15 +9,15 @@ export default function TaskerProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4">
+      <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
         <Pressable onPress={() => router.back()}>
-          <ChevronLeft size={24} color="#000" />
+          <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
         </Pressable>
-        <Text className="text-lg font-semibold text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
+        <Text className="text-xl font-bold text-[#30352D]" style={{ fontFamily: 'WorkSans_700Bold' }}>
           Tasker Profile
         </Text>
         <Pressable onPress={() => router.push('/profile/profile-preview')}>
-          <Eye size={24} color="#C1856A" />
+          <Eye size={24} color="#C1856A" strokeWidth={2} />
         </Pressable>
       </View>
 
@@ -72,13 +72,11 @@ interface MenuItemProps {
 function MenuItem({ label, onPress, isLast = false }: MenuItemProps) {
   return (
     <Pressable onPress={onPress}>
-      <View className="flex-row" 
-        className={`items-center justify-between py-4 ${!isLast ? 'border-b border-[#E5E5E5]' : ''}`}
-      >
-        <Text className="text-base text-[#333A31]" style={{ fontFamily: 'WorkSans_400Regular' }}>
+      <View className={`flex-row items-center justify-between py-4 ${!isLast ? 'border-b border-[#E5E5E5]' : ''}`}>
+        <Text className="text-base text-[#30352D]" style={{ fontFamily: 'WorkSans_400Regular' }}>
           {label}
         </Text>
-        <ChevronRight size={20} color="#999999" />
+        <ChevronRight size={20} color="#999999" strokeWidth={2} />
       </View>
     </Pressable>
   );

@@ -40,13 +40,20 @@ serve(async (req) => {
         ? customer.invoice_settings.default_payment_method
         : null;
 
-    // Format payment methods for frontend
+    // Format payment methods for frontend - match Stripe's PaymentMethod structure
     const formattedMethods = paymentMethods.data.map((pm) => ({
       id: pm.id,
-      brand: pm.card?.brand,
-      last4: pm.card?.last4,
-      expMonth: pm.card?.exp_month,
-      expYear: pm.card?.exp_year,
+      type: 'card',
+      card: {
+        brand: pm.card?.brand || 'unknown',
+        last4: pm.card?.last4 || '0000',
+        exp_month: pm.card?.exp_month || 0,
+        exp_year: pm.card?.exp_year || 0,
+      },
+      billing_details: {
+        name: pm.billing_details?.name,
+        email: pm.billing_details?.email,
+      },
       isDefault: pm.id === defaultPaymentMethodId,
     }));
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { Image } from 'expo-image';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
@@ -42,10 +42,17 @@ const menuItems = [
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { data: profile, isLoading, error } = useProfile();
+  const { data: profile, isLoading, error, refetch } = useProfile();
   const { signOut, user } = useAuthStore();
   const { navigateWithSecurityCheck } = useSecureNavigation();
   const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const handleSignOut = async () => {
     try {
@@ -151,7 +158,17 @@ export default function ProfileScreen() {
           </View>
 
           {/* Menu Items */}
-          <ScrollView className="flex-1 bg-white mt-4">
+          <ScrollView
+            className="flex-1 bg-white mt-4"
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#C1856A"
+                colors={['#C1856A']}
+              />
+            }
+          >
             {menuItems.map((item, index) => (
               <Pressable
                 key={index}
