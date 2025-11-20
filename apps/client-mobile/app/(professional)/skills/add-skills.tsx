@@ -2,19 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ChevronLeft, ChevronDown, ChevronRight, X } from 'lucide-react-native';
-import { getSkillsByCategory, getUserSkills, addUserSkill, Skill } from '@shared/supabase/profile';
+import {
+  ChevronLeft,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Wrench,
+  Sparkles,
+  Home,
+  Frame,
+  TruckIcon,
+  Trees,
+  PaintBucket,
+  ClipboardList,
+  MoreHorizontal,
+  PlusCircle,
+} from 'lucide-react-native';
+import { getSkillsByCategory, getUserSkills, Skill } from '@shared/supabase/profile';
 
-const CATEGORY_ICONS: Record<string, any> = {
-  Assembly: '🔧',
-  Cleaning: '🧹',
-  'Home Improvements': '🛠️',
-  Mounting: '🔩',
-  Moving: '🚚',
-  'Outdoor Maintenance': '🌳',
-  Painting: '🎨',
-  'Personal Assistance': '📋',
-  Other: '📝',
+const CATEGORY_ICONS: Record<string, React.ComponentType<any>> = {
+  Assembly: Wrench,
+  Cleaning: Sparkles,
+  'Home Improvements': Home,
+  Mounting: Frame,
+  Moving: TruckIcon,
+  'Outdoor Maintenance': Trees,
+  Painting: PaintBucket,
+  'Personal Assistance': ClipboardList,
+  Other: MoreHorizontal,
 };
 
 export default function AddSkillsScreen() {
@@ -60,11 +75,14 @@ export default function AddSkillsScreen() {
       return;
     }
 
-    // Add skill
-    const result = await addUserSkill({ skill_id: skill.id });
-    if (result) {
-      setUserSkillIds(prev => new Set(prev).add(skill.id));
-    }
+    // Navigate to skill details flow
+    router.push({
+      pathname: '/(professional)/skills/skill-details',
+      params: {
+        skillId: skill.id,
+        skillName: skill.name,
+      },
+    });
   };
 
   if (isLoading) {
@@ -78,91 +96,108 @@ export default function AddSkillsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-100">
-        <Pressable onPress={() => router.back()} className="w-10">
-          <ChevronLeft size={24} color="#000" />
-        </Pressable>
-        <Text
-          className="flex-1 text-center text-lg font-semibold text-[#333A31]"
-          style={{ fontFamily: 'WorkSans_600SemiBold' }}
-        >
-          Add skills
-        </Text>
-        <Pressable onPress={() => router.back()} className="w-10 items-end">
-          <X size={24} color="#000" />
-        </Pressable>
+      <View className="bg-white shadow-sm">
+        <View className="flex-row items-center justify-between px-4 py-4">
+          <Pressable onPress={() => router.back()}>
+            <ChevronLeft size={28} color="#1F2937" strokeWidth={2} />
+          </Pressable>
+          <Text
+            className="flex-1 text-center text-xl font-bold text-gray-900"
+            style={{ fontFamily: 'WorkSans_700Bold' }}
+          >
+            Add skills
+          </Text>
+          <Pressable onPress={() => router.back()}>
+            <X size={28} color="#1F2937" strokeWidth={2} />
+          </Pressable>
+        </View>
+        <View className="border-b border-gray-200" />
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="flex-col py-4">
           {Object.entries(skillsByCategory).map(([category, skills]) => {
             const isExpanded = expandedCategories.has(category);
+            const IconComponent = CATEGORY_ICONS[category] || MoreHorizontal;
 
             return (
-              <View key={category} className="flex-col border-b border-gray-100">
+              <View key={category} className="flex-col border-b border-gray-200">
                 {/* Category Header */}
                 <Pressable
                   onPress={() => toggleCategory(category)}
-                  className="px-5 py-4"
+                  className="px-4 py-4"
                 >
                   <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-3 flex-1">
-                      <Text className="text-xl">{CATEGORY_ICONS[category] || '📌'}</Text>
+                    <View className="flex-row items-center gap-4 flex-1">
+                      <IconComponent size={24} color="#4B5563" strokeWidth={2} />
                       <Text
-                        className="text-base font-semibold text-[#333A31]"
-                        style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                        className="text-lg font-medium text-gray-800"
+                        style={{ fontFamily: 'WorkSans_500Medium' }}
                       >
                         {category}
                       </Text>
                     </View>
                     {isExpanded ? (
-                      <ChevronDown size={20} color="#333A31" strokeWidth={2} />
+                      <ChevronUp size={28} color="#4B5563" strokeWidth={2} />
                     ) : (
-                      <ChevronRight size={20} color="#333A31" strokeWidth={2} />
+                      <ChevronDown size={28} color="#4B5563" strokeWidth={2} />
                     )}
                   </View>
                 </Pressable>
 
                 {/* Expanded Skills List */}
                 {isExpanded && (
-                  <View className="flex-col pb-2">
+                  <View className="flex-col pb-4 px-4 pl-10">
                     {skills.map(skill => {
                       const isSelected = userSkillIds.has(skill.id);
 
                       return (
-                        <Pressable
+                        <View
                           key={skill.id}
-                          onPress={() => handleSelectSkill(skill)}
-                          disabled={isSelected}
-                          className={`px-5 py-3 mx-5 mb-2 rounded-lg ${
-                            isSelected ? 'bg-[#E8D5C4]' : 'bg-gray-50'
-                          }`}
+                          className="flex-row items-start justify-between py-3"
                         >
-                          <View className="flex-row items-center justify-between">
+                          <View className="flex-1 flex-col gap-1">
                             <Text
-                              className={`text-base ${
-                                isSelected ? 'font-semibold text-[#333A31]' : 'text-[#666666]'
+                              className={`text-base font-medium ${
+                                isSelected ? 'text-gray-900' : 'text-gray-900'
                               }`}
-                              style={{
-                                fontFamily: isSelected
-                                  ? 'WorkSans_600SemiBold'
-                                  : 'WorkSans_400Regular',
-                              }}
+                              style={{ fontFamily: 'WorkSans_500Medium' }}
                             >
                               {skill.name}
                             </Text>
+                            {skill.description && (
+                              <Text
+                                className="text-sm text-gray-600 mt-1"
+                                style={{ fontFamily: 'WorkSans_400Regular' }}
+                              >
+                                {skill.description}
+                              </Text>
+                            )}
                             {skill.is_in_demand && (
-                              <View className="bg-[#8B4513] rounded px-2 py-0.5">
-                                <Text
-                                  className="text-[10px] font-medium text-white"
-                                  style={{ fontFamily: 'WorkSans_500Medium' }}
-                                >
-                                  IN DEMAND
-                                </Text>
+                              <View className="mt-2">
+                                <View className="bg-gray-200 self-start rounded px-2 py-1">
+                                  <Text
+                                    className="text-xs font-semibold text-gray-700"
+                                    style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                                  >
+                                    IN DEMAND
+                                  </Text>
+                                </View>
                               </View>
                             )}
                           </View>
-                        </Pressable>
+                          <Pressable
+                            onPress={() => handleSelectSkill(skill)}
+                            disabled={isSelected}
+                            className="ml-4 self-center p-2"
+                          >
+                            <PlusCircle
+                              size={28}
+                              color={isSelected ? '#9CA3AF' : '#6B7280'}
+                              strokeWidth={2}
+                            />
+                          </Pressable>
+                        </View>
                       );
                     })}
                   </View>

@@ -1,9 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, ActivityIndicator, Switch, View, Text, Pressable } from 'react-native';
+import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ChevronLeft, X, Plus } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  X,
+  PlusCircle,
+  Wrench,
+  Sparkles,
+  Home,
+  Frame,
+  TruckIcon,
+  Trees,
+  PaintBucket,
+  ClipboardList,
+  MoreHorizontal,
+} from 'lucide-react-native';
 import { getUserSkills, updateUserSkill, UserSkill } from '@shared/supabase/profile';
+
+// Category icon and color mapping
+const CATEGORY_CONFIG: Record<
+  string,
+  {
+    icon: React.ComponentType<any>;
+    activeBgColor: string;
+    inactiveBgColor: string;
+    badgeBgColor: string;
+  }
+> = {
+  Assembly: {
+    icon: Wrench,
+    activeBgColor: '#BFDBFE', // blue-200
+    inactiveBgColor: '#DBEAFE', // blue-100
+    badgeBgColor: '#3B82F6', // blue-500
+  },
+  Cleaning: {
+    icon: Sparkles,
+    activeBgColor: '#E9D5FF', // purple-200
+    inactiveBgColor: '#F3E8FF', // purple-100
+    badgeBgColor: '#A855F7', // purple-500
+  },
+  'Home Improvements': {
+    icon: Home,
+    activeBgColor: '#FED7AA', // orange-200
+    inactiveBgColor: '#FFEDD5', // orange-100
+    badgeBgColor: '#F97316', // orange-500
+  },
+  Mounting: {
+    icon: Frame,
+    activeBgColor: '#BBF7D0', // green-200
+    inactiveBgColor: '#DCFCE7', // green-100
+    badgeBgColor: '#16A34A', // green-600
+  },
+  Moving: {
+    icon: TruckIcon,
+    activeBgColor: '#FEF08A', // yellow-200
+    inactiveBgColor: '#FEF9C3', // yellow-100
+    badgeBgColor: '#CA8A04', // yellow-600
+  },
+  'Outdoor Maintenance': {
+    icon: Trees,
+    activeBgColor: '#A7F3D0', // emerald-200
+    inactiveBgColor: '#D1FAE5', // emerald-100
+    badgeBgColor: '#059669', // emerald-600
+  },
+  Painting: {
+    icon: PaintBucket,
+    activeBgColor: '#FBCFE8', // pink-200
+    inactiveBgColor: '#FCE7F3', // pink-100
+    badgeBgColor: '#DB2777', // pink-600
+  },
+  'Personal Assistance': {
+    icon: ClipboardList,
+    activeBgColor: '#C7D2FE', // indigo-200
+    inactiveBgColor: '#E0E7FF', // indigo-100
+    badgeBgColor: '#4F46E5', // indigo-600
+  },
+  Other: {
+    icon: MoreHorizontal,
+    activeBgColor: '#E5E7EB', // gray-200
+    inactiveBgColor: '#F3F4F6', // gray-100
+    badgeBgColor: '#4B5563', // gray-600
+  },
+};
 
 export default function MySkillsScreen() {
   const [skills, setSkills] = useState<UserSkill[]>([]);
@@ -21,24 +100,44 @@ export default function MySkillsScreen() {
     setIsLoading(false);
   };
 
-  const handleToggleActive = async (skillId: string, currentValue: boolean) => {
-    // Optimistic update
-    setSkills(prev =>
-      prev.map(s => (s.id === skillId ? { ...s, is_active: !currentValue } : s))
-    );
+  const handleActivateSkill = (skillId: string) => {
+    // Navigate to skill details to complete activation
+    router.push({
+      pathname: '/(professional)/skills/skill-details',
+      params: { skillId, skillName: skills.find((s) => s.id === skillId)?.skill?.name || '' },
+    });
+  };
 
-    // Update in database
-    await updateUserSkill(skillId, { is_active: !currentValue });
+  const handleEditRate = (userSkill: UserSkill) => {
+    // Navigate to skill rate to edit
+    router.push({
+      pathname: '/(professional)/skills/skill-rate',
+      params: {
+        skillId: userSkill.skill_id,
+        skillName: userSkill.skill?.name || '',
+        rate: ((userSkill.hourly_rate_cents || 0) / 100).toString(),
+      },
+    });
   };
 
   const handleAddSkills = () => {
     router.push('/(professional)/skills/add-skills');
   };
 
+  // Group skills by category
+  const skillsByCategory = skills.reduce((acc, skill) => {
+    const category = skill.skill?.category || 'Other';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(skill);
+    return acc;
+  }, {} as Record<string, UserSkill[]>);
+
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#D17852" />
+        <ActivityIndicator size="large" color="#C1856A" />
       </SafeAreaView>
     );
   }
@@ -46,34 +145,33 @@ export default function MySkillsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
+      <View className="flex-row items-center justify-between px-4 py-4">
         <Pressable onPress={() => router.back()}>
-          <ChevronLeft size={24} color="#000" />
+          <ChevronLeft size={24} color="#1F2937" strokeWidth={2} />
         </Pressable>
         <Text
-          className="flex-1 text-center text-lg font-semibold text-[#333A31] pr-6"
-          style={{ fontFamily: 'WorkSans_600SemiBold' }}
+          className="flex-1 text-center text-xl font-bold text-gray-900 pr-6"
+          style={{ fontFamily: 'WorkSans_700Bold' }}
         >
-          My Skills
+          My skills
         </Text>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="flex-col px-5 py-6 gap-6">
+      <ScrollView className="flex-1 pb-24" showsVerticalScrollIndicator={false}>
+        <View className="flex-col px-4 py-6 gap-6">
           {/* Info Banner */}
           {showBanner && skills.length > 0 && (
-            <View className="bg-[#E5E5E5] rounded-lg px-4 py-3">
-              <View className="flex-row items-start justify-between">
-                <Text
-                  className="flex-1 text-sm text-[#333A31] leading-5"
-                  style={{ fontFamily: 'WorkSans_400Regular' }}
-                >
-                  Here are skills you previously chose. Now let's add prices!
-                </Text>
-                <Pressable onPress={() => setShowBanner(false)} className="ml-2">
-                  <X size={20} color="#333A31" />
-                </Pressable>
-              </View>
+            <View className="bg-green-100 rounded-lg p-4 flex-row items-start gap-3">
+              <Text className="text-lg">🔥</Text>
+              <Text
+                className="flex-1 text-sm text-green-900 leading-5"
+                style={{ fontFamily: 'WorkSans_400Regular' }}
+              >
+                Here are the skills you previously chose. Now let's add prices!
+              </Text>
+              <Pressable onPress={() => setShowBanner(false)}>
+                <X size={20} color="#166534" />
+              </Pressable>
             </View>
           )}
 
@@ -81,89 +179,148 @@ export default function MySkillsScreen() {
           {skills.length === 0 ? (
             <View className="flex-col items-center py-12 gap-4">
               <Text
-                className="text-lg font-semibold text-[#333A31] text-center"
+                className="text-lg font-semibold text-gray-900 text-center"
                 style={{ fontFamily: 'WorkSans_600SemiBold' }}
               >
                 No skills added yet
               </Text>
               <Text
-                className="text-sm text-[#666666] text-center px-8"
+                className="text-sm text-gray-600 text-center px-8"
                 style={{ fontFamily: 'WorkSans_400Regular' }}
               >
                 Add skills to start receiving job requests
               </Text>
             </View>
           ) : (
-            <View className="flex-col gap-6">
-              {skills.map(userSkill => (
-                <View className="flex-col" key={userSkill.id} className="gap-2">
-                  {/* Skill Category Label */}
-                  <Text
-                    className="text-base font-medium text-[#333A31]"
-                    style={{ fontFamily: 'WorkSans_500Medium' }}
-                  >
-                    {userSkill.skill?.name}
-                  </Text>
+            Object.entries(skillsByCategory).map(([category, categorySkills]) => {
+              const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.Other;
+              const IconComponent = config.icon;
 
-                  {/* Skill Card */}
-                  <View className="bg-[#E8D5C4] border-2 border-dashed border-[#D17852] rounded-lg p-4">
-                    <View className="flex-col gap-3">
-                      {/* Skill Name */}
-                      <Text
-                        className="text-lg font-semibold text-[#333A31]"
-                        style={{ fontFamily: 'WorkSans_600SemiBold' }}
-                      >
-                        {userSkill.skill?.name}
-                      </Text>
+              return (
+                <View key={category} className="gap-4">
+                  {/* Category Header */}
+                  <View className="flex-row items-center gap-2">
+                    <IconComponent size={24} color="#4B5563" strokeWidth={2} />
+                    <Text
+                      className="text-lg font-semibold text-gray-800"
+                      style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                    >
+                      {category}
+                    </Text>
+                  </View>
 
-                      {/* Badges and Toggle */}
-                      <View className="flex-row items-center justify-between">
-                        <View className="flex-row items-center gap-2">
-                          {userSkill.skill?.is_in_demand && (
-                            <View className="bg-[#8B4513] rounded px-2 py-1">
+                  {/* Category Skills */}
+                  <View className="gap-3">
+                    {categorySkills.map((userSkill) => {
+                      const isActive = userSkill.is_active && userSkill.hourly_rate_cents > 0;
+                      const hourlyRate = (userSkill.hourly_rate_cents || 0) / 100;
+
+                      // Get dashed border color based on category
+                      let dashedBorderColor = '#D1D5DB';
+                      if (category === 'Assembly') dashedBorderColor = '#93C5FD';
+                      else if (category === 'Cleaning') dashedBorderColor = '#D8B4FE';
+                      else if (category === 'Mounting') dashedBorderColor = '#86EFAC';
+                      else if (category === 'Moving') dashedBorderColor = '#FDE047';
+                      else if (category === 'Painting') dashedBorderColor = '#FBCFE8';
+
+                      return (
+                        <View
+                          key={userSkill.id}
+                          className="rounded-xl p-4 flex-row justify-between items-center"
+                          style={{
+                            backgroundColor: isActive
+                              ? config.activeBgColor
+                              : config.inactiveBgColor,
+                            ...((!isActive && {
+                              borderWidth: 2,
+                              borderStyle: 'dashed',
+                              borderColor: dashedBorderColor,
+                            }) ||
+                              {}),
+                          }}
+                        >
+                          <View className="flex-1">
+                            <Text
+                              className="font-semibold text-gray-900"
+                              style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                            >
+                              {userSkill.skill?.name}
+                            </Text>
+                            {isActive && userSkill.skill?.is_in_demand && (
+                              <View className="flex-row gap-2 mt-2">
+                                <View
+                                  className="rounded-full px-2 py-1"
+                                  style={{ backgroundColor: config.badgeBgColor }}
+                                >
+                                  <Text
+                                    className="text-white text-[10px] font-bold tracking-wide"
+                                    style={{ fontFamily: 'WorkSans_700Bold' }}
+                                  >
+                                    IN DEMAND
+                                  </Text>
+                                </View>
+                              </View>
+                            )}
+                          </View>
+                          {isActive ? (
+                            <Pressable
+                              onPress={() => handleEditRate(userSkill)}
+                              className="bg-[#C1856A] rounded-lg px-4 py-2 ml-3"
+                              style={{
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 3,
+                                elevation: 2,
+                              }}
+                            >
                               <Text
-                                className="text-xs font-medium text-white"
-                                style={{ fontFamily: 'WorkSans_500Medium' }}
+                                className="text-white text-sm font-semibold"
+                                style={{ fontFamily: 'WorkSans_600SemiBold' }}
                               >
-                                IN DEMAND
+                                ${hourlyRate}/hr
                               </Text>
-                            </View>
+                            </Pressable>
+                          ) : (
+                            <Pressable
+                              onPress={() => handleActivateSkill(userSkill.id)}
+                              className="bg-[#C1856A] rounded-lg px-4 py-2 ml-3"
+                              style={{
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 3,
+                                elevation: 2,
+                              }}
+                            >
+                              <Text
+                                className="text-white text-sm font-semibold"
+                                style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                              >
+                                Activate
+                              </Text>
+                            </Pressable>
                           )}
                         </View>
-
-                        {/* Active Toggle */}
-                        <Pressable
-                          onPress={() => handleToggleActive(userSkill.id, userSkill.is_active)}
-                          className={`px-4 py-1.5 rounded ${
-                            userSkill.is_active ? 'bg-[#8B4513]' : 'bg-gray-400'
-                          }`}
-                        >
-                          <Text
-                            className="text-xs font-semibold text-white"
-                            style={{ fontFamily: 'WorkSans_600SemiBold' }}
-                          >
-                            {userSkill.is_active ? 'ACTIVE' : 'INACTIVE'}
-                          </Text>
-                        </Pressable>
-                      </View>
-                    </View>
+                      );
+                    })}
                   </View>
                 </View>
-              ))}
-            </View>
+              );
+            })
           )}
         </View>
       </ScrollView>
 
-      {/* Add Skills Button */}
-      <View className="px-5 pb-6 pt-4 bg-white border-t border-gray-100">
+      {/* Floating Add Skills Button */}
+      <View className="absolute bottom-8 right-6">
         <Pressable
           onPress={handleAddSkills}
-          className="flex-row items-center justify-center gap-2 py-3"
+          className="bg-white flex-row items-center space-x-2 px-4 py-2 rounded-full shadow-lg border border-gray-200 active:opacity-80"
         >
-          <Plus size={20} color="#D17852" strokeWidth={2.5} />
+          <PlusCircle size={20} color="#C1856A" strokeWidth={2.5} />
           <Text
-            className="text-base font-semibold text-[#D17852]"
+            className="text-[#C1856A] text-sm font-semibold"
             style={{ fontFamily: 'WorkSans_600SemiBold' }}
           >
             Add skills

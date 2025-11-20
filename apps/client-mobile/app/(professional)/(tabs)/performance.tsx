@@ -118,7 +118,10 @@ export default function ProfessionalEarnings() {
           </PerformanceCard>
 
           {/* Skills & Rates Card */}
-          <PerformanceCard title="Skills & rates">
+          <PerformanceCard
+            title="Skills & rates"
+            onPress={() => router.push('/(professional)/skills/my-skills')}
+          >
             <View className="flex-col gap-1">
               <View className="flex-row items-baseline gap-2">
                 <Text className="font-worksans text-[14px] text-[#6B6B6B]">

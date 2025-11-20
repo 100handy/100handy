@@ -719,6 +719,7 @@ export interface Skill {
   id: string;
   category: string;
   name: string;
+  description?: string;
   icon_name?: string;
   is_in_demand: boolean;
   created_at: string;
