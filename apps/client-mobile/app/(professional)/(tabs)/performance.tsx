@@ -44,7 +44,10 @@ export default function ProfessionalEarnings() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="flex-col py-4">
           {/* Earnings Card */}
-          <PerformanceCard title="Earnings">
+          <PerformanceCard
+            title="Earnings"
+            onPress={() => router.push('/(professional)/profile/earnings')}
+          >
             <View className="flex-col gap-1">
               <View className="flex-row items-baseline gap-2">
                 <Text className="font-worksans text-[14px] text-[#6B6B6B]">
@@ -78,23 +81,6 @@ export default function ProfessionalEarnings() {
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star key={star} color="#E5E5E5" size={20} strokeWidth={2} fill="#E5E5E5" />
                 ))}
-              </View>
-            </View>
-          </PerformanceCard>
-
-          {/* Reviews Info Card */}
-          <PerformanceCard title="Reviews">
-            <View className="flex-col gap-2">
-              <Text className="font-worksans text-[14px] text-[#30352D] leading-5">
-                We don't have your numbers yet! Actively task{'\n'}For 30 days and check back to see result.
-              </Text>
-              <View className="flex-col gap-1 mt-2">
-                <Text className="font-worksans text-[13px] text-[#6B6B6B]">
-                  Average search position <Text className="font-worksans-bold">--</Text>
-                </Text>
-                <Text className="font-worksans text-[13px] text-[#6B6B6B]">
-                  You've shown more than <Text className="font-worksans-bold">--</Text>
-                </Text>
               </View>
             </View>
           </PerformanceCard>
@@ -137,39 +123,56 @@ export default function ProfessionalEarnings() {
             </View>
           </PerformanceCard>
 
-          {/* Elite Status Card */}
-          <View className="mx-4 mb-6">
-            <View className="flex-col gap-2">
+          {/* Elite Status Section */}
+          <View className="bg-white mx-4 mb-6">
+            <View className="flex-col gap-1 mb-3">
               <Text className="font-worksans-bold text-[18px] text-[#30352D]">
                 Elite status
               </Text>
               <Text className="font-worksans text-[13px] text-[#6B6B6B]">
-                Become elite and earn up to 3x more!
+                Become Elite and earn up to 3x more!
               </Text>
             </View>
 
-            <Pressable className="mt-3 bg-[#A8B89E] rounded-2xl p-4">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-col flex-1 gap-2">
-                  <Text className="font-worksans text-[12px] text-[#30352D]">
+            <Pressable
+              className="rounded-2xl p-5"
+              style={{ backgroundColor: '#A7D5B8' }}
+              onPress={() => router.push('/(professional)/elite')}
+            >
+              <View className="flex-row items-start justify-between">
+                <View className="flex-col flex-1">
+                  <Text className="font-worksans text-[13px] text-[#1F3A2C] mb-1">
                     Elite progress
                   </Text>
-                  <Text className="font-worksans-bold text-[28px] text-[#30352D]">
-                    October 2025
+                  <Text className="font-worksans-bold text-[32px] text-[#1F3A2C] mb-4">
+                    December 2025
                   </Text>
-                  <View className="flex-row items-center justify-between mt-2">
-                    <Text className="font-worksans text-[11px] text-[#30352D]">
+
+                  {/* Progress Bar */}
+                  <View className="mb-3">
+                    <View className="h-2 bg-white rounded-full overflow-hidden">
+                      <View
+                        className="h-full rounded-full"
+                        style={{
+                          width: '0%',
+                          backgroundColor: '#1F3A2C',
+                        }}
+                      />
+                    </View>
+                  </View>
+
+                  <View className="flex-row items-center justify-between">
+                    <Text className="font-worksans text-[12px] text-[#1F3A2C]">
                       0 / 4 milestones met
                     </Text>
-                    <Text className="font-worksans-bold text-[11px] text-[#30352D]">
+                    <Text className="font-worksans-bold text-[12px] text-[#1F3A2C]">
                       0%
                     </Text>
                   </View>
-                  <View className="h-2 bg-[#30352D] bg-opacity-20 rounded-full overflow-hidden mt-1">
-                    <View className="h-full w-0 bg-[#30352D]" />
-                  </View>
                 </View>
-                <ChevronRight color="#30352D" size={24} strokeWidth={2} />
+                <View className="ml-3">
+                  <ChevronRight color="#1F3A2C" size={24} strokeWidth={2} />
+                </View>
               </View>
             </Pressable>
           </View>
