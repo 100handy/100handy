@@ -141,9 +141,11 @@ export default function ProfileScreen() {
                 <Text className="text-[#F3E3D3] text-base mb-1">
                   {profile?.email || user?.email || 'No email'}
                 </Text>
-                <Text className="text-white text-base">
-                  Wanstead, Greater London, E11 2
-                </Text>
+                {profile?.postcode && (
+                  <Text className="text-white text-base">
+                    {profile.postcode}
+                  </Text>
+                )}
               </View>
             </View>
 

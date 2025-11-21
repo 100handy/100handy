@@ -1,24 +1,28 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import { useToast } from '@/components/ui/toast';
+import { signIn, updatePassword } from '@shared/supabase/auth';
+import { useAuthStore } from '@shared/supabase';
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
   const toast = useToast();
+  const { user } = useAuthStore();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [retypePassword, setRetypePassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showRetypePassword, setShowRetypePassword] = useState(false);
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
     // Validation
     if (!currentPassword || !newPassword || !retypePassword) {
       toast.error('Error', 'Please fill in all fields');
@@ -35,14 +39,43 @@ export default function ChangePasswordScreen() {
       return;
     }
 
-    // TODO: Implement actual password change API call
-    console.log('Change password');
-    toast.success('Success', 'Password changed successfully');
+    if (!user?.email) {
+      toast.error('Error', 'User email not found');
+      return;
+    }
 
-    // Clear fields
-    setCurrentPassword('');
-    setNewPassword('');
-    setRetypePassword('');
+    setIsLoading(true);
+
+    try {
+      // Step 1: Verify current password by attempting to sign in
+      await signIn(user.email, currentPassword);
+
+      // Step 2: Update to new password
+      await updatePassword(newPassword);
+
+      toast.success('Success', 'Password changed successfully');
+
+      // Clear fields
+      setCurrentPassword('');
+      setNewPassword('');
+      setRetypePassword('');
+
+      // Navigate back after success
+      setTimeout(() => router.back(), 1500);
+    } catch (error: any) {
+      console.error('Password change error:', error);
+
+      // Handle specific error cases
+      if (error.message?.includes('Invalid login credentials')) {
+        toast.error('Error', 'Current password is incorrect');
+      } else if (error.message?.includes('Password should be')) {
+        toast.error('Error', error.message);
+      } else {
+        toast.error('Error', 'Failed to change password. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -64,7 +97,7 @@ export default function ChangePasswordScreen() {
             <Text className="text-sm font-medium text-[#333333]">Current Password</Text>
             <Input variant="outline" size="md">
               <InputField
-                type={showCurrentPassword ? 'text' : 'password'}
+                secureTextEntry={!showCurrentPassword}
                 value={currentPassword}
                 onChangeText={setCurrentPassword}
                 placeholder="Enter current password"
@@ -80,7 +113,7 @@ export default function ChangePasswordScreen() {
             <Text className="text-sm font-medium text-[#333333]">New Password</Text>
             <Input variant="outline" size="md">
               <InputField
-                type={showNewPassword ? 'text' : 'password'}
+                secureTextEntry={!showNewPassword}
                 value={newPassword}
                 onChangeText={setNewPassword}
                 placeholder="Enter new password"
@@ -97,7 +130,7 @@ export default function ChangePasswordScreen() {
             <Text className="text-sm font-medium text-[#333333]">Retype Password</Text>
             <Input variant="outline" size="md">
               <InputField
-                type={showRetypePassword ? 'text' : 'password'}
+                secureTextEntry={!showRetypePassword}
                 value={retypePassword}
                 onChangeText={setRetypePassword}
                 placeholder="Retype new password"
@@ -112,10 +145,15 @@ export default function ChangePasswordScreen() {
         {/* Save Button */}
         <View className="px-6 pb-6">
           <Pressable
-            className="bg-[#C1856A] rounded-full py-4 items-center"
+            className={`bg-[#C1856A] rounded-full py-4 items-center ${isLoading ? 'opacity-50' : ''}`}
             onPress={handleSavePassword}
+            disabled={isLoading}
           >
-            <Text className="text-white text-lg font-bold">Save</Text>
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text className="text-white text-lg font-bold">Save</Text>
+            )}
           </Pressable>
         </View>
       </View>

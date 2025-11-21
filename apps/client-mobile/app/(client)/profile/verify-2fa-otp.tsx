@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { supabase, enable2FA } from '@shared/supabase';
+import { supabase, enable2FA, useProfile } from '@shared/supabase';
 import { Alert, TextInput, ActivityIndicator, View, Text, Pressable } from 'react-native';
 
 export default function Verify2FAOtpScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ email: string }>();
+  const { refetch: refetchProfile } = useProfile();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +112,9 @@ export default function Verify2FAOtpScreen() {
       if (!enabled) {
         throw new Error('Failed to enable 2FA. Please try again.');
       }
+
+      // Refetch profile to update the cache with new 2FA status
+      await refetchProfile();
 
       // Show success and navigate back
       Alert.alert(

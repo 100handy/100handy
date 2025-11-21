@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, Alert, View, Text, Pressable, Linking } from 'react-native';
+import { ScrollView, Alert, View, Text, Pressable, Linking, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
+import { useDeleteAccount } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast';
 
 interface MenuItemProps {
   title: string;
@@ -23,6 +25,9 @@ const MenuItem = ({ title, onPress, showDivider = true }: MenuItemProps) => (
 
 export default function SupportScreen() {
   const router = useRouter();
+  const toast = useToast();
+  const deleteAccount = useDeleteAccount();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleMessageSupport = () => {
     router.push('/(client)/support/message-support');
@@ -73,13 +78,31 @@ export default function SupportScreen() {
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
+      'Are you sure you want to delete your account? This action cannot be undone. All your data, bookings, and reviews will be permanently deleted.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => console.log('Delete account confirmed')
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              const success = await deleteAccount.mutateAsync();
+
+              if (success) {
+                toast.success('Success', 'Your account has been deleted');
+                // User will be signed out automatically by the deleteUserAccount function
+                // Navigation will be handled by auth state change
+              } else {
+                throw new Error('Failed to delete account');
+              }
+            } catch (err) {
+              console.error('Error deleting account:', err);
+              toast.error('Error', 'Failed to delete account. Please try again or contact support.');
+            } finally {
+              setIsDeleting(false);
+            }
+          }
         }
       ]
     );

@@ -41,6 +41,11 @@ export {
   useUploadAvatar,
   useDeleteAvatar,
   useInvalidateProfile,
+  useNotificationPreferences,
+  useUpdateNotificationPreferences,
+  usePrivacySettings,
+  useUpdatePrivacySettings,
+  useDeleteAccount,
   profileKeys,
 } from './hooks/useProfile';
 
