@@ -78,10 +78,12 @@ const SelectContext = React.createContext<SelectContextValue>({});
 
 export type SelectProps = ViewProps & {
   className?: string;
+  selectedValue?: string;
+  onValueChange?: (value: string) => void;
 };
 
 const Select = React.forwardRef<React.ElementRef<typeof View>, SelectProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, selectedValue, onValueChange, ...props }, ref) => {
     return (
       <View
         ref={ref}
@@ -101,11 +103,13 @@ export type SelectTriggerProps = PressableProps &
 
 const SelectTrigger = React.forwardRef<React.ElementRef<typeof Pressable>, SelectTriggerProps>(
   ({ className, size = 'md', variant = 'outline', children, ...props }, ref) => {
+    const safeSize = size || 'md';
+    const safeVariant = variant || 'outline';
     return (
-      <SelectContext.Provider value={{ size, variant }}>
+      <SelectContext.Provider value={{ size: safeSize, variant: safeVariant }}>
         <Pressable
           ref={ref}
-          className={cn(selectTriggerVariants({ size, variant }), className)}
+          className={cn(selectTriggerVariants({ size: safeSize, variant: safeVariant }), className)}
           {...props}
         >
           {children}
@@ -150,7 +154,7 @@ export type SelectIconProps = ViewProps &
   };
 
 const SelectIcon = React.forwardRef<React.ElementRef<typeof View>, SelectIconProps>(
-  ({ className, size, as: Component = View, ...props }, ref) => {
+  ({ className, size, as: Component = View, children, ...props }, ref) => {
     const context = React.useContext(SelectContext);
 
     return (
@@ -163,7 +167,9 @@ const SelectIcon = React.forwardRef<React.ElementRef<typeof View>, SelectIconPro
           className
         )}
         {...props}
-      />
+      >
+        {children}
+      </Component>
     );
   }
 );
@@ -174,7 +180,13 @@ const SelectBackdrop: React.FC<ViewProps> = (props) => <View {...props} />;
 const SelectContent: React.FC<ViewProps> = (props) => <View {...props} />;
 const SelectDragIndicator: React.FC<ViewProps> = (props) => <View {...props} />;
 const SelectDragIndicatorWrapper: React.FC<ViewProps> = (props) => <View {...props} />;
-const SelectItem: React.FC<PressableProps> = (props) => <Pressable {...props} />;
+
+export type SelectItemProps = PressableProps & {
+  label: string;
+  value: string;
+};
+
+const SelectItem: React.FC<SelectItemProps> = ({ label, value, ...props }) => <Pressable {...props}><Text>{label}</Text></Pressable>;
 const SelectScrollView: React.FC<ViewProps> = (props) => <View {...props} />;
 const SelectVirtualizedList: React.FC<ViewProps> = (props) => <View {...props} />;
 const SelectFlatList: React.FC<ViewProps> = (props) => <View {...props} />;

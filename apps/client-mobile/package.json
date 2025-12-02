@@ -8,6 +8,7 @@
     "reset-project": "node ./scripts/reset-project.js",
     "android": "DARK_MODE=media expo start --android",
     "ios": "DARK_MODE=media expo start --ios",
+    "ios:dev": "expo run:ios",
     "web": "DARK_MODE=media expo start --web",
     "lint": "expo lint"
   },

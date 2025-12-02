@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { ChevronDown, X, Eye, EyeOff } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { type SignUpData, signUpWithPhone } from '@shared/supabase/auth';
@@ -302,19 +302,20 @@ export default function SignUpForm({
       </Text>
 
       {/* Signup Button */}
-      <Button 
-        className="rounded-full shadow-sm mb-6"
-        style={{ 
+      <Button
+        className="rounded-full shadow-sm mb-6 flex-row items-center justify-center gap-2"
+        style={{
           backgroundColor: isValid ? '#C1856A' : '#E5E7EB',
         }}
         onPress={handleSubmit(handleSignUp)}
         isDisabled={!isValid || isLoading}
       >
-        <ButtonText 
+        {isLoading && <ButtonSpinner color={isValid ? 'white' : '#B7B7B7'} />}
+        <ButtonText
           className="text-[18px] font-worksans-bold"
           style={{ color: isValid ? 'white' : '#B7B7B7' }}
         >
-          Signup
+          {isLoading ? 'Signing up...' : 'Signup'}
         </ButtonText>
       </Button>
 

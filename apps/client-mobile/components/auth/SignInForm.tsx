@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { router } from 'expo-router';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
@@ -110,18 +110,19 @@ export default function SignInForm({
 
       {/* Login Button */}
       <Button
-        className="rounded-full shadow-sm my-6"
+        className="rounded-full shadow-sm my-6 flex-row items-center justify-center gap-2"
         style={{
           backgroundColor: isValid ? '#C1856A' : '#E5E7EB',
         }}
         onPress={handleSubmit(onSubmit)}
         isDisabled={!isValid || isLoading}
       >
+        {isLoading && <ButtonSpinner color={isValid ? 'white' : '#B7B7B7'} />}
         <ButtonText
           className="text-[18px] font-worksans-bold"
           style={{ color: isValid ? 'white' : '#B7B7B7' }}
         >
-          Log in
+          {isLoading ? 'Logging in...' : 'Log in'}
         </ButtonText>
       </Button>
 

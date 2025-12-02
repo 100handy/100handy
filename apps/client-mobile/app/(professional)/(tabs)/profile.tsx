@@ -138,7 +138,7 @@ export default function ProfessionalProfileScreen() {
     {
       icon: <Shield color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Account security',
-      onPress: () => console.log('Account security'),
+      onPress: () => router.push('/(professional)/profile/account-security'),
     },
     {
       icon: <Info color="#B8926A" size={24} strokeWidth={1.5} />,

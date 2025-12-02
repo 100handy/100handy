@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { Mail } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@shared/supabase/supabaseClient';
@@ -54,7 +54,7 @@ export default function VerifyEmail() {
         <Text className="text-base font-worksans text-center text-typography-600 mb-2 leading-6">
           We've sent a verification link to
         </Text>
-        
+
         <Text className="text-base font-worksans-semibold text-center mb-8" style={{ color: '#30352D' }}>
           {email || 'your email'}
         </Text>
@@ -65,11 +65,12 @@ export default function VerifyEmail() {
 
         {/* Resend Button */}
         <Button
-          className="w-full max-w-sm rounded-full mb-4"
+          className="w-full max-w-sm rounded-full mb-4 flex-row items-center justify-center gap-2"
           style={{ backgroundColor: '#A3B899' }}
           onPress={handleResendEmail}
           isDisabled={isResending}
         >
+          {isResending && <ButtonSpinner color="white" />}
           <ButtonText className="text-white text-base font-worksans-bold">
             {isResending ? 'Sending...' : 'Resend email'}
           </ButtonText>

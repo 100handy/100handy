@@ -7,7 +7,7 @@ import { EyeIcon, EyeOffIcon, CheckIcon, ChevronDownIcon } from 'lucide-react-na
 import { signUp } from '@shared/supabase/auth';
 import { useAuthStore } from '@shared/supabase';
 import { useRouter } from 'expo-router';
-import { Loader } from '@/components/ui/loader';
+
 import { useToast } from '@/components/ui/toast';
 
 export default function Signup() {
@@ -75,9 +75,7 @@ export default function Signup() {
     }
   };
 
-  if (isLoading) {
-    return <Loader text="Creating account..." />;
-  }
+
 
   return (
     <ScrollView>
@@ -150,7 +148,6 @@ export default function Signup() {
                         <SelectInput
                           placeholder="+44"
                           className="text-base text-typography-700 font-worksans flex-1"
-                          editable={false}
                         />
                         <SelectIcon className="ml-2">
                           <ChevronDownIcon size={20} className="text-typography-700" />
@@ -277,8 +274,8 @@ export default function Signup() {
               <View className="items-center mt-8">
                 <Text className="text-sm text-typography-500 font-worksans">
                   Already have an account?
-                  <Text 
-                    className="text-clayOrange font-worksans-medium" 
+                  <Text
+                    className="text-clayOrange font-worksans-medium"
                     onPress={() => router.push('/(auth)/role-selection')}
                   > Log in</Text>
                 </Text>

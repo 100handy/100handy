@@ -19,9 +19,14 @@ export default function ProfessionalSignIn() {
     setIsLoading(true);
     try {
       await signIn(data.email, data.password);
-      // Update auth state and then navigate to root so index.tsx can handle routing
-      await checkAuth();
-      router.replace('/');
+      // Update auth state
+      const isAuthenticated = await checkAuth();
+      if (isAuthenticated) {
+        // Navigate to index - let it determine the correct route based on onboarding status
+        router.replace('/');
+      } else {
+        throw new Error('Authentication check failed');
+      }
     } catch (error) {
       console.error('Sign in error:', error);
       toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');

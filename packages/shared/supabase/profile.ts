@@ -185,6 +185,87 @@ export async function deleteUserAvatar(): Promise<boolean> {
   }
 }
 
+// ============= BUSINESS PHOTO FUNCTIONS =============
+
+export interface BusinessPhoto {
+  id: string;
+  user_id: string;
+  user_skill_id: string;
+  photo_url: string;
+  created_at: string;
+}
+
+/**
+ * Upload a business photo for a specific skill
+ */
+export async function uploadBusinessPhoto(userSkillId: string, imageUri: string): Promise<string | null> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return null;
+    }
+
+    // Convert image URI to blob for upload
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+
+    const fileExt = imageUri.split('.').pop();
+    const fileName = `${user.id}-${userSkillId}-${Date.now()}.${fileExt}`;
+    const filePath = `business-photos/${fileName}`;
+
+    // Upload image to Supabase storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('business-photos')
+      .upload(filePath, blob);
+
+    if (uploadError) {
+      console.error('Error uploading business photo:', uploadError);
+      return null;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('business-photos')
+      .getPublicUrl(filePath);
+
+    // Save photo reference in database (if you have a business_photos table)
+    // For now, we'll just return the URL. You may want to save this to a table later.
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error in uploadBusinessPhoto:', error);
+    return null;
+  }
+}
+
+/**
+ * Delete a business photo
+ */
+export async function deleteBusinessPhoto(photoUrl: string): Promise<boolean> {
+  try {
+    // Extract file path from URL
+    const url = new URL(photoUrl);
+    const filePath = url.pathname.split('/').slice(-2).join('/'); // Get 'business-photos/filename'
+
+    // Delete from storage
+    const { error: deleteError } = await supabase.storage
+      .from('business-photos')
+      .remove([filePath]);
+
+    if (deleteError) {
+      console.error('Error deleting business photo from storage:', deleteError);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteBusinessPhoto:', error);
+    return false;
+  }
+}
+
 // ============= PROFESSIONAL/HANDY PROFILE FUNCTIONS =============
 
 export interface HandyProfile {

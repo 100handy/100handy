@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, Pressable as RNPressable, View, Text, Pressable } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { ScrollView, Pressable as RNPressable, View, Text, Pressable, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -7,11 +7,8 @@ import {
   Modal,
   ModalBackdrop,
   ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
 } from '@/components/ui/modal';
-import { Plus, X, ChevronLeft, Trash2, Calendar } from 'lucide-react-native';
+import { Plus, ChevronLeft, Trash2 } from 'lucide-react-native';
 import { TimePickerWheel } from '@/components/availability';
 
 interface TimeSlot {
@@ -33,10 +30,23 @@ const DAYS_OF_WEEK = [
   { short: 'Fri', date: '26' },
 ];
 
-const TIME_SLOTS = Array.from({ length: 11 }, (_, i) => i + 8); // 8 to 18
-
 const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
 const MINUTES = ['00', '15', '30', '45'];
+
+const HOUR_HEIGHT = 60;
+const START_HOUR = 0; // 12 AM
+const END_HOUR = 24; // 12 AM next day
+
+// Helper to convert time string "HH:MM" to minutes from start of day
+const timeToMinutes = (time: string) => {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+};
+
+// Helper to check if two time ranges overlap
+const isOverlapping = (start1: number, end1: number, start2: number, end2: number) => {
+  return Math.max(start1, start2) < Math.min(end1, end2);
+};
 
 export default function SetAvailability() {
   const [selectedDay, setSelectedDay] = useState(0);
@@ -47,16 +57,69 @@ export default function SetAvailability() {
   const [endMinute, setEndMinute] = useState('45');
   const [availability, setAvailability] = useState<DayAvailability>({});
 
-  const addTimeSlot = () => {
-    const newSlot: TimeSlot = {
-      id: Date.now().toString(),
-      startTime: `${startHour}:${startMinute}`,
-      endTime: `${endHour}:${endMinute}`,
-    };
+  const currentDaySlots = availability[selectedDay] || [];
+
+  // Calculate current selection in minutes
+  const selectionStart = parseInt(startHour) * 60 + parseInt(startMinute);
+  const selectionEnd = parseInt(endHour) * 60 + parseInt(endMinute);
+
+  // Check for overlaps
+  const overlappingSlots = useMemo(() => {
+    if (!showAddModal) return [];
+    return currentDaySlots.filter(slot => {
+      const slotStart = timeToMinutes(slot.startTime);
+      const slotEnd = timeToMinutes(slot.endTime);
+      return isOverlapping(selectionStart, selectionEnd, slotStart, slotEnd);
+    });
+  }, [showAddModal, currentDaySlots, selectionStart, selectionEnd]);
+
+  const isMerge = overlappingSlots.length > 0;
+
+  const handleSave = () => {
+    if (selectionEnd <= selectionStart) {
+      // Simple validation
+      return;
+    }
+
+    let newSlots = [...currentDaySlots];
+
+    if (isMerge) {
+      // Merge logic: Find min start and max end of all overlapping slots + new slot
+      let minStart = selectionStart;
+      let maxEnd = selectionEnd;
+
+      overlappingSlots.forEach(slot => {
+        minStart = Math.min(minStart, timeToMinutes(slot.startTime));
+        maxEnd = Math.max(maxEnd, timeToMinutes(slot.endTime));
+      });
+
+      // Remove overlapping slots
+      newSlots = newSlots.filter(slot => !overlappingSlots.includes(slot));
+
+      // Add merged slot
+      const formatTime = (mins: number) => {
+        const h = Math.floor(mins / 60).toString().padStart(2, '0');
+        const m = (mins % 60).toString().padStart(2, '0');
+        return `${h}:${m}`;
+      };
+
+      newSlots.push({
+        id: Date.now().toString(),
+        startTime: formatTime(minStart),
+        endTime: formatTime(maxEnd),
+      });
+    } else {
+      // Add new slot
+      newSlots.push({
+        id: Date.now().toString(),
+        startTime: `${startHour}:${startMinute}`,
+        endTime: `${endHour}:${endMinute}`,
+      });
+    }
 
     setAvailability((prev) => ({
       ...prev,
-      [selectedDay]: [...(prev[selectedDay] || []), newSlot],
+      [selectedDay]: newSlots,
     }));
 
     setShowAddModal(false);
@@ -69,12 +132,18 @@ export default function SetAvailability() {
     }));
   };
 
-  const currentDaySlots = availability[selectedDay] || [];
+  const handleOpenModal = () => {
+    setStartHour('09');
+    setStartMinute('00');
+    setEndHour('17');
+    setEndMinute('00');
+    setShowAddModal(true);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
+      <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0] bg-white z-10">
         <Pressable onPress={() => router.push('/(professional)/(tabs)/dashboard')}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
@@ -84,84 +153,133 @@ export default function SetAvailability() {
         <View className="w-7" />
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Days Selector */}
-        <View className="flex-row px-5 py-4 gap-2">
-          {DAYS_OF_WEEK.map((day, index) => (
-            <Pressable
-              key={day.short}
-              onPress={() => setSelectedDay(index)}
-              className={`flex-1 items-center py-3 rounded-lg ${
-                selectedDay === index ? 'bg-[#4A5347]' : 'bg-transparent'
+      {/* Days Selector */}
+      <View className="flex-row px-5 py-4 gap-2 bg-white z-10">
+        {DAYS_OF_WEEK.map((day, index) => (
+          <Pressable
+            key={day.short}
+            onPress={() => setSelectedDay(index)}
+            className={`flex-1 items-center py-3 rounded-lg ${selectedDay === index ? 'bg-[#047857]' : 'bg-transparent'
               }`}
+          >
+            <Text
+              className={`font-worksans text-[11px] mb-1 ${selectedDay === index ? 'text-white' : 'text-[#6B6B6B]'
+                }`}
             >
-              <Text
-                className={`font-worksans text-[11px] mb-1 ${
-                  selectedDay === index ? 'text-white' : 'text-[#6B6B6B]'
+              {day.short}
+            </Text>
+            <Text
+              className={`font-worksans-semibold text-[14px] ${selectedDay === index ? 'text-white' : 'text-[#30352D]'
                 }`}
-              >
-                {day.short}
-              </Text>
-              <Text
-                className={`font-worksans-semibold text-[14px] ${
-                  selectedDay === index ? 'text-white' : 'text-[#30352D]'
-                }`}
-              >
-                {day.date}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+            >
+              {day.date}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
-        {/* Time Slots Display */}
-        <View className="flex-col px-5 py-4">
-          {currentDaySlots.length > 0 ? (
-            <>
-              <Text className="font-worksans-bold text-[14px] text-[#30352D] mb-3">
-                Available Time Slots
-              </Text>
-              {currentDaySlots.map((slot) => (
-                <View className="flex-row"
+      {/* Timeline View */}
+      <ScrollView className="flex-1 bg-white" contentContainerStyle={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT + 50 }}>
+        <View className="flex-row flex-1">
+          {/* Time Labels */}
+          <View className="w-16 border-r border-gray-100 bg-white">
+            {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => {
+              const hour = i + START_HOUR;
+              const displayHour = hour === 0 || hour === 24 ? '12 AM' : hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+              return (
+                <View key={i} style={{ height: HOUR_HEIGHT, justifyContent: 'flex-start' }} className="items-end pr-2 pt-2">
+                  <Text className="text-xs text-gray-400 font-worksans">{displayHour}</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Grid and Slots */}
+          <View className="flex-1 relative">
+            {/* Horizontal Grid Lines */}
+            {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  position: 'absolute',
+                  top: i * HOUR_HEIGHT,
+                  left: 0,
+                  right: 0,
+                  height: 1,
+                  backgroundColor: '#F3F4F6',
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderColor: '#E5E7EB'
+                }}
+              />
+            ))}
+
+            {/* Existing Slots */}
+            {currentDaySlots.map((slot) => {
+              const startMins = timeToMinutes(slot.startTime);
+              const endMins = timeToMinutes(slot.endTime);
+              const top = (startMins / 60) * HOUR_HEIGHT;
+              const height = ((endMins - startMins) / 60) * HOUR_HEIGHT;
+
+              return (
+                <View
                   key={slot.id}
-                  className="items-center justify-between py-4 px-4 mb-3 bg-[#F5F5F5] rounded-lg"
+                  style={{
+                    position: 'absolute',
+                    top,
+                    height,
+                    left: 10,
+                    right: 10,
+                  }}
+                  className="bg-[#5FA08E] rounded-lg p-2 overflow-hidden shadow-sm"
                 >
-                  <View className="flex-row items-center gap-2">
-                    <View className="w-1 h-12 bg-[#4A5347] rounded-full" />
-                    <View className="flex-col">
-                      <Text className="font-worksans-semibold text-[16px] text-[#30352D]">
+                  <View className="flex-row justify-between items-start">
+                    <View>
+                      <Text className="text-white font-worksans-bold text-sm">Available</Text>
+                      <Text className="text-white font-worksans text-xs opacity-90">
                         {slot.startTime} - {slot.endTime}
                       </Text>
-                      <Text className="font-worksans text-[12px] text-[#6B6B6B]">
-                        {DAYS_OF_WEEK[selectedDay].short}, {DAYS_OF_WEEK[selectedDay].date}
-                      </Text>
                     </View>
+                    <Pressable
+                      onPress={() => removeTimeSlot(slot.id)}
+                      className="bg-white/20 rounded-full p-1"
+                    >
+                      <Trash2 size={14} color="white" />
+                    </Pressable>
                   </View>
-                  <Pressable onPress={() => removeTimeSlot(slot.id)} className="p-2">
-                    <Trash2 color="#D17852" size={20} strokeWidth={2} />
-                  </Pressable>
                 </View>
-              ))}
-            </>
-          ) : (
-            <View className="flex-col items-center justify-center py-16">
-              <View className="w-16 h-16 items-center justify-center bg-[#F5F5F5] rounded-full mb-4">
-                <Calendar color="#6B6B6B" size={32} strokeWidth={1.5} />
+              );
+            })}
+
+            {/* Preview Slot (when modal is open) */}
+            {showAddModal && selectionEnd > selectionStart && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: (selectionStart / 60) * HOUR_HEIGHT,
+                  height: ((selectionEnd - selectionStart) / 60) * HOUR_HEIGHT,
+                  left: 10,
+                  right: 10,
+                  borderStyle: 'dashed',
+                  borderWidth: 2,
+                  borderColor: '#047857',
+                  backgroundColor: 'rgba(4, 120, 87, 0.1)',
+                }}
+                className="rounded-lg justify-center items-center"
+              >
+                <Text className="text-[#047857] font-worksans-bold">
+                  {isMerge ? 'Merging...' : 'New Slot'}
+                </Text>
               </View>
-              <Text className="font-worksans-semibold text-[16px] text-[#30352D] mb-2">
-                No availability set
-              </Text>
-              <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center">
-                Tap the + button to add your{'\n'}available time slots
-              </Text>
-            </View>
-          )}
+            )}
+          </View>
         </View>
       </ScrollView>
 
       {/* Floating Add Button */}
       <Pressable
-        onPress={() => setShowAddModal(true)}
-        className="absolute bottom-24 right-6 w-[56px] h-[56px] bg-[#4A5347] rounded-2xl items-center justify-center shadow-lg"
+        onPress={handleOpenModal}
+        className="absolute bottom-8 right-6 w-[56px] h-[56px] bg-[#047857] rounded-full items-center justify-center shadow-lg"
       >
         <Plus color="white" size={28} strokeWidth={2} />
       </Pressable>
@@ -232,11 +350,11 @@ export default function SetAvailability() {
             {/* Buttons */}
             <View className="flex-col gap-4">
               <Button
-                onPress={addTimeSlot}
-                className="bg-[#D17852] rounded-full"
+                onPress={handleSave}
+                className={`rounded-full ${isMerge ? 'bg-[#047857]' : 'bg-[#D17852]'}`}
               >
                 <ButtonText className="font-worksans-semibold text-white text-[16px]">
-                  Add Availability
+                  {isMerge ? 'Merge availability' : 'Add Availability'}
                 </ButtonText>
               </Button>
 

@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Linking, ActivityIndicator, View, Text, Pressable } from 'react-native';
+import { ScrollView, Linking, ActivityIndicator, View, Text, Pressable, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import { getUserSkills, UserSkill } from '@shared/supabase/profile';
+import { ChevronLeft, X, Camera } from 'lucide-react-native';
+import { getUserSkills, UserSkill, uploadBusinessPhoto, deleteBusinessPhoto } from '@shared/supabase/profile';
+import * as ImagePicker from 'expo-image-picker';
+import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
 
 export default function BusinessPhotosScreen() {
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedPhotos, setUploadedPhotos] = useState<Record<string, string[]>>({});
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   useEffect(() => {
     loadSkills();
@@ -18,6 +24,99 @@ export default function BusinessPhotosScreen() {
     const userSkills = await getUserSkills();
     setSkills(userSkills);
     setIsLoading(false);
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to upload photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0] && selectedSkillId) {
+      await handleUploadPhoto(selectedSkillId, result.assets[0].uri);
+    }
+    setShowPhotoModal(false);
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera permissions to take photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0] && selectedSkillId) {
+      await handleUploadPhoto(selectedSkillId, result.assets[0].uri);
+    }
+    setShowPhotoModal(false);
+  };
+
+  const handleUploadPhoto = async (userSkillId: string, imageUri: string) => {
+    setIsUploading(true);
+    try {
+      const photoUrl = await uploadBusinessPhoto(userSkillId, imageUri);
+
+      if (photoUrl) {
+        // Add the photo URL to the uploaded photos for this skill
+        setUploadedPhotos(prev => ({
+          ...prev,
+          [userSkillId]: [...(prev[userSkillId] || []), photoUrl]
+        }));
+        Alert.alert('Success', 'Photo uploaded successfully!');
+      } else {
+        Alert.alert('Error', 'Failed to upload photo. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      Alert.alert('Error', 'Failed to upload photo. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeletePhoto = (userSkillId: string, photoUrl: string) => {
+    Alert.alert(
+      'Delete Photo',
+      'Are you sure you want to delete this photo?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const success = await deleteBusinessPhoto(photoUrl);
+            if (success) {
+              setUploadedPhotos(prev => ({
+                ...prev,
+                [userSkillId]: (prev[userSkillId] || []).filter(url => url !== photoUrl)
+              }));
+              Alert.alert('Success', 'Photo deleted successfully!');
+            } else {
+              Alert.alert('Error', 'Failed to delete photo. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const openPhotoModal = (skillId: string) => {
+    setSelectedSkillId(skillId);
+    setShowPhotoModal(true);
   };
 
   const handleGoToSkillsRates = () => {
@@ -127,7 +226,7 @@ export default function BusinessPhotosScreen() {
 
               {/* Skills List with Photo Upload */}
               {skills.map(userSkill => (
-                <View key={userSkill.id} className="flex-col gap-2">
+                <View key={userSkill.id} className="flex-col gap-3">
                   {/* Skill Name */}
                   <Text
                     className="text-base font-semibold text-[#333A31]"
@@ -136,20 +235,54 @@ export default function BusinessPhotosScreen() {
                     {userSkill.skill?.name}
                   </Text>
 
-                  {/* Photo Upload Placeholder */}
+                  {/* Uploaded Photos Grid */}
+                  {uploadedPhotos[userSkill.id]?.length > 0 && (
+                    <View className="flex-row flex-wrap gap-2">
+                      {uploadedPhotos[userSkill.id].map((photoUrl, index) => (
+                        <View key={index} className="relative">
+                          <Image
+                            source={{ uri: photoUrl }}
+                            className="w-24 h-24 rounded-lg"
+                            style={{ width: 96, height: 96 }}
+                          />
+                          <Pressable
+                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full items-center justify-center"
+                            onPress={() => handleDeletePhoto(userSkill.id, photoUrl)}
+                          >
+                            <X size={14} color="white" strokeWidth={3} />
+                          </Pressable>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Photo Upload Button */}
                   <Pressable
                     className="border-2 border-dashed border-[#D17852] rounded-lg p-8 items-center justify-center bg-[#FFF8F5]"
-                    onPress={() => {
-                      // TODO: Implement photo picker
-                      console.log('Upload photo for', userSkill.skill?.name);
-                    }}
+                    onPress={() => openPhotoModal(userSkill.id)}
+                    disabled={isUploading}
                   >
-                    <Text
-                      className="text-sm font-medium text-[#D17852]"
-                      style={{ fontFamily: 'WorkSans_500Medium' }}
-                    >
-                      + Add Photos
-                    </Text>
+                    {isUploading && selectedSkillId === userSkill.id ? (
+                      <View className="flex-row items-center gap-2">
+                        <ActivityIndicator size="small" color="#D17852" />
+                        <Text
+                          className="text-sm font-medium text-[#D17852]"
+                          style={{ fontFamily: 'WorkSans_500Medium' }}
+                        >
+                          Uploading...
+                        </Text>
+                      </View>
+                    ) : (
+                      <View className="flex-row items-center gap-2">
+                        <Camera size={18} color="#D17852" />
+                        <Text
+                          className="text-sm font-medium text-[#D17852]"
+                          style={{ fontFamily: 'WorkSans_500Medium' }}
+                        >
+                          + Add Photos
+                        </Text>
+                      </View>
+                    )}
                   </Pressable>
                 </View>
               ))}
@@ -183,6 +316,14 @@ export default function BusinessPhotosScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Add Photo Modal */}
+      <AddProfilePhotoModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onTakePhoto={takePhoto}
+        onChooseFromLibrary={pickImage}
+      />
     </SafeAreaView>
   );
 }

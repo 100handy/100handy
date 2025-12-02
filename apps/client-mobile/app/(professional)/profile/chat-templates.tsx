@@ -13,16 +13,15 @@ export default function ChatTemplatesScreen() {
   const router = useRouter();
 
   const handleNewTemplate = () => {
-    console.log('Create new chat template');
-    // Navigate to new template creation screen when implemented
+    router.push('/(professional)/profile/new-chat-template');
   };
 
   const templates: TemplateItem[] = [
-    { 
+    {
       title: 'Closing messages',
       onPress: () => router.push('/profile/closing-message?type=default')
     },
-    { 
+    {
       title: 'Ongoing closing message',
       onPress: () => router.push('/profile/closing-message?type=ongoing')
     },
@@ -70,7 +69,7 @@ export default function ChatTemplatesScreen() {
 
       {/* Fixed Bottom Button */}
       <View className="px-5 pb-6 pt-4 bg-white">
-        <Pressable 
+        <Pressable
           className="bg-clay-orange rounded-full py-4 items-center"
           onPress={handleNewTemplate}
         >
