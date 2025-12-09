@@ -11,9 +11,12 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yourco.handy",
-      "associatedDomains": ["applinks:auth.yourdomain.com"],
+      "associatedDomains": [
+        "applinks:auth.yourdomain.com"
+      ],
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need your location to help you set your work area and find nearby jobs."
+        "NSLocationWhenInUseUsageDescription": "We need your location to help you set your work area and find nearby jobs.",
+        "NSCameraUsageDescription": "This app uses the camera to take a picture of your identity documents."
       }
     },
     "android": {
@@ -25,7 +28,8 @@
       "package": "com.yourco.handy",
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
       ],
       "config": {
         "googleMaps": {
@@ -40,7 +44,10 @@
               "scheme": "handy"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -65,7 +72,15 @@
         {
           "locationAlwaysAndWhenInUsePermission": "We need your location to help you set your work area and find nearby jobs."
         }
-      ]
+      ],
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.yourco.handy",
+          "enableGooglePay": true
+        }
+      ],
+      "@stripe/stripe-identity-react-native"
     ],
     "experiments": {
       "typedRoutes": true

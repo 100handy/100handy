@@ -23,6 +23,7 @@ export interface UserProfile {
   emailVerified: boolean;
   // Note: Notification preferences are stored in the notification_settings table
   // Use getNotificationPreferences() to fetch them
+  identity_verified?: boolean;
 }
 
 export interface UpdateProfileData {
@@ -39,7 +40,7 @@ export interface UpdateProfileData {
 export async function getUserProfile(): Promise<UserProfile | null> {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       console.error('Error getting authenticated user:', authError);
       return null;
@@ -61,7 +62,8 @@ export async function getUserProfile(): Promise<UserProfile | null> {
     return {
       ...data,
       email: user.email || '',
-      emailVerified: user.email_confirmed_at ? true : false
+      emailVerified: user.email_confirmed_at ? true : false,
+      identity_verified: data.identity_verified ?? false,
     };
   } catch (error) {
     console.error('Error in getUserProfile:', error);
@@ -75,7 +77,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
 export async function updateUserProfile(updates: UpdateProfileData): Promise<UserProfile | null> {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       console.error('Error getting authenticated user:', authError);
       return null;
@@ -112,7 +114,7 @@ export async function updateUserProfile(updates: UpdateProfileData): Promise<Use
 export async function updateUserAvatar(imageUri: string): Promise<string | null> {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       console.error('Error getting authenticated user:', authError);
       return null;
@@ -121,7 +123,7 @@ export async function updateUserAvatar(imageUri: string): Promise<string | null>
     // Convert image URI to blob for upload
     const response = await fetch(imageUri);
     const blob = await response.blob();
-    
+
     const fileExt = imageUri.split('.').pop();
     const fileName = `${user.id}-${Date.now()}.${fileExt}`;
     const filePath = `avatars/${fileName}`;

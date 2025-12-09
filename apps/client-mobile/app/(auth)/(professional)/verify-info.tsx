@@ -12,25 +12,49 @@ import { LocationAutocomplete, fetchPlaceDetails } from '@/components/location';
 
 /**
  * Convert date from dd/mm/yyyy format to YYYY-MM-DD format for PostgreSQL
+ * Also validates the date components to prevent invalid dates
  */
 function convertDateFormat(dateStr: string): string {
   if (!dateStr) return '';
-  
+
   // Check if date is already in YYYY-MM-DD format
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr;
   }
-  
+
   // Parse dd/mm/yyyy format
   const parts = dateStr.split('/');
   if (parts.length === 3) {
     const [day, month, year] = parts;
+
+    // Parse as integers for validation
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+
+    // Validate date components
+    if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) {
+      throw new Error('Invalid date. Please enter in dd/mm/yyyy format.');
+    }
+
+    if (monthNum < 1 || monthNum > 12) {
+      throw new Error('Invalid month. Please enter a valid date in dd/mm/yyyy format.');
+    }
+
+    if (dayNum < 1 || dayNum > 31) {
+      throw new Error('Invalid day. Please enter a valid date in dd/mm/yyyy format.');
+    }
+
+    if (yearNum < 1900 || yearNum > 2100) {
+      throw new Error('Invalid year. Please enter a valid date in dd/mm/yyyy format.');
+    }
+
     // Validate and convert to YYYY-MM-DD
     if (day && month && year) {
       return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     }
   }
-  
+
   // Return original if format is unrecognized
   return dateStr;
 }
@@ -124,7 +148,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
 
           {/* Warning Text */}
           <Text className="text-[15px] font-worksans-medium text-center leading-[18px] mb-5" style={{ color: '#30352D' }}>
-            Once you confirm, you will be taken to a Secure identity check. This will only take a few minutes.
+            Once you confirm, you'll complete a secure identity check using your government-issued ID and a selfie. This only takes a few minutes.
           </Text>
 
           {/* Buttons */}
@@ -467,10 +491,18 @@ export default function VerifyInformation() {
               </View>
 
               {/* Security Notice */}
-              <View className="flex-row items-start mb-7 px-1">
+              <View className="flex-row items-start mb-4 px-1">
                 <Lock size={14} color="#C1856A" style={{ marginTop: 3, marginRight: 6 }} />
                 <Text className="flex-1 text-[15px] font-worksans-medium leading-[20px]" style={{ color: '#C1856A' }}>
                   Your personal information is securely stored and kept confidential.
+                </Text>
+              </View>
+
+              {/* Next Step Notice */}
+              <View className="flex-row items-start mb-7 px-1 p-3 rounded-lg" style={{ backgroundColor: '#FFF7ED' }}>
+                <FileText size={14} color="#92400E" style={{ marginTop: 3, marginRight: 6 }} />
+                <Text className="flex-1 text-[14px] font-worksans-medium leading-[18px]" style={{ color: '#92400E' }}>
+                  Next step: You'll complete a quick identity verification with a government ID and selfie. Have these ready!
                 </Text>
               </View>
 

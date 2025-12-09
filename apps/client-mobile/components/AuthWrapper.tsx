@@ -22,6 +22,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   const router = useRouter();
   const segments = useSegments();
   const [professionalOnboardingComplete, setProfessionalOnboardingComplete] = useState<boolean | null>(null);
+  const [isIdentityVerified, setIsIdentityVerified] = useState<boolean | null>(null);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
 
   useEffect(() => {
@@ -54,6 +55,46 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     };
 
     checkProfessionalOnboarding();
+
+  }, [isAuthenticated, userRole, isLoading]);
+
+  // Check identity verification status (professionals only)
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkIdentityVerification = async () => {
+      if (isAuthenticated && !isLoading) {
+        if (userRole === 'handy') {
+          // For professionals: check handy_profiles.verification_status
+          try {
+            const handyProfile = await getHandyProfile();
+            if (isMounted) {
+              const isVerified = handyProfile?.verification_status === 'verified';
+              setIsIdentityVerified(isVerified);
+            }
+          } catch (error) {
+            console.error('Error checking identity verification:', error);
+            if (isMounted) {
+              // Assume verified on error to avoid blocking legitimate users on transient failures
+              setIsIdentityVerified(true);
+            }
+          }
+        } else {
+          // For customers: skip identity verification check (removed from client flow)
+          if (isMounted) {
+            setIsIdentityVerified(true);
+          }
+        }
+      } else if (!isAuthenticated && isMounted) {
+        setIsIdentityVerified(null);
+      }
+    };
+
+    checkIdentityVerification();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthenticated, userRole, isLoading]);
 
   useEffect(() => {
@@ -90,8 +131,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       }
 
       // Verification complete - check onboarding status
-      if (isVerified) {
-        const isClient = userRole === 'customer';
+      if (isVerified && (isIdentityVerified === true || isIdentityVerified === null)) {
         const isProfessional = userRole === 'handy';
 
         // If on auth screens or index, redirect to appropriate home
@@ -126,19 +166,19 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       const isOnBookingFlow = segmentStrings.includes('book') || segmentStrings.includes('confirm-booking');
       const isOnPostTask = segmentStrings.includes('post-task') || segmentStrings.includes('task-form');
       const isOnAccount = segmentStrings.includes('account') || segmentStrings.includes('settings');
-      
-      const isProtectedRoute =  isOnBookings || isOnMessages || isOnBookingFlow || isOnPostTask || isOnAccount;
-      
+
+      const isProtectedRoute = isOnProfile || isOnBookings || isOnMessages || isOnBookingFlow || isOnPostTask || isOnAccount;
+
       // Only redirect if trying to access protected routes that require authentication
       const tryingToAccessProtectedRoute = (inTabsGroup || inClientGroup || inProfessionalGroup) && !inAuthGroup && isProtectedRoute;
-      
+
       if (tryingToAccessProtectedRoute) {
         router.replace('/(auth)/role-selection');
       }
     }
-  }, [isAuthenticated, isEmailVerified, hasCompletedOnboarding, professionalOnboardingComplete, userRole, user, isLoading, isCheckingOnboarding, segments, router]);
+  }, [isAuthenticated, isEmailVerified, hasCompletedOnboarding, professionalOnboardingComplete, isIdentityVerified, userRole, user, isLoading, isCheckingOnboarding, segments, router]);
 
-  if (isLoading || (isAuthenticated && userRole === 'handy' && isCheckingOnboarding)) {
+  if (isLoading || (isAuthenticated && userRole === 'handy' && isCheckingOnboarding) || (isAuthenticated && isIdentityVerified === null)) {
     return <Loader />;
   }
 

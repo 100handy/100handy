@@ -1,113 +1,78 @@
-import React, { useState } from 'react';
-import { ScrollView, Image, View, Text, Pressable } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { ScrollView, View, Text, Pressable, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
-import { ChevronLeft, Camera, Upload } from 'lucide-react-native';
+import { ChevronLeft, ShieldCheck, Camera, FileText } from 'lucide-react-native';
 import { router } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
-import { uploadVerificationDocument, completeOnboarding } from '@shared/supabase/profile';
+import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
+import { supabase } from '@shared/supabase';
+import { completeOnboarding } from '@shared/supabase/profile';
 import { useToast } from '@/components/ui/toast';
 
-type DocumentType = 'driver_license' | 'passport' | 'national_id' | 'residency_permit';
-
-const DOCUMENT_TYPES = [
-  { value: 'driver_license', label: "Driver's License" },
-  { value: 'passport', label: 'Passport' },
-  { value: 'national_id', label: 'National ID' },
-  { value: 'residency_permit', label: 'Residency Permit' },
-] as const;
-
 export default function VerifyDocumentUpload() {
-  const [selectedDocumentType, setSelectedDocumentType] = useState<DocumentType>('driver_license');
-  const [imageUri, setImageUri] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
-  const handleTakePhoto = async (): Promise<void> => {
+  const fetchOptions = useCallback(async () => {
     try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
 
-      if (status !== 'granted') {
-        toast.error('Permission denied', 'Camera permission is required');
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
+      const { data, error } = await supabase.functions.invoke('create-verification-session', {
+        body: {
+          userId: user.id,
+          email: user.email,
+        },
       });
 
-      if (!result.canceled && result.assets[0]) {
-        setImageUri(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Error taking photo:', error);
-      toast.error('Error', 'Failed to take photo');
-    }
-  };
-
-  const handleChooseFromGallery = async (): Promise<void> => {
-    try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (status !== 'granted') {
-        toast.error('Permission denied', 'Photo library permission is required');
-        return;
+      if (error) {
+        throw error;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setImageUri(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Error choosing photo:', error);
-      toast.error('Error', 'Failed to choose photo');
+      return {
+        sessionId: data.id,
+        ephemeralKeySecret: data.ephemeral_key_secret,
+        brandLogo: Image.resolveAssetSource(require('@/assets/images/icon.png')),
+      };
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
+      throw e;
     }
-  };
+  }, []);
 
-  const handleSubmit = async (): Promise<void> => {
-    if (!imageUri) {
-      toast.error('Missing document', 'Please upload a photo of your ID');
-      return;
-    }
+  const { status, present, loading: stripeLoading } = useStripeIdentity(fetchOptions);
 
+  const handleVerifyWithStripe = useCallback(async () => {
     try {
       setIsLoading(true);
+      const result = await present();
 
-      // Upload document
-      const documentUrl = await uploadVerificationDocument(imageUri, selectedDocumentType);
-
-      if (documentUrl) {
+      if (result.status === 'FlowCompleted') {
         // Mark onboarding as completed
         await completeOnboarding();
 
-        toast.success('Success', 'Verification submitted successfully');
+        toast.success('Verification Submitted', 'Your identity verification has been submitted for review.');
 
         // Navigate to professional dashboard
         router.replace('/(professional)/(tabs)/dashboard');
-      } else {
-        toast.error('Upload failed', 'Please try again');
+      } else if (result.status === 'FlowCanceled') {
+        // User canceled - stay on page
+        setIsLoading(false);
+      } else if (result.status === 'FlowFailed') {
+        toast.error('Verification Failed', 'Please try again.');
+        setIsLoading(false);
       }
     } catch (error) {
-      console.error('Error submitting verification:', error);
-      toast.error('Error', 'Failed to submit verification');
-    } finally {
+      console.error('Error in verification:', error);
+      toast.error('Error', 'Failed to start verification');
       setIsLoading(false);
     }
-  };
+  }, [present, toast]);
 
   const handleSkipForNow = async (): Promise<void> => {
     try {
       setIsLoading(true);
-      // Mark onboarding as completed even without document
+      // Mark onboarding as completed even without verification
       await completeOnboarding();
       router.replace('/(professional)/(tabs)/dashboard');
     } catch (error) {
@@ -133,120 +98,89 @@ export default function VerifyDocumentUpload() {
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>
-                Upload ID Document
+                Verify Identity
               </Text>
               <View className="w-6" />
             </View>
 
             {/* Content */}
             <View className="flex-col flex-1 px-6">
+              {/* Illustration */}
+              <View className="items-center mb-6">
+                <View
+                  className="w-24 h-24 rounded-full items-center justify-center"
+                  style={{ backgroundColor: '#F6E4D8' }}
+                >
+                  <ShieldCheck size={48} color="#C1856A" />
+                </View>
+              </View>
+
               {/* Title */}
-              <Text className="text-[20px] font-worksans-bold mb-3" style={{ color: '#30352D' }}>
+              <Text className="text-center text-[22px] font-worksans-bold mb-3" style={{ color: '#30352D' }}>
                 Verify your identity
               </Text>
 
               {/* Subtitle */}
-              <Text className="text-[15px] font-worksans-medium leading-[20px] mb-6" style={{ color: '#30352D' }}>
-                Upload a photo of your government-issued ID to verify your identity
+              <Text className="text-center text-[15px] font-worksans-medium leading-[22px] mb-8" style={{ color: '#666' }}>
+                Complete a quick identity check to build trust with clients. This process is secure and powered by Stripe.
               </Text>
 
-              {/* Document Type Selection */}
-              <Text className="text-[15px] font-worksans-medium mb-3" style={{ color: '#30352D' }}>
-                Select document type
-              </Text>
+              {/* What you'll need */}
+              <View className="mb-8">
+                <Text className="text-[15px] font-worksans-bold mb-4" style={{ color: '#30352D' }}>
+                  What you'll need:
+                </Text>
 
-              <View className="flex-col mb-6">
-                {DOCUMENT_TYPES.map((type) => (
-                  <Pressable
-                    key={type.value}
-                    className="py-3 px-4 border-b border-gray-200"
-                    onPress={() => setSelectedDocumentType(type.value)}
-                  >
-                    <View className="flex-row items-center justify-between">
-                      <Text className="text-[15px] font-worksans" style={{ color: '#30352D' }}>
-                        {type.label}
-                      </Text>
-                      <View
-                        className="w-5 h-5 rounded-full border-2"
-                        style={{
-                          borderColor: selectedDocumentType === type.value ? '#C1856A' : '#D1D5DB',
-                          backgroundColor: selectedDocumentType === type.value ? '#C1856A' : 'transparent'
-                        }}
-                      >
-                        {selectedDocumentType === type.value && (
-                          <View className="w-2 h-2 rounded-full bg-white" style={{ margin: 4.5 }} />
-                        )}
-                      </View>
-                    </View>
-                  </Pressable>
-                ))}
+                <View className="flex-row items-center mb-3">
+                  <View className="w-10 h-10 rounded-full items-center justify-center mr-3" style={{ backgroundColor: '#F6E4D8' }}>
+                    <FileText size={20} color="#C1856A" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
+                      Government-issued photo ID
+                    </Text>
+                    <Text className="text-[13px] font-worksans" style={{ color: '#666' }}>
+                      Passport, driver's license, or national ID
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="flex-row items-center">
+                  <View className="w-10 h-10 rounded-full items-center justify-center mr-3" style={{ backgroundColor: '#F6E4D8' }}>
+                    <Camera size={20} color="#C1856A" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
+                      A selfie for face matching
+                    </Text>
+                    <Text className="text-[13px] font-worksans" style={{ color: '#666' }}>
+                      We'll compare your photo with your ID
+                    </Text>
+                  </View>
+                </View>
               </View>
 
-              {/* Image Preview */}
-              {imageUri && (
-                <View className="mb-6 rounded-xl overflow-hidden" style={{ backgroundColor: '#F5F5F5' }}>
-                  <Image
-                    source={{ uri: imageUri }}
-                    style={{ width: '100%', height: 200 }}
-                    resizeMode="contain"
-                  />
-                  <Pressable
-                    className="absolute top-2 right-2 bg-black/50 rounded-full p-2"
-                    onPress={() => setImageUri(null)}
-                  >
-                    <Text className="text-white text-xs font-worksans-bold">Remove</Text>
-                  </Pressable>
-                </View>
-              )}
-
-              {/* Upload Buttons */}
-              {!imageUri && (
-                <View className="flex-col mb-6 gap-3">
-                  <Button
-                    className="rounded-full border-2"
-                    style={{ borderColor: '#C1856A', backgroundColor: 'transparent' }}
-                    onPress={handleTakePhoto}
-                  >
-                    <View className="flex-row items-center gap-2">
-                      <Camera size={20} color="#C1856A" />
-                      <ButtonText className="text-[16px] font-worksans-bold" style={{ color: '#C1856A' }}>
-                        Take Photo
-                      </ButtonText>
-                    </View>
-                  </Button>
-
-                  <Button
-                    className="rounded-full border-2"
-                    style={{ borderColor: '#C1856A', backgroundColor: 'transparent' }}
-                    onPress={handleChooseFromGallery}
-                  >
-                    <View className="flex-row items-center gap-2">
-                      <Upload size={20} color="#C1856A" />
-                      <ButtonText className="text-[16px] font-worksans-bold" style={{ color: '#C1856A' }}>
-                        Choose from Gallery
-                      </ButtonText>
-                    </View>
-                  </Button>
+              {/* Status indicator */}
+              {status && (
+                <View className="mb-4 p-3 rounded-lg" style={{ backgroundColor: '#F5F5F5' }}>
+                  <Text className="text-center text-[13px] font-worksans" style={{ color: '#666' }}>
+                    Status: {status}
+                  </Text>
                 </View>
               )}
 
               {/* Spacer */}
               <View className="flex-1" />
 
-              {/* Submit Button */}
+              {/* Verify Button */}
               <Button
                 className="rounded-full mb-3"
-                style={{
-                  backgroundColor: imageUri ? '#C1856A' : '#E5E7EB'
-                }}
-                onPress={handleSubmit}
-                isDisabled={!imageUri || isLoading}
+                style={{ backgroundColor: '#C1856A' }}
+                onPress={handleVerifyWithStripe}
+                isDisabled={isLoading || stripeLoading}
               >
-                <ButtonText
-                  className="text-[18px] font-worksans-bold"
-                  style={{ color: imageUri ? 'white' : '#9CA3AF' }}
-                >
-                  {isLoading ? 'Submitting...' : 'Submit for Verification'}
+                <ButtonText className="text-[18px] font-worksans-bold text-white">
+                  {isLoading || stripeLoading ? 'Loading...' : 'Start Verification'}
                 </ButtonText>
               </Button>
 
@@ -261,6 +195,11 @@ export default function VerifyDocumentUpload() {
                   Skip for now
                 </Text>
               </Pressable>
+
+              {/* Security Note */}
+              <Text className="text-center text-[12px] font-worksans mb-4" style={{ color: '#999' }}>
+                Your data is encrypted and securely processed by Stripe Identity.
+              </Text>
             </View>
           </View>
         </ScrollView>
