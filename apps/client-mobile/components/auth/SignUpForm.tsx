@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Image } from 'expo-image';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { ChevronDown, X, Eye, EyeOff } from 'lucide-react-native';
@@ -8,7 +7,8 @@ import { router } from 'expo-router';
 import { type SignUpData, signUpWithPhone } from '@shared/supabase/auth';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signUpSchema, type SignUpFormData } from '@shared/schemas/auth';
+import { signUpSchema, validatePostcode, type SignUpFormData } from '@shared/schemas/auth';
+import CountryPicker, { type Country, type CountryCode } from 'react-native-country-picker-modal';
 
 interface SignUpFormProps {
   onSubmit: (email: string, password: string, metadata: any) => void;
@@ -21,13 +21,27 @@ export default function SignUpForm({
   isLoading,
   userRole,
 }: SignUpFormProps) {
-  const [selectedCountry, setSelectedCountry] = useState('+44');
+  const [countryCode, setCountryCode] = useState<CountryCode>('GB');
+  const [callingCode, setCallingCode] = useState('44');
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const onSelectCountry = (country: Country): void => {
+    setCountryCode(country.cca2);
+    if (country.callingCode && country.callingCode.length > 0) {
+      setCallingCode(country.callingCode[0]);
+    }
+    setShowCountryPicker(false);
+  };
+
+  // State for custom postcode error
+  const [postcodeError, setPostcodeError] = useState<string | null>(null);
 
   const {
     control,
     handleSubmit,
     formState: { errors, isValid },
+    watch,
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     mode: 'onChange',
@@ -41,8 +55,27 @@ export default function SignUpForm({
     },
   });
 
+  const postcodeValue = watch('postcode');
+
+  // Validate postcode when country or postcode value changes
+  useEffect(() => {
+    if (postcodeValue && postcodeValue.length >= 2) {
+      const isValidPostcode = validatePostcode(postcodeValue, countryCode);
+      if (!isValidPostcode) {
+        setPostcodeError(`Please enter a valid postcode for ${countryCode}`);
+      } else {
+        setPostcodeError(null);
+      }
+    } else {
+      setPostcodeError(null);
+    }
+  }, [countryCode, postcodeValue]);
+
+  // Check if form is truly valid (including custom postcode validation)
+  const isFormValid = isValid && !postcodeError;
+
   const handleSignUp = (formData: SignUpFormData): void => {
-    const fullPhone = `${selectedCountry}${formData.phone}`;
+    const fullPhone = `+${callingCode}${formData.phone}`;
     const metadata = {
       first_name: formData.firstName,
       last_name: formData.lastName,
@@ -218,15 +251,22 @@ export default function SignUpForm({
                 className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
               >
                 <View className="items-center flex-1 flex-row">
-                  <Image
-                    source={require('@/assets/images/uk-flag.png')}
-                    className="w-7 h-4 mr-2"
-                    contentFit="contain"
-                  />
-                  <Pressable className="flex-row items-center mr-3">
-                    <Text className="text-[15px] font-worksans-bold mr-1" style={{ color: '#30352D' }}>
-                      {selectedCountry}
-                    </Text>
+                  <Pressable
+                    className="flex-row items-center mr-3"
+                    onPress={() => setShowCountryPicker(true)}
+                  >
+                    <CountryPicker
+                      countryCode={countryCode}
+                      withFilter
+                      withFlag
+                      withCallingCode
+                      withCallingCodeButton
+                      withEmoji
+                      onSelect={onSelectCountry}
+                      visible={showCountryPicker}
+                      onClose={() => setShowCountryPicker(false)}
+                      containerButtonStyle={{ marginRight: 4 }}
+                    />
                     <ChevronDown size={16} color="#30352D" />
                   </Pressable>
                   <InputField
@@ -285,9 +325,9 @@ export default function SignUpForm({
                   autoCapitalize="characters"
                 />
               </Input>
-              {errors.postcode && (
+              {(errors.postcode || postcodeError) && (
                 <Text className="text-xs text-red-600 mt-1 font-worksans">
-                  {errors.postcode.message}
+                  {postcodeError || errors.postcode?.message}
                 </Text>
               )}
             </View>
@@ -305,15 +345,15 @@ export default function SignUpForm({
       <Button
         className="rounded-full shadow-sm mb-6 flex-row items-center justify-center gap-2"
         style={{
-          backgroundColor: isValid ? '#C1856A' : '#E5E7EB',
+          backgroundColor: isFormValid ? '#C1856A' : '#E5E7EB',
         }}
         onPress={handleSubmit(handleSignUp)}
-        isDisabled={!isValid || isLoading}
+        isDisabled={!isFormValid || isLoading}
       >
-        {isLoading && <ButtonSpinner color={isValid ? 'white' : '#B7B7B7'} />}
+        {isLoading && <ButtonSpinner color={isFormValid ? 'white' : '#B7B7B7'} />}
         <ButtonText
           className="text-[18px] font-worksans-bold"
-          style={{ color: isValid ? 'white' : '#B7B7B7' }}
+          style={{ color: isFormValid ? 'white' : '#B7B7B7' }}
         >
           {isLoading ? 'Signing up...' : 'Signup'}
         </ButtonText>

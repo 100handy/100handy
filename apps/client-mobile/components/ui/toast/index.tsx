@@ -100,13 +100,14 @@ export const useToast = () => {
     title,
     description,
     action = 'info',
-    duration = 4000,
+    duration = 3000,
   }: Omit<ToastProps, 'id'>) => {
     Toast.show({
       type: action,
       text1: title,
       text2: description,
       visibilityTime: duration,
+      autoHide: true,
       position: 'top',
       topOffset: 60,
     });
@@ -133,7 +134,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <>
       {children}
-      <Toast config={toastConfig} />
+      <Toast config={toastConfig} autoHide={true} />
     </>
   );
 };

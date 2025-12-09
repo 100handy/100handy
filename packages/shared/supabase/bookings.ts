@@ -108,8 +108,6 @@ export async function getBookings(options: GetBookingsOptions = {}): Promise<Boo
 }
 
 export async function getUpcomingBookings(userId: string): Promise<BookingWithRelations[]> {
-  const today = new Date().toISOString().split('T')[0];
-  
   return getBookings({
     userId,
     status: ['pending', 'accepted', 'in_progress'],
@@ -226,5 +224,29 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
   } catch (error) {
     console.error('Error in createBooking:', error);
     throw error;
+  }
+}
+
+/**
+ * Cancel a booking by setting its status to 'cancelled'
+ * @param bookingId - The ID of the booking to cancel
+ * @returns Promise<boolean> - true if successful, false otherwise
+ */
+export async function cancelBooking(bookingId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', bookingId);
+
+    if (error) {
+      console.error(`Error cancelling booking ${bookingId}:`, error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in cancelBooking:', error);
+    return false;
   }
 }

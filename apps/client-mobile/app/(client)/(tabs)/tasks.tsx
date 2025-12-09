@@ -110,16 +110,15 @@ export default function TasksScreen() {
     return bookings.map(booking => bookingToTaskCardProps(booking));
   };
 
-  const handleTaskCardPress = async (bookingId?: number) => {
+  const handleTaskCardPress = async (bookingId?: string | number) => {
     if (!bookingId) {
       // Fallback data was clicked, just go to messages tab
       router.push('/(client)/(tabs)/messages');
       return;
     }
 
-    // Navigate to messages tab - the conversation will be created automatically
-    // when the user tries to access it from the booking
-    router.push('/(client)/(tabs)/messages');
+    // Navigate to booking details page
+    router.push(`/(client)/booking-details/${bookingId}`);
   };
 
 
@@ -182,7 +181,7 @@ export default function TasksScreen() {
               {/* Helper text when there are tasks */}
               <View className="flex-row justify-center pt-6">
                 <Text className="text-xs font-work-sans text-text-tertiary leading-4">
-                  Tap to message tasker
+                  Tap to view booking details
                 </Text>
               </View>
             </View>

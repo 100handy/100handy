@@ -5,6 +5,7 @@ import {
   getCancelledBookings,
   getBookingById,
   createBooking,
+  cancelBooking,
   type BookingWithRelations,
   type CreateBookingInput
 } from '../../supabase/bookings';
@@ -115,6 +116,26 @@ export function useCreateBooking() {
     },
     onError: (error) => {
       console.error('Error creating booking:', error);
+    },
+  });
+}
+
+// Mutation hook for cancelling bookings
+export function useCancelBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (bookingId: string) => cancelBooking(bookingId),
+    onSuccess: (success, bookingId) => {
+      if (success) {
+        // Invalidate booking detail query
+        queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) });
+        // Invalidate all booking lists
+        queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
+      }
+    },
+    onError: (error) => {
+      console.error('Error cancelling booking:', error);
     },
   });
 }

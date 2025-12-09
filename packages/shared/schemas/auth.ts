@@ -1,10 +1,21 @@
 import { z } from 'zod';
+import { postcodeValidator, postcodeValidatorExistsForCountry } from 'postcode-validator';
 
-// UK phone number validation (basic)
-const ukPhoneRegex = /^(\+44|0)?[1-9]\d{9,10}$/;
+// Phone number validation - just digits, reasonable length (without country code)
+const phoneRegex = /^\d{6,15}$/;
 
-// UK postcode validation (basic)
-const ukPostcodeRegex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i;
+// Validate postcode based on country code
+export const validatePostcode = (postcode: string, countryCode: string): boolean => {
+  if (!postcode || postcode.trim() === '') return false;
+
+  // Check if validation exists for this country
+  if (postcodeValidatorExistsForCountry(countryCode)) {
+    return postcodeValidator(postcode, countryCode);
+  }
+
+  // For countries without specific validation, just check minimum length
+  return postcode.trim().length >= 2;
+};
 
 export const signInSchema = z.object({
   email: z.string()
@@ -14,6 +25,7 @@ export const signInSchema = z.object({
     .min(6, 'Password must be at least 6 characters'),
 });
 
+// Base schema without country-specific validation
 export const signUpSchema = z.object({
   firstName: z.string()
     .min(1, 'First name is required')
@@ -33,11 +45,22 @@ export const signUpSchema = z.object({
     .regex(/[0-9]/, 'Password must contain at least one number'),
   phone: z.string()
     .min(1, 'Phone number is required')
-    .regex(ukPhoneRegex, 'Please enter a valid UK phone number'),
+    .regex(phoneRegex, 'Please enter a valid phone number (digits only)'),
   postcode: z.string()
     .min(1, 'Postcode is required')
-    .regex(ukPostcodeRegex, 'Please enter a valid UK postcode'),
+    .min(2, 'Postcode must be at least 2 characters'),
 });
+
+// Factory function to create schema with country-specific postcode validation
+export const createSignUpSchema = (countryCode: string) => {
+  return signUpSchema.refine(
+    (data) => validatePostcode(data.postcode, countryCode),
+    {
+      message: `Please enter a valid postcode for ${countryCode}`,
+      path: ['postcode'],
+    }
+  );
+};
 
 export const forgotPasswordSchema = z.object({
   email: z.string()
