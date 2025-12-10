@@ -21,6 +21,14 @@ interface DynamicFormRendererProps {
   showCancelButton?: boolean;
 }
 
+// Helper function to format snake_case section names to Title Case
+function formatSectionName(section: string): string {
+  return section
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 export function DynamicFormRenderer({
   categoryId,
   categoryName,
@@ -105,10 +113,21 @@ export function DynamicFormRenderer({
 
   if (!fields || fields.length === 0) {
     return (
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p className="text-yellow-800 text-sm">
-          No form fields configured for this category. You can proceed with the booking.
-        </p>
+      <div className="space-y-4">
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-yellow-800 text-sm">
+            No additional details needed for this category. You can proceed to browse available pros.
+          </p>
+        </div>
+        <div className="flex justify-center pt-2">
+          <Button
+            type="button"
+            onClick={() => onSubmit({})}
+            className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 py-2 rounded-full"
+          >
+            {submitButtonText}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -137,8 +156,8 @@ export function DynamicFormRenderer({
         return (
           <div key={section} className="bg-white rounded-lg border border-gray-300 p-6">
             {section !== 'general' && (
-              <h3 className="text-brand-dark font-semibold text-base mb-4 capitalize">
-                {section}
+              <h3 className="text-brand-dark font-semibold text-base mb-4">
+                {formatSectionName(section)}
               </h3>
             )}
 

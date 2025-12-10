@@ -22,12 +22,20 @@ import { createBooking } from "@/lib/supabase/bookings";
 import { createPaymentIntent } from "@/lib/stripe/payment";
 import { createClient } from "@/lib/supabase";
 import type { Category } from "@/lib/supabase/types";
-import type { FormResponse } from "@shared/supabase";
+import type { FormResponse, PendingBookingData } from "@shared/supabase";
+import { usePendingBookingStore, useLocationStore } from "@shared/supabase";
 
 function TaskFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const categoryFromUrl = searchParams.get("category");
+
+  // Pending booking store for saving booking before auth
+  const { getPendingBooking, setPendingBooking, clearPendingBooking } = usePendingBookingStore();
+  const { setLocation } = useLocationStore();
+
+  // Track if pending booking was restored
+  const [pendingBookingRestored, setPendingBookingRestored] = useState(false);
 
   // Task details state
   const [category, setCategory] = useState<Category | null>(null);
@@ -51,6 +59,7 @@ function TaskFormContent() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [addressId, setAddressId] = useState<string>("");
   const [userId, setUserId] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Loading and error state
   const [loading, setLoading] = useState(false);
@@ -62,24 +71,48 @@ function TaskFormContent() {
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
 
 
-  // Check authentication
+  // Check authentication - but don't redirect, just track auth state
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
-      if (!user) {
-        // Store current path to return after login
-        sessionStorage.setItem('returnPath', window.location.pathname + window.location.search);
-        router.push('/sign-in');
-        return;
+      if (user) {
+        setUserId(user.id);
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
       }
-
-      setUserId(user.id);
     };
 
     checkAuth();
-  }, [router]);
+  }, []);
+
+  // Restore pending booking when authenticated user returns
+  useEffect(() => {
+    if (!isAuthenticated || pendingBookingRestored) return;
+
+    const pendingBooking = getPendingBooking();
+    if (pendingBooking) {
+      console.log('Restoring pending booking:', pendingBooking);
+
+      // Restore location
+      setStreetAddress(pendingBooking.location.formattedAddress || pendingBooking.location.streetAddress);
+      setUnitFlat(pendingBooking.location.unitNumber || '');
+      setLocation(pendingBooking.location);
+
+      // Restore form responses
+      setFormResponses(pendingBooking.formResponses);
+
+      // Mark as restored and proceed to browse pros
+      setLocationConfirmed(true);
+      setTaskOptionsCompleted(true);
+      setPendingBookingRestored(true);
+
+      // Clear the pending booking after restoring
+      clearPendingBooking();
+    }
+  }, [isAuthenticated, pendingBookingRestored, getPendingBooking, setLocation, clearPendingBooking]);
 
   // Load category from URL
   useEffect(() => {
@@ -107,26 +140,45 @@ function TaskFormContent() {
     loadCategory();
   }, [categoryFromUrl]);
 
+  // Auto-proceed to browse pros when pending booking is restored and category is loaded
+  useEffect(() => {
+    if (pendingBookingRestored && category && taskOptionsCompleted && !showBrowsePros) {
+      handleBrowsePros();
+    }
+  }, [pendingBookingRestored, category, taskOptionsCompleted, showBrowsePros]);
+
   const handleLocationContinue = async () => {
-    if (!streetAddress.trim() || !userId) return;
+    if (!streetAddress.trim()) return;
 
     try {
       setLoading(true);
       setError(null);
 
-      // Create or find address in database
-      const address = await findOrCreateAddress(
-        userId,
-        googlePlaceData || { formatted_address: streetAddress },
-        unitFlat
-      );
+      // If user is authenticated, create/find address in database
+      if (userId) {
+        const address = await findOrCreateAddress(
+          userId,
+          googlePlaceData || { formatted_address: streetAddress },
+          unitFlat
+        );
 
-      if (address) {
-        setAddressId(address.id);
-        setLocationConfirmed(true);
-      } else {
-        setError('Failed to save address. Please try again.');
+        if (address) {
+          setAddressId(address.id);
+        }
       }
+
+      // Store location in Zustand for later use (even if not authenticated)
+      setLocation({
+        streetAddress: streetAddress,
+        unitNumber: unitFlat || undefined,
+        city: googlePlaceData?.address_components?.find((c: any) => c.types.includes('locality'))?.long_name || '',
+        country: googlePlaceData?.address_components?.find((c: any) => c.types.includes('country'))?.long_name || 'UK',
+        postalCode: googlePlaceData?.address_components?.find((c: any) => c.types.includes('postal_code'))?.long_name || '',
+        formattedAddress: googlePlaceData?.formatted_address || streetAddress,
+        placeId: googlePlaceData?.place_id,
+      });
+
+      setLocationConfirmed(true);
     } catch (err) {
       console.error('Error saving address:', err);
       setError('Failed to save address. Please try again.');
@@ -144,14 +196,11 @@ function TaskFormContent() {
 
   const handleBrowsePros = async () => {
     // Debug logging
-    console.log('handleBrowsePros called', { category, userId, categoryFromUrl });
+    console.log('handleBrowsePros called', { category, categoryFromUrl });
 
-    if (!category || !userId) {
-      const missingItems = [];
-      if (!category) missingItems.push('category');
-      if (!userId) missingItems.push('userId');
-      setError(`Cannot load handymen: Missing ${missingItems.join(' and ')}`);
-      console.error('Missing required data:', { category, userId });
+    if (!category) {
+      setError('Cannot load handymen: Missing category');
+      console.error('Missing required data:', { category });
       return;
     }
 
@@ -186,7 +235,49 @@ function TaskFormContent() {
     }
   };
 
+  // Save pending booking and redirect to sign-in
+  const savePendingBookingAndRedirect = (handyman: HandymanProfile, date: string, time: string) => {
+    const pendingBookingData: PendingBookingData = {
+      categoryId: category?.id || '',
+      categoryName: category?.name || taskCategory,
+      tasker: {
+        id: handyman.user_id,
+        userId: handyman.user_id,
+        displayName: handyman.display_name || `${handyman.first_name} ${handyman.last_name?.charAt(0)}.`,
+        avatarUrl: handyman.avatar_url,
+        hourlyRateCents: handyman.hourly_rate_cents,
+        verified: handyman.verified || false,
+        rating: handyman.rating,
+      },
+      selectedDate: date,
+      selectedTime: time,
+      location: {
+        streetAddress: streetAddress,
+        unitNumber: unitFlat || undefined,
+        city: googlePlaceData?.address_components?.find((c: any) => c.types.includes('locality'))?.long_name || '',
+        country: googlePlaceData?.address_components?.find((c: any) => c.types.includes('country'))?.long_name || 'UK',
+        postalCode: googlePlaceData?.address_components?.find((c: any) => c.types.includes('postal_code'))?.long_name || '',
+        formattedAddress: googlePlaceData?.formatted_address || streetAddress,
+        placeId: googlePlaceData?.place_id,
+      },
+      formResponses,
+      createdAt: Date.now(),
+      returnPath: `/task-form?category=${encodeURIComponent(category?.name || taskCategory)}`,
+    };
+
+    setPendingBooking(pendingBookingData);
+
+    // Redirect to sign-in page with return URL
+    router.push(`/sign-in?redirect=${encodeURIComponent(`/task-form?category=${encodeURIComponent(category?.name || taskCategory)}`)}`);
+  };
+
   const handleSelectHandyman = async (handyman: HandymanProfile, date: string, time: string) => {
+    // If not authenticated, save pending booking and redirect to sign-in
+    if (!isAuthenticated || !userId) {
+      savePendingBookingAndRedirect(handyman, date, time);
+      return;
+    }
+
     setSelectedHandyman(handyman);
     setSelectedDate(date);
     setSelectedTime(time);

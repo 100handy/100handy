@@ -8,7 +8,7 @@ import Svg, { Path } from 'react-native-svg';
 import StarRating from '@/assets/images/star-rating.svg';
 import Logo100Top from '@/assets/images/logo-100-top.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore } from '@shared/supabase';
+import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
 import { supabase } from '@shared/supabase';
 
 const ONBOARDING_KEY = '@hasSeenOnboarding';
@@ -244,6 +244,32 @@ export default function ClientOnboarding() {
   const flatListRef = useRef<FlatList>(null);
   const totalSteps = onboardingData.length;
   const { isAuthenticated, updateOnboardingStatus } = useAuthStore();
+  const { getPendingBooking } = usePendingBookingStore();
+  const { setLocation } = useLocationStore();
+
+  // Check for pending booking and navigate there instead of home
+  const checkAndRestorePendingBooking = (): boolean => {
+    const pendingBooking = getPendingBooking();
+    if (pendingBooking) {
+      // Restore the location from pending booking
+      setLocation(pendingBooking.location);
+
+      // Navigate to confirm booking with all the saved data
+      router.replace({
+        pathname: '/(client)/confirm-booking',
+        params: {
+          taskerId: pendingBooking.tasker.id,
+          categoryId: pendingBooking.categoryId,
+          categoryName: pendingBooking.categoryName,
+          selectedDate: pendingBooking.selectedDate,
+          selectedTime: pendingBooking.selectedTime,
+          formResponses: JSON.stringify(pendingBooking.formResponses),
+        },
+      });
+      return true;
+    }
+    return false;
+  };
 
   const completeOnboarding = async (): Promise<void> => {
     try {
@@ -265,8 +291,12 @@ export default function ClientOnboarding() {
           updateOnboardingStatus(true);
         }
 
-        // Navigate to home screen
-        router.replace('/(client)/(tabs)/home');
+        // Check for pending booking first
+        const hasPendingBooking = checkAndRestorePendingBooking();
+        if (!hasPendingBooking) {
+          // No pending booking, navigate to home screen
+          router.replace('/(client)/(tabs)/home');
+        }
       } else {
         // User not authenticated, go to terms and privacy screen
         router.push('/(auth)/(client)/terms-and-privacy');
@@ -275,7 +305,11 @@ export default function ClientOnboarding() {
       console.error('[Onboarding] Error completing onboarding:', error);
       // Fallback navigation
       if (isAuthenticated) {
-        router.replace('/(client)/(tabs)/home');
+        // Check for pending booking first
+        const hasPendingBooking = checkAndRestorePendingBooking();
+        if (!hasPendingBooking) {
+          router.replace('/(client)/(tabs)/home');
+        }
       } else {
         router.push('/(auth)/(client)/terms-and-privacy');
       }

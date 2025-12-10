@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput, type FormResponse } from '@shared/supabase';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput, type FormResponse, usePendingBookingStore, type PendingBookingData } from '@shared/supabase';
 import { useAuthStore } from '@shared/supabase';
 
 export default function ConfirmBookingScreen() {
@@ -28,9 +28,13 @@ export default function ConfirmBookingScreen() {
 
   // Get user from auth store
   const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   // Get location from store
   const location = useLocationStore((state) => state.location);
+
+  // Pending booking store for saving booking before auth
+  const { setPendingBooking, clearPendingBooking } = usePendingBookingStore();
 
   // Fetch tasker profile
   const { data: profile, isLoading: profileLoading } = useHandymanProfile(taskerId);
@@ -40,18 +44,99 @@ export default function ConfirmBookingScreen() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Handle back navigation - ask user if they want to clear pending booking
+  const handleBackPress = useCallback(() => {
+    // Check if there's a pending booking that was restored (user came from auth flow)
+    const hasPendingBooking = usePendingBookingStore.getState().hasPendingBooking();
+
+    if (hasPendingBooking && isAuthenticated) {
+      Alert.alert(
+        'Cancel Booking?',
+        'Are you sure you want to go back? Your booking progress will be lost.',
+        [
+          {
+            text: 'Stay',
+            style: 'cancel',
+          },
+          {
+            text: 'Go Back',
+            style: 'destructive',
+            onPress: () => {
+              clearPendingBooking();
+              router.back();
+            },
+          },
+        ]
+      );
+      return true; // Prevent default back behavior
+    }
+
+    // No pending booking, just go back normally
+    router.back();
+    return true;
+  }, [isAuthenticated, clearPendingBooking, router]);
+
+  // Handle hardware back button on Android
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        handleBackPress();
+        return true; // Prevent default back behavior
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [handleBackPress])
+  );
+
   // Calculate estimated price from form responses
   const taskSize = formResponses.task_size as string | undefined;
   const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'large' ? 4 : 2.5; // Default to medium
   const hourlyRate = profile ? profile.hourly_rate_cents / 100 : 0;
   const estimatedPrice = hourlyRate * estimatedHours;
 
-  const handleCreateBooking = async () => {
-    if (!user) {
-      Alert.alert('Error', 'Please sign in to create a booking');
+  // Save pending booking data to storage and redirect to auth
+  const savePendingBookingAndRedirect = () => {
+    if (!profile || !location?.streetAddress) {
       return;
     }
 
+    const pendingBookingData: PendingBookingData = {
+      categoryId,
+      categoryName,
+      tasker: {
+        id: taskerId,
+        userId: profile.user_id,
+        displayName: profile.display_name || 'Tasker',
+        avatarUrl: profile.avatar_url,
+        hourlyRateCents: profile.hourly_rate_cents,
+        verified: profile.verified || false,
+        rating: profile.rating,
+      },
+      selectedDate,
+      selectedTime,
+      location: {
+        streetAddress: location.streetAddress,
+        unitNumber: location.unitNumber,
+        city: location.city,
+        country: location.country,
+        postalCode: location.postalCode,
+        formattedAddress: location.formattedAddress,
+        placeId: location.placeId,
+      },
+      formResponses,
+      createdAt: Date.now(),
+      returnPath: '/(client)/confirm-booking',
+    };
+
+    setPendingBooking(pendingBookingData);
+
+    // Redirect to sign up screen
+    router.push('/(auth)/(client)/sign-up');
+  };
+
+  const handleCreateBooking = async () => {
+    // Check if profile and location are loaded
     if (!profile) {
       Alert.alert('Error', 'Tasker profile not loaded');
       return;
@@ -59,6 +144,25 @@ export default function ConfirmBookingScreen() {
 
     if (!location?.streetAddress) {
       Alert.alert('Error', 'Location information missing');
+      return;
+    }
+
+    // If not authenticated, save booking and redirect to sign up
+    if (!isAuthenticated || !user) {
+      Alert.alert(
+        'Sign In Required',
+        'Please create an account or sign in to complete your booking. Your booking details will be saved.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Sign Up',
+            onPress: savePendingBookingAndRedirect,
+          },
+        ]
+      );
       return;
     }
 
@@ -84,6 +188,9 @@ export default function ConfirmBookingScreen() {
       };
 
       const newBooking = await createBookingMutation.mutateAsync(bookingInput);
+
+      // Clear any pending booking after successful creation
+      clearPendingBooking();
 
       // Navigate to success screen
       router.push({
@@ -127,7 +234,7 @@ export default function ConfirmBookingScreen() {
       {/* Header */}
       <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
         <View className="flex-row items-center">
-          <Pressable onPress={() => router.back()} className="mr-4">
+          <Pressable onPress={handleBackPress} className="mr-4">
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
           <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">

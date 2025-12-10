@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   TaskerCard,
   BrowseFilters,
@@ -9,6 +10,8 @@ import {
 } from "@/components/browse-pros";
 import { ConfirmDetails } from "@/components/confirm-booking/confirm-details";
 import { TaskSummary } from "@/components/confirm-booking/task-summary";
+import { useAuthContext } from "@/components/providers/auth-provider";
+import { usePendingBookingStore, useLocationStore, type PendingBookingData } from "@shared/supabase";
 
 const mockTaskers = Array.from({ length: 7 }, (_, i) => ({
   user_id: `tasker-${i}`,
@@ -29,8 +32,109 @@ const mockTaskers = Array.from({ length: 7 }, (_, i) => ({
 }));
 
 export default function BrowseProsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, isAuthenticated, loading: authLoading } = useAuthContext();
+  const { setPendingBooking, getPendingBooking, clearPendingBooking } = usePendingBookingStore();
+  const { setLocation, location } = useLocationStore();
+
   const [currentStep, setCurrentStep] = useState(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTasker, setSelectedTasker] = useState<typeof mockTaskers[0] | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+  // Category from URL params or default
+  const categoryId = searchParams.get('categoryId') || 'handyman';
+  const categoryName = searchParams.get('categoryName') || 'Handyman';
+
+  // Check for pending booking on mount (after auth completes)
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (isAuthenticated) {
+      const pendingBooking = getPendingBooking();
+      if (pendingBooking) {
+        // Restore the state from pending booking
+        setLocation(pendingBooking.location);
+        setSelectedDate(pendingBooking.selectedDate);
+        setSelectedTime(pendingBooking.selectedTime);
+        // Find matching tasker from mock data (in real app, fetch from API)
+        const tasker = mockTaskers.find(t => t.user_id === pendingBooking.tasker.id);
+        if (tasker) {
+          setSelectedTasker(tasker);
+          setCurrentStep(3);
+        }
+      }
+    }
+  }, [authLoading, isAuthenticated]);
+
+  // Save pending booking and redirect to sign up
+  const savePendingBookingAndRedirect = (tasker: typeof mockTaskers[0], date: string, time: string) => {
+    const pendingBookingData: PendingBookingData = {
+      categoryId,
+      categoryName,
+      tasker: {
+        id: tasker.user_id,
+        userId: tasker.user_id,
+        displayName: tasker.display_name,
+        avatarUrl: tasker.avatar_url,
+        hourlyRateCents: tasker.hourly_rate_cents,
+        verified: tasker.verified,
+        rating: tasker.rating,
+      },
+      selectedDate: date,
+      selectedTime: time,
+      location: location || {
+        streetAddress: '',
+        city: '',
+        country: 'UK',
+        postalCode: '',
+      },
+      formResponses: {},
+      createdAt: Date.now(),
+      returnPath: '/browse-pros',
+    };
+
+    setPendingBooking(pendingBookingData);
+
+    // Redirect to sign up page
+    router.push('/auth/sign-up?redirect=/browse-pros');
+  };
+
+  // Handle tasker selection and check auth
+  const handleSelectContinue = (tasker: typeof mockTaskers[0], date: string, time: string) => {
+    if (!isAuthenticated) {
+      // Save booking data and redirect to sign up
+      savePendingBookingAndRedirect(tasker, date, time);
+      return;
+    }
+
+    // User is authenticated, proceed to step 3
+    setSelectedTasker(tasker);
+    setSelectedDate(date);
+    setSelectedTime(time);
+    setCurrentStep(3);
+  };
+
+  // Handle going back from step 3 to step 2
+  const handleBackToStep2 = () => {
+    // Clear pending booking when user manually goes back
+    clearPendingBooking();
+    setCurrentStep(2);
+    setSelectedTasker(null);
+    setSelectedDate(null);
+    setSelectedTime(null);
+  };
+
+  // Handle successful booking completion
+  const handleBookingSuccess = (paymentIntentId: string) => {
+    console.log('Payment successful:', paymentIntentId);
+    // Clear pending booking after successful completion
+    clearPendingBooking();
+    // Navigate to success page or show success message
+    router.push('/booking-success');
+  };
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
@@ -109,13 +213,12 @@ export default function BrowseProsPage() {
 
               <div className="space-y-6">
                 {mockTaskers.map((handyman) => (
-                  <TaskerCard 
-                    key={handyman.user_id} 
+                  <TaskerCard
+                    key={handyman.user_id}
                     handyman={handyman}
-                    categoryName="Handyman"
+                    categoryName={categoryName}
                     onSelectContinue={(date: string, time: string) => {
-                      console.log('Selected date:', date, 'time:', time);
-                      setCurrentStep(3);
+                      handleSelectContinue(handyman, date, time);
                     }}
                   />
                 ))}
@@ -123,22 +226,43 @@ export default function BrowseProsPage() {
             </main>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-            {/* Left Column - Payment Form */}
-            <ConfirmDetails 
-              onPaymentSuccess={(paymentIntentId: string) => {
-                console.log('Payment successful:', paymentIntentId);
-                // Handle successful payment
-              }}
-              onPaymentError={(error: string) => {
-                console.error('Payment error:', error);
-                // Handle payment error
-              }}
-              isSubmitting={isSubmitting}
-            />
+          <div>
+            {/* Back Button */}
+            <button
+              onClick={handleBackToStep2}
+              className="mb-6 flex items-center gap-2 text-[#30352D] hover:text-[#C1856A] transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back to Taskers
+            </button>
 
-            {/* Right Column - Task Summary */}
-            <TaskSummary />
+            <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+              {/* Left Column - Payment Form */}
+              <ConfirmDetails
+                onPaymentSuccess={handleBookingSuccess}
+                onPaymentError={(error: string) => {
+                  console.error('Payment error:', error);
+                  // Handle payment error
+                }}
+                isSubmitting={isSubmitting}
+              />
+
+              {/* Right Column - Task Summary */}
+              <TaskSummary />
+            </div>
           </div>
         )}
       </div>

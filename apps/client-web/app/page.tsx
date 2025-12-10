@@ -8,11 +8,13 @@ import { Guarantees } from "@/components/marketing/guarantees";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { GetHelpToday } from "@/components/marketing/get-help-today";
 import { Footer } from "@/components/marketing/footer";
+import { PendingBookingBanner } from "@/components/pending-booking-banner";
 
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
+      <PendingBookingBanner />
       <main className="flex-1">
         <Hero />
         <Services />

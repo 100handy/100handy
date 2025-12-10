@@ -10,6 +10,10 @@ import { AuthWrapper } from "@/components/AuthWrapper";
 import { QueryProvider } from "@/components/providers";
 import { ToastProvider } from "@/components/ui/toast";
 import { StripeProvider } from "@stripe/stripe-react-native";
+import { initializePendingBookingStorage } from "@/lib/pending-booking-storage";
+
+// Initialize pending booking storage with AsyncStorage
+initializePendingBookingStorage();
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

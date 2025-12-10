@@ -28,7 +28,7 @@ interface BookingsState {
   fetchUpcomingBookings: (userId: string) => Promise<void>;
   fetchPastBookings: (userId: string) => Promise<void>;
   fetchCancelledBookings: (userId: string) => Promise<void>;
-  fetchBookingById: (bookingId: number) => Promise<void>;
+  fetchBookingById: (bookingId: string) => Promise<void>;
   clearError: () => void;
   reset: () => void;
 }
@@ -92,7 +92,7 @@ export const useBookingsStore = create<BookingsState>((set, get) => ({
     }
   },
 
-  fetchBookingById: async (bookingId: number) => {
+  fetchBookingById: async (bookingId: string) => {
     try {
       set({ isLoadingSelected: true, error: null });
       

@@ -42,8 +42,8 @@ const menuItems = [
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { signOut, user, isLoading: authLoading } = useAuthStore();
   const { data: profile, isLoading, error, refetch } = useProfile();
-  const { signOut, user } = useAuthStore();
   const { navigateWithSecurityCheck } = useSecureNavigation();
   const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -89,6 +89,27 @@ export default function ProfileScreen() {
   useEffect(() => {
     console.log('showPrivacyNotice state changed:', showPrivacyNotice);
   }, [showPrivacyNotice]);
+
+  // Show sign-in prompt for unauthenticated users (after auth loading completes)
+  if (!authLoading && !user?.id) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="bg-[#333A31] pt-12 pb-6 px-6">
+          <Text className="text-white text-[32px] font-black leading-tight">
+            Profile
+          </Text>
+        </View>
+        <View className="flex-1 items-center justify-center py-12">
+          <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
+            Please sign in
+          </Text>
+          <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
+            You need to be signed in to view your profile.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (isLoading) {
     return (

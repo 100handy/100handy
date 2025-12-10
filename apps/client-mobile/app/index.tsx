@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { Loader } from "@/components/ui/loader";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore } from '@shared/supabase';
+import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
 
 const ONBOARDING_KEY = '@hasSeenOnboarding';
@@ -20,6 +20,8 @@ export default function Index() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
   const { isAuthenticated, isLoading, initialize, userRole, isEmailVerified, hasCompletedOnboarding, user } = useAuthStore();
+  const { getPendingBooking, clearPendingBooking } = usePendingBookingStore();
+  const { setLocation } = useLocationStore();
 
   useEffect(() => {
     // Initialize auth first
@@ -71,6 +73,33 @@ export default function Index() {
     }
   };
 
+  // Check for pending booking and restore location if exists
+  const checkAndRestorePendingBooking = () => {
+    const pendingBooking = getPendingBooking();
+    if (pendingBooking) {
+      // Restore the location from pending booking
+      setLocation(pendingBooking.location);
+
+      // Clear the pending booking from storage to prevent repeated restoration
+      clearPendingBooking();
+
+      // Navigate to confirm booking with all the saved data
+      router.replace({
+        pathname: '/(client)/confirm-booking',
+        params: {
+          taskerId: pendingBooking.tasker.id,
+          categoryId: pendingBooking.categoryId,
+          categoryName: pendingBooking.categoryName,
+          selectedDate: pendingBooking.selectedDate,
+          selectedTime: pendingBooking.selectedTime,
+          formResponses: JSON.stringify(pendingBooking.formResponses),
+        },
+      });
+      return true;
+    }
+    return false;
+  };
+
   const routeAuthenticatedUser = async () => {
     try {
       // Check email verification
@@ -105,11 +134,16 @@ export default function Index() {
           router.replace('/(auth)/(professional)/verify-info');
         }
       } else if (isClient) {
-        // Client - check onboarding
+        // Client - check onboarding first
         if (!hasCompletedOnboarding) {
           router.replace('/(auth)/(client)/onboarding');
         } else {
-          router.replace('/(client)/(tabs)/home');
+          // Check for pending booking from before auth
+          const hasPendingBooking = checkAndRestorePendingBooking();
+          if (!hasPendingBooking) {
+            // No pending booking, go to home
+            router.replace('/(client)/(tabs)/home');
+          }
         }
       } else {
         // Unknown role - redirect to role selection

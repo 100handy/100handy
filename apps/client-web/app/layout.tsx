@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { PendingBookingProvider } from "@/components/providers/pending-booking-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 const workSans = localFont({
@@ -45,7 +46,9 @@ export default function RootLayout({
       <body className={`${workSans.variable} ${cardo.variable} ${futura.variable}`}>
         <QueryProvider>
           <AuthProvider>
-            {children}
+            <PendingBookingProvider>
+              {children}
+            </PendingBookingProvider>
           </AuthProvider>
         </QueryProvider>
         <Toaster />

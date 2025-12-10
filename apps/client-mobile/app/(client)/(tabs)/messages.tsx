@@ -3,12 +3,32 @@ import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MessageCircle } from 'lucide-react-native';
-import { useConversations } from '@shared/supabase';
+import { useConversations, useAuthStore } from '@shared/supabase';
 import { ConversationItem } from '../../../components/chat';
 
 export default function MessagesScreen() {
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuthStore();
   const { data: conversations, isLoading, error, refetch } = useConversations();
+
+  // Show sign-in prompt for unauthenticated users (after auth loading completes)
+  if (!authLoading && !user?.id) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+          <Text className="text-2xl font-bold text-[#30352D]">Messages</Text>
+        </View>
+        <View className="flex-1 items-center justify-center py-12">
+          <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
+            Please sign in
+          </Text>
+          <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
+            You need to be signed in to view your messages.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const handleConversationPress = (conversationId: string) => {
     router.push({
