@@ -111,3 +111,33 @@ export type {
 
 // Form fields hooks and utilities
 export { useCategoryFormFields } from './hooks/useCategoryFormFields';
+
+// Work area hooks and utilities
+export {
+  useWorkArea,
+  useWorkAreaByUserId,
+  useSaveWorkArea,
+  useDeleteWorkArea,
+  useInvalidateWorkArea,
+  workAreaKeys,
+  type WorkArea,
+  type Coordinate,
+  type SaveWorkAreaInput,
+} from './hooks/useWorkArea';
+
+// Availability hooks and utilities
+export {
+  useAvailability,
+  useWeeklyAvailability,
+  useAvailabilityByUserId,
+  useSaveDayAvailability,
+  useSaveWeeklyAvailability,
+  useDeleteAvailabilitySlot,
+  useClearAllAvailability,
+  useInvalidateAvailability,
+  availabilityKeys,
+  type AvailabilitySlot,
+  type DayAvailabilityInput,
+  type TimeSlotInput,
+  type WeeklyAvailability,
+} from './hooks/useAvailability';

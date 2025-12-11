@@ -8,12 +8,13 @@ import { signIn } from '@shared/supabase/auth';
 import { type SignInFormData } from '@shared/schemas/auth';
 import AuthFooter from '@/components/auth/AuthFooter';
 import { useToast } from '@/components/ui/toast';
-import { useAuthStore } from '@shared/supabase';
+import { supabase, useAuthStore } from '@shared/supabase';
 
 export default function ProfessionalSignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const checkAuth = useAuthStore((state) => state.checkAuth);
+  const user = useAuthStore((state) => state.user);
 
   const handleSignIn = async (data: SignInFormData): Promise<void> => {
     setIsLoading(true);
@@ -22,8 +23,17 @@ export default function ProfessionalSignIn() {
       // Update auth state
       const isAuthenticated = await checkAuth();
       if (isAuthenticated) {
-        // Navigate to index - let it determine the correct route based on onboarding status
-        router.replace('/');
+        // Ensure professional role is set in metadata (needed for routing)
+        const hasRole = user?.user_metadata?.role;
+        if (!hasRole) {
+          await supabase.auth.updateUser({
+            data: { role: 'handy' },
+          });
+          await checkAuth();
+        }
+
+        // Navigate directly to professional dashboard
+        router.replace('/(professional)/(tabs)/dashboard');
       } else {
         throw new Error('Authentication check failed');
       }

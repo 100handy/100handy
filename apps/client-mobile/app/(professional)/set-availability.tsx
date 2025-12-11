@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { ScrollView, Pressable as RNPressable, View, Text, Pressable, Dimensions } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import { ScrollView, Pressable as RNPressable, View, Text, Pressable, Dimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -10,6 +10,12 @@ import {
 } from '@/components/ui/modal';
 import { Plus, ChevronLeft, Trash2 } from 'lucide-react-native';
 import { TimePickerWheel } from '@/components/availability';
+import {
+  useWeeklyAvailability,
+  useSaveDayAvailability,
+  type TimeSlotInput,
+  type AvailabilitySlot,
+} from '@shared/supabase';
 
 interface TimeSlot {
   id: string;
@@ -21,14 +27,24 @@ interface DayAvailability {
   [dayIndex: number]: TimeSlot[];
 }
 
-const DAYS_OF_WEEK = [
-  { short: 'Sun', date: '21' },
-  { short: 'Mon', date: '22' },
-  { short: 'Tue', date: '23' },
-  { short: 'Wed', date: '24' },
-  { short: 'Thu', date: '25' },
-  { short: 'Fri', date: '26' },
-];
+// Day names for weekly availability (index matches day_of_week in database: 0=Sunday)
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// Get current week dates dynamically
+const getCurrentWeekDates = () => {
+  const today = new Date();
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - today.getDay());
+
+  return DAY_NAMES.map((short, i) => {
+    const date = new Date(sunday);
+    date.setDate(sunday.getDate() + i);
+    return {
+      short,
+      date: date.getDate().toString(),
+    };
+  });
+};
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
 const MINUTES = ['00', '15', '30', '45'];
@@ -56,6 +72,31 @@ export default function SetAvailability() {
   const [endHour, setEndHour] = useState('20');
   const [endMinute, setEndMinute] = useState('45');
   const [availability, setAvailability] = useState<DayAvailability>({});
+  const [deletingSlots, setDeletingSlots] = useState<Set<string>>(new Set());
+
+  // Get current week dates
+  const daysOfWeek = useMemo(() => getCurrentWeekDates(), []);
+
+  // Query hooks for persistence
+  const { data: weeklyData, isLoading: isLoadingAvailability } = useWeeklyAvailability();
+  const { mutate: saveDayMutation, isPending: isSaving } = useSaveDayAvailability();
+
+  // Load existing availability from database
+  useEffect(() => {
+    if (weeklyData) {
+      const transformed: DayAvailability = {};
+
+      Object.entries(weeklyData).forEach(([dayIndex, slots]) => {
+        transformed[parseInt(dayIndex)] = (slots as AvailabilitySlot[]).map((slot: AvailabilitySlot) => ({
+          id: slot.id,
+          startTime: slot.start_time.slice(0, 5), // "HH:MM:SS" -> "HH:MM"
+          endTime: slot.end_time.slice(0, 5),
+        }));
+      });
+
+      setAvailability(transformed);
+    }
+  }, [weeklyData]);
 
   const currentDaySlots = availability[selectedDay] || [];
 
@@ -81,6 +122,8 @@ export default function SetAvailability() {
       return;
     }
 
+    // Capture previous state for rollback
+    const previousSlots = [...currentDaySlots];
     let newSlots = [...currentDaySlots];
 
     if (isMerge) {
@@ -117,19 +160,76 @@ export default function SetAvailability() {
       });
     }
 
+    // Update local state immediately for UI (optimistic update)
     setAvailability((prev) => ({
       ...prev,
       [selectedDay]: newSlots,
     }));
 
+    // Persist to database
+    const slotsForDB: TimeSlotInput[] = newSlots.map(slot => ({
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    }));
+
+    saveDayMutation(
+      { dayIndex: selectedDay, slots: slotsForDB },
+      {
+        onError: (error) => {
+          console.error('Failed to save availability:', error);
+          // Rollback to previous state on error
+          setAvailability((prev) => ({
+            ...prev,
+            [selectedDay]: previousSlots,
+          }));
+        },
+      }
+    );
+
     setShowAddModal(false);
   };
 
   const removeTimeSlot = (slotId: string) => {
+    // Track loading state for this slot
+    setDeletingSlots(prev => new Set(prev).add(slotId));
+
+    // Capture previous state for rollback
+    const previousSlots = availability[selectedDay] || [];
+    const newSlots = previousSlots.filter((slot) => slot.id !== slotId);
+
+    // Update local state (optimistic update)
     setAvailability((prev) => ({
       ...prev,
-      [selectedDay]: (prev[selectedDay] || []).filter((slot) => slot.id !== slotId),
+      [selectedDay]: newSlots,
     }));
+
+    // Persist to database
+    const slotsForDB: TimeSlotInput[] = newSlots.map(slot => ({
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    }));
+
+    saveDayMutation(
+      { dayIndex: selectedDay, slots: slotsForDB },
+      {
+        onSettled: () => {
+          // Clear loading state when done (success or error)
+          setDeletingSlots(prev => {
+            const next = new Set(prev);
+            next.delete(slotId);
+            return next;
+          });
+        },
+        onError: (error) => {
+          console.error('Failed to remove slot:', error);
+          // Rollback to previous state on error
+          setAvailability((prev) => ({
+            ...prev,
+            [selectedDay]: previousSlots,
+          }));
+        },
+      }
+    );
   };
 
   const handleOpenModal = () => {
@@ -139,6 +239,17 @@ export default function SetAvailability() {
     setEndMinute('00');
     setShowAddModal(true);
   };
+
+  if (isLoadingAvailability) {
+    return (
+      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#047857" />
+          <Text className="text-[#30352D] text-lg mt-4">Loading availability...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -155,7 +266,7 @@ export default function SetAvailability() {
 
       {/* Days Selector */}
       <View className="flex-row px-5 py-4 gap-2 bg-white z-10">
-        {DAYS_OF_WEEK.map((day, index) => (
+        {daysOfWeek.map((day, index) => (
           <Pressable
             key={day.short}
             onPress={() => setSelectedDay(index)}
@@ -242,9 +353,14 @@ export default function SetAvailability() {
                     </View>
                     <Pressable
                       onPress={() => removeTimeSlot(slot.id)}
+                      disabled={deletingSlots.has(slot.id)}
                       className="bg-white/20 rounded-full p-1"
                     >
-                      <Trash2 size={14} color="white" />
+                      {deletingSlots.has(slot.id) ? (
+                        <ActivityIndicator size="small" color="white" />
+                      ) : (
+                        <Trash2 size={14} color="white" />
+                      )}
                     </Pressable>
                   </View>
                 </View>

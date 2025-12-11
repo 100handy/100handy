@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, PanResponder, Text, Pressable, Platform } from 'react-native';
+import { View, StyleSheet, Dimensions, PanResponder, Text, Pressable, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Polygon, LatLng, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { ArrowLeft, Hand, X } from 'lucide-react-native';
 import { Button, ButtonText } from '@/components/ui/button';
+import { useWorkArea, useSaveWorkArea, type Coordinate } from '@shared/supabase';
 
 const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -23,6 +24,10 @@ export default function SetWorkAreaScreen() {
   const [drawnCoordinates, setDrawnCoordinates] = useState<LatLng[]>([]);
 
   const mapRef = useRef<MapView>(null);
+
+  // Query hooks for persistence
+  const { data: existingWorkArea, isLoading: isLoadingWorkArea } = useWorkArea();
+  const { mutate: saveWorkAreaMutation, isPending: isSaving } = useSaveWorkArea();
 
   // PanResponder for handling touch gestures on the map
   const panResponder = useRef(
@@ -64,6 +69,19 @@ export default function SetWorkAreaScreen() {
     })
   ).current;
 
+  // Load existing work area coordinates
+  useEffect(() => {
+    if (existingWorkArea?.coordinates && existingWorkArea.coordinates.length > 0) {
+      // Transform Coordinate[] to LatLng[]
+      const coords: LatLng[] = existingWorkArea.coordinates.map((c: Coordinate) => ({
+        latitude: c.latitude,
+        longitude: c.longitude,
+      }));
+      setDrawnCoordinates(coords);
+      setIsReviewing(true);
+    }
+  }, [existingWorkArea]);
+
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -93,12 +111,24 @@ export default function SetWorkAreaScreen() {
   }, []);
 
   const handleSave = () => {
-    if (drawnCoordinates.length > 0) {
-      console.log('Saving custom work area:', {
-        coordinates: drawnCoordinates,
-        type: 'polygon',
-      });
-      router.push('/(professional)/(tabs)/dashboard');
+    if (drawnCoordinates.length > 2) {
+      // Transform LatLng[] to Coordinate[] for API
+      const coordinates: Coordinate[] = drawnCoordinates.map(coord => ({
+        latitude: coord.latitude,
+        longitude: coord.longitude,
+      }));
+
+      saveWorkAreaMutation(
+        { coordinates },
+        {
+          onSuccess: () => {
+            router.push('/(professional)/(tabs)/dashboard');
+          },
+          onError: (error) => {
+            console.error('Failed to save work area:', error);
+          },
+        }
+      );
     }
   };
 
@@ -114,11 +144,12 @@ export default function SetWorkAreaScreen() {
     setIsReviewing(false);
   };
 
-  if (!region) {
+  if (!region || isLoadingWorkArea) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center">
-          <Text className="text-[#30352D] text-lg">Loading map...</Text>
+          <ActivityIndicator size="large" color="#047857" />
+          <Text className="text-[#30352D] text-lg mt-4">Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -230,13 +261,17 @@ export default function SetWorkAreaScreen() {
 
         {/* Save Button */}
         <Button
-          className={`rounded-full shadow-sm h-[56px] ${isReviewing ? 'bg-[#047857]' : 'bg-gray-300'}`}
+          className={`rounded-full shadow-sm h-[56px] ${isReviewing && !isSaving ? 'bg-[#047857]' : 'bg-gray-300'}`}
           onPress={handleSave}
-          isDisabled={!isReviewing}
+          isDisabled={!isReviewing || isSaving}
         >
-          <ButtonText className="text-white text-lg font-worksans-bold">
-            Save work area
-          </ButtonText>
+          {isSaving ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <ButtonText className="text-white text-lg font-worksans-bold">
+              Save work area
+            </ButtonText>
+          )}
         </Button>
       </SafeAreaView>
     </View>

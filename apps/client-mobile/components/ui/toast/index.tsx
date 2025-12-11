@@ -100,7 +100,7 @@ export const useToast = () => {
     title,
     description,
     action = 'info',
-    duration = 3000,
+    duration = 2500,
   }: Omit<ToastProps, 'id'>) => {
     Toast.show({
       type: action,
@@ -111,6 +111,9 @@ export const useToast = () => {
       position: 'top',
       topOffset: 60,
     });
+
+    // Safety hide in case autoHide misbehaves on some devices
+    setTimeout(() => Toast.hide(), duration + 200);
   };
 
   return {

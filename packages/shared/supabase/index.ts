@@ -7,6 +7,8 @@ export * from './conversations';
 export * from './support';
 export * from './form-fields';
 export * from './payment-methods';
+export * from './work-area';
+export * from './availability';
 export * from './types/forms';
 export * from '../store';
 export * from '../query';

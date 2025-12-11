@@ -4,13 +4,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { verifyOTP, resendOTP } from '@shared/supabase/auth';
+import { resendOTP, sendPasswordResetOTP, verifyOTP, verifyPasswordResetOTP } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
 
 export default function VerifyOtp() {
   const params = useLocalSearchParams();
   const phone = params.phone as string;
+  const email = params.email as string;
+  const type = params.type as string;
   const metadata = params.metadata ? JSON.parse(params.metadata as string) : {};
+  const isPasswordReset = type === 'reset';
 
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +23,9 @@ export default function VerifyOtp() {
   const toast = useToast();
 
   const inputRefs = useRef<(TextInput | null)[]>([]);
+
+  // If neither phone nor email is present, bail out early
+  const targetContact = isPasswordReset ? email : phone;
 
   // Countdown timer for resend
   useEffect(() => {
@@ -60,24 +66,38 @@ export default function VerifyOtp() {
       return;
     }
 
+    if (!targetContact) {
+      toast.error('Missing contact', 'No email or phone number found for verification');
+      return;
+    }
+
     try {
       setIsLoading(true);
 
-      // Verify the OTP
+      if (isPasswordReset) {
+        // Password reset flow uses email-based OTP verification
+        await verifyPasswordResetOTP(email, otpCode);
+        toast.success('Success', 'Code verified! You can set a new password.');
+        router.replace('/(auth)/reset-password');
+        return;
+      }
+
+      // Phone-based OTP verification (signup)
       const result = await verifyOTP(phone, otpCode);
 
-      if (result.user) {
-        // OTP verified successfully - navigate based on role
-        toast.success('Success', 'Phone number verified!');
+      if (!result.user) {
+        throw new Error('Verification failed. Please try again.');
+      }
 
-        const role = metadata.role;
-        if (role === 'handy') {
-          // Professional - go to verification flow
-          router.replace('/(auth)/(professional)/verify-info');
-        } else {
-          // Customer - go to client onboarding or home
-          router.replace('/(client)/(tabs)/home');
-        }
+      toast.success('Success', 'Phone number verified!');
+
+      const role = metadata.role;
+      if (role === 'handy') {
+        // Professional - go to verification flow
+        router.replace('/(auth)/(professional)/verify-info');
+      } else {
+        // Customer - go to client onboarding or home
+        router.replace('/(client)/(tabs)/home');
       }
     } catch (error) {
       console.error('OTP verification error:', error);
@@ -93,9 +113,19 @@ export default function VerifyOtp() {
   const handleResend = async (): Promise<void> => {
     if (!canResend) return;
 
+    if (!targetContact) {
+      toast.error('Missing contact', 'No email or phone number found for verification');
+      return;
+    }
+
     try {
       setIsResending(true);
-      await resendOTP(phone);
+      if (isPasswordReset) {
+        await sendPasswordResetOTP(email);
+      } else {
+        await resendOTP(phone);
+      }
+
       toast.success('Code sent', 'A new verification code has been sent');
       setCanResend(false);
       setCountdown(60);
@@ -140,7 +170,7 @@ export default function VerifyOtp() {
               {/* Description */}
               <Text className="text-[15px] font-worksans-medium mb-8 leading-[20px]" style={{ color: '#30352D' }}>
                 A code has been sent to{'\n'}
-                <Text className="font-worksans-bold">{phone}</Text>
+                <Text className="font-worksans-bold">{targetContact || 'your contact'}</Text>
               </Text>
 
               {/* OTP Input */}
@@ -180,7 +210,7 @@ export default function VerifyOtp() {
 
               {/* Support Text */}
               <Text className="text-[13px] font-worksans-medium mb-8 leading-[18px]" style={{ color: '#30352D' }}>
-                Need your code sent to a new phone number?{' '}
+                Need your code sent to a different contact?{' '}
                 <Text style={{ color: '#C1856A' }}>Contact customer support</Text>
               </Text>
 
