@@ -15,6 +15,9 @@ import {
   PaintBucket,
   ClipboardList,
   MoreHorizontal,
+  Droplet,
+  Zap,
+  Hammer,
 } from 'lucide-react-native';
 import { getUserSkills, updateUserSkill, UserSkill } from '@shared/supabase/profile';
 
@@ -46,6 +49,12 @@ const CATEGORY_CONFIG: Record<
     inactiveBgColor: '#FFEDD5', // orange-100
     badgeBgColor: '#F97316', // orange-500
   },
+  'Home Repairs': {
+    icon: Hammer,
+    activeBgColor: '#FCD34D', // amber-300
+    inactiveBgColor: '#FEF3C7', // amber-100
+    badgeBgColor: '#D97706', // amber-600
+  },
   Mounting: {
     icon: Frame,
     activeBgColor: '#BBF7D0', // green-200
@@ -63,6 +72,24 @@ const CATEGORY_CONFIG: Record<
     activeBgColor: '#A7F3D0', // emerald-200
     inactiveBgColor: '#D1FAE5', // emerald-100
     badgeBgColor: '#059669', // emerald-600
+  },
+  'Outdoor help': {
+    icon: Trees,
+    activeBgColor: '#A7F3D0', // emerald-200
+    inactiveBgColor: '#D1FAE5', // emerald-100
+    badgeBgColor: '#059669', // emerald-600
+  },
+  Plumbing: {
+    icon: Droplet,
+    activeBgColor: '#BFDBFE', // blue-200
+    inactiveBgColor: '#DBEAFE', // blue-100
+    badgeBgColor: '#2563EB', // blue-600
+  },
+  Electrical: {
+    icon: Zap,
+    activeBgColor: '#FDE047', // yellow-300
+    inactiveBgColor: '#FEF9C3', // yellow-100
+    badgeBgColor: '#EAB308', // yellow-500
   },
   Painting: {
     icon: PaintBucket,
@@ -104,7 +131,7 @@ export default function MySkillsScreen() {
     // Navigate to skill details to complete activation
     router.push({
       pathname: '/(professional)/skills/skill-details',
-      params: { skillId, skillName: skills.find((s) => s.id === skillId)?.skill?.name || '' },
+      params: { skillId, skillName: skills.find((s) => s.skill_id === skillId)?.skill?.name || '' },
     });
   };
 
@@ -116,6 +143,18 @@ export default function MySkillsScreen() {
         skillId: userSkill.skill_id,
         skillName: userSkill.skill?.name || '',
         rate: ((userSkill.hourly_rate_cents || 0) / 100).toString(),
+      },
+    });
+  };
+
+  const handleEditSkill = (userSkill: UserSkill) => {
+    // Navigate to skill edit screen
+    router.push({
+      pathname: '/(professional)/skills/skill-edit',
+      params: {
+        userSkillId: userSkill.id,
+        skillId: userSkill.skill_id,
+        skillName: userSkill.skill?.name || '',
       },
     });
   };
@@ -219,9 +258,13 @@ export default function MySkillsScreen() {
                       let dashedBorderColor = '#D1D5DB';
                       if (category === 'Assembly') dashedBorderColor = '#93C5FD';
                       else if (category === 'Cleaning') dashedBorderColor = '#D8B4FE';
+                      else if (category === 'Home Repairs') dashedBorderColor = '#FCD34D';
                       else if (category === 'Mounting') dashedBorderColor = '#86EFAC';
                       else if (category === 'Moving') dashedBorderColor = '#FDE047';
                       else if (category === 'Painting') dashedBorderColor = '#FBCFE8';
+                      else if (category === 'Plumbing') dashedBorderColor = '#93C5FD';
+                      else if (category === 'Electrical') dashedBorderColor = '#FDE047';
+                      else if (category === 'Outdoor help') dashedBorderColor = '#6EE7B7';
 
                       return (
                         <View
@@ -263,27 +306,47 @@ export default function MySkillsScreen() {
                             )}
                           </View>
                           {isActive ? (
-                            <Pressable
-                              onPress={() => handleEditRate(userSkill)}
-                              className="bg-[#C1856A] rounded-lg px-4 py-2 ml-3"
-                              style={{
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 3,
-                                elevation: 2,
-                              }}
-                            >
-                              <Text
-                                className="text-white text-sm font-semibold"
-                                style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                            <View className="flex-row gap-2">
+                              <Pressable
+                                onPress={() => handleEditSkill(userSkill)}
+                                className="bg-[#C1856A] rounded-lg px-4 py-2"
+                                style={{
+                                  shadowColor: '#000',
+                                  shadowOffset: { width: 0, height: 2 },
+                                  shadowOpacity: 0.1,
+                                  shadowRadius: 3,
+                                  elevation: 2,
+                                }}
                               >
-                                ${hourlyRate}/hr
-                              </Text>
-                            </Pressable>
+                                <Text
+                                  className="text-white text-sm font-semibold"
+                                  style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                                >
+                                  Edit
+                                </Text>
+                              </Pressable>
+                              <Pressable
+                                onPress={() => handleEditRate(userSkill)}
+                                className="bg-white border border-[#C1856A] rounded-lg px-4 py-2"
+                                style={{
+                                  shadowColor: '#000',
+                                  shadowOffset: { width: 0, height: 2 },
+                                  shadowOpacity: 0.1,
+                                  shadowRadius: 3,
+                                  elevation: 2,
+                                }}
+                              >
+                                <Text
+                                  className="text-[#C1856A] text-sm font-semibold"
+                                  style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                                >
+                                  ${hourlyRate}/hr
+                                </Text>
+                              </Pressable>
+                            </View>
                           ) : (
                             <Pressable
-                              onPress={() => handleActivateSkill(userSkill.id)}
+                              onPress={() => handleActivateSkill(userSkill.skill_id)}
                               className="bg-[#C1856A] rounded-lg px-4 py-2 ml-3"
                               style={{
                                 shadowColor: '#000',

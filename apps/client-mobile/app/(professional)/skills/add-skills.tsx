@@ -17,6 +17,9 @@ import {
   ClipboardList,
   MoreHorizontal,
   PlusCircle,
+  Droplet,
+  Zap,
+  Hammer,
 } from 'lucide-react-native';
 import { getSkillsByCategory, getUserSkills, Skill } from '@shared/supabase/profile';
 
@@ -24,10 +27,14 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<any>> = {
   Assembly: Wrench,
   Cleaning: Sparkles,
   'Home Improvements': Home,
+  'Home Repairs': Hammer,
   Mounting: Frame,
   Moving: TruckIcon,
   'Outdoor Maintenance': Trees,
+  'Outdoor help': Trees,
   Painting: PaintBucket,
+  Plumbing: Droplet,
+  Electrical: Zap,
   'Personal Assistance': ClipboardList,
   Other: MoreHorizontal,
 };

@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { ScrollView, Image, View, Text, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import {
-  CreditCard,
+  DollarSign,
+  Landmark,
   Smile,
-  HandCoins,
   Calendar,
   MapPin,
   Bell,
@@ -22,6 +22,7 @@ import { useProfileStore } from '@shared/supabase';
 import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
 import { supabase } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
+import { useWorkArea, useWeeklyAvailability } from '@shared/supabase';
 
 type VerificationStatus = 'pending' | 'submitted' | 'verified' | 'rejected' | null;
 
@@ -30,6 +31,23 @@ export default function ProfessionalDashboard() {
   const { profile, fetchProfile } = useProfileStore();
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // Fetch work area and availability for progress calculation
+  const { data: workArea } = useWorkArea();
+  const { data: weeklyAvailability } = useWeeklyAvailability();
+
+  // Calculate completed onboarding tasks
+  const totalTasks = 5;
+  const completedTasks = useMemo(() => {
+    let count = 0;
+    if (profile?.avatar_url) count++;                                           // 1. Profile photo
+    if (verificationStatus === 'verified') count++;                             // 2. ID verification
+    if (workArea?.coordinates && workArea.coordinates.length >= 3) count++;     // 3. Work area set
+    if (weeklyAvailability && Object.keys(weeklyAvailability).length > 0) count++; // 4. Availability set
+    return count;
+  }, [profile?.avatar_url, verificationStatus, workArea, weeklyAvailability]);
+
+  const progressPercent = (completedTasks / totalTasks) * 100;
 
   useEffect(() => {
     if (user) {
@@ -100,45 +118,55 @@ export default function ProfessionalDashboard() {
     }
   }, [present]);
 
+  // Check completion status for each task
+  const hasProfilePhoto = !!profile?.avatar_url;
+  const hasAvailability = weeklyAvailability && Object.keys(weeklyAvailability).length > 0;
+  const hasWorkArea = workArea?.coordinates && workArea.coordinates.length >= 3;
+
   const onboardingTasks = [
     {
-      icon: <CreditCard color="#D17852" size={28} strokeWidth={1.5} />,
-      title: '100 Handy Support',
+      icon: <DollarSign color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Name your price',
       duration: '4 MIN PER SKILL',
+      completed: false, // TODO: Track when professional has set service prices
       onPress: () => {
-        // TODO: Navigate to support screen
+        router.push('/(professional)/skills/my-skills');
       },
     },
     {
-      icon: <Smile color="#D17852" size={28} strokeWidth={1.5} />,
+      icon: <Landmark color="#D17852" size={28} strokeWidth={1.5} />,
+      title: 'Set up direct deposit',
+      duration: '2 MIN',
+      completed: false, // TODO: Track when Stripe Connect is set up
+      onPress: () => {
+        router.push('/(professional)/profile/direct-deposit');
+      },
+    },
+    {
+      icon: <Smile color={hasProfilePhoto ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
       title: 'Upload a profile photo',
       duration: '2 MIN',
+      completed: hasProfilePhoto,
       onPress: () => {
         router.push('/(professional)/add-profile-photo');
       },
     },
     {
-      icon: <HandCoins color="#D17852" size={28} strokeWidth={1.5} />,
-      title: 'Set your hourly rate',
-      duration: '2 MIN',
-      onPress: () => {
-        // TODO: Navigate to hourly rate screen
-      },
-    },
-    {
-      icon: <Calendar color="#D17852" size={28} strokeWidth={1.5} />,
+      icon: <Calendar color={hasAvailability ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
       title: 'Set availability',
       duration: '4 MIN',
+      completed: hasAvailability,
       onPress: () => {
-        router.push('/(professional)/set-availability');
+        router.push('/(professional)/(tabs)/bookings');
       },
     },
     {
-      icon: <MapPin color="#D17852" size={28} strokeWidth={1.5} />,
+      icon: <MapPin color={hasWorkArea ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
       title: 'Set work area',
       duration: '4 MIN',
+      completed: hasWorkArea,
       onPress: () => {
-        router.push('/(professional)/set-work-area');
+        router.push('/(professional)/(tabs)/work-area');
       },
     },
   ];
@@ -283,10 +311,13 @@ export default function ProfessionalDashboard() {
       >
         <View className="flex-col px-5 pt-5 pb-3">
           <Text className="font-worksans-bold text-[18px] text-[#30352D] mb-2.5">
-            Onboarding progress (0/5)
+            Onboarding progress ({completedTasks}/{totalTasks})
           </Text>
           <View className="h-[3px] bg-[#E5E5E5] rounded-full overflow-hidden">
-            <View className="h-full w-0 bg-[#E67A3D]" />
+            <View
+              className="h-full bg-[#E67A3D]"
+              style={{ width: `${progressPercent}%` }}
+            />
           </View>
         </View>
 
@@ -297,6 +328,7 @@ export default function ProfessionalDashboard() {
               icon={task.icon}
               title={task.title}
               duration={task.duration}
+              completed={task.completed}
               onPress={task.onPress}
             />
           ))}

@@ -54,6 +54,7 @@ export async function getOrCreateStripeCustomer(): Promise<string | null> {
     // Otherwise, create a new Stripe customer via edge function
     const { data, error } = await supabase.functions.invoke('create-stripe-customer', {
       body: {
+        userId: user.id,
         email: user.email,
         name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.email,
       },

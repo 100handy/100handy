@@ -1,5 +1,7 @@
 // packages/shared/supabase/profile.ts
 import { supabase } from './supabaseClient.native';
+import { File } from 'expo-file-system';
+import { decode } from 'base64-arraybuffer';
 
 export interface UserProfile {
   user_id: string;
@@ -120,18 +122,24 @@ export async function updateUserAvatar(imageUri: string): Promise<string | null>
       return null;
     }
 
-    // Convert image URI to blob for upload
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    // Read image file as base64 using new expo-file-system API
+    const file = new File(imageUri);
+    const base64 = await file.base64();
 
-    const fileExt = imageUri.split('.').pop();
+    // Decode base64 to ArrayBuffer for Supabase upload
+    const arrayBuffer = decode(base64);
+
+    const fileExt = imageUri.split('.').pop() || 'jpg';
     const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const filePath = `${fileName}`;
 
     // Upload image to Supabase storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(filePath, blob);
+      .upload(filePath, arrayBuffer, {
+        contentType: `image/${fileExt === 'jpg' ? 'jpeg' : fileExt}`,
+        upsert: true,
+      });
 
     if (uploadError) {
       console.error('Error uploading avatar:', uploadError);
@@ -209,18 +217,24 @@ export async function uploadBusinessPhoto(userSkillId: string, imageUri: string)
       return null;
     }
 
-    // Convert image URI to blob for upload
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    // Read image file as base64 using new expo-file-system API
+    const file = new File(imageUri);
+    const base64 = await file.base64();
 
-    const fileExt = imageUri.split('.').pop();
+    // Decode base64 to ArrayBuffer for Supabase upload
+    const arrayBuffer = decode(base64);
+
+    const fileExt = imageUri.split('.').pop() || 'jpg';
     const fileName = `${user.id}-${userSkillId}-${Date.now()}.${fileExt}`;
-    const filePath = `business-photos/${fileName}`;
+    const filePath = `${fileName}`;
 
     // Upload image to Supabase storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('business-photos')
-      .upload(filePath, blob);
+      .upload(filePath, arrayBuffer, {
+        contentType: `image/${fileExt === 'jpg' ? 'jpeg' : fileExt}`,
+        upsert: true,
+      });
 
     if (uploadError) {
       console.error('Error uploading business photo:', uploadError);
@@ -451,18 +465,24 @@ export async function uploadVerificationDocument(
       return null;
     }
 
-    // Convert image URI to blob for upload
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    // Read image file as base64 using new expo-file-system API
+    const file = new File(imageUri);
+    const base64 = await file.base64();
 
-    const fileExt = imageUri.split('.').pop();
+    // Decode base64 to ArrayBuffer for Supabase upload
+    const arrayBuffer = decode(base64);
+
+    const fileExt = imageUri.split('.').pop() || 'jpg';
     const fileName = `${user.id}-${documentType}-${Date.now()}.${fileExt}`;
-    const filePath = `verification-documents/${fileName}`;
+    const filePath = `${fileName}`;
 
     // Upload document to Supabase storage
     const { error: uploadError } = await supabase.storage
       .from('verification-documents')
-      .upload(filePath, blob);
+      .upload(filePath, arrayBuffer, {
+        contentType: `image/${fileExt === 'jpg' ? 'jpeg' : fileExt}`,
+        upsert: true,
+      });
 
     if (uploadError) {
       console.error('Error uploading verification document:', uploadError);
@@ -823,6 +843,8 @@ export interface UserSkill {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  experience_description?: string;
+  supplies_owned?: string[];
   skill?: Skill;
 }
 
@@ -916,6 +938,7 @@ export async function getUserSkills(): Promise<UserSkill[]> {
 
 /**
  * Add a skill to user's profile
+ * Uses upsert to handle cases where the skill already exists (will update instead of failing)
  */
 export async function addUserSkill(input: UserSkillInput): Promise<UserSkill | null> {
   try {
@@ -928,12 +951,17 @@ export async function addUserSkill(input: UserSkillInput): Promise<UserSkill | n
 
     const { data, error } = await supabase
       .from('user_skills')
-      .insert({
-        user_id: user.id,
-        skill_id: input.skill_id,
-        hourly_rate_cents: input.hourly_rate_cents || 0,
-        is_active: input.is_active !== undefined ? input.is_active : true,
-      })
+      .upsert(
+        {
+          user_id: user.id,
+          skill_id: input.skill_id,
+          hourly_rate_cents: input.hourly_rate_cents || 0,
+          is_active: input.is_active !== undefined ? input.is_active : true,
+        },
+        {
+          onConflict: 'user_id,skill_id',
+        }
+      )
       .select(`
         *,
         skill:skills(*)
@@ -991,6 +1019,56 @@ export async function updateUserSkill(
 }
 
 /**
+ * Update user skill details (experience description and supplies)
+ */
+export async function updateUserSkillDetails(
+  userSkillId: string,
+  updates: {
+    experience_description?: string;
+    supplies_owned?: string[];
+  }
+): Promise<UserSkill | null> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return null;
+    }
+
+    const updateData: any = {};
+    if (updates.experience_description !== undefined) {
+      updateData.experience_description = updates.experience_description || null;
+    }
+    if (updates.supplies_owned !== undefined) {
+      // Ensure supplies_owned is always an array for JSONB
+      updateData.supplies_owned = Array.isArray(updates.supplies_owned) ? updates.supplies_owned : [];
+    }
+
+    const { data, error } = await supabase
+      .from('user_skills')
+      .update(updateData)
+      .eq('id', userSkillId)
+      .eq('user_id', user.id)
+      .select(`
+        *,
+        skill:skills(*)
+      `)
+      .single();
+
+    if (error) {
+      console.error('Error updating user skill details:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in updateUserSkillDetails:', error);
+    return null;
+  }
+}
+
+/**
  * Remove a skill from user's profile
  */
 export async function deleteUserSkill(userSkillId: string): Promise<boolean> {
@@ -1017,6 +1095,74 @@ export async function deleteUserSkill(userSkillId: string): Promise<boolean> {
   } catch (error) {
     console.error('Error in deleteUserSkill:', error);
     return false;
+  }
+}
+
+// ============= SKILL SETS & TOOLS FUNCTIONS =============
+
+export interface SkillSet {
+  id: string;
+  skill_id: string;
+  skill_type: 'required' | 'additional';
+  description: string;
+  display_order: number;
+  created_at: string;
+}
+
+export interface SkillTool {
+  id: string;
+  skill_id: string;
+  tool_name: string;
+  is_required: boolean;
+  display_order: number;
+  created_at: string;
+}
+
+/**
+ * Get skill sets for a specific skill
+ */
+export async function getSkillSets(skillId: string): Promise<SkillSet[]> {
+  try {
+    const { data, error } = await supabase
+      .from('skill_sets')
+      .select('*')
+      .eq('skill_id', skillId)
+      .order('skill_type', { ascending: true })
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching skill sets:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getSkillSets:', error);
+    return [];
+  }
+}
+
+/**
+ * Get tools for a specific skill
+ */
+export async function getSkillTools(skillId: string): Promise<SkillTool[]> {
+  try {
+    const { data, error } = await supabase
+      .from('skill_tools')
+      .select('*')
+      .eq('skill_id', skillId)
+      .order('is_required', { ascending: false })
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching skill tools:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getSkillTools:', error);
+    return [];
   }
 }
 
