@@ -573,7 +573,7 @@ export interface ChatTemplate {
 }
 
 export interface ChatTemplateInput {
-  template_type: 'default' | 'ongoing';
+  template_type: 'default' | 'ongoing' | string;
   message: string;
 }
 
@@ -581,7 +581,7 @@ export interface ChatTemplateInput {
  * Get a specific chat template for the current user
  */
 export async function getChatTemplate(
-  templateType: 'default' | 'ongoing'
+  templateType: 'default' | 'ongoing' | string
 ): Promise<ChatTemplate | null> {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -702,10 +702,10 @@ export async function saveChatTemplate(
 }
 
 /**
- * Delete a chat template
+ * Delete a chat template by type
  */
 export async function deleteChatTemplate(
-  templateType: 'default' | 'ongoing'
+  templateType: 'default' | 'ongoing' | string
 ): Promise<boolean> {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -729,6 +729,38 @@ export async function deleteChatTemplate(
     return true;
   } catch (error) {
     console.error('Error in deleteChatTemplate:', error);
+    return false;
+  }
+}
+
+/**
+ * Delete a chat template by ID
+ */
+export async function deleteChatTemplateById(
+  templateId: string
+): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('chat_templates')
+      .delete()
+      .eq('id', templateId)
+      .eq('user_id', user.id); // Ensure user can only delete their own templates
+
+    if (error) {
+      console.error('Error deleting chat template by ID:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteChatTemplateById:', error);
     return false;
   }
 }

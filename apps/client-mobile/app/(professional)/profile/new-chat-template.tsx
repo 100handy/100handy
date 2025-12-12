@@ -1,21 +1,44 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
+import { saveChatTemplate } from '@shared/supabase';
 
 export default function NewChatTemplateScreen() {
     const router = useRouter();
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
     const MAX_TITLE_LENGTH = 50;
     const MAX_MESSAGE_LENGTH = 500;
 
-    const handleSave = () => {
-        if (title.trim() && message.trim()) {
-            console.log('Saving template:', { title, message });
-            router.back();
+    const handleSave = async () => {
+        if (!title.trim() || !message.trim()) return;
+
+        setIsSaving(true);
+        try {
+            // Use title as the template_type (prefixed with 'custom_' to distinguish from default/ongoing)
+            const templateType = `custom_${title.trim().toLowerCase().replace(/\s+/g, '_')}`;
+
+            const result = await saveChatTemplate({
+                template_type: templateType,
+                message: message.trim(),
+            });
+
+            if (result) {
+                Alert.alert('Success', 'Template saved successfully', [
+                    { text: 'OK', onPress: () => router.back() }
+                ]);
+            } else {
+                Alert.alert('Error', 'Failed to save template. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error saving template:', error);
+            Alert.alert('Error', 'Failed to save template. Please try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -81,13 +104,17 @@ export default function NewChatTemplateScreen() {
                 {/* Save Button */}
                 <View className="px-5 pb-6 pt-4 bg-white">
                     <Pressable
-                        className={`rounded-full py-4 items-center ${isValid ? 'bg-clay-orange' : 'bg-gray-200'}`}
+                        className={`rounded-full py-4 items-center ${isValid && !isSaving ? 'bg-clay-orange' : 'bg-gray-200'}`}
                         onPress={handleSave}
-                        disabled={!isValid}
+                        disabled={!isValid || isSaving}
                     >
-                        <Text className={`font-worksans-semibold text-lg ${isValid ? 'text-white' : 'text-gray-400'}`}>
-                            Save
-                        </Text>
+                        {isSaving ? (
+                            <ActivityIndicator color="#FFFFFF" />
+                        ) : (
+                            <Text className={`font-worksans-semibold text-lg ${isValid ? 'text-white' : 'text-gray-400'}`}>
+                                Save
+                            </Text>
+                        )}
                     </Pressable>
                 </View>
             </KeyboardAvoidingView>

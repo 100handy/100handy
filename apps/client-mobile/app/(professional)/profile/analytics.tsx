@@ -1,7 +1,8 @@
-import React from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import React, { useCallback } from 'react';
+import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Import lucide-react-native icons
 import {
@@ -11,25 +12,55 @@ import {
   TrendingUp,
   CreditCard,
   Briefcase,
-  X,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { AnalyticsWelcome } from '@/components/analytics';
+import {
+  getProfessionalAnalytics,
+  useAuthStore,
+  type AnalyticsData,
+} from '@shared/supabase';
 
 const ANALYTICS_WELCOME_KEY = '@hasSeenAnalyticsWelcome';
 
 type TabType = 'opportunity' | 'earnings' | 'tasks';
 
+function formatCurrency(cents: number): string {
+  return `£${(cents / 100).toFixed(2)}`;
+}
+
 export default function AnalyticsScreen() {
   const router = useRouter();
-  const [showError, setShowError] = React.useState(true);
+  const { user } = useAuthStore();
   const [showWelcome, setShowWelcome] = React.useState(false);
   const [isCheckingWelcome, setIsCheckingWelcome] = React.useState(true);
   const [activeTab, setActiveTab] = React.useState<TabType>('opportunity');
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [analytics, setAnalytics] = React.useState<AnalyticsData | null>(null);
 
   React.useEffect(() => {
     checkWelcomeStatus();
   }, []);
+
+  const loadAnalytics = useCallback(async () => {
+    if (!user?.id) return;
+
+    setIsLoading(true);
+    try {
+      const data = await getProfessionalAnalytics(user.id);
+      setAnalytics(data);
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadAnalytics();
+    }, [loadAnalytics])
+  );
 
   const checkWelcomeStatus = async () => {
     try {
@@ -63,6 +94,14 @@ export default function AnalyticsScreen() {
     return <AnalyticsWelcome onComplete={handleWelcomeComplete} onSkip={handleWelcomeComplete} />;
   }
 
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#C1856A" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
@@ -88,25 +127,6 @@ export default function AnalyticsScreen() {
             </Pressable>
           </View>
         </View>
-
-        {/* Error Message Banner */}
-        {showError && (
-          <View className="bg-[#FEF3C7] px-6 py-4">
-            <View className="flex-row items-start justify-between">
-              <View className="flex-col flex-1 mr-3">
-                <Text
-                  className="text-[#92400E] text-sm"
-                  style={{ fontFamily: 'WorkSans_400Regular' }}
-                >
-                  Sorry! There seems to be a problem on our end. Please check back later.
-                </Text>
-              </View>
-              <Pressable onPress={() => setShowError(false)}>
-                <X size={20} color="#92400E" />
-              </Pressable>
-            </View>
-          </View>
-        )}
 
         {/* Main Content */}
         <ScrollView className="flex-1">
@@ -229,7 +249,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
+                        {formatCurrency(analytics?.totalEarnings || 0)}
                       </Text>
                     </View>
                   </View>
@@ -250,7 +270,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
+                        {formatCurrency(analytics?.anticipatedEarnings || 0)}
                       </Text>
                     </View>
                   </View>
@@ -271,7 +291,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
+                        {analytics?.earningsPercentile || 0}%
                       </Text>
                     </View>
                     <Text
@@ -313,7 +333,7 @@ export default function AnalyticsScreen() {
                     className="text-[#16A34A] text-lg font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
-                    - -
+                    {formatCurrency(analytics?.totalEarnings || 0)}
                   </Text>
                 </View>
 
@@ -357,7 +377,7 @@ export default function AnalyticsScreen() {
                     className="text-[#16A34A] text-lg font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
-                    - -
+                    {formatCurrency(analytics?.anticipatedEarnings || 0)}
                   </Text>
                 </View>
 
@@ -827,7 +847,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
+                        {analytics?.completedTasks || 0}
                       </Text>
                     </View>
                   </View>
@@ -848,7 +868,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
+                        {analytics?.anticipatedTasks || 0}
                       </Text>
                     </View>
                   </View>
@@ -869,7 +889,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
+                        {analytics?.taskPercentile || 0}%
                       </Text>
                     </View>
                     <Text
@@ -911,7 +931,7 @@ export default function AnalyticsScreen() {
                     className="text-[#16A34A] text-lg font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
-                    - -
+                    {analytics?.completedTasks || 0}
                   </Text>
                 </View>
 
@@ -955,7 +975,7 @@ export default function AnalyticsScreen() {
                     className="text-[#16A34A] text-lg font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
-                    - -
+                    {analytics?.anticipatedTasks || 0} tasks
                   </Text>
                 </View>
 

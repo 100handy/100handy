@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Check, X, Lightbulb } from 'lucide-react-native';
+import { ChevronLeft, CheckCircle2, X, Lightbulb } from 'lucide-react-native';
 import {
   getUserSkills,
   updateUserSkillDetails,
@@ -201,21 +201,22 @@ export default function SkillEditScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
         {/* Header */}
-        <View className="flex-row items-center justify-between px-4 py-5 border-b border-gray-200">
-          <Pressable onPress={() => router.back()}>
-            <ChevronLeft size={24} color="#111827" strokeWidth={2} />
-          </Pressable>
-          <Text
-            className="flex-1 text-center text-xl font-bold text-gray-900"
-            style={{ fontFamily: 'WorkSans_700Bold' }}
-          >
-            {params.skillName || userSkill.skill?.name || 'Skill Details'}
-          </Text>
-          <View className="w-6" />
+        <View className="border-b border-gray-200">
+          <View className="flex-row items-center justify-center px-4 py-4">
+            <Pressable onPress={() => router.back()} className="absolute left-4">
+              <ChevronLeft size={24} color="#1F2937" strokeWidth={2} />
+            </Pressable>
+            <Text
+              className="text-lg font-bold text-gray-900"
+              style={{ fontFamily: 'WorkSans_700Bold' }}
+            >
+              {params.skillName || userSkill.skill?.name || 'Skill Details'}
+            </Text>
+          </View>
         </View>
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="px-4 py-8">
+          <View className="px-6 py-6">
             {/* Experience Description */}
             <View className="mb-8">
               <View className="relative">
@@ -231,11 +232,11 @@ export default function SkillEditScreen() {
                   multiline
                   numberOfLines={5}
                   textAlignVertical="top"
-                  className="w-full border border-gray-300 rounded-lg p-5 text-base text-gray-900 min-h-[140px]"
+                  className="w-full border-b border-gray-300 pb-12 pt-2 text-base text-gray-900 min-h-[120px]"
                   style={{ fontFamily: 'WorkSans_400Regular', lineHeight: 22 }}
                 />
                 <Text
-                  className="absolute bottom-4 right-4 text-sm text-gray-500"
+                  className="absolute bottom-2 right-0 text-sm text-gray-400"
                   style={{ fontFamily: 'WorkSans_400Regular' }}
                 >
                   {experience.length}/{MAX_CHARS}
@@ -247,50 +248,45 @@ export default function SkillEditScreen() {
             {supplies.length > 0 && (
               <View className="mb-8">
                 <Text
-                  className="text-lg font-bold text-gray-900 mb-3"
+                  className="text-xl font-bold text-gray-900 mb-2"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Supplies
                 </Text>
                 <Text
-                  className="text-sm text-gray-600 mb-5"
-                  style={{ fontFamily: 'WorkSans_400Regular', lineHeight: 20 }}
+                  className="text-base text-gray-600 mb-6"
+                  style={{ fontFamily: 'WorkSans_400Regular', lineHeight: 22 }}
                 >
                   Clients expect you to bring supplies, and you will only be hired if you have them.
                 </Text>
 
-                <View className="space-y-4">
+                <View className="gap-4">
                   {supplies.map((supply) => {
                     const isOwned = suppliesOwned.has(supply.id);
                     return (
                       <Pressable
                         key={supply.id}
                         onPress={() => handleToggleSupply(supply.id)}
-                        className="flex-row items-start p-5 border border-gray-200 rounded-lg"
-                        style={{
-                          backgroundColor: isOwned ? '#F0FDF4' : 'white',
-                          borderColor: isOwned ? '#10B981' : '#E5E7EB',
-                        }}
+                        className="flex-row items-start"
                       >
-                        <View
-                          className="w-6 h-6 rounded border-2 items-center justify-center mr-4 mt-0.5"
-                          style={{
-                            borderColor: isOwned ? '#10B981' : '#D1D5DB',
-                            backgroundColor: isOwned ? '#10B981' : 'white',
-                          }}
-                        >
-                          {isOwned && <Check size={16} color="white" strokeWidth={3} />}
+                        <View className="mr-3 mt-0.5">
+                          <CheckCircle2
+                            size={24}
+                            color={isOwned ? '#10B981' : '#D1D5DB'}
+                            fill={isOwned ? '#10B981' : 'transparent'}
+                            strokeWidth={2}
+                          />
                         </View>
                         <View className="flex-1">
                           <Text
-                            className="text-base font-semibold text-gray-900 mb-2"
+                            className="text-base font-semibold text-gray-900"
                             style={{ fontFamily: 'WorkSans_600SemiBold' }}
                           >
                             {supply.name}
                           </Text>
                           {supply.description && (
                             <Text
-                              className="text-sm text-gray-600"
+                              className="text-sm text-gray-500 mt-1"
                               style={{ fontFamily: 'WorkSans_400Regular', lineHeight: 20 }}
                             >
                               {supply.description}
@@ -307,16 +303,16 @@ export default function SkillEditScreen() {
         </ScrollView>
 
         {/* Action Buttons */}
-        <View className="px-4 pb-8 bg-white border-t border-gray-200 pt-6">
-          <View className="space-y-4">
+        <View className="px-6 pb-6 bg-white border-t border-gray-200 pt-4">
+          <View className="gap-3">
             {/* Remove Skill */}
             <Pressable
               onPress={handleRemoveSkill}
-              className="w-full border-2 border-gray-300 rounded-lg py-4 active:opacity-80"
+              className="w-full border-2 border-[#C1856A] rounded-full py-4 active:opacity-80"
             >
               <Text
-                className="text-center text-base font-semibold text-gray-700"
-                style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                className="text-center text-base font-bold text-[#C1856A]"
+                style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 Remove this Skill
               </Text>
@@ -326,13 +322,13 @@ export default function SkillEditScreen() {
             {tips.length > 0 && (
               <Pressable
                 onPress={() => setShowTipsModal(true)}
-                className="w-full border-2 border-gray-300 rounded-lg py-3 active:opacity-80"
+                className="w-full border-2 border-[#C1856A] rounded-full py-4 active:opacity-80"
               >
                 <Text
-                  className="text-center text-base font-semibold text-gray-700"
-                  style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                  className="text-center text-base font-bold text-[#C1856A]"
+                  style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
-                  {params.skillName || userSkill.skill?.name || 'Skill'} Tips
+                  {skillCategory || 'Skill'} Tips
                 </Text>
               </Pressable>
             )}
@@ -340,11 +336,11 @@ export default function SkillEditScreen() {
             {/* View Expectations */}
             <Pressable
               onPress={handleViewExpectations}
-              className="w-full border-2 border-gray-300 rounded-lg py-4 active:opacity-80"
+              className="w-full border-2 border-[#C1856A] rounded-full py-4 active:opacity-80"
             >
               <Text
-                className="text-center text-base font-semibold text-gray-700"
-                style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                className="text-center text-base font-bold text-[#C1856A]"
+                style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 View Expectations
               </Text>
@@ -354,18 +350,21 @@ export default function SkillEditScreen() {
             <Pressable
               onPress={handleSave}
               disabled={isSaving}
-              className={`w-full bg-[#C1856A] rounded-lg py-5 shadow-md ${
+              className={`w-full bg-[#C1856A] rounded-full py-4 ${
                 isSaving ? 'opacity-50' : 'active:opacity-80'
               }`}
             >
               <Text
-                className="text-center text-lg font-semibold text-white"
-                style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                className="text-center text-base font-bold text-white"
+                style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 {isSaving ? 'Saving...' : 'Save'}
               </Text>
             </Pressable>
           </View>
+
+          {/* Home Indicator */}
+          <View className="w-32 h-1 bg-gray-900 rounded-full mx-auto mt-4" />
         </View>
 
         {/* Tips Modal */}

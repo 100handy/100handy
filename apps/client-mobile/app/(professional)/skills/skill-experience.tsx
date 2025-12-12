@@ -3,7 +3,7 @@ import { ScrollView, View, Text, Pressable, TextInput, KeyboardAvoidingView, Pla
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Lightbulb } from 'lucide-react-native';
-import { addUserSkill } from '@shared/supabase/profile';
+import { addUserSkill, updateUserSkillDetails } from '@shared/supabase/profile';
 
 const MAX_CHARS = 500;
 
@@ -20,12 +20,19 @@ export default function SkillExperienceScreen() {
       // Convert rate from dollars to cents
       const rateCents = parseInt(params.rate) * 100;
 
-      // Add user skill with rate and experience
-      await addUserSkill({
+      // Add user skill with rate
+      const userSkill = await addUserSkill({
         skill_id: params.skillId,
         hourly_rate_cents: rateCents,
         is_active: true,
       });
+
+      // Save experience description if provided
+      if (userSkill && experience.trim()) {
+        await updateUserSkillDetails(userSkill.id, {
+          experience_description: experience.trim(),
+        });
+      }
 
       // Navigate back to my skills screen
       router.replace('/(professional)/skills/my-skills');
