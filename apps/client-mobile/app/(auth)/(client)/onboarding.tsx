@@ -10,8 +10,7 @@ import Logo100Top from '@/assets/images/logo-100-top.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
 import { supabase } from '@shared/supabase';
-
-const ONBOARDING_KEY = '@hasSeenOnboarding';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -274,7 +273,7 @@ export default function ClientOnboarding() {
   const completeOnboarding = async (): Promise<void> => {
     try {
       // Save to AsyncStorage for future app launches
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      await AsyncStorage.setItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING, 'true');
 
       // If user is already authenticated, update their metadata
       if (isAuthenticated) {

@@ -5,16 +5,24 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Image } from 'expo-image';
 import { CheckIcon, ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-
-// TODO: Implement checkbox with React Native component
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 export default function TermsAndPrivacyScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [marketingAccepted, setMarketingAccepted] = useState(false);
   const router = useRouter();
 
-  const handleContinue = () => {
-    if (termsAccepted) {
+  const handleContinue = async () => {
+    if (!termsAccepted) return;
+
+    try {
+      // Save terms acceptance to AsyncStorage
+      await AsyncStorage.setItem(STORAGE_KEYS.HAS_ACCEPTED_TERMS, 'true');
+      router.push('/(auth)/(client)/sign-up');
+    } catch (error) {
+      console.error('Error saving terms acceptance:', error);
+      // Still navigate even if storage fails
       router.push('/(auth)/(client)/sign-up');
     }
   };

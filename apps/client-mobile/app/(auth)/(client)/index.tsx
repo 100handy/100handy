@@ -1,13 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight } from 'lucide-react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Loader } from '@/components/ui/loader';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 export default function ClientWelcome() {
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    checkReturningUser();
+  }, []);
+
+  const checkReturningUser = async (): Promise<void> => {
+    try {
+      const [hasSeenOnboarding, hasAcceptedTerms] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING),
+        AsyncStorage.getItem(STORAGE_KEYS.HAS_ACCEPTED_TERMS),
+      ]);
+
+      // Returning user: has seen onboarding AND accepted terms before
+      if (hasSeenOnboarding === 'true' && hasAcceptedTerms === 'true') {
+        // Skip welcome, onboarding, terms - go directly to sign-in
+        router.replace('/(auth)/(client)/sign-in');
+        return;
+      }
+
+      // First-time user or incomplete flow - show welcome screen
+      setIsChecking(false);
+    } catch (error) {
+      console.error('Error checking returning user status:', error);
+      setIsChecking(false);
+    }
+  };
+
   const handleGetStarted = (): void => {
     router.push('/(auth)/(client)/onboarding');
   };
+
+  if (isChecking) {
+    return <Loader />;
+  }
 
   return (
     <View className="flex-1 bg-white">

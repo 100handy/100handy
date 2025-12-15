@@ -7,8 +7,7 @@ import { signUp } from '@shared/supabase/auth';
 import SignUpForm from '@/components/auth/SignUpForm';
 import { useToast } from '@/components/ui/toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const ONBOARDING_KEY = '@hasSeenOnboarding';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 export default function ClientSignUp() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +15,11 @@ export default function ClientSignUp() {
 
   const handleNotNow = async (): Promise<void> => {
     try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      // Set both flags since user has seen both onboarding and terms screens
+      await Promise.all([
+        AsyncStorage.setItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING, 'true'),
+        AsyncStorage.setItem(STORAGE_KEYS.HAS_ACCEPTED_TERMS, 'true'),
+      ]);
       router.replace('/(client)/(tabs)/home');
     } catch (error) {
       console.error('Error saving onboarding status:', error);

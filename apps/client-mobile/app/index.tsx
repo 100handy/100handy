@@ -4,8 +4,7 @@ import { Loader } from "@/components/ui/loader";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
-
-const ONBOARDING_KEY = '@hasSeenOnboarding';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 /**
  * Index Route - Entry Point
@@ -40,9 +39,9 @@ export default function Index() {
       // Priority 1: If user is authenticated, route them appropriately
       if (isAuthenticated && user) {
         // Set the onboarding flag if not already set (for future visits)
-        const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
+        const hasSeenOnboarding = await AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING);
         if (hasSeenOnboarding !== 'true') {
-          await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+          await AsyncStorage.setItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING, 'true');
         }
         // Route authenticated user
         await routeAuthenticatedUser();
@@ -50,7 +49,7 @@ export default function Index() {
       }
 
       // Priority 2: User is not authenticated - check if they've seen onboarding before
-      const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
+      const hasSeenOnboarding = await AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING);
       
       if (hasSeenOnboarding === 'true') {
         // Returning user but not authenticated - redirect to login
