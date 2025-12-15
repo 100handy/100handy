@@ -204,3 +204,179 @@ export function getStripePublishableKey(): string {
   // This will be set in the app's environment variables
   return process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
 }
+
+// ==========================================
+// Stripe Connect Functions (for Professionals)
+// ==========================================
+
+export interface ConnectAccountResult {
+  accountId: string;
+  accountLinkUrl: string;
+  status: string;
+  isExisting: boolean;
+}
+
+export interface ConnectAccountStatus {
+  hasAccount: boolean;
+  accountId?: string;
+  status: string;
+  payoutsEnabled: boolean;
+  chargesEnabled: boolean;
+  detailsSubmitted?: boolean;
+  requirements?: {
+    currentlyDue: string[];
+    eventuallyDue: string[];
+    pastDue: string[];
+    pendingVerification: string[];
+    disabledReason: string | null;
+  };
+  externalAccounts: Array<{
+    id: string;
+    type: string;
+    last4: string;
+    bankName: string;
+    currency: string;
+    country: string;
+    default: boolean;
+  }>;
+  country?: string;
+  defaultCurrency?: string;
+}
+
+export interface AccountLinkResult {
+  url: string;
+  expiresAt: number;
+}
+
+/**
+ * Get or create a Stripe Connect account for the current professional user
+ * Returns the account ID and onboarding URL
+ */
+export async function getOrCreateStripeConnectAccount(
+  country?: string,
+  refreshUrl?: string,
+  returnUrl?: string
+): Promise<ConnectAccountResult | null> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return null;
+    }
+
+    // Get user's profile for email
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+    }
+
+    // Create or get Connect account via edge function
+    const { data, error } = await supabase.functions.invoke('create-stripe-connect-account', {
+      body: {
+        userId: user.id,
+        email: user.email,
+        country: country || 'GB',
+        refreshUrl,
+        returnUrl,
+      },
+    });
+
+    if (error) {
+      console.error('Error creating/getting Stripe Connect account:', error);
+      // Throw the error so the UI can display it
+      throw new Error(error.message || 'Failed to create Stripe Connect account');
+    }
+
+    // Check if the response contains an error field (from our edge function)
+    if (data?.error) {
+      console.error('Stripe Connect API error:', data);
+      throw new Error(data.error);
+    }
+
+    return {
+      accountId: data.accountId,
+      accountLinkUrl: data.accountLinkUrl,
+      status: data.status,
+      isExisting: data.isExisting,
+    };
+  } catch (error: any) {
+    console.error('Error in getOrCreateStripeConnectAccount:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get the current status of the professional's Stripe Connect account
+ */
+export async function getConnectAccountStatus(): Promise<ConnectAccountStatus | null> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return null;
+    }
+
+    // Get Connect account status via edge function
+    const { data, error } = await supabase.functions.invoke('get-stripe-connect-status', {
+      body: { userId: user.id },
+    });
+
+    if (error) {
+      console.error('Error getting Stripe Connect status:', error);
+      return null;
+    }
+
+    return data as ConnectAccountStatus;
+  } catch (error) {
+    console.error('Error in getConnectAccountStatus:', error);
+    return null;
+  }
+}
+
+/**
+ * Create an account link for Stripe Connect onboarding or updating
+ */
+export async function createConnectAccountLink(
+  linkType: 'onboarding' | 'update' = 'onboarding',
+  refreshUrl?: string,
+  returnUrl?: string
+): Promise<AccountLinkResult | null> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return null;
+    }
+
+    // Create account link via edge function
+    const { data, error } = await supabase.functions.invoke('create-stripe-account-link', {
+      body: {
+        userId: user.id,
+        linkType,
+        refreshUrl,
+        returnUrl,
+      },
+    });
+
+    if (error) {
+      console.error('Error creating Stripe account link:', error);
+      return null;
+    }
+
+    return {
+      url: data.url,
+      expiresAt: data.expiresAt,
+    };
+  } catch (error) {
+    console.error('Error in createConnectAccountLink:', error);
+    return null;
+  }
+}
