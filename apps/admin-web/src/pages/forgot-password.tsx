@@ -1,21 +1,12 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '@/lib/supabase'
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const navigate = useNavigate()
-  const { signIn, user, isAdmin } = useAuth()
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-
-  // Redirect to dashboard if already logged in as admin
-  useEffect(() => {
-    if (user && isAdmin) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [user, isAdmin, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,16 +14,20 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await signIn(email, password)
-      setLoading(false)
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
 
-      if (result.error) {
-        setError(result.error.message || 'Failed to sign in. Please check your credentials.')
+      if (error) {
+        setError(error.message)
       } else {
-        navigate('/dashboard')
+        // Redirect to verify-code page with email and reset flag
+        navigate(`/verify-code?email=${encodeURIComponent(email)}&reset=true`)
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
+      console.error('Password reset error:', err)
+    } finally {
       setLoading(false)
     }
   }
@@ -65,7 +60,10 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-white/5 dark:bg-black/10 rounded-lg p-8 shadow-2xl shadow-black/10">
-            <h2 className="text-2xl font-bold text-center mb-6">Administrator Login</h2>
+            <h2 className="text-2xl font-bold text-center mb-2">Forgot Password?</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 text-center mb-6">
+              Enter your email address and we'll send you a verification code to reset your password.
+            </p>
 
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
@@ -79,7 +77,7 @@ export default function LoginPage() {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-400 dark:text-gray-500 mb-2"
                 >
-                  Email
+                  Email Address
                 </label>
                 <input
                   id="email"
@@ -95,50 +93,28 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-400 dark:text-gray-500 mb-2"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  disabled={loading}
-                  className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <div className="mt-2 text-right">
-                  <Link
-                    to="/forgot-password"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot Password?
-                  </Link>
-                </div>
-              </div>
-
-              <div>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !email}
                   className="w-full h-12 px-6 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
                       <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                      <span>Signing in...</span>
+                      <span>Sending...</span>
                     </>
                   ) : (
-                    'Login'
+                    'Send Verification Code'
                   )}
                 </button>
               </div>
             </form>
+
+            <div className="mt-6 text-center">
+              <Link to="/login" className="text-sm text-primary hover:underline">
+                Back to Login
+              </Link>
+            </div>
           </div>
         </div>
       </div>

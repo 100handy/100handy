@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import LoginPage from '@/pages/login'
+import ForgotPasswordPage from '@/pages/forgot-password'
+import VerifyCodePage from '@/pages/verify-code'
 import ResetPasswordPage from '@/pages/reset-password'
 import DashboardLayout from '@/layouts/dashboard-layout'
 import DashboardPage from '@/pages/dashboard'
@@ -48,6 +50,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-code" element={<VerifyCodePage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>

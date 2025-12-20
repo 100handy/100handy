@@ -1,33 +1,47 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
 
+  // Check if user has active session (came from OTP verification)
   useEffect(() => {
-    // Check if we have a recovery token in the URL
-    const hashParams = new URLSearchParams(window.location.hash.substring(1))
-    const accessToken = hashParams.get('access_token')
-    const type = hashParams.get('type')
-
-    if (!accessToken || type !== 'recovery') {
-      setError('Invalid or expired password reset link.')
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        navigate('/forgot-password')
+      } else {
+        setCheckingSession(false)
+      }
     }
-  }, [])
+    checkSession()
+  }, [navigate])
+
+  const validatePassword = (pwd: string) => {
+    if (pwd.length < 8) return 'Password must be at least 8 characters'
+    if (!/[A-Z]/.test(pwd)) return 'Password must contain an uppercase letter'
+    if (!/[a-z]/.test(pwd)) return 'Password must contain a lowercase letter'
+    if (!/[0-9]/.test(pwd)) return 'Password must contain a number'
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
     // Validation
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
 
@@ -47,10 +61,6 @@ export default function ResetPasswordPage() {
         setError(error.message)
       } else {
         setSuccess(true)
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-          navigate('/login')
-        }, 2000)
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
@@ -58,6 +68,14 @@ export default function ResetPasswordPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    )
   }
 
   if (success) {
@@ -81,11 +99,17 @@ export default function ResetPasswordPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              Password Updated!
+              Password Reset Successful!
             </h2>
-            <p className="text-slate-600 dark:text-slate-400">
-              Your password has been successfully updated. Redirecting to login...
+            <p className="text-slate-600 dark:text-slate-400 mb-6">
+              Your password has been successfully updated. You can now sign in with your new password.
             </p>
+            <button
+              onClick={() => navigate('/login')}
+              className="w-full h-12 px-6 bg-primary text-white font-bold rounded-lg hover:bg-primary/90"
+            >
+              Go to Login
+            </button>
           </div>
         </div>
       </div>
@@ -139,17 +163,35 @@ export default function ResetPasswordPage() {
                 >
                   New Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter new password (min 6 characters)"
-                  disabled={loading}
-                  className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    disabled={loading}
+                    className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 pr-12 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -159,23 +201,48 @@ export default function ResetPasswordPage() {
                 >
                   Confirm Password
                 </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
-                  disabled={loading}
-                  className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    disabled={loading}
+                    className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 pr-12 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Password Requirements */}
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Password must be at least 8 characters and contain uppercase, lowercase, and numbers.
+                </p>
               </div>
 
               <div>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !password || !confirmPassword}
                   className="w-full h-12 px-6 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
@@ -184,11 +251,17 @@ export default function ResetPasswordPage() {
                       <span>Updating Password...</span>
                     </>
                   ) : (
-                    'Update Password'
+                    'Reset Password'
                   )}
                 </button>
               </div>
             </form>
+
+            <div className="mt-6 text-center">
+              <Link to="/login" className="text-sm text-primary hover:underline">
+                Back to Login
+              </Link>
+            </div>
           </div>
         </div>
       </div>

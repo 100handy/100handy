@@ -1,280 +1,338 @@
-import { Edit, Calendar, X, Send } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Edit, Calendar, X, Loader2 } from 'lucide-react'
+import { Link, useParams } from 'react-router-dom'
 import Header from '@/components/header'
+import { useTask, statusDisplayMap } from '@/lib/api/tasks'
 
-const chatMessages = [
-    {
-        sender: 'Sarah J.',
-        message:
-            "Hi Alex, just wanted to confirm our appointment for tomorrow at 2 PM. I'll be there a few minutes early.",
-        time: 'March 15, 2024, 5:30 PM',
-        isHandy: false,
-        avatar:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuBRYtvMJpACqNwJAPXMfaPVhYezl0OU9Z3pF4Wbmj0vKfNImL5SwtsPfz8gq9cJspaLw-o-U36vHjGwe-LpRNnhUjg0Ggz8YOIRbZpEdttXrnynWZsZkRl0CdCplfzwjDu_0aosA0ixeUcUQ9rvg9iTaIOxdI9-f81VSy5f8JcPXfoQWRQ1dgrNdZac-NJPjiuphaRhLbXHSShk7uY6CdAe3iw0lfHJ678kSvNiz13IgFN7zbvVikNBJqtqavfTzQU3ACSWkI61YkMO',
-    },
-    {
-        sender: 'Alex P. (Handy)',
-        message:
-            'Hi Sarah, sounds great! See you then. Let me know if you need anything from my side.',
-        time: 'March 15, 2024, 5:32 PM',
-        isHandy: true,
-        avatar:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuBRYtvMJpACqNwJAPXMfaPVhYezl0OU9Z3pF4Wbmj0vKfNImL5SwtsPfz8gq9cJspaLw-o-U36vHjGwe-LpRNnhUjg0Ggz8YOIRbZpEdttXrnynWZsZkRl0CdCplfzwjDu_0aosA0ixeUcUQ9rvg9iTaIOxdI9-f81VSy5f8JcPXfoQWRQ1dgrNdZac-NJPjiuphaRhLbXHSShk7uY6CdAe3iw0lfHJ678kSvNiz13IgFN7zbvVikNBJqtqavfTzQU3ACSWkI61YkMO',
-    },
-]
-
-const mediaImages = [
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBdssZCN2PwYJU7HMc4PF9IA_LyvZSgvk3e-QHbfVWE3jVNTCL3h52bBWjfAzkLLz3mIHMrLcvWOnlRxQtlSdwKuBzj9qG_pcMZ5BQDAE1lwilserc3wY8yo-FHxCl4R2KysDs627MxbaaFzpp8QWOEjg9zvlBQMPiVsXxbcDFsuhUWtyP_IZsErqlHAVbY_bKTCrdVM6TnBBTRTvYTdBwzEID1qaUYAvc4txJkjHtVm_4yMM570PPyRDjXHu3HsJ5vJyibMpdOfjS6',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuAURRGDJjUa_1xRqmMW2U-_-yVrPiBdEukzh6f_RnZ8VfvakElFy866SwhG3sftQM6c6iTSCzfi0aWpNXDRqlFHvgvQSZr-R0x36N1PFuUiH7iIB9vhfvwcvCE0XykO5Y6W3umcUTUIEvpX3pLnLBlubJeClpPYJcCMBQu4Wwmk4v-gcAziwtFfcJuNmEfi5Ry0MCHBckDWaxex2IWarjaPwsU8SkLQsV14gTlp2kxLFkTjkZIY_ttUjR2TCBHFBeCxn04AtwxqRT-F',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDVIXcoc67Mtsv_tEuDIMT8U7VYsVZda9MsYsrgBCZxpcdCTzapwFC0zWEk-lsCquEn2LB9qPRGNvoCMYIcazVHkFQ7X2Rb_bOB0X1YZq3E4eXHLPpyYzB10dQe6kKgrKwoFBTpnpxVraOn96ZtMsNOjWtq-a8qXzdSk4KzBIRSVrB3DR3MJPYLOsllLXRPzPYMWRzjWf0jN-nm3MHshN9B9fRRWFbqE9KUmyy1rummfQjVeB3rxR-l_awDtV6CdkHqrDjfMsVoAlnh',
-]
+const statusColors = {
+  blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+  yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+  green: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+  red: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
+  gray: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+}
 
 export default function TaskDetailsPage() {
+  const { taskId } = useParams<{ taskId: string }>()
+  const { data: task, isLoading, error } = useTask(taskId)
+
+  const formatDateTime = (date: string, time: string) => {
+    try {
+      const dateObj = new Date(`${date}T${time}`)
+      return dateObj.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    } catch {
+      return `${date} ${time}`
+    }
+  }
+
+  const formatLocation = (
+    address: { street: string; city: string | null; postcode: string } | null
+  ) => {
+    if (!address) return 'No address provided'
+    const parts = [address.street, address.city, address.postcode].filter(Boolean)
+    return parts.join(', ')
+  }
+
+  const formatName = (firstName: string | null, lastName: string | null) => {
+    const parts = [firstName, lastName].filter(Boolean)
+    return parts.length > 0 ? parts.join(' ') : 'Unknown'
+  }
+
+  if (isLoading) {
     return (
-        <div className="flex-1 flex flex-col">
-            <Header title="Task Details #12346" />
-            <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
-                <div className="max-w-7xl mx-auto">
-                    <div className="mb-6">
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">
-                            Viewing details for task #12346
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Left Column */}
-                        <div className="lg:col-span-2 space-y-8">
-                            {/* Task Information */}
-                            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                                    Task Information
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            Task ID
-                                        </label>
-                                        <p className="mt-1 text-gray-900 dark:text-white font-medium">
-                                            #12346
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            Status
-                                        </label>
-                                        <p className="mt-1">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">
-                                                Scheduled
-                                            </span>
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            Category
-                                        </label>
-                                        <p className="mt-1 text-gray-900 dark:text-white">Moving Help</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            Scheduled Date & Time
-                                        </label>
-                                        <p className="mt-1 text-gray-900 dark:text-white">
-                                            March 16, 2024, 2:00 PM
-                                        </p>
-                                    </div>
-                                    <div className="sm:col-span-2">
-                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            Location
-                                        </label>
-                                        <p className="mt-1 text-gray-900 dark:text-white">
-                                            123 Main St, Los Angeles, CA 90001
-                                        </p>
-                                    </div>
-                                    <div className="sm:col-span-2">
-                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            Description
-                                        </label>
-                                        <p className="mt-1 text-gray-600 dark:text-gray-300">
-                                            Need help moving a couch, a bed frame, and a few boxes from a
-                                            2nd-floor apartment to a moving truck. No stairs involved, but
-                                            the couch is heavy.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Chat History */}
-                            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
-                                <h3 className="text-xl font-semibold p-6 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">
-                                    Chat History
-                                </h3>
-                                <div className="p-6 space-y-6 max-h-96 overflow-y-auto">
-                                    {chatMessages.map((msg, index) => (
-                                        <div
-                                            key={index}
-                                            className={`flex gap-3 ${msg.isHandy ? 'justify-end' : ''}`}
-                                        >
-                                            {!msg.isHandy && (
-                                                <div
-                                                    className="w-10 h-10 rounded-full bg-cover bg-center flex-shrink-0"
-                                                    style={{ backgroundImage: `url('${msg.avatar}')` }}
-                                                />
-                                            )}
-                                            <div className={msg.isHandy ? 'text-right' : ''}>
-                                                <div
-                                                    className={`${msg.isHandy
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-gray-100 dark:bg-gray-700'
-                                                        } rounded-lg p-3 max-w-xs`}
-                                                >
-                                                    <p
-                                                        className={`text-sm ${msg.isHandy ? '' : 'text-gray-800 dark:text-gray-200'
-                                                            }`}
-                                                    >
-                                                        {msg.message}
-                                                    </p>
-                                                </div>
-                                                <p className="text-xs text-gray-400 mt-1">
-                                                    {msg.sender} - {msg.time}
-                                                </p>
-                                            </div>
-                                            {msg.isHandy && (
-                                                <div
-                                                    className="w-10 h-10 rounded-full bg-cover bg-center flex-shrink-0"
-                                                    style={{ backgroundImage: `url('${msg.avatar}')` }}
-                                                />
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            placeholder="Type a message..."
-                                            className="w-full pl-4 pr-12 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                        />
-                                        <button className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:text-primary/80">
-                                            <Send className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Media */}
-                            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                                    Media
-                                </h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                    {mediaImages.map((img, index) => (
-                                        <img
-                                            key={index}
-                                            src={img}
-                                            alt={`Task media ${index + 1}`}
-                                            className="rounded-lg object-cover aspect-square"
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right Column */}
-                        <div className="space-y-8">
-                            {/* Assigned Handy */}
-                            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                                    Assigned Handy
-                                </h3>
-                                <div className="flex items-center gap-4">
-                                    <div
-                                        className="w-16 h-16 rounded-full bg-cover bg-center"
-                                        style={{
-                                            backgroundImage:
-                                                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRYtvMJpACqNwJAPXMfaPVhYezl0OU9Z3pF4Wbmj0vKfNImL5SwtsPfz8gq9cJspaLw-o-U36vHjGwe-LpRNnhUjg0Ggz8YOIRbZpEdttXrnynWZsZkRl0CdCplfzwjDu_0aosA0ixeUcUQ9rvg9iTaIOxdI9-f81VSy5f8JcPXfoQWRQ1dgrNdZac-NJPjiuphaRhLbXHSShk7uY6CdAe3iw0lfHJ678kSvNiz13IgFN7zbvVikNBJqtqavfTzQU3ACSWkI61YkMO')",
-                                        }}
-                                    />
-                                    <div>
-                                        <p className="font-bold text-gray-900 dark:text-white">
-                                            Alex Parker
-                                        </p>
-                                        <div className="flex items-center gap-1 text-sm text-yellow-500">
-                                            <span>⭐</span>
-                                            <span>4.9 (125 reviews)</span>
-                                        </div>
-                                        <a
-                                            href="#"
-                                            className="text-primary text-sm font-medium hover:underline"
-                                        >
-                                            View Profile
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Customer */}
-                            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                                    Customer
-                                </h3>
-                                <div className="flex items-center gap-4">
-                                    <div
-                                        className="w-16 h-16 rounded-full bg-cover bg-center"
-                                        style={{
-                                            backgroundImage:
-                                                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRYtvMJpACqNwJAPXMfaPVhYezl0OU9Z3pF4Wbmj0vKfNImL5SwtsPfz8gq9cJspaLw-o-U36vHjGwe-LpRNnhUjg0Ggz8YOIRbZpEdttXrnynWZsZkRl0CdCplfzwjDu_0aosA0ixeUcUQ9rvg9iTaIOxdI9-f81VSy5f8JcPXfoQWRQ1dgrNdZac-NJPjiuphaRhLbXHSShk7uY6CdAe3iw0lfHJ678kSvNiz13IgFN7zbvVikNBJqtqavfTzQU3ACSWkI61YkMO')",
-                                        }}
-                                    />
-                                    <div>
-                                        <p className="font-bold text-gray-900 dark:text-white">
-                                            Sarah Johnson
-                                        </p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            Member since 2022
-                                        </p>
-                                        <a
-                                            href="#"
-                                            className="text-primary text-sm font-medium hover:underline"
-                                        >
-                                            View Profile
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                                    Actions
-                                </h3>
-                                <div className="space-y-3">
-                                    <Link
-                                        to="/tasks/edit/12346"
-                                        className="w-full bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary/90"
-                                    >
-                                        <Edit className="w-5 h-5" />
-                                        Edit Task
-                                    </Link>
-                                    <Link
-                                        to="/tasks/reschedule/12346"
-                                        className="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-yellow-600"
-                                    >
-                                        <Calendar className="w-5 h-5" />
-                                        Reschedule Task
-                                    </Link>
-                                    <Link
-                                        to="/tasks/cancel/12346"
-                                        className="w-full bg-red-500 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-red-600"
-                                    >
-                                        <X className="w-5 h-5" />
-                                        Cancel Task
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <div className="flex-1 flex flex-col">
+        <Header title="Task Details" />
+        <div className="flex-1 flex items-center justify-center bg-background-light dark:bg-background-dark">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="ml-2 text-gray-500">Loading task details...</span>
         </div>
+      </div>
     )
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex flex-col">
+        <Header title="Task Details" />
+        <div className="flex-1 p-8 bg-background-light dark:bg-background-dark">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
+              Failed to load task: {error.message}
+            </div>
+            <Link to="/tasks" className="mt-4 inline-block text-primary hover:underline">
+              ← Back to Tasks
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!task) {
+    return (
+      <div className="flex-1 flex flex-col">
+        <Header title="Task Details" />
+        <div className="flex-1 p-8 bg-background-light dark:bg-background-dark">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">Task not found</p>
+              <Link to="/tasks" className="mt-4 inline-block text-primary hover:underline">
+                ← Back to Tasks
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const statusDisplay = statusDisplayMap[task.status]
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header title={`Task Details #${task.id.slice(0, 8)}`} />
+      <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <Link to="/tasks" className="text-primary hover:underline text-sm">
+              ← Back to Tasks
+            </Link>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">
+              Viewing details for task #{task.id.slice(0, 8)}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Task Information */}
+              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+                  Task Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Task ID
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white font-medium">
+                      #{task.id.slice(0, 8)}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Status
+                    </label>
+                    <p className="mt-1">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[statusDisplay.color]}`}
+                      >
+                        {statusDisplay.label}
+                      </span>
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Category
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white">
+                      {task.category?.name || 'Uncategorized'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Scheduled Date & Time
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white">
+                      {formatDateTime(task.scheduled_date, task.scheduled_time)}
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Location
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white">
+                      {formatLocation(task.address)}
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Title
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white font-medium">
+                      {task.task_title}
+                    </p>
+                  </div>
+                  {task.task_details && (
+                    <div className="sm:col-span-2">
+                      <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        Description
+                      </label>
+                      <p className="mt-1 text-gray-600 dark:text-gray-300">{task.task_details}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Hourly Rate
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white">
+                      ${(task.hourly_rate_cents / 100).toFixed(2)}/hr
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Estimated Hours
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white">{task.estimated_hours} hrs</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chat History - Placeholder */}
+              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
+                <h3 className="text-xl font-semibold p-6 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">
+                  Chat History
+                </h3>
+                <div className="p-6">
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                    Chat history is not available for this task.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-8">
+              {/* Assigned Handy */}
+              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+                  Assigned Handy
+                </h3>
+                {task.handy ? (
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 bg-cover bg-center flex items-center justify-center"
+                      style={
+                        task.handy.avatar_url
+                          ? { backgroundImage: `url('${task.handy.avatar_url}')` }
+                          : {}
+                      }
+                    >
+                      {!task.handy.avatar_url && (
+                        <span className="text-2xl text-gray-500 dark:text-gray-400">
+                          {(task.handy.first_name?.[0] || 'H').toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white">
+                        {formatName(task.handy.first_name, task.handy.last_name)}
+                      </p>
+                      <div className="flex items-center gap-1 text-sm text-yellow-500">
+                        <span>⭐</span>
+                        <span>{task.handy.rating.toFixed(1)}</span>
+                      </div>
+                      {task.handy.phone && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {task.handy.phone}
+                        </p>
+                      )}
+                      <Link
+                        to={`/users/profile/${task.handy.user_id}`}
+                        className="text-primary text-sm font-medium hover:underline"
+                      >
+                        View Profile
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No handy assigned yet</p>
+                )}
+              </div>
+
+              {/* Customer */}
+              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+                  Customer
+                </h3>
+                {task.customer ? (
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 bg-cover bg-center flex items-center justify-center"
+                      style={
+                        task.customer.avatar_url
+                          ? { backgroundImage: `url('${task.customer.avatar_url}')` }
+                          : {}
+                      }
+                    >
+                      {!task.customer.avatar_url && (
+                        <span className="text-2xl text-gray-500 dark:text-gray-400">
+                          {(task.customer.first_name?.[0] || 'C').toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white">
+                        {formatName(task.customer.first_name, task.customer.last_name)}
+                      </p>
+                      {task.customer.phone && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {task.customer.phone}
+                        </p>
+                      )}
+                      <Link
+                        to={`/users/profile/${task.customer.user_id}`}
+                        className="text-primary text-sm font-medium hover:underline"
+                      >
+                        View Profile
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No customer information</p>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Actions</h3>
+                <div className="space-y-3">
+                  <Link
+                    to={`/tasks/edit/${task.id}`}
+                    className="w-full bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary/90"
+                  >
+                    <Edit className="w-5 h-5" />
+                    Edit Task
+                  </Link>
+                  {task.status !== 'completed' && task.status !== 'cancelled' && (
+                    <>
+                      <Link
+                        to={`/tasks/reschedule/${task.id}`}
+                        className="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-yellow-600"
+                      >
+                        <Calendar className="w-5 h-5" />
+                        Reschedule Task
+                      </Link>
+                      <Link
+                        to={`/tasks/cancel/${task.id}`}
+                        className="w-full bg-red-500 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-red-600"
+                      >
+                        <X className="w-5 h-5" />
+                        Cancel Task
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

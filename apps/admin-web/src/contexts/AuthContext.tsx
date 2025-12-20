@@ -155,7 +155,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(session?.user ?? null)
 
       if (session?.user) {
-        await fetchProfile(session.user.id)
+        try {
+          await fetchProfile(session.user.id)
+        } catch (err) {
+          console.error('Error fetching profile in onAuthStateChange:', err)
+        }
       } else {
         setProfile(null)
         setIsAdmin(false)

@@ -1,40 +1,95 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { supabase } from '@/lib/supabase'
 
-export default function LoginPage() {
+export default function VerifyCodePage() {
   const navigate = useNavigate()
-  const { signIn, user, isAdmin } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [searchParams] = useSearchParams()
+  const email = searchParams.get('email') || ''
+  const isPasswordReset = searchParams.get('reset') === 'true'
+
+  const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-
-  // Redirect to dashboard if already logged in as admin
-  useEffect(() => {
-    if (user && isAdmin) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [user, isAdmin, navigate])
+  const [resending, setResending] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (code.length !== 6) return
+
     setError(null)
     setLoading(true)
 
     try {
-      const result = await signIn(email, password)
+      // Verify the OTP code with recovery type for password reset
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token: code,
+        type: 'recovery',
+      })
+
       setLoading(false)
 
-      if (result.error) {
-        setError(result.error.message || 'Failed to sign in. Please check your credentials.')
+      if (error) {
+        setError(error.message)
+      } else if (data?.session || data?.user) {
+        // Successfully verified, redirect to reset password page
+        navigate('/reset-password')
       } else {
-        navigate('/dashboard')
+        // No error but no session/user - unexpected state
+        setError('Verification failed. Please try again.')
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
       setLoading(false)
     }
+  }
+
+  const handleResendCode = async () => {
+    setResending(true)
+    setError(null)
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+
+      if (error) {
+        setError(error.message)
+      } else {
+        // Show success message briefly
+        setError(null)
+        alert('Verification code resent to your email!')
+      }
+    } catch (err) {
+      setError('Failed to resend code. Please try again.')
+    } finally {
+      setResending(false)
+    }
+  }
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow numbers
+    const value = e.target.value.replace(/\D/g, '')
+    setCode(value)
+  }
+
+  if (!email) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center p-4">
+        <div className="w-full max-w-md text-center">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-8">
+            <h2 className="text-xl font-bold text-red-500 mb-2">Invalid Request</h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">
+              No email address provided. Please start the password reset process again.
+            </p>
+            <Link to="/forgot-password" className="text-primary hover:underline">
+              Go to Forgot Password
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -65,7 +120,15 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-white/5 dark:bg-black/10 rounded-lg p-8 shadow-2xl shadow-black/10">
-            <h2 className="text-2xl font-bold text-center mb-6">Administrator Login</h2>
+            <h2 className="text-2xl font-bold text-center mb-2">
+              {isPasswordReset ? 'Reset Your Password' : 'Verify Your Code'}
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 text-center mb-2">
+              Enter the 6-digit code sent to your email
+            </p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 text-center mb-6">
+              {email}
+            </p>
 
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
@@ -75,70 +138,55 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-400 dark:text-gray-500 mb-2"
-                >
-                  Email
-                </label>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
+                  id="code"
+                  name="code"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  value={code}
+                  onChange={handleCodeChange}
+                  placeholder="Enter 6-digit code"
                   disabled={loading}
-                  className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-center text-xl tracking-widest placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-400 dark:text-gray-500 mb-2"
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleResendCode}
+                  disabled={resending}
+                  className="text-sm text-primary hover:underline disabled:opacity-50"
                 >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  disabled={loading}
-                  className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <div className="mt-2 text-right">
-                  <Link
-                    to="/forgot-password"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot Password?
-                  </Link>
-                </div>
+                  {resending ? 'Resending...' : 'Resend code'}
+                </button>
               </div>
 
               <div>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || code.length !== 6}
                   className="w-full h-12 px-6 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
                       <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                      <span>Signing in...</span>
+                      <span>Verifying...</span>
                     </>
                   ) : (
-                    'Login'
+                    'Verify Code'
                   )}
                 </button>
               </div>
             </form>
+
+            <div className="mt-6 text-center">
+              <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                Use a different email
+              </Link>
+            </div>
           </div>
         </div>
       </div>
