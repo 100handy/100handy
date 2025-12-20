@@ -21,8 +21,10 @@ import { useAuthStore } from '@shared/supabase';
 import { useProfileStore } from '@shared/supabase';
 import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
 import { supabase } from '@shared/supabase';
-import { getHandyProfile } from '@shared/supabase/profile';
+import { getHandyProfile, getUserSkills } from '@shared/supabase/profile';
+import { getConnectAccountStatus } from '@shared/supabase/payment-methods';
 import { useWorkArea, useWeeklyAvailability } from '@shared/supabase';
+import { useFocusEffect } from 'expo-router';
 
 type VerificationStatus = 'pending' | 'submitted' | 'verified' | 'rejected' | null;
 
@@ -31,6 +33,8 @@ export default function ProfessionalDashboard() {
   const { profile, fetchProfile } = useProfileStore();
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [hasActiveSkill, setHasActiveSkill] = useState(false);
+  const [hasDirectDeposit, setHasDirectDeposit] = useState(false);
 
   // Fetch work area and availability for progress calculation
   const { data: workArea } = useWorkArea();
@@ -44,17 +48,44 @@ export default function ProfessionalDashboard() {
     if (verificationStatus === 'verified') count++;                             // 2. ID verification
     if (workArea?.coordinates && workArea.coordinates.length >= 3) count++;     // 3. Work area set
     if (weeklyAvailability && Object.keys(weeklyAvailability).length > 0) count++; // 4. Availability set
+    if (hasActiveSkill) count++;                                                 // 5. Name your price (skill activated)
     return count;
-  }, [profile?.avatar_url, verificationStatus, workArea, weeklyAvailability]);
+  }, [profile?.avatar_url, verificationStatus, workArea, weeklyAvailability, hasActiveSkill]);
 
   const progressPercent = (completedTasks / totalTasks) * 100;
+
+  // Fetch skills and direct deposit status
+  const fetchOnboardingProgress = useCallback(async () => {
+    try {
+      // Check for active skills (has at least 1 skill with is_active=true and hourly_rate_cents > 0)
+      const skills = await getUserSkills();
+      const activeSkills = skills.filter(s => s.is_active && s.hourly_rate_cents > 0);
+      setHasActiveSkill(activeSkills.length > 0);
+
+      // Check for direct deposit setup (Stripe Connect payouts enabled)
+      const connectStatus = await getConnectAccountStatus();
+      setHasDirectDeposit(connectStatus?.payoutsEnabled ?? false);
+    } catch (error) {
+      console.error('Error fetching onboarding progress:', error);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
       fetchVerificationStatus();
+      fetchOnboardingProgress();
     }
-  }, [user, fetchProfile]);
+  }, [user, fetchProfile, fetchOnboardingProgress]);
+
+  // Refresh progress when screen comes into focus (e.g., after returning from skills)
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        fetchOnboardingProgress();
+      }
+    }, [user, fetchOnboardingProgress])
+  );
 
   const fetchVerificationStatus = async () => {
     try {
@@ -99,15 +130,15 @@ export default function ProfessionalDashboard() {
   const handleStartVerification = useCallback(async () => {
     try {
       setIsVerifying(true);
-      const result = await present();
+      const result = await present() as { status: string } | undefined;
 
-      if (result.status === 'FlowCompleted') {
+      if (result?.status === 'FlowCompleted') {
         setVerificationStatus('submitted');
         Alert.alert(
           'Verification Submitted',
           'Your identity verification has been submitted. We\'ll notify you once it\'s reviewed.'
         );
-      } else if (result.status === 'FlowFailed') {
+      } else if (result?.status === 'FlowFailed') {
         Alert.alert('Verification Failed', 'Please try again.');
       }
     } catch (error) {
@@ -125,19 +156,19 @@ export default function ProfessionalDashboard() {
 
   const onboardingTasks = [
     {
-      icon: <DollarSign color="#D17852" size={28} strokeWidth={1.5} />,
+      icon: <DollarSign color={hasActiveSkill ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
       title: 'Name your price',
       duration: '4 MIN PER SKILL',
-      completed: false, // TODO: Track when professional has set service prices
+      completed: hasActiveSkill,
       onPress: () => {
         router.push('/(professional)/skills/my-skills');
       },
     },
     {
-      icon: <Landmark color="#D17852" size={28} strokeWidth={1.5} />,
+      icon: <Landmark color={hasDirectDeposit ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
       title: 'Set up direct deposit',
       duration: '2 MIN',
-      completed: false, // TODO: Track when Stripe Connect is set up
+      completed: hasDirectDeposit,
       onPress: () => {
         router.push('/(professional)/profile/direct-deposit');
       },

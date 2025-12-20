@@ -9,7 +9,7 @@ import { supabase } from "@shared/supabase/supabaseClient";
 import { AuthWrapper } from "@/components/AuthWrapper";
 import { QueryProvider } from "@/components/providers";
 import { ToastProvider } from "@/components/ui/toast";
-import { StripeProvider } from "@stripe/stripe-react-native";
+import { StripeProviderWrapper } from "@/components/StripeProviderWrapper";
 import { initializePendingBookingStorage } from "@/lib/pending-booking-storage";
 
 // Initialize pending booking storage with AsyncStorage
@@ -78,7 +78,7 @@ export default function RootLayout() {
   }
 
   return (
-    <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''}>
+    <StripeProviderWrapper>
       <QueryProvider>
         <ToastProvider>
           {/* <AuthWrapper> */}
@@ -91,6 +91,6 @@ export default function RootLayout() {
           {/* </AuthWrapper> */}
         </ToastProvider>
       </QueryProvider>
-    </StripeProvider>
+    </StripeProviderWrapper>
   );
 }

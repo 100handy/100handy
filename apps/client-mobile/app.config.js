@@ -1,3 +1,7 @@
+// Enable web server output only when explicitly requested (e.g., EXPO_WEB_SSR=true)
+// This prevents native builds from trying to bundle server-side code
+const enableWebServerOutput = process.env.EXPO_WEB_SSR === 'true';
+
 module.exports = {
   expo: {
     name: '100Handy',
@@ -49,7 +53,8 @@ module.exports = {
     },
     web: {
       bundler: 'metro',
-      output: 'server',
+      // Only enable server output when explicitly requested via EXPO_WEB_SSR=true
+      ...(enableWebServerOutput ? { output: 'server' } : {}),
       favicon: './assets/images/favicon.png',
     },
     plugins: [
@@ -71,6 +76,13 @@ module.exports = {
         {
           locationAlwaysAndWhenInUsePermission:
             'We need your location to help you set your work area and find nearby jobs.',
+        },
+      ],
+      [
+        '@stripe/stripe-react-native',
+        {
+          merchantIdentifier: 'merchant.com.oxdpr.handy',
+          enableGooglePay: true,
         },
       ],
     ],
