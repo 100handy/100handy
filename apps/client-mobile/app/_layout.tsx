@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { SplashScreen } from "expo-router";
 import { AppState } from "react-native";
 import * as Linking from "expo-linking";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { supabase } from "@shared/supabase/supabaseClient";
 import { AuthWrapper } from "@/components/AuthWrapper";
 import { QueryProvider } from "@/components/providers";
@@ -78,19 +79,21 @@ export default function RootLayout() {
   }
 
   return (
-    <StripeProviderWrapper>
-      <QueryProvider>
-        <ToastProvider>
-          {/* <AuthWrapper> */}
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(client)" />
-              <Stack.Screen name="(professional)" />
-            </Stack>
-          {/* </AuthWrapper> */}
-        </ToastProvider>
-      </QueryProvider>
-    </StripeProviderWrapper>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <StripeProviderWrapper>
+        <QueryProvider>
+          <ToastProvider>
+            {/* <AuthWrapper> */}
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(client)" />
+                <Stack.Screen name="(professional)" />
+              </Stack>
+            {/* </AuthWrapper> */}
+          </ToastProvider>
+        </QueryProvider>
+      </StripeProviderWrapper>
+    </GestureHandlerRootView>
   );
 }

@@ -141,3 +141,16 @@ export {
   type TimeSlotInput,
   type WeeklyAvailability,
 } from './hooks/useAvailability';
+
+// Handy profile hooks and utilities
+export {
+  useHandyProfileExtras,
+  useUpdateHandyTools,
+  useUpdateHandyVehicles,
+  useUpdateHandyQuickFacts,
+  useUpdateHandyAboutMe,
+  useUpdateHandySyncCalendars,
+  useInvalidateHandyProfile,
+  handyProfileKeys,
+  type HandyProfileExtras,
+} from './hooks/useHandyProfile';

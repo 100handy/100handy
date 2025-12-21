@@ -1,6 +1,14 @@
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getChatTemplate, saveChatTemplate, ChatTemplate } from '../supabase/profile';
+import {
+  getChatTemplate,
+  saveChatTemplate,
+  getHandyProfileExtras,
+  updateHandyTools,
+  updateHandyVehicles,
+  updateHandyQuickFacts,
+  updateHandyAboutMe,
+  updateHandySyncCalendars,
+} from '../supabase/profile';
 
 export interface Vehicle {
   name: string;
@@ -23,6 +31,7 @@ export interface ProfessionalProfileState {
 
   // Loading state
   isLoading: boolean;
+  isSaving: boolean;
 
   // Actions
   setTools: (tools: string[]) => Promise<void>;
@@ -35,10 +44,8 @@ export interface ProfessionalProfileState {
   // Persistence
   loadProfile: () => Promise<void>;
   loadChatTemplates: () => Promise<void>;
-  clearProfile: () => Promise<void>;
+  clearProfile: () => void;
 }
-
-const STORAGE_KEY = '@professional_profile';
 
 export const useProfessionalProfileStore = create<ProfessionalProfileState>((set, get) => ({
   // Initial state
@@ -52,72 +59,157 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>((set
     ongoing: '',
   },
   isLoading: false,
+  isSaving: false,
 
   setTools: async (tools: string[]) => {
-    set({ tools });
-    await saveToStorage({ ...get(), tools });
+    const previousTools = get().tools;
+    // Optimistic update
+    set({ tools, isSaving: true });
+
+    try {
+      const success = await updateHandyTools(tools);
+      if (!success) {
+        // Revert on failure
+        set({ tools: previousTools });
+        console.error('Failed to save tools to database');
+      }
+    } catch (error) {
+      // Revert on error
+      set({ tools: previousTools });
+      console.error('Error saving tools:', error);
+    } finally {
+      set({ isSaving: false });
+    }
   },
 
   setVehicles: async (vehicles: string[]) => {
-    set({ vehicles });
-    await saveToStorage({ ...get(), vehicles });
+    const previousVehicles = get().vehicles;
+    // Optimistic update
+    set({ vehicles, isSaving: true });
+
+    try {
+      const success = await updateHandyVehicles(vehicles);
+      if (!success) {
+        // Revert on failure
+        set({ vehicles: previousVehicles });
+        console.error('Failed to save vehicles to database');
+      }
+    } catch (error) {
+      // Revert on error
+      set({ vehicles: previousVehicles });
+      console.error('Error saving vehicles:', error);
+    } finally {
+      set({ isSaving: false });
+    }
   },
 
   setQuickFacts: async (facts: string[]) => {
-    set({ quickFacts: facts });
-    await saveToStorage({ ...get(), quickFacts: facts });
+    const previousFacts = get().quickFacts;
+    // Optimistic update
+    set({ quickFacts: facts, isSaving: true });
+
+    try {
+      const success = await updateHandyQuickFacts(facts);
+      if (!success) {
+        // Revert on failure
+        set({ quickFacts: previousFacts });
+        console.error('Failed to save quick facts to database');
+      }
+    } catch (error) {
+      // Revert on error
+      set({ quickFacts: previousFacts });
+      console.error('Error saving quick facts:', error);
+    } finally {
+      set({ isSaving: false });
+    }
   },
 
   setAboutMe: async (text: string) => {
-    set({ aboutMe: text });
-    await saveToStorage({ ...get(), aboutMe: text });
+    const previousText = get().aboutMe;
+    // Optimistic update
+    set({ aboutMe: text, isSaving: true });
+
+    try {
+      const success = await updateHandyAboutMe(text);
+      if (!success) {
+        // Revert on failure
+        set({ aboutMe: previousText });
+        console.error('Failed to save about me to database');
+      }
+    } catch (error) {
+      // Revert on error
+      set({ aboutMe: previousText });
+      console.error('Error saving about me:', error);
+    } finally {
+      set({ isSaving: false });
+    }
   },
 
   setSyncCalendars: async (enabled: boolean) => {
-    set({ syncCalendars: enabled });
-    await saveToStorage({ ...get(), syncCalendars: enabled });
+    const previousValue = get().syncCalendars;
+    // Optimistic update
+    set({ syncCalendars: enabled, isSaving: true });
+
+    try {
+      const success = await updateHandySyncCalendars(enabled);
+      if (!success) {
+        // Revert on failure
+        set({ syncCalendars: previousValue });
+        console.error('Failed to save sync calendars to database');
+      }
+    } catch (error) {
+      // Revert on error
+      set({ syncCalendars: previousValue });
+      console.error('Error saving sync calendars:', error);
+    } finally {
+      set({ isSaving: false });
+    }
   },
 
   setChatTemplate: async (type: 'default' | 'ongoing', message: string) => {
-    try {
-      // Save to Supabase
-      await saveChatTemplate({ template_type: type, message });
+    const previousTemplates = get().chatTemplates;
+    // Optimistic update
+    set(state => ({
+      chatTemplates: {
+        ...state.chatTemplates,
+        [type]: message,
+      },
+      isSaving: true,
+    }));
 
-      // Update local state
-      set(state => ({
-        chatTemplates: {
-          ...state.chatTemplates,
-          [type]: message,
-        },
-      }));
+    try {
+      await saveChatTemplate({ template_type: type, message });
     } catch (error) {
+      // Revert on error
+      set({ chatTemplates: previousTemplates });
       console.error('Error saving chat template:', error);
+    } finally {
+      set({ isSaving: false });
     }
   },
 
   loadProfile: async () => {
     try {
       set({ isLoading: true });
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
 
-      if (stored) {
-        const data = JSON.parse(stored);
+      // Load from Supabase
+      const extras = await getHandyProfileExtras();
+
+      if (extras) {
         set({
-          tools: data.tools || [],
-          vehicles: data.vehicles || [],
-          quickFacts: data.quickFacts || [],
-          aboutMe: data.aboutMe || '',
-          syncCalendars: data.syncCalendars !== undefined ? data.syncCalendars : true,
-          isLoading: false,
+          tools: extras.tools || [],
+          vehicles: extras.vehicles || [],
+          quickFacts: extras.quick_facts || [],
+          aboutMe: extras.about_me || '',
+          syncCalendars: extras.sync_calendars ?? true,
         });
-      } else {
-        set({ isLoading: false });
       }
 
       // Load chat templates from Supabase
       await get().loadChatTemplates();
     } catch (error) {
       console.error('Error loading professional profile:', error);
+    } finally {
       set({ isLoading: false });
     }
   },
@@ -138,38 +230,17 @@ export const useProfessionalProfileStore = create<ProfessionalProfileState>((set
     }
   },
 
-  clearProfile: async () => {
-    try {
-      await AsyncStorage.removeItem(STORAGE_KEY);
-      set({
-        tools: [],
-        vehicles: [],
-        quickFacts: [],
-        aboutMe: '',
-        syncCalendars: true,
-        chatTemplates: {
-          default: '',
-          ongoing: '',
-        },
-      });
-    } catch (error) {
-      console.error('Error clearing professional profile:', error);
-    }
+  clearProfile: () => {
+    set({
+      tools: [],
+      vehicles: [],
+      quickFacts: [],
+      aboutMe: '',
+      syncCalendars: true,
+      chatTemplates: {
+        default: '',
+        ongoing: '',
+      },
+    });
   },
 }));
-
-// Helper function to save to storage
-async function saveToStorage(state: ProfessionalProfileState) {
-  try {
-    const dataToSave = {
-      tools: state.tools,
-      vehicles: state.vehicles,
-      quickFacts: state.quickFacts,
-      aboutMe: state.aboutMe,
-      syncCalendars: state.syncCalendars,
-    };
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  } catch (error) {
-    console.error('Error saving professional profile:', error);
-  }
-}

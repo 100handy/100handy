@@ -561,6 +561,197 @@ export async function completeOnboarding(): Promise<boolean> {
   }
 }
 
+// ============= PROFESSIONAL PROFILE EXTRAS FUNCTIONS =============
+
+export interface HandyProfileExtras {
+  tools: string[];
+  vehicles: string[];
+  quick_facts: string[];
+  about_me: string | null;
+  sync_calendars: boolean;
+}
+
+/**
+ * Get professional profile extras (tools, vehicles, quick facts, about me)
+ */
+export async function getHandyProfileExtras(): Promise<HandyProfileExtras | null> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('handy_profiles')
+      .select('tools, vehicles, quick_facts, about_me, sync_calendars')
+      .eq('user_id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching handy profile extras:', error);
+      return null;
+    }
+
+    return {
+      tools: (data.tools as string[]) || [],
+      vehicles: (data.vehicles as string[]) || [],
+      quick_facts: (data.quick_facts as string[]) || [],
+      about_me: data.about_me || null,
+      sync_calendars: data.sync_calendars ?? true,
+    };
+  } catch (error) {
+    console.error('Error in getHandyProfileExtras:', error);
+    return null;
+  }
+}
+
+/**
+ * Update professional tools
+ */
+export async function updateHandyTools(tools: string[]): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('handy_profiles')
+      .update({ tools })
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating handy tools:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateHandyTools:', error);
+    return false;
+  }
+}
+
+/**
+ * Update professional vehicles
+ */
+export async function updateHandyVehicles(vehicles: string[]): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('handy_profiles')
+      .update({ vehicles })
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating handy vehicles:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateHandyVehicles:', error);
+    return false;
+  }
+}
+
+/**
+ * Update professional quick facts
+ */
+export async function updateHandyQuickFacts(quickFacts: string[]): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('handy_profiles')
+      .update({ quick_facts: quickFacts })
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating handy quick facts:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateHandyQuickFacts:', error);
+    return false;
+  }
+}
+
+/**
+ * Update professional about me
+ */
+export async function updateHandyAboutMe(aboutMe: string): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('handy_profiles')
+      .update({ about_me: aboutMe })
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating handy about me:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateHandyAboutMe:', error);
+    return false;
+  }
+}
+
+/**
+ * Update sync calendars setting
+ */
+export async function updateHandySyncCalendars(syncCalendars: boolean): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('handy_profiles')
+      .update({ sync_calendars: syncCalendars })
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating handy sync calendars:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateHandySyncCalendars:', error);
+    return false;
+  }
+}
+
 // ============= CHAT TEMPLATES FUNCTIONS =============
 
 export interface ChatTemplate {
