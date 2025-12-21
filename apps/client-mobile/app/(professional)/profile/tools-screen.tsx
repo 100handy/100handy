@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useProfessionalProfileStore } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast';
 
 const TOOLS_LIST = [
   'Carpet cleaner',
@@ -18,6 +19,7 @@ const TOOLS_LIST = [
 export default function ToolsScreen() {
   const { tools, setTools, loadProfile } = useProfessionalProfileStore();
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
+  const toast = useToast();
 
   // Load profile data on mount
   useEffect(() => {
@@ -38,8 +40,13 @@ export default function ToolsScreen() {
   };
 
   const handleSave = async () => {
-    await setTools(selectedTools);
-    router.back();
+    try {
+      await setTools(selectedTools);
+      toast.success('Saved', 'Your tools have been updated');
+      router.back();
+    } catch (error) {
+      toast.error('Error', 'Failed to save tools');
+    }
   };
 
   return (

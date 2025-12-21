@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useProfessionalProfileStore } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast';
 
 const QUICK_FACTS_LIST = [
   'I have a pet allergies',
@@ -15,6 +16,7 @@ const QUICK_FACTS_LIST = [
 export default function QuickFactsScreen() {
   const { quickFacts, setQuickFacts, loadProfile } = useProfessionalProfileStore();
   const [selectedFacts, setSelectedFacts] = useState<string[]>([]);
+  const toast = useToast();
 
   // Load profile data on mount
   useEffect(() => {
@@ -44,8 +46,13 @@ export default function QuickFactsScreen() {
   };
 
   const handleSave = async () => {
-    await setQuickFacts(selectedFacts);
-    router.back();
+    try {
+      await setQuickFacts(selectedFacts);
+      toast.success('Saved', 'Your quick facts have been updated');
+      router.back();
+    } catch (error) {
+      toast.error('Error', 'Failed to save quick facts');
+    }
   };
 
   return (

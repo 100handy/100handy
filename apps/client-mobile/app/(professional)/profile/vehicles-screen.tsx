@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useProfessionalProfileStore } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast';
 
 interface Vehicle {
   name: string;
@@ -40,6 +41,7 @@ const VEHICLES_LIST: Vehicle[] = [
 export default function VehiclesScreen() {
   const { vehicles, setVehicles, loadProfile } = useProfessionalProfileStore();
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
+  const toast = useToast();
 
   // Load profile data on mount
   useEffect(() => {
@@ -60,8 +62,13 @@ export default function VehiclesScreen() {
   };
 
   const handleSave = async () => {
-    await setVehicles(selectedVehicles);
-    router.back();
+    try {
+      await setVehicles(selectedVehicles);
+      toast.success('Saved', 'Your vehicles have been updated');
+      router.back();
+    } catch (error) {
+      toast.error('Error', 'Failed to save vehicles');
+    }
   };
 
   return (

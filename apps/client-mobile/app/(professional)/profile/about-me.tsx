@@ -4,12 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useProfessionalProfileStore } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast';
 
 const MAX_CHARACTERS = 500;
 
 export default function AboutMeScreen() {
   const { aboutMe, setAboutMe, loadProfile } = useProfessionalProfileStore();
   const [text, setText] = useState('');
+  const toast = useToast();
 
   // Load profile data on mount
   useEffect(() => {
@@ -22,8 +24,13 @@ export default function AboutMeScreen() {
   }, [aboutMe]);
 
   const handleSave = async () => {
-    await setAboutMe(text);
-    router.back();
+    try {
+      await setAboutMe(text);
+      toast.success('Saved', 'Your about me has been updated');
+      router.back();
+    } catch (error) {
+      toast.error('Error', 'Failed to save about me');
+    }
   };
 
   return (
