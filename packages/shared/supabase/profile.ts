@@ -1,6 +1,6 @@
 // packages/shared/supabase/profile.ts
-import { supabase } from './supabaseClient.native';
-import { File } from 'expo-file-system';
+import { supabase } from './supabaseClient';
+import { readFileAsBase64 } from './fileUtils';
 import { decode } from 'base64-arraybuffer';
 
 export interface UserProfile {
@@ -122,9 +122,8 @@ export async function updateUserAvatar(imageUri: string): Promise<string | null>
       return null;
     }
 
-    // Read image file as base64 using new expo-file-system API
-    const file = new File(imageUri);
-    const base64 = await file.base64();
+    // Read image file as base64
+    const base64 = await readFileAsBase64(imageUri);
 
     // Decode base64 to ArrayBuffer for Supabase upload
     const arrayBuffer = decode(base64);
@@ -217,9 +216,8 @@ export async function uploadBusinessPhoto(userSkillId: string, imageUri: string)
       return null;
     }
 
-    // Read image file as base64 using new expo-file-system API
-    const file = new File(imageUri);
-    const base64 = await file.base64();
+    // Read image file as base64
+    const base64 = await readFileAsBase64(imageUri);
 
     // Decode base64 to ArrayBuffer for Supabase upload
     const arrayBuffer = decode(base64);
@@ -465,9 +463,8 @@ export async function uploadVerificationDocument(
       return null;
     }
 
-    // Read image file as base64 using new expo-file-system API
-    const file = new File(imageUri);
-    const base64 = await file.base64();
+    // Read image file as base64
+    const base64 = await readFileAsBase64(imageUri);
 
     // Decode base64 to ArrayBuffer for Supabase upload
     const arrayBuffer = decode(base64);
