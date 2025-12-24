@@ -8,6 +8,7 @@ export {
   useTopLevelCategories,
   useSubcategories,
   useCategoriesByLevel,
+  useGroupedSubcategories,
   getCategories,
   getCategoriesByNames,
   getTopLevelCategories,
@@ -17,6 +18,7 @@ export {
   categoryKeys,
   type Category,
   type CategoryTree,
+  type GroupedCategory,
 } from './hooks/useCategories';
 
 // Booking hooks and utilities

@@ -85,8 +85,10 @@ export default function TaskerProfileScreen() {
   // Task details from previous screens
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
-  const taskSize = params.taskSize as string;
-  const vehicleRequirement = params.vehicleRequirement as string;
+  const formResponses = params.formResponses as string | undefined;
+  // Legacy params for backwards compatibility
+  const taskSize = params.taskSize as string | undefined;
+  const vehicleRequirement = params.vehicleRequirement as string | undefined;
 
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [showScheduleSheet, setShowScheduleSheet] = useState(false);
@@ -113,10 +115,12 @@ export default function TaskerProfileScreen() {
         taskerId,
         categoryId,
         categoryName,
-        taskSize,
-        vehicleRequirement,
         selectedDate: date,
         selectedTime: time,
+        // Pass formResponses (new) or legacy params
+        ...(formResponses ? { formResponses } : {}),
+        ...(taskSize ? { taskSize } : {}),
+        ...(vehicleRequirement ? { vehicleRequirement } : {}),
       },
     });
   };

@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler } from 'react-native';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput, type FormResponse, usePendingBookingStore, type PendingBookingData } from '@shared/supabase';
+import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput, type FormResponse, usePendingBookingStore, type PendingBookingData, listPaymentMethods, type PaymentMethod } from '@shared/supabase';
 import { useAuthStore } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast';
 
 export default function ConfirmBookingScreen() {
   const router = useRouter();
@@ -43,6 +44,33 @@ export default function ConfirmBookingScreen() {
   const createBookingMutation = useCreateBooking();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [loadingPayment, setLoadingPayment] = useState(true);
+  const [promoCode, setPromoCode] = useState('');
+  const [showPromoInput, setShowPromoInput] = useState(false);
+  const toast = useToast();
+
+  // Fetch payment methods on mount and when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const fetchPaymentMethods = async () => {
+        if (!isAuthenticated) {
+          setLoadingPayment(false);
+          return;
+        }
+        try {
+          setLoadingPayment(true);
+          const methods = await listPaymentMethods();
+          setPaymentMethods(methods || []);
+        } catch (error) {
+          console.error('Error fetching payment methods:', error);
+        } finally {
+          setLoadingPayment(false);
+        }
+      };
+      fetchPaymentMethods();
+    }, [isAuthenticated])
+  );
 
   // Handle back navigation - ask user if they want to clear pending booking
   const handleBackPress = useCallback(() => {
@@ -163,6 +191,12 @@ export default function ConfirmBookingScreen() {
           },
         ]
       );
+      return;
+    }
+
+    // Check if payment method is added
+    if (paymentMethods.length === 0) {
+      toast.error('Payment Required', 'Please add a payment method to continue');
       return;
     }
 
@@ -388,35 +422,66 @@ export default function ConfirmBookingScreen() {
 
           {/* Payment Method */}
           <Pressable
-            onPress={() => router.push('/profile/payments')}
+            onPress={() => router.push('/(client)/profile/payment-methods')}
             className="flex-row items-center justify-between py-4 border-b border-gray-200"
           >
             <Text className="text-lg font-semibold text-[#30352D]">
               Payment
             </Text>
             <View className="flex-row items-center gap-2">
-              <Text className="text-base" style={{ color: '#C1856A' }}>
-                Add payment
-              </Text>
-              <ChevronRight size={20} color="#C1856A" />
+              {loadingPayment ? (
+                <ActivityIndicator size="small" color="#C1856A" />
+              ) : paymentMethods.length > 0 ? (
+                <>
+                  <Text className="text-base text-[#30352D] capitalize">
+                    {paymentMethods[0].card.brand} •••• {paymentMethods[0].card.last4}
+                  </Text>
+                  <ChevronRight size={20} color="#6B7280" />
+                </>
+              ) : (
+                <>
+                  <Text className="text-base" style={{ color: '#C1856A' }}>
+                    Add payment
+                  </Text>
+                  <ChevronRight size={20} color="#C1856A" />
+                </>
+              )}
             </View>
           </Pressable>
 
           {/* Promo Code */}
-          <Pressable
-            onPress={() => router.push('/profile/promotions')}
-            className="flex-row items-center justify-between py-4 border-b border-gray-200"
-          >
+          <View className="flex-row items-center justify-between py-4 border-b border-gray-200">
             <Text className="text-lg font-semibold text-[#30352D]">
               Promos
             </Text>
-            <View className="flex-row items-center gap-2">
-              <Text className="text-base" style={{ color: '#C1856A' }}>
-                Add code
-              </Text>
-              <ChevronRight size={20} color="#C1856A" />
-            </View>
-          </Pressable>
+            {showPromoInput ? (
+              <TextInput
+                value={promoCode}
+                onChangeText={setPromoCode}
+                placeholder="Add code"
+                placeholderTextColor="#9CA3AF"
+                autoFocus
+                maxLength={6}
+                autoCapitalize="characters"
+                onBlur={() => {
+                  if (!promoCode) setShowPromoInput(false);
+                }}
+                className="text-base text-[#30352D] text-right min-w-[120px] py-1 px-2 border border-gray-300 rounded-lg"
+                style={{ fontFamily: 'WorkSans_400Regular' }}
+              />
+            ) : promoCode ? (
+              <Pressable onPress={() => setShowPromoInput(true)}>
+                <Text className="text-base text-[#30352D]">{promoCode}</Text>
+              </Pressable>
+            ) : (
+              <Pressable onPress={() => setShowPromoInput(true)} className="flex-row items-center gap-2">
+                <Text className="text-base" style={{ color: '#C1856A' }}>
+                  Add code
+                </Text>
+                <ChevronRight size={20} color="#C1856A" />
+              </Pressable>
+            )}
+          </View>
 
           {/* Hourly Rate */}
           <View className="flex-row items-center justify-between py-4">

@@ -35,23 +35,69 @@ import {
   Snowflake,
   Wifi,
   LucideIcon,
+  Plug,
+  Droplet,
+  Leaf,
+  ChevronRight,
 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useLocationStore, useTopLevelCategories } from '@shared/supabase';
+import { useLocationStore, useGroupedSubcategories, type Category } from '@shared/supabase';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 
 // Icon mapping function - maps category names/keywords to icons
 const getCategoryIcon = (categoryName: string): LucideIcon => {
   const name = categoryName.toLowerCase();
 
-  // Map based on keywords in category name
+  // Specific subcategory mappings
+  if (name.includes('ikea')) return Armchair;
+  if (name.includes('crib')) return Baby;
+  if (name.includes('wardrobe') || name.includes('closet')) return Armchair;
+  if (name.includes('office furniture')) return Briefcase;
+  if (name.includes('tv mount')) return Monitor;
+  if (name.includes('shelf') || name.includes('shelves')) return Home;
+  if (name.includes('picture') || name.includes('artwork')) return Camera;
+  if (name.includes('light fixture') || name.includes('light installation')) return Plug;
+  if (name.includes('curtain') || name.includes('blind')) return Home;
+  if (name.includes('door') || name.includes('cabinet')) return Home;
+  if (name.includes('window')) return Home;
+  if (name.includes('seal') || name.includes('caulk')) return Droplet;
+  if (name.includes('floor') || name.includes('tile')) return Home;
+  if (name.includes('carpentry')) return Hammer;
+  if (name.includes('paint')) return PaintRoller;
+  if (name.includes('leak')) return Droplet;
+  if (name.includes('drain')) return Droplet;
+  if (name.includes('tap') || name.includes('faucet')) return Droplet;
+  if (name.includes('washing machine')) return Droplets;
+  if (name.includes('water filter')) return Droplet;
+  if (name.includes('socket')) return Plug;
+  if (name.includes('switch')) return Plug;
+  if (name.includes('cable')) return Plug;
+  if (name.includes('deep clean')) return Sparkles;
+  if (name.includes('party')) return Music;
+  if (name.includes('tenancy')) return Home;
+  if (name.includes('airbnb')) return Home;
+  if (name.includes('van')) return Truck;
+  if (name.includes('waste') || name.includes('removal')) return Wind;
+  if (name.includes('heavy lift') || name.includes('loading')) return Truck;
+  if (name.includes('pack')) return Truck;
+  if (name.includes('full service')) return Truck;
+  if (name.includes('garden')) return Flower2;
+  if (name.includes('lawn')) return Leaf;
+  if (name.includes('landscape')) return Flower2;
+  if (name.includes('leaf') || name.includes('raking')) return Leaf;
+  if (name.includes('gutter') || name.includes('roof')) return Home;
+  if (name.includes('branch') || name.includes('hedge') || name.includes('trim')) return Scissors;
+
+  // General category mappings
   if (name.includes('furniture') || name.includes('assembly')) return Armchair;
   if (name.includes('clean')) return Sparkles;
-  if (name.includes('handyman') || name.includes('repair') || name.includes('maintenance')) return Wrench;
+  if (name.includes('handyman') || name.includes('repair') || name.includes('maintenance') || name.includes('minor')) return Wrench;
   if (name.includes('moving') || name.includes('lifting') || name.includes('delivery')) return Truck;
   if (name.includes('mount') || name.includes('installation') || name.includes('tv')) return Monitor;
   if (name.includes('yard') || name.includes('lawn') || name.includes('garden') || name.includes('outdoor') || name.includes('landscaping')) return Flower2;
+  if (name.includes('plumbing')) return Droplet;
+  if (name.includes('electric')) return Plug;
   if (name.includes('shopping') || name.includes('errand')) return ShoppingBag;
   if (name.includes('assistant') || name.includes('virtual') || name.includes('office')) return Briefcase;
   if (name.includes('baby') || name.includes('family') || name.includes('child')) return Baby;
@@ -66,13 +112,11 @@ const getCategoryIcon = (categoryName: string): LucideIcon => {
   if (name.includes('themed') || name.includes('experience')) return Calendar;
   if (name.includes('photography') || name.includes('photo') || name.includes('media')) return Camera;
   if (name.includes('hair') || name.includes('salon') || name.includes('barber')) return Scissors;
-  if (name.includes('removal') || name.includes('wax')) return Wind;
   if (name.includes('face') || name.includes('beauty') || name.includes('facial') || name.includes('makeup')) return Smile;
   if (name.includes('nail') || name.includes('manicure') || name.includes('pedicure')) return Hand;
   if (name.includes('body') || name.includes('treatment')) return Droplets;
   if (name.includes('massage') || name.includes('wellness') || name.includes('spa')) return HeartPulse;
   if (name.includes('men') || name.includes('grooming')) return UserCircle;
-  if (name.includes('paint')) return PaintRoller;
   if (name.includes('building') || name.includes('construction')) return Hammer;
   if (name.includes('computer') || name.includes('laptop')) return Laptop;
   if (name.includes('car') || name.includes('automotive') || name.includes('vehicle')) return Car;
@@ -81,37 +125,84 @@ const getCategoryIcon = (categoryName: string): LucideIcon => {
   return Home;
 };
 
-// Service chip data for horizontal scrollable rows
-const serviceChips = [
-  ['Furniture Assembly', 'Home Cleaning', 'Handyman'],
-  ['Moving & Lifting', 'TV Mounting', 'Yard Work'],
-  ['Grocery Shopping', 'Delivery', 'Virtual Assistant'],
-  ['Babysitting', 'Office Services', 'Seasonal Help'],
-  ['Event Planning', 'Photography', 'Personal Chef'],
-];
+// Subcategory card component for horizontal scroll
+interface SubcategoryCardProps {
+  category: Category;
+  index: number;
+  onPress: () => void;
+}
 
-// Fallback service cards data (used when categories are loading or empty)
-const fallbackServiceCards = [
-  { title: 'Furniture & Assembly', icon: Armchair, bgColor: '#30352d' },
-  { title: 'Home Cleaning', icon: Sparkles, bgColor: '#BFA28D' },
-  { title: 'Handyman & Repairs', icon: Wrench, bgColor: '#BFA28D' },
-  { title: 'Moving & Lifting', icon: Truck, bgColor: '#30352d' },
-  { title: 'Yard & Outdoor', icon: Flower2, bgColor: '#30352d' },
-  { title: 'Shopping & Delivery', icon: ShoppingBag, bgColor: '#BFA28D' },
-  { title: 'Family & Baby Prep', icon: Baby, bgColor: '#BFA28D' },
-  { title: 'Entertainment', icon: Music, bgColor: '#30352d' },
-  { title: 'Hair Services', icon: Scissors, bgColor: '#30352d' },
-  { title: 'Massage & Wellness', icon: HeartPulse, bgColor: '#BFA28D' },
-  { title: 'Food & Dining', icon: Coffee, bgColor: '#BFA28D' },
-  { title: 'Photography', icon: Camera, bgColor: '#30352d' },
-  { title: 'Mounting & Installation', icon: Monitor, bgColor: '#30352d' },
-  { title: 'Virtual Assistant', icon: Briefcase, bgColor: '#BFA28D' },
-];
+function SubcategoryCard({ category, index, onPress }: SubcategoryCardProps) {
+  const Icon = getCategoryIcon(category.name);
+  // Alternating colors matching original design
+  const bgColor = index % 2 === 0 ? '#30352d' : '#BFA28D';
+
+  return (
+    <Pressable
+      onPress={onPress}
+      className="items-center justify-center mr-3 rounded-2xl"
+      style={{
+        width: 120,
+        height: 100,
+        backgroundColor: bgColor,
+        padding: 12,
+      }}
+    >
+      <Icon size={32} color="white" strokeWidth={1.5} />
+      <Text
+        className="text-xs text-center text-white mt-2"
+        style={{ fontWeight: '500' }}
+        numberOfLines={2}
+      >
+        {category.name}
+      </Text>
+    </Pressable>
+  );
+}
+
+// Section component for horizontal category row
+interface CategorySectionProps {
+  title: string;
+  subcategories: Category[];
+  onSelectCategory: (id: string, name: string) => void;
+}
+
+function CategorySection({ title, subcategories, onSelectCategory }: CategorySectionProps) {
+  if (subcategories.length === 0) return null;
+
+  return (
+    <View className="mb-6">
+      {/* Section Header */}
+      <View className="px-5 mb-3 flex-row items-center justify-between">
+        <Text className="text-lg text-stone-900" style={{ fontWeight: '700' }}>
+          {title}
+        </Text>
+        <ChevronRight size={20} color="#9CA3AF" />
+      </View>
+
+      {/* Horizontal Scroll of Subcategories */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20 }}
+      >
+        {subcategories.map((subcategory, index) => (
+          <SubcategoryCard
+            key={subcategory.id}
+            category={subcategory}
+            index={index}
+            onPress={() => onSelectCategory(subcategory.id, subcategory.name)}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
 
 export function ServicesHomeScreen() {
   const router = useRouter();
   const { location } = useLocationStore();
-  const { data: categories, isLoading } = useTopLevelCategories();
+  const { data: groupedCategories, isLoading } = useGroupedSubcategories();
   const [showBookingSheet, setShowBookingSheet] = React.useState(false);
   const [selectedCategory, setSelectedCategory] = React.useState({ id: '', name: '' });
 
@@ -143,21 +234,6 @@ export function ServicesHomeScreen() {
 
   const locationDisplay = getLocationDisplay();
 
-  // Transform categories from database into service cards format
-  const serviceCards = React.useMemo(() => {
-    if (!categories || categories.length === 0) {
-      return fallbackServiceCards;
-    }
-
-    // Map categories to cards with alternating colors
-    return categories.map((category, index) => ({
-      id: category.id,
-      title: category.name,
-      icon: getCategoryIcon(category.name),
-      bgColor: index % 2 === 0 ? '#30352d' : '#BFA28D',
-    }));
-  }, [categories]);
-
   const handleServicePress = (categoryId: string, categoryName: string) => {
     if (!categoryId || !categoryName) {
       // If no category info, navigate to search instead
@@ -172,165 +248,142 @@ export function ServicesHomeScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
         <View className="flex-1 flex-col">
-        {/* Header Section */}
-        <View className="bg-white px-5 pt-4 pb-4 flex-col">
-          <View className="items-center justify-between flex-row">
-            <View className="gap-0 flex-col">
-              <Text className="text-xs text-gray-500" style={{ fontWeight: '400' }}>100</Text>
-              <Text className="text-2xl text-stone-900" style={{ fontWeight: '700', letterSpacing: 0.5 }}>HANDY</Text>
-            </View>
-            <Pressable onPress={() => router.push('/(client)/location')}>
-              <View className="items-end gap-0 flex-col">
-                <View className="items-center gap-1 flex-row">
+          {/* Header Section */}
+          <View className="bg-white px-5 pt-4 pb-4 flex-col">
+            <View className="items-center justify-between flex-row">
+              <View className="gap-0 flex-col">
+                <Text className="text-xs text-gray-500" style={{ fontWeight: '400' }}>100</Text>
+                <Text className="text-2xl text-stone-900" style={{ fontWeight: '700', letterSpacing: 0.5 }}>HANDY</Text>
+              </View>
+              <Pressable onPress={() => router.push('/(client)/location')}>
+                <View className="items-end gap-0 flex-col">
+                  <View className="items-center gap-1 flex-row">
+                    <Text className="text-xs text-stone-800" style={{ fontWeight: '400' }} numberOfLines={1}>
+                      {locationDisplay.line1}
+                    </Text>
+                    <MapPin size={16} color="#ff6b35" />
+                  </View>
                   <Text className="text-xs text-stone-800" style={{ fontWeight: '400' }} numberOfLines={1}>
-                    {locationDisplay.line1}
+                    {locationDisplay.line2}
                   </Text>
-                  <MapPin size={16} color="#ff6b35" />
                 </View>
-                <Text className="text-xs text-stone-800" style={{ fontWeight: '400' }} numberOfLines={1}>
-                  {locationDisplay.line2}
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Search Section with Dark Background */}
+          <View className="px-5 pt-5 pb-5 flex-col" style={{ backgroundColor: '#30352D' }}>
+            <Text className="text-xl font-bold text-white mb-4">
+              What task do you need done?
+            </Text>
+
+            {/* Search Input - Navigate to Search Screen */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                router.push('/(client)/search-services');
+              }}
+            >
+              <View
+                className="rounded-xl px-4 py-3 items-center gap-3 flex-row"
+                style={{ backgroundColor: '#4a4e4d', borderWidth: 1, borderColor: '#5a5e5d' }}
+              >
+                <Search size={18} color="#8b9199" />
+                <Text style={{ color: '#8b9199', fontSize: 15 }}>
+                  Try: painting, moving, repairs
                 </Text>
               </View>
-            </Pressable>
+            </TouchableOpacity>
+
+            {/* Quick-Select Chips - Multiple horizontal scrollable rows */}
+            {groupedCategories && groupedCategories.length > 0 && (() => {
+              const allSubcategories = groupedCategories.flatMap(group => group.subcategories);
+              const chipsPerRow = 3;
+              const rows: Category[][] = [];
+              for (let i = 0; i < Math.min(allSubcategories.length, 15); i += chipsPerRow) {
+                rows.push(allSubcategories.slice(i, i + chipsPerRow));
+              }
+              return (
+                <View className="mt-4" style={{ gap: 10 }}>
+                  {rows.map((row, rowIndex) => (
+                    <ScrollView
+                      key={rowIndex}
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{ gap: 8 }}
+                    >
+                      {row.map((subcategory) => (
+                        <Pressable
+                          key={subcategory.id}
+                          onPress={() => handleServicePress(subcategory.id, subcategory.name)}
+                          style={{
+                            paddingHorizontal: 16,
+                            paddingVertical: 10,
+                            borderRadius: 20,
+                            borderWidth: 1,
+                            borderColor: '#6b7280',
+                            backgroundColor: 'transparent',
+                          }}
+                        >
+                          <Text style={{ color: '#f3e3d3', fontSize: 14, fontWeight: '500' }}>
+                            {subcategory.name}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                  ))}
+                </View>
+              );
+            })()}
+          </View>
+
+          {/* Section Title */}
+          <View className="px-5 pt-5 pb-4 bg-white flex-col">
+            <Text className="text-xl text-stone-900 mb-1" style={{ fontWeight: '700' }}>
+              Need Something done?
+            </Text>
+            <Text className="text-sm text-gray-600" style={{ fontWeight: '400' }}>
+              Browse our top trending categories
+            </Text>
+          </View>
+
+          {/* Categories Sections */}
+          <View className="pb-6 bg-white flex-col">
+            {isLoading ? (
+              <View className="items-center justify-center py-12 flex-col">
+                <ActivityIndicator size="large" color="#30352d" />
+                <Text className="text-sm text-gray-600 mt-3">Loading categories...</Text>
+              </View>
+            ) : groupedCategories && groupedCategories.length > 0 ? (
+              groupedCategories.map((group) => (
+                <CategorySection
+                  key={group.id}
+                  title={group.name}
+                  subcategories={group.subcategories}
+                  onSelectCategory={handleServicePress}
+                />
+              ))
+            ) : (
+              <View className="items-center justify-center py-12 px-6 flex-col">
+                <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+                  No services available
+                </Text>
+                <Text className="text-sm text-gray-600 text-center">
+                  Please check back later
+                </Text>
+              </View>
+            )}
           </View>
         </View>
+      </ScrollView>
 
-        {/* Search Section with Dark Background */}
-        <View className="px-5 pt-5 pb-4 flex-col" style={{ backgroundColor: '#30352D' }}>
-          <Text className="text-xl font-bold text-white mb-4">
-            What task do you need done?
-          </Text>
-
-          {/* Search Input - Navigate to Search Screen */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => {
-              console.log('Search pressed!');
-              router.push('/(client)/search-services');
-            }}
-          >
-            <View
-              className="rounded-xl px-4 py-3 items-center gap-3 flex-row"
-              style={{ backgroundColor: '#4a4e4d', borderWidth: 1, borderColor: '#5a5e5d' }}
-            >
-              <Search size={18} color="#8b9199" />
-              <Text style={{ color: '#8b9199', fontSize: 15 }}>
-                Try: painting, moving, repairs
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Horizontal Scrollable Service Chips */}
-        <View className="py-3 gap-2.5 flex-col" style={{ backgroundColor: '#30352D' }}>
-          {serviceChips.map((row, rowIndex) => (
-            <ScrollView
-              key={rowIndex}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
-            >
-              {row.map((service, index) => (
-                <Pressable
-                  key={index}
-                  className="px-6 py-2.5 rounded-full"
-                  style={{
-                    backgroundColor: 'transparent',
-                    borderWidth: 1.5,
-                    borderColor: '#ffffff'
-                  }}
-                  onPress={() => {
-                    // Find category by name for chips - try to match with existing categories
-                    const category = categories?.find(c => 
-                      c.name.toLowerCase().includes(service.toLowerCase()) ||
-                      service.toLowerCase().includes(c.name.toLowerCase())
-                    );
-                    if (category) {
-                      handleServicePress(category.id, category.name);
-                    } else {
-                      // If no exact match found, still try to open action sheet with service name
-                      // Use a temporary ID format for fallback categories
-                      handleServicePress(`temp-${service.toLowerCase().replace(/\s+/g, '-')}`, service);
-                    }
-                  }}
-                >
-                  <Text className="text-white text-sm" style={{ fontWeight: '500' }}>
-                    {service}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          ))}
-        </View>
-
-        {/* Section Title */}
-        <View className="px-5 pt-5 pb-4 bg-white flex-col">
-          <Text className="text-xl text-stone-900 mb-1" style={{ fontWeight: '700' }}>
-            Need Something done?
-          </Text>
-          <Text className="text-sm text-gray-600" style={{ fontWeight: '400' }}>
-            Browse our top trending categories
-          </Text>
-        </View>
-
-        {/* Service Cards Grid */}
-        <View className="px-5 pb-6 bg-white flex-col">
-          {isLoading ? (
-            <View className="items-center justify-center py-12 flex-col">
-              <ActivityIndicator size="large" color="#30352d" />
-              <Text className="text-sm text-gray-600 mt-3">Loading categories...</Text>
-            </View>
-          ) : (
-            <View className="gap-3 flex-col">
-              {Array.from({ length: Math.ceil(serviceCards.length / 2) }).map((_, rowIndex) => (
-                <View key={rowIndex} className="gap-3 flex-row">
-                  {serviceCards.slice(rowIndex * 2, rowIndex * 2 + 2).map((service) => {
-                    const Icon = service.icon;
-                    const serviceId = ('id' in service && service.id) ? String(service.id) : service.title;
-
-                    return (
-                      <Pressable
-                        key={serviceId}
-                        className="flex-1 rounded-2xl items-center justify-center"
-                        style={{
-                          backgroundColor: service.bgColor,
-                          height: 140,
-                          padding: 16
-                        }}
-                        onPress={() => {
-                          if ('id' in service && service.id) {
-                            // Has a real category ID from database
-                            handleServicePress(String(service.id), service.title);
-                          } else {
-                            // Fallback card - use title as category name with temp ID
-                            handleServicePress(`temp-${service.title.toLowerCase().replace(/\s+/g, '-')}`, service.title);
-                          }
-                        }}
-                      >
-                        <View className="items-center gap-2 flex-col">
-                          <Icon size={36} color="white" strokeWidth={1.5} />
-                          <Text className="text-white font-medium text-sm text-center">
-                            {service.title}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      </View>
-    </ScrollView>
-
-    {/* Booking Action Sheet */}
-    <LocationSelectionSheet
-      isOpen={showBookingSheet}
-      onClose={() => setShowBookingSheet(false)}
-      categoryId={selectedCategory.id}
-      categoryName={selectedCategory.name}
-    />
+      {/* Booking Action Sheet */}
+      <LocationSelectionSheet
+        isOpen={showBookingSheet}
+        onClose={() => setShowBookingSheet(false)}
+        categoryId={selectedCategory.id}
+        categoryName={selectedCategory.name}
+      />
     </SafeAreaView>
   );
 }

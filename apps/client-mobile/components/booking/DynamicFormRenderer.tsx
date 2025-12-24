@@ -30,6 +30,11 @@ export function DynamicFormRenderer({
   const router = useRouter();
   const { data: fields, isLoading, isError } = useCategoryFormFields(categoryId);
   const [responses, setResponses] = useState<FormResponse>(initialValues);
+
+  // Debug logging to trace categoryId issues
+  console.log('[DynamicFormRenderer] categoryId:', categoryId);
+  console.log('[DynamicFormRenderer] categoryName:', categoryName);
+  console.log('[DynamicFormRenderer] fields:', fields?.length ?? 'undefined', 'isLoading:', isLoading, 'isError:', isError);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 

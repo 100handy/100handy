@@ -13,8 +13,10 @@ export default function TaskDetailsScreen() {
   const taskerId = params.taskerId as string;
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
-  const taskSize = params.taskSize as string;
-  const vehicleRequirement = params.vehicleRequirement as string;
+  const formResponses = params.formResponses as string | undefined;
+  // Legacy params for backwards compatibility
+  const taskSize = params.taskSize as string | undefined;
+  const vehicleRequirement = params.vehicleRequirement as string | undefined;
   const selectedDate = params.selectedDate as string;
   const selectedTime = params.selectedTime as string;
 
@@ -24,17 +26,31 @@ export default function TaskDetailsScreen() {
   const { data: profile } = useHandymanProfile(taskerId);
 
   const handleReviewTask = () => {
+    // Merge additional_details into formResponses if present
+    let finalFormResponses = formResponses;
+    if (taskDetails.trim()) {
+      try {
+        const parsed = formResponses ? JSON.parse(formResponses) : {};
+        parsed.additional_details = taskDetails.trim();
+        finalFormResponses = JSON.stringify(parsed);
+      } catch {
+        finalFormResponses = JSON.stringify({ additional_details: taskDetails.trim() });
+      }
+    }
+
     router.push({
       pathname: '/(client)/confirm-booking',
       params: {
         taskerId,
         categoryId,
         categoryName,
-        taskSize,
-        vehicleRequirement,
-        taskDetails: taskDetails.trim() || '',
         selectedDate,
         selectedTime,
+        // Pass formResponses (new) or legacy params
+        ...(finalFormResponses ? { formResponses: finalFormResponses } : {}),
+        ...(taskSize ? { taskSize } : {}),
+        ...(vehicleRequirement ? { vehicleRequirement } : {}),
+        ...(!formResponses && taskDetails.trim() ? { taskDetails: taskDetails.trim() } : {}),
       },
     });
   };

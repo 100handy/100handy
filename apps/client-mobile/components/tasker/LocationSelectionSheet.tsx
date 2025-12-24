@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Pressable as RNPressable, Text } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ScrollView, View, Pressable as RNPressable, Text, TextInput, ActivityIndicator } from 'react-native';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { Input, InputField } from '@/components/ui/input';
-import { ChevronLeft, X } from 'lucide-react-native';
+import { ChevronLeft, X, Check } from 'lucide-react-native';
 import {
   useLocationStore,
   useTaskFormStore,
+  useCategoryFormFields,
+  type FormField,
 } from '@shared/supabase';
 import { useRouter } from 'expo-router';
 import { LocationAutocomplete } from '@/components/location';
@@ -315,6 +317,324 @@ function VehicleRequirementStep({
   );
 }
 
+// Dynamic Step Renderer for Radio/Select fields
+function RadioStepRenderer({
+  field,
+  value,
+  onChange,
+  categoryName,
+  onContinue,
+}: {
+  field: FormField;
+  value: any;
+  onChange: (value: any) => void;
+  categoryName: string;
+  onContinue: () => void;
+}) {
+  const options = field.options || [];
+  const isDisabled = field.required && !value;
+
+  return (
+    <>
+      <ScrollView className="w-full flex-1" showsVerticalScrollIndicator={false}>
+        <View className="px-5 pt-4 pb-6 flex-col">
+          <Text className="text-3xl font-extrabold text-[#30352d] text-center mb-10" style={{ letterSpacing: -0.5 }}>
+            {categoryName}
+          </Text>
+          <View className="mb-6 flex-col">
+            <Text className="text-xl font-semibold text-black">{field.label}</Text>
+            {field.description && <Text className="text-sm text-gray-500 mt-1">{field.description}</Text>}
+          </View>
+          <View className="flex-col">
+            {options.map((option) => {
+              const isSelected = value === option.value;
+              return (
+                <RNPressable
+                  key={String(option.value)}
+                  onPress={() => onChange(option.value)}
+                  className={`py-4 px-5 border rounded-full my-2 ${isSelected ? 'border-black bg-gray-100' : 'border-gray-300 bg-white'}`}
+                >
+                  <Text className={`text-base ${isSelected ? 'font-bold text-black' : 'text-gray-800'}`}>
+                    {option.label}
+                  </Text>
+                  {option.description && (
+                    <Text className="text-sm text-gray-500 mt-1">{option.description}</Text>
+                  )}
+                </RNPressable>
+              );
+            })}
+          </View>
+        </View>
+      </ScrollView>
+
+      <View className="px-5 py-6 w-full border-t border-gray-100 flex-col">
+        <RNPressable
+          onPress={onContinue}
+          disabled={isDisabled}
+          className={`w-full py-4 items-center rounded-full ${isDisabled ? 'bg-gray-300' : 'bg-[#C1856A]'}`}
+        >
+          <Text className="text-lg font-bold text-white">Continue</Text>
+        </RNPressable>
+      </View>
+    </>
+  );
+}
+
+// Dynamic Step Renderer for Checkbox fields (multi-select)
+function CheckboxStepRenderer({
+  field,
+  value,
+  onChange,
+  categoryName,
+  onContinue,
+}: {
+  field: FormField;
+  value: any;
+  onChange: (value: any) => void;
+  categoryName: string;
+  onContinue: () => void;
+}) {
+  const options = field.options || [];
+  const selectedValues = Array.isArray(value) ? value : [];
+  const isDisabled = field.required && selectedValues.length === 0;
+
+  const toggleOption = (optionValue: string) => {
+    if (selectedValues.includes(optionValue)) {
+      onChange(selectedValues.filter((v: string) => v !== optionValue));
+    } else {
+      onChange([...selectedValues, optionValue]);
+    }
+  };
+
+  return (
+    <>
+      <ScrollView className="w-full flex-1" showsVerticalScrollIndicator={false}>
+        <View className="px-5 pt-4 pb-6 flex-col">
+          <Text className="text-3xl font-extrabold text-[#30352d] text-center mb-10" style={{ letterSpacing: -0.5 }}>
+            {categoryName}
+          </Text>
+          <View className="mb-6 flex-col">
+            <Text className="text-xl font-semibold text-black">{field.label}</Text>
+            {field.description && <Text className="text-sm text-gray-500 mt-1">{field.description}</Text>}
+          </View>
+          <View className="flex-col">
+            {options.map((option) => {
+              const optionValue = String(option.value);
+              const isChecked = selectedValues.includes(optionValue);
+              return (
+                <RNPressable
+                  key={optionValue}
+                  onPress={() => toggleOption(optionValue)}
+                  className={`py-4 px-5 border rounded-xl my-2 flex-row items-center gap-3 ${isChecked ? 'border-[#30352D] bg-gray-100' : 'border-gray-300 bg-white'}`}
+                >
+                  <View className={`w-5 h-5 rounded border-2 items-center justify-center ${isChecked ? 'border-[#30352D] bg-[#30352D]' : 'border-gray-400 bg-white'}`}>
+                    {isChecked && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                  </View>
+                  <View className="flex-col flex-1">
+                    <Text className={`text-base ${isChecked ? 'font-semibold text-black' : 'text-gray-800'}`}>
+                      {option.label}
+                    </Text>
+                    {option.description && (
+                      <Text className="text-sm text-gray-600 mt-1">{option.description}</Text>
+                    )}
+                  </View>
+                </RNPressable>
+              );
+            })}
+          </View>
+        </View>
+      </ScrollView>
+
+      <View className="px-5 py-6 w-full border-t border-gray-100 flex-col">
+        <RNPressable
+          onPress={onContinue}
+          disabled={isDisabled}
+          className={`w-full py-4 items-center rounded-full ${isDisabled ? 'bg-gray-300' : 'bg-[#C1856A]'}`}
+        >
+          <Text className="text-lg font-bold text-white">Continue</Text>
+        </RNPressable>
+      </View>
+    </>
+  );
+}
+
+// Dynamic Step Renderer for Text/Textarea fields
+function TextStepRenderer({
+  field,
+  value,
+  onChange,
+  categoryName,
+  onContinue,
+}: {
+  field: FormField;
+  value: any;
+  onChange: (value: any) => void;
+  categoryName: string;
+  onContinue: () => void;
+}) {
+  const isTextarea = field.field_type === 'textarea';
+  const isDisabled = field.required && !value?.trim();
+
+  return (
+    <>
+      <ScrollView className="w-full flex-1" showsVerticalScrollIndicator={false}>
+        <View className="px-5 pt-4 pb-6 flex-col">
+          <Text className="text-3xl font-extrabold text-[#30352d] text-center mb-10" style={{ letterSpacing: -0.5 }}>
+            {categoryName}
+          </Text>
+          <View className="mb-6 flex-col">
+            <Text className="text-xl font-semibold text-black">{field.label}</Text>
+            {field.description && <Text className="text-sm text-gray-500 mt-1">{field.description}</Text>}
+          </View>
+
+          {isTextarea ? (
+            <TextInput
+              value={value || ''}
+              onChangeText={onChange}
+              placeholder={field.placeholder || ''}
+              placeholderTextColor="#9CA3AF"
+              multiline
+              textAlignVertical="top"
+              maxLength={field.max_length || undefined}
+              className="bg-gray-50 rounded-lg px-4 py-3 text-base text-[#30352D]"
+              style={{
+                minHeight: 120,
+                borderWidth: 1,
+                borderColor: '#E5E7EB',
+              }}
+            />
+          ) : (
+            <Input
+              variant="outline"
+              size="xl"
+              className="border-gray-200 rounded-xl min-h-[56px]"
+            >
+              <InputField
+                value={value || ''}
+                onChangeText={onChange}
+                placeholder={field.placeholder || ''}
+                className="text-base px-4 text-black"
+              />
+            </Input>
+          )}
+
+          {isTextarea && field.max_length && (
+            <Text className="text-xs text-gray-500 mt-1">
+              {(value || '').length} / {field.max_length} characters
+            </Text>
+          )}
+        </View>
+      </ScrollView>
+
+      <View className="px-5 py-6 w-full border-t border-gray-100 flex-col">
+        <RNPressable
+          onPress={onContinue}
+          disabled={isDisabled}
+          className={`w-full py-4 items-center rounded-full ${isDisabled ? 'bg-gray-300' : 'bg-[#C1856A]'}`}
+        >
+          <Text className="text-lg font-bold text-white">Continue</Text>
+        </RNPressable>
+      </View>
+    </>
+  );
+}
+
+// Dynamic Step Renderer for Select fields (dropdown-style, but rendered as radio for consistency)
+function SelectStepRenderer({
+  field,
+  value,
+  onChange,
+  categoryName,
+  onContinue,
+}: {
+  field: FormField;
+  value: any;
+  onChange: (value: any) => void;
+  categoryName: string;
+  onContinue: () => void;
+}) {
+  // Reuse RadioStepRenderer for select fields since they're visually similar
+  return (
+    <RadioStepRenderer
+      field={field}
+      value={value}
+      onChange={onChange}
+      categoryName={categoryName}
+      onContinue={onContinue}
+    />
+  );
+}
+
+// Main Dynamic Step Renderer that dispatches to the right renderer
+function DynamicStepRenderer({
+  field,
+  value,
+  onChange,
+  categoryName,
+  onContinue,
+}: {
+  field: FormField;
+  value: any;
+  onChange: (value: any) => void;
+  categoryName: string;
+  onContinue: () => void;
+}) {
+  switch (field.field_type) {
+    case 'radio':
+      return (
+        <RadioStepRenderer
+          field={field}
+          value={value}
+          onChange={onChange}
+          categoryName={categoryName}
+          onContinue={onContinue}
+        />
+      );
+    case 'select':
+      return (
+        <SelectStepRenderer
+          field={field}
+          value={value}
+          onChange={onChange}
+          categoryName={categoryName}
+          onContinue={onContinue}
+        />
+      );
+    case 'checkbox':
+      return (
+        <CheckboxStepRenderer
+          field={field}
+          value={value}
+          onChange={onChange}
+          categoryName={categoryName}
+          onContinue={onContinue}
+        />
+      );
+    case 'text':
+    case 'textarea':
+    case 'number':
+      return (
+        <TextStepRenderer
+          field={field}
+          value={value}
+          onChange={onChange}
+          categoryName={categoryName}
+          onContinue={onContinue}
+        />
+      );
+    default:
+      return (
+        <TextStepRenderer
+          field={field}
+          value={value}
+          onChange={onChange}
+          categoryName={categoryName}
+          onContinue={onContinue}
+        />
+      );
+  }
+}
+
 export default function LocationSelectionSheet({
   isOpen,
   onClose,
@@ -323,9 +643,25 @@ export default function LocationSelectionSheet({
 }: LocationSelectionSheetProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [responses, setResponses] = useState<Record<string, any>>({});
   const reset = useTaskFormStore((state) => state.reset);
   const setCategory = useTaskFormStore((state) => state.setCategory);
-  const taskOptions = useTaskFormStore((state) => state.formData.taskOptions);
+
+  // Fetch dynamic form fields for this category
+  const { data: formFields, isLoading: isLoadingFields } = useCategoryFormFields(categoryId);
+
+  // Filter out address fields (handled by LocationStep)
+  const dynamicFields = useMemo(() => {
+    if (!formFields) return [];
+    return formFields.filter(
+      (f) =>
+        f.field_type !== 'address' &&
+        !['location', 'start_address', 'end_address'].includes(f.field_key)
+    );
+  }, [formFields]);
+
+  // Total steps = 1 (Location) + dynamic fields count
+  const totalSteps = 1 + dynamicFields.length;
 
   // Set category when sheet opens
   useEffect(() => {
@@ -338,24 +674,23 @@ export default function LocationSelectionSheet({
   useEffect(() => {
     if (!isOpen) {
       setStep(1);
+      setResponses({});
       reset();
     }
   }, [isOpen]);
 
   const handleNextStep = () => {
-    if (step < 3) {
+    if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      // After step 3, navigate to select-tasker screen
+      // All steps done - navigate to select-tasker with form responses
       onClose();
       router.push({
         pathname: '/(client)/select-tasker',
         params: {
           categoryId,
           categoryName,
-          taskSize: taskOptions.taskSize,
-          vehicleRequirement: taskOptions.vehicleRequirement,
-          taskDetails: taskOptions.taskDetails || '',
+          formResponses: JSON.stringify(responses),
         },
       });
     }
@@ -368,6 +703,17 @@ export default function LocationSelectionSheet({
       onClose();
     }
   };
+
+  const handleFieldChange = (fieldKey: string, value: any) => {
+    setResponses((prev) => ({
+      ...prev,
+      [fieldKey]: value,
+    }));
+  };
+
+  // Get current dynamic field (step 2+ maps to index 0+)
+  const currentFieldIndex = step - 2; // step 2 = index 0, step 3 = index 1, etc.
+  const currentField = dynamicFields[currentFieldIndex];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
@@ -396,9 +742,9 @@ export default function LocationSelectionSheet({
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </RNPressable>
 
-          {/* Progress Dots */}
+          {/* Progress Dots - Dynamic count */}
           <View className="flex-row items-center justify-center gap-2">
-            {Array.from({ length: 6 }).map((_, index) => (
+            {Array.from({ length: Math.min(totalSteps, 10) }).map((_, index) => (
               <View
                 key={index}
                 className="w-3 h-3 rounded-full border-2"
@@ -408,6 +754,11 @@ export default function LocationSelectionSheet({
                 }}
               />
             ))}
+            {totalSteps > 10 && (
+              <Text className="text-xs text-gray-500 ml-1">
+                {step}/{totalSteps}
+              </Text>
+            )}
           </View>
 
           {/* Close Button */}
@@ -416,9 +767,42 @@ export default function LocationSelectionSheet({
           </RNPressable>
         </View>
 
+        {/* Step 1: Location (common for all categories) */}
         {step === 1 && <LocationStep title={categoryName} onContinue={handleNextStep} />}
-        {step === 2 && <TaskSizeStep title={categoryName} onContinue={handleNextStep} />}
-        {step === 3 && <VehicleRequirementStep title={categoryName} onContinue={handleNextStep} />}
+
+        {/* Step 2+: Dynamic fields from database */}
+        {step > 1 && !isLoadingFields && currentField && (
+          <DynamicStepRenderer
+            field={currentField}
+            value={responses[currentField.field_key]}
+            onChange={(val) => handleFieldChange(currentField.field_key, val)}
+            categoryName={categoryName}
+            onContinue={handleNextStep}
+          />
+        )}
+
+        {/* Loading state */}
+        {step > 1 && isLoadingFields && (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#C1856A" />
+            <Text className="text-sm text-gray-600 mt-3">Loading form...</Text>
+          </View>
+        )}
+
+        {/* No more fields - shouldn't happen but handle gracefully */}
+        {step > 1 && !isLoadingFields && !currentField && dynamicFields.length === 0 && (
+          <View className="flex-1 items-center justify-center px-6">
+            <Text className="text-lg font-semibold text-[#30352D] mb-4 text-center">
+              Ready to continue
+            </Text>
+            <RNPressable
+              onPress={handleNextStep}
+              className="w-full py-4 items-center rounded-full bg-[#C1856A]"
+            >
+              <Text className="text-lg font-bold text-white">Continue</Text>
+            </RNPressable>
+          </View>
+        )}
       </ModalContent>
     </Modal>
   );

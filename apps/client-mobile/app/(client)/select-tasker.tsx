@@ -109,10 +109,13 @@ export default function SelectTaskerScreen() {
   const categoryName = params.categoryName as string;
   const serviceName = params.service as string;
 
-  // Task details from task-form screen
-  const taskSize = params.taskSize as string;
-  const vehicleRequirement = params.vehicleRequirement as string;
-  const taskDetails = params.taskDetails as string;
+  // Form responses from dynamic form in LocationSelectionSheet
+  const formResponses = params.formResponses as string | undefined;
+
+  // Legacy params for backwards compatibility
+  const taskSize = params.taskSize as string | undefined;
+  const vehicleRequirement = params.vehicleRequirement as string | undefined;
+  const taskDetails = params.taskDetails as string | undefined;
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showSortSheet, setShowSortSheet] = useState(false);
@@ -171,9 +174,11 @@ export default function SelectTaskerScreen() {
         taskerId,
         categoryId,
         categoryName,
-        taskSize,
-        vehicleRequirement,
-        taskDetails: taskDetails || '',
+        // Pass formResponses (new) or legacy params
+        ...(formResponses ? { formResponses } : {}),
+        ...(taskSize ? { taskSize } : {}),
+        ...(vehicleRequirement ? { vehicleRequirement } : {}),
+        ...(taskDetails ? { taskDetails } : {}),
       },
     });
   };
@@ -185,9 +190,11 @@ export default function SelectTaskerScreen() {
         taskerId,
         categoryId,
         categoryName,
-        taskSize,
-        vehicleRequirement,
-        taskDetails: taskDetails || '',
+        // Pass formResponses (new) or legacy params
+        ...(formResponses ? { formResponses } : {}),
+        ...(taskSize ? { taskSize } : {}),
+        ...(vehicleRequirement ? { vehicleRequirement } : {}),
+        ...(taskDetails ? { taskDetails } : {}),
       },
     });
   };

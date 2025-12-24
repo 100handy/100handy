@@ -145,6 +145,49 @@ export const useCategoriesByLevel = (level: number) => {
   });
 };
 
+// Grouped subcategories interface for TaskRabbit-style home screen
+export interface GroupedCategory {
+  id: string;
+  name: string;
+  description: string | null;
+  subcategories: Category[];
+}
+
+// Fetch all subcategories grouped by their parent category
+const getGroupedSubcategories = async (): Promise<GroupedCategory[]> => {
+  const { data: categories, error } = await supabase
+    .from('categories')
+    .select('*')
+    .order('level')
+    .order('display_order');
+
+  if (error) {
+    throw new Error(`Failed to fetch categories: ${error.message}`);
+  }
+
+  if (!categories) return [];
+
+  // Filter main categories (level 0) and subcategories (level 1)
+  const mainCategories = categories.filter(c => c.level === 0);
+
+  return mainCategories.map(main => ({
+    id: main.id,
+    name: main.name,
+    description: main.description,
+    subcategories: categories.filter(c => c.parent_id === main.id),
+  }));
+};
+
+// Hook to get subcategories grouped by parent category (for TaskRabbit-style home screen)
+export const useGroupedSubcategories = () => {
+  return useQuery({
+    queryKey: [...categoryKeys.all, 'grouped-subcategories'],
+    queryFn: getGroupedSubcategories,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
+
 // Utility: Build hierarchical tree from flat category array
 export interface CategoryTree extends Category {
   children: CategoryTree[];

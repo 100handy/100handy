@@ -14,6 +14,16 @@ export default function TaskFormScreen() {
   const selectedDate = params.selectedDate as string;
   const selectedTime = params.selectedTime as string;
 
+  // Debug logging for params
+  console.log('[TaskFormScreen] All params:', JSON.stringify(params));
+  console.log('[TaskFormScreen] categoryId:', categoryId);
+  console.log('[TaskFormScreen] categoryName:', categoryName);
+
+  // Validate categoryId
+  if (!categoryId || categoryId === 'undefined') {
+    console.error('[TaskFormScreen] Invalid categoryId:', categoryId, 'Raw params.categoryId:', params.categoryId);
+  }
+
   // Parse existing form responses if coming back from confirm screen
   const existingResponses = params.formResponses
     ? JSON.parse(params.formResponses as string)
