@@ -351,10 +351,12 @@ export default function TaskerProfileScreen() {
                 const reviewerName = review.profiles
                   ? `${review.profiles.first_name} ${review.profiles.last_name?.charAt(0) || ''}.`
                   : 'Customer';
-                const reviewDate = new Date(review.created_at).toLocaleDateString('en-GB', {
-                  day: 'numeric',
-                  month: 'short',
-                });
+                const reviewDate = review.created_at
+                  ? new Date(review.created_at).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                    })
+                  : '';
 
                 return (
                   <View key={review.id}>
@@ -469,6 +471,7 @@ export default function TaskerProfileScreen() {
         onClose={() => setShowScheduleSheet(false)}
         onSelectSchedule={handleScheduleSelect}
         taskerName={profile?.display_name || 'Tasker'}
+        taskerId={taskerId}
       />
 
       {/* Rating Filter Action Sheet */}

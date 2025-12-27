@@ -228,6 +228,65 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
 }
 
 /**
+ * Check if a tasker has any conflicting bookings at the specified date and time
+ * @param handyId - The tasker's user ID
+ * @param scheduledDate - The date to check (YYYY-MM-DD)
+ * @param scheduledTime - The time to check (HH:MM or HH:MM:SS)
+ * @returns Promise<boolean> - true if there's a conflict, false if slot is available
+ */
+export async function checkBookingConflict(
+  handyId: string,
+  scheduledDate: string,
+  scheduledTime: string
+): Promise<boolean> {
+  try {
+    // Normalize time format to HH:MM for comparison
+    const normalizedTime = scheduledTime.slice(0, 5); // Get "HH:MM" part
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('handy_id', handyId)
+      .eq('scheduled_date', scheduledDate)
+      .in('status', ['pending', 'accepted', 'in_progress']); // Only check non-cancelled/completed bookings
+
+    if (error) {
+      console.error('Error checking booking conflict:', error);
+      throw new Error(`Failed to check booking conflict: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      return false; // No conflict
+    }
+
+    // Check if any existing booking overlaps with the requested time
+    // For now, we do an exact match on the time (within the same hour)
+    const { data: conflictData, error: conflictError } = await supabase
+      .from('bookings')
+      .select('id, scheduled_time')
+      .eq('handy_id', handyId)
+      .eq('scheduled_date', scheduledDate)
+      .in('status', ['pending', 'accepted', 'in_progress']);
+
+    if (conflictError) {
+      console.error('Error checking time conflict:', conflictError);
+      throw new Error(`Failed to check time conflict: ${conflictError.message}`);
+    }
+
+    // Check if any booking starts at the same time
+    const hasConflict = conflictData?.some((booking) => {
+      const bookingTime = booking.scheduled_time.slice(0, 5);
+      return bookingTime === normalizedTime;
+    });
+
+    return hasConflict || false;
+  } catch (error) {
+    console.error('Error in checkBookingConflict:', error);
+    throw error;
+  }
+}
+
+/**
  * Cancel a booking by setting its status to 'cancelled'
  * @param bookingId - The ID of the booking to cancel
  * @returns Promise<boolean> - true if successful, false otherwise

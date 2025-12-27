@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native';
+import { ChevronLeft, SlidersHorizontal, Check, MapPin } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker';
-import { useHandymenByCategory, type HandymanFilters } from '@shared/supabase';
+import {
+  useHandymenByCategory,
+  type HandymanFilters,
+  useLocationStore,
+  getWorkAreaByUserId,
+  isLocationInWorkArea,
+  type Coordinate,
+  type WorkArea,
+  getAvailabilityByUserId,
+  type AvailabilitySlot,
+} from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
 // Mock data for taskers - in production, this would come from an API
@@ -117,9 +127,19 @@ export default function SelectTaskerScreen() {
   const vehicleRequirement = params.vehicleRequirement as string | undefined;
   const taskDetails = params.taskDetails as string | undefined;
 
+  // Get client location from store
+  const location = useLocationStore((state) => state.location);
+
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showSortSheet, setShowSortSheet] = useState(false);
   const [selectedSort, setSelectedSort] = useState<SortOption>('Recommended');
+
+  // State for work area filtering
+  const [workAreaCache, setWorkAreaCache] = useState<Record<string, WorkArea | null>>({});
+  const [isFilteringByWorkArea, setIsFilteringByWorkArea] = useState(false);
+
+  // State for availability caching
+  const [availabilityCache, setAvailabilityCache] = useState<Record<string, AvailabilitySlot[]>>({});
 
   // Map sort option to API filter
   const sortByMap: Record<SortOption, HandymanFilters['sortBy']> = {
@@ -136,23 +156,128 @@ export default function SelectTaskerScreen() {
     sortBy: sortByMap[selectedSort],
   });
 
-  // Transform handymen data to TaskerData format
-  const taskers: TaskerData[] = React.useMemo(() => {
-    if (!handymen) return mockTaskers; // Fallback to mock data if no real data
+  // Fetch work areas and availability for all handymen (when handymen data is available)
+  useEffect(() => {
+    const fetchWorkAreasAndAvailability = async () => {
+      if (!handymen || handymen.length === 0) return;
 
-    return handymen.map((handyman) => ({
-      id: handyman.user_id,
-      name: handyman.display_name || 'Handyman',
-      avatarUrl: handyman.avatar_url || `https://i.pravatar.cc/150?u=${handyman.user_id}`,
-      rating: handyman.rating,
-      reviewCount: handyman.review_count || 0,
-      pricePerHour: handyman.hourly_rate_cents / 100,
-      taskCount: handyman.jobs_completed,
-      taskType: `${serviceName || 'tasks'}`,
-      description: handyman.bio || 'Experienced professional ready to help.',
-      isSuperTasker: handyman.verified,
-    }));
-  }, [handymen, serviceName]);
+      setIsFilteringByWorkArea(true);
+      const workAreas: Record<string, WorkArea | null> = {};
+      const availability: Record<string, AvailabilitySlot[]> = {};
+
+      // Fetch work areas and availability in parallel (with a limit to avoid too many concurrent requests)
+      const batchSize = 5;
+      for (let i = 0; i < handymen.length; i += batchSize) {
+        const batch = handymen.slice(i, i + batchSize);
+        const results = await Promise.all(
+          batch.map(async (h) => {
+            try {
+              const [workArea, slots] = await Promise.all([
+                location?.latitude && location?.longitude
+                  ? getWorkAreaByUserId(h.user_id)
+                  : Promise.resolve(null),
+                getAvailabilityByUserId(h.user_id),
+              ]);
+              return { userId: h.user_id, workArea, slots: slots || [] };
+            } catch (error) {
+              console.error(`Error fetching data for ${h.user_id}:`, error);
+              return { userId: h.user_id, workArea: null, slots: [] };
+            }
+          })
+        );
+        results.forEach(({ userId, workArea, slots }) => {
+          workAreas[userId] = workArea;
+          availability[userId] = slots;
+        });
+      }
+
+      setWorkAreaCache(workAreas);
+      setAvailabilityCache(availability);
+      setIsFilteringByWorkArea(false);
+    };
+
+    fetchWorkAreasAndAvailability();
+  }, [handymen, location?.latitude, location?.longitude]);
+
+  // Filter handymen by work area coverage
+  const filteredHandymen = useMemo(() => {
+    if (!handymen) return null;
+    if (!location?.latitude || !location?.longitude) return handymen; // No location, show all
+
+    // If we're still loading work areas, show all (they'll be filtered once loaded)
+    if (Object.keys(workAreaCache).length === 0 && isFilteringByWorkArea) {
+      return handymen;
+    }
+
+    const clientLocation: Coordinate = {
+      latitude: location.latitude,
+      longitude: location.longitude,
+    };
+
+    return handymen.filter((h) => {
+      const workArea = workAreaCache[h.user_id];
+
+      // If no work area is set, include the handyman (they service all areas)
+      if (!workArea) return true;
+
+      // Check if client location is in the work area
+      try {
+        return isLocationInWorkArea(clientLocation, workArea);
+      } catch (error) {
+        console.error(`Error checking work area for ${h.user_id}:`, error);
+        return true; // Include on error
+      }
+    });
+  }, [handymen, workAreaCache, location?.latitude, location?.longitude, isFilteringByWorkArea]);
+
+  // Helper function to calculate next available date for a tasker
+  const getNextAvailability = (slots: AvailabilitySlot[]): string | null => {
+    if (!slots || slots.length === 0) return null;
+
+    // Check up to 14 days ahead
+    for (let i = 0; i < 14; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      const dayOfWeek = date.getDay();
+
+      // Check if tasker has availability on this day
+      const hasAvailability = slots.some((slot) => slot.day_of_week === dayOfWeek);
+      if (hasAvailability) {
+        if (i === 0) return 'today';
+        if (i === 1) return 'tomorrow';
+        // Format as "Tue, Dec 24"
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+        const day = date.getDate();
+        return `${dayName}, ${monthName} ${day}`;
+      }
+    }
+    return null; // No availability in next 14 days
+  };
+
+  // Transform handymen data to TaskerData format
+  const taskers: TaskerData[] = useMemo(() => {
+    if (!filteredHandymen) return mockTaskers; // Fallback to mock data if no real data
+
+    return filteredHandymen.map((handyman) => {
+      const slots = availabilityCache[handyman.user_id] || [];
+      const nextAvailability = getNextAvailability(slots);
+
+      return {
+        id: handyman.user_id,
+        name: handyman.display_name || 'Handyman',
+        avatarUrl: handyman.avatar_url || `https://i.pravatar.cc/150?u=${handyman.user_id}`,
+        rating: handyman.rating,
+        reviewCount: handyman.review_count || 0,
+        pricePerHour: handyman.hourly_rate_cents / 100,
+        taskCount: handyman.jobs_completed,
+        taskType: `${serviceName || 'tasks'}`,
+        description: handyman.bio || 'Experienced professional ready to help.',
+        isSuperTasker: handyman.verified,
+        nextAvailability,
+      };
+    });
+  }, [filteredHandymen, serviceName, availabilityCache]);
 
   const toggleFilter = (filter: string) => {
     setActiveFilters((prev) =>

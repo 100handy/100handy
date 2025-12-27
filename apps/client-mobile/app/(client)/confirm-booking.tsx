@@ -3,7 +3,22 @@ import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, Bac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { useHandymanProfile, useLocationStore, useCreateBooking, type CreateBookingInput, type FormResponse, usePendingBookingStore, type PendingBookingData, listPaymentMethods, type PaymentMethod } from '@shared/supabase';
+import {
+  useHandymanProfile,
+  useLocationStore,
+  useCreateBooking,
+  type CreateBookingInput,
+  type FormResponse,
+  usePendingBookingStore,
+  type PendingBookingData,
+  listPaymentMethods,
+  type PaymentMethod,
+  checkBookingConflict,
+  getWorkAreaByUserId,
+  getAvailabilityByUserId,
+  isLocationInWorkArea,
+  type Coordinate,
+} from '@shared/supabase';
 import { useAuthStore } from '@shared/supabase';
 import { useToast } from '@/components/ui/toast';
 
@@ -202,6 +217,81 @@ export default function ConfirmBookingScreen() {
 
     try {
       setIsSubmitting(true);
+
+      // --- VALIDATION PHASE ---
+
+      // 1. Check work area coverage (if tasker has set a work area)
+      const workArea = await getWorkAreaByUserId(profile.user_id);
+      if (workArea && location.latitude && location.longitude) {
+        const clientLocation: Coordinate = {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        };
+        const isInWorkArea = isLocationInWorkArea(clientLocation, workArea);
+        if (!isInWorkArea) {
+          setIsSubmitting(false);
+          Alert.alert(
+            'Location Not Covered',
+            `${profile.display_name || 'This tasker'} doesn't serve your selected location. Please choose another tasker.`,
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+      }
+
+      // 2. Check availability for the selected date/time
+      const availability = await getAvailabilityByUserId(profile.user_id);
+      if (availability && availability.length > 0) {
+        const selectedDateObj = new Date(selectedDate);
+        const dayOfWeek = selectedDateObj.getDay(); // 0 = Sunday, 6 = Saturday
+        const daySlots = availability.filter((slot) => slot.day_of_week === dayOfWeek);
+
+        if (daySlots.length === 0) {
+          setIsSubmitting(false);
+          Alert.alert(
+            'Not Available',
+            `${profile.display_name || 'This tasker'} is not available on this day. Please select another date.`,
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+
+        // Check if selected time is within any availability slot
+        const selectedHour = parseInt(selectedTime.split(':')[0]!, 10);
+        const isTimeAvailable = daySlots.some((slot) => {
+          const startHour = parseInt(slot.start_time.split(':')[0]!, 10);
+          const endHour = parseInt(slot.end_time.split(':')[0]!, 10);
+          return selectedHour >= startHour && selectedHour < endHour;
+        });
+
+        if (!isTimeAvailable) {
+          setIsSubmitting(false);
+          Alert.alert(
+            'Time Not Available',
+            `${profile.display_name || 'This tasker'} is not available at ${selectedTime}. Please select another time.`,
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+      }
+
+      // 3. Check for booking conflicts
+      const hasConflict = await checkBookingConflict(
+        profile.user_id,
+        selectedDate,
+        selectedTime
+      );
+      if (hasConflict) {
+        setIsSubmitting(false);
+        Alert.alert(
+          'Time Slot Unavailable',
+          `${profile.display_name || 'This tasker'} already has a booking at this time. Please select another time.`,
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      // --- END VALIDATION ---
 
       const bookingInput: CreateBookingInput = {
         customer_id: user.id,

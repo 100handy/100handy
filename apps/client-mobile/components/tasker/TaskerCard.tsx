@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
-import { Star } from 'lucide-react-native';
+import { Star, Calendar } from 'lucide-react-native';
 
 export interface TaskerData {
   id: string;
@@ -14,6 +14,8 @@ export interface TaskerData {
   taskType: string;
   description: string;
   isSuperTasker?: boolean;
+  /** Next availability info: 'today' | 'tomorrow' | 'Day, Mon DD' | null (no availability) */
+  nextAvailability?: string | null;
 }
 
 interface TaskerCardProps {
@@ -91,6 +93,52 @@ export function TaskerCard({ tasker, onPress, onSeeProfile }: TaskerCardProps) {
             >
               {tasker.taskCount} {tasker.taskType}
             </Text>
+
+            {/* Availability Badge */}
+            {tasker.nextAvailability && (
+              <View
+                className="items-center px-2 py-1 rounded mt-2 flex-row"
+                style={{
+                  backgroundColor:
+                    tasker.nextAvailability === 'today'
+                      ? '#DCFCE7' // green-100
+                      : tasker.nextAvailability === 'tomorrow'
+                        ? '#DBEAFE' // blue-100
+                        : '#F3F4F6', // gray-100
+                  alignSelf: 'flex-start',
+                }}
+              >
+                <Calendar
+                  size={12}
+                  color={
+                    tasker.nextAvailability === 'today'
+                      ? '#16A34A' // green-600
+                      : tasker.nextAvailability === 'tomorrow'
+                        ? '#2563EB' // blue-600
+                        : '#6B7280' // gray-500
+                  }
+                  strokeWidth={2}
+                />
+                <Text
+                  className="text-xs ml-1"
+                  style={{
+                    color:
+                      tasker.nextAvailability === 'today'
+                        ? '#16A34A'
+                        : tasker.nextAvailability === 'tomorrow'
+                          ? '#2563EB'
+                          : '#6B7280',
+                    fontWeight: '500',
+                  }}
+                >
+                  {tasker.nextAvailability === 'today'
+                    ? 'Available today'
+                    : tasker.nextAvailability === 'tomorrow'
+                      ? 'Available tomorrow'
+                      : `Next: ${tasker.nextAvailability}`}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Price */}

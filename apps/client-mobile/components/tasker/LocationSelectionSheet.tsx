@@ -2,15 +2,17 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, View, Pressable as RNPressable, Text, TextInput, ActivityIndicator } from 'react-native';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { Input, InputField } from '@/components/ui/input';
-import { ChevronLeft, X, Check } from 'lucide-react-native';
+import { ChevronLeft, X, Check, MapPin } from 'lucide-react-native';
 import {
   useLocationStore,
   useTaskFormStore,
   useCategoryFormFields,
   type FormField,
+  type Location,
 } from '@shared/supabase';
 import { useRouter } from 'expo-router';
 import { LocationAutocomplete } from '@/components/location';
+import * as ExpoLocation from 'expo-location';
 
 interface LocationSelectionSheetProps {
   isOpen: boolean;
@@ -98,25 +100,102 @@ function LocationStep({
   title: string;
   onContinue: () => void;
 }) {
-  const location = useLocationStore((state) => state.location);
+  const recentLocations = useLocationStore((state) => state.recentLocations) || [];
   const setLocation = useLocationStore((state) => state.setLocation);
-  // Pre-fill with default location if available
-  const [streetAddress, setStreetAddress] = useState(location?.streetAddress || '');
-  const [unitNumber, setUnitNumber] = useState(location?.unitNumber || '');
-  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(location?.placeId || null);
-  
-  // Update fields when location changes
+
+  // State for current GPS location (Default)
+  const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
+  const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] = useState(true);
+
+  // Pre-fill with empty values
+  const [streetAddress, setStreetAddress] = useState('');
+  const [unitNumber, setUnitNumber] = useState('');
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [selectedLatitude, setSelectedLatitude] = useState<number | undefined>();
+  const [selectedLongitude, setSelectedLongitude] = useState<number | undefined>();
+
+  // Fetch current GPS location on mount
   useEffect(() => {
-    if (location?.streetAddress) {
-      setStreetAddress(location.streetAddress);
-      setUnitNumber(location.unitNumber || '');
-      setSelectedPlaceId(location.placeId || null);
-    }
-  }, [location]);
+    const fetchCurrentLocation = async () => {
+      try {
+        const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setIsLoadingCurrentLocation(false);
+          return;
+        }
+
+        const position = await ExpoLocation.getCurrentPositionAsync({
+          accuracy: ExpoLocation.Accuracy.Balanced,
+        });
+
+        // Reverse geocode to get address
+        const [geocode] = await ExpoLocation.reverseGeocodeAsync({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+
+        if (geocode) {
+          const city = geocode.city || geocode.subregion || '';
+          const country = geocode.country || '';
+          const streetAddress = [
+            geocode.streetNumber,
+            geocode.street,
+            geocode.city,
+            geocode.region,
+            geocode.country,
+          ]
+            .filter(Boolean)
+            .join(', ');
+
+          setCurrentLocation({
+            streetAddress,
+            city,
+            country,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            formattedAddress: streetAddress,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching current location:', error);
+      } finally {
+        setIsLoadingCurrentLocation(false);
+      }
+    };
+
+    fetchCurrentLocation();
+  }, []);
 
   const handleSelectLocation = (locationData: any) => {
     setSelectedPlaceId(locationData.place_id);
-    // The address is already set by LocationAutocomplete's onChangeText
+    // Extract coordinates if available from the locationData
+    if (locationData.geometry?.location) {
+      setSelectedLatitude(locationData.geometry.location.lat);
+      setSelectedLongitude(locationData.geometry.location.lng);
+    }
+  };
+
+  const handleSelectSavedLocation = (savedLocation: Location | null) => {
+    if (!savedLocation) return;
+    setStreetAddress(savedLocation.streetAddress);
+    setUnitNumber(savedLocation.unitNumber || '');
+    setSelectedPlaceId(savedLocation.placeId || null);
+    setSelectedLatitude(savedLocation.latitude);
+    setSelectedLongitude(savedLocation.longitude);
+  };
+
+  // Format location as "City, Country"
+  const formatLocationShort = (loc: Location | null) => {
+    if (!loc) return '';
+    if (loc.city && loc.country) {
+      return `${loc.city}, ${loc.country}`;
+    }
+    // Fallback: try to extract from streetAddress
+    const parts = loc.streetAddress.split(',').map(p => p.trim());
+    if (parts.length >= 2) {
+      return `${parts[parts.length - 2]}, ${parts[parts.length - 1]}`;
+    }
+    return loc.streetAddress;
   };
 
   const handleContinue = () => {
@@ -133,6 +212,8 @@ function LocationStep({
         city,
         country,
         formattedAddress: streetAddress.trim(),
+        latitude: selectedLatitude,
+        longitude: selectedLongitude,
       });
       onContinue();
     }
@@ -194,26 +275,68 @@ function LocationStep({
             className="w-full mb-4 h-px bg-gray-200"
           />
 
-          {/* Default Address Section */}
-          {location && (
-            <View className="mb-8 flex-col">
-              <Text
-                className="text-sm font-normal mb-4 text-gray-400"
+          {/* Default Location Section (Current GPS Location) */}
+          <View className="mb-6 flex-col">
+            <Text
+              className="text-sm font-normal mb-3 text-gray-400"
+            >
+              Default
+            </Text>
+
+            {isLoadingCurrentLocation ? (
+              <View className="py-3 px-4 bg-gray-50 rounded-xl flex-row items-center">
+                <ActivityIndicator size="small" color="#6B7280" />
+                <Text className="text-sm text-gray-500 ml-2">
+                  Getting your location...
+                </Text>
+              </View>
+            ) : currentLocation ? (
+              <RNPressable
+                className="py-3 px-4 bg-gray-50 rounded-xl flex-row items-center"
+                onPress={() => handleSelectSavedLocation(currentLocation)}
               >
-                Default
+                <MapPin size={18} color="#6B7280" />
+                <View className="ml-3 flex-1">
+                  <Text className="text-base font-medium text-black">
+                    {formatLocationShort(currentLocation)}
+                  </Text>
+                  <Text className="text-sm text-gray-500 mt-1" numberOfLines={1}>
+                    {currentLocation.streetAddress}
+                  </Text>
+                </View>
+              </RNPressable>
+            ) : (
+              <View className="py-3 px-4 bg-gray-50 rounded-xl">
+                <Text className="text-sm text-gray-500">
+                  Location access not available
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Recent Locations Section */}
+          {recentLocations.length > 0 && (
+            <View className="mb-4 flex-col">
+              <Text
+                className="text-sm font-normal mb-3 text-gray-400"
+              >
+                Recent
               </Text>
 
-              <RNPressable className="py-2" onPress={() => {
-                if (location.streetAddress) {
-                  setStreetAddress(location.streetAddress);
-                  setUnitNumber(location.unitNumber || '');
-                }
-              }}>
-                <Text className="text-base font-normal text-black leading-6">
-                  {location.streetAddress}
-                  {location.unitNumber && `\n${location.unitNumber}`}
-                </Text>
-              </RNPressable>
+              {recentLocations.map((recentLoc, index) => (
+                <RNPressable
+                  key={recentLoc.placeId || recentLoc.streetAddress || index}
+                  className="py-3 px-4 bg-gray-50 rounded-xl mb-2"
+                  onPress={() => handleSelectSavedLocation(recentLoc)}
+                >
+                  <Text className="text-base font-medium text-black">
+                    {formatLocationShort(recentLoc)}
+                  </Text>
+                  <Text className="text-sm text-gray-500 mt-1" numberOfLines={1}>
+                    {recentLoc.streetAddress}
+                  </Text>
+                </RNPressable>
+              ))}
             </View>
           )}
         </View>
