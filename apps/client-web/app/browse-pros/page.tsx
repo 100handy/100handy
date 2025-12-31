@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   TaskerCard,
@@ -31,15 +31,15 @@ const mockTaskers = Array.from({ length: 7 }, (_, i) => ({
   postcode: null,
 }));
 
-export default function BrowseProsPage() {
+function BrowseProsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthenticated, loading: authLoading } = useAuthContext();
+  const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { setPendingBooking, getPendingBooking, clearPendingBooking } = usePendingBookingStore();
   const { setLocation, location } = useLocationStore();
 
   const [currentStep, setCurrentStep] = useState(2);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting] = useState(false);
   const [selectedTasker, setSelectedTasker] = useState<typeof mockTaskers[0] | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -67,7 +67,7 @@ export default function BrowseProsPage() {
         }
       }
     }
-  }, [authLoading, isAuthenticated]);
+  }, [authLoading, isAuthenticated, getPendingBooking, setLocation]);
 
   // Save pending booking and redirect to sign up
   const savePendingBookingAndRedirect = (tasker: typeof mockTaskers[0], date: string, time: string) => {
@@ -267,5 +267,13 @@ export default function BrowseProsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function BrowseProsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">Loading...</div>}>
+      <BrowseProsContent />
+    </Suspense>
   );
 }

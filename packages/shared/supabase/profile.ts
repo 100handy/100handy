@@ -310,6 +310,11 @@ export async function deleteBusinessPhoto(photoId: string): Promise<boolean> {
     const pathParts = url.pathname.split('/');
     const fileName = pathParts[pathParts.length - 1];
 
+    if (!fileName) {
+      console.error('Could not extract file name from URL:', photo.photo_url);
+      return false;
+    }
+
     // Delete from storage
     const { error: storageError } = await supabase.storage
       .from('business-photos')
