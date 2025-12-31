@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, MapPin, Calendar, BarChart, User } from 'lucide-react-native';
+import { Home, MapPin, Calendar, BarChart, User, Briefcase } from 'lucide-react-native';
 
 export default function ProfessionalTabLayout() {
   return (
@@ -23,6 +23,20 @@ export default function ProfessionalTabLayout() {
         }}
       />
       <Tabs.Screen
+        name="jobs"
+        options={{
+          title: "Jobs",
+          tabBarIcon: ({ color, size }) => <Briefcase color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="bookings"
+        options={{
+          title: "Schedule",
+          tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="work-area"
         options={{
           title: "Location",
@@ -30,17 +44,9 @@ export default function ProfessionalTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="bookings"
-        options={{
-          title: "Bookings",
-          tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
         name="performance"
         options={{
-          title: "Performance",
-          tabBarIcon: ({ color, size }) => <BarChart color={color} size={size} />,
+          href: null, // Hidden, accessible via dashboard
         }}
       />
       <Tabs.Screen

@@ -309,3 +309,320 @@ export async function cancelBooking(bookingId: string): Promise<boolean> {
     return false;
   }
 }
+
+// ==========================================
+// Professional (Handy) Booking Functions
+// ==========================================
+
+// Customer profile for booking display
+interface CustomerProfile {
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+}
+
+export type BookingWithCustomer = Booking & {
+  category: Category | null;
+  address: Address | null;
+  customer: CustomerProfile | null;
+};
+
+export interface GetHandyBookingsOptions {
+  handyId: string;
+  status?: BookingStatus | BookingStatus[];
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * Get bookings for a professional (handy) by their user ID
+ * Includes customer profile info for display
+ * Note: Customer profiles are fetched separately since bookings.customer_id
+ * references auth.users, not profiles table directly
+ */
+export async function getBookingsForHandy(
+  options: GetHandyBookingsOptions
+): Promise<BookingWithCustomer[]> {
+  try {
+    // Step 1: Fetch bookings without customer profile
+    let query = supabase
+      .from('bookings')
+      .select(`
+        *,
+        category:categories(*),
+        address:addresses(*)
+      `)
+      .eq('handy_id', options.handyId)
+      .order('scheduled_date', { ascending: true })
+      .order('scheduled_time', { ascending: true });
+
+    // Filter by status
+    if (options.status) {
+      if (Array.isArray(options.status)) {
+        query = query.in('status', options.status);
+      } else {
+        query = query.eq('status', options.status);
+      }
+    }
+
+    // Apply pagination
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    if (options.offset) {
+      query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+    }
+
+    const { data: bookings, error } = await query;
+
+    if (error) {
+      console.error('Error fetching bookings for handy:', error);
+      throw new Error(error.message);
+    }
+
+    if (!bookings || bookings.length === 0) {
+      return [];
+    }
+
+    // Step 2: Get unique customer IDs and fetch their profiles
+    const customerIds = [...new Set(bookings.map((b) => b.customer_id).filter(Boolean))];
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('user_id, first_name, last_name, avatar_url')
+      .in('user_id', customerIds);
+
+    if (profilesError) {
+      console.error('Error fetching customer profiles:', profilesError);
+      // Continue without profiles rather than failing entirely
+    }
+
+    // Step 3: Create a map for quick lookup
+    const profileMap = new Map<string, CustomerProfile>();
+    if (profiles) {
+      profiles.forEach((p) => {
+        profileMap.set(p.user_id, p);
+      });
+    }
+
+    // Step 4: Combine bookings with customer profiles
+    const bookingsWithCustomer: BookingWithCustomer[] = bookings.map((booking) => ({
+      ...booking,
+      customer: profileMap.get(booking.customer_id) || null,
+    }));
+
+    return bookingsWithCustomer;
+  } catch (error) {
+    console.error('Error in getBookingsForHandy:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get pending job requests for a professional
+ * These are new requests waiting for accept/decline
+ */
+export async function getPendingBookingsForHandy(
+  handyId: string
+): Promise<BookingWithCustomer[]> {
+  return getBookingsForHandy({
+    handyId,
+    status: 'pending',
+    limit: 50,
+  });
+}
+
+/**
+ * Get upcoming (accepted/in-progress) jobs for a professional
+ */
+export async function getUpcomingBookingsForHandy(
+  handyId: string
+): Promise<BookingWithCustomer[]> {
+  return getBookingsForHandy({
+    handyId,
+    status: ['accepted', 'in_progress'],
+    limit: 50,
+  });
+}
+
+/**
+ * Get completed jobs for a professional
+ */
+export async function getCompletedBookingsForHandy(
+  handyId: string
+): Promise<BookingWithCustomer[]> {
+  return getBookingsForHandy({
+    handyId,
+    status: 'completed',
+    limit: 50,
+  });
+}
+
+/**
+ * Accept a pending booking request
+ * Changes status from 'pending' to 'accepted'
+ */
+export async function acceptBooking(bookingId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'accepted' })
+      .eq('id', bookingId)
+      .eq('status', 'pending'); // Only accept if currently pending
+
+    if (error) {
+      console.error(`Error accepting booking ${bookingId}:`, error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in acceptBooking:', error);
+    return false;
+  }
+}
+
+/**
+ * Decline a pending booking request
+ * Changes status to 'cancelled' and optionally stores the reason
+ */
+export async function declineBooking(
+  bookingId: string,
+  reason?: string
+): Promise<boolean> {
+  try {
+    const updateData: { status: BookingStatus; decline_reason?: string } = {
+      status: 'cancelled',
+    };
+
+    if (reason) {
+      updateData.decline_reason = reason;
+    }
+
+    const { error } = await supabase
+      .from('bookings')
+      .update(updateData)
+      .eq('id', bookingId)
+      .eq('status', 'pending'); // Only decline if currently pending
+
+    if (error) {
+      console.error(`Error declining booking ${bookingId}:`, error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in declineBooking:', error);
+    return false;
+  }
+}
+
+/**
+ * Start a job (mark as in progress)
+ * Changes status from 'accepted' to 'in_progress'
+ */
+export async function startBooking(bookingId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('bookings')
+      .update({
+        status: 'in_progress',
+        started_at: new Date().toISOString(),
+      })
+      .eq('id', bookingId)
+      .eq('status', 'accepted'); // Only start if currently accepted
+
+    if (error) {
+      console.error(`Error starting booking ${bookingId}:`, error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in startBooking:', error);
+    return false;
+  }
+}
+
+/**
+ * Complete a job
+ * Changes status from 'in_progress' to 'completed'
+ * Optionally processes payment capture and payout
+ */
+export async function completeBooking(
+  bookingId: string,
+  options?: { processPayment?: boolean }
+): Promise<{
+  success: boolean;
+  paymentProcessed?: boolean;
+  error?: string;
+}> {
+  try {
+    // First, get the booking to check payment status
+    const { data: booking, error: fetchError } = await supabase
+      .from('bookings')
+      .select('id, payment_intent_id, payment_status, status')
+      .eq('id', bookingId)
+      .single();
+
+    if (fetchError || !booking) {
+      return { success: false, error: 'Booking not found' };
+    }
+
+    if (booking.status !== 'in_progress') {
+      return { success: false, error: 'Booking is not in progress' };
+    }
+
+    // Update booking status to completed
+    const { error: updateError } = await supabase
+      .from('bookings')
+      .update({
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', bookingId)
+      .eq('status', 'in_progress');
+
+    if (updateError) {
+      console.error(`Error completing booking ${bookingId}:`, updateError);
+      return { success: false, error: 'Failed to update booking status' };
+    }
+
+    // Process payment if requested and payment intent exists
+    if (options?.processPayment && booking.payment_intent_id) {
+      try {
+        // Import dynamically to avoid circular dependency
+        const { processJobCompletionPayment } = await import('./payments');
+        const paymentResult = await processJobCompletionPayment(
+          bookingId,
+          booking.payment_intent_id
+        );
+
+        if (!paymentResult.success) {
+          // Booking is completed but payment failed - log for manual intervention
+          console.error('Payment processing failed for completed booking:', bookingId);
+          return {
+            success: true,
+            paymentProcessed: false,
+            error: paymentResult.error,
+          };
+        }
+
+        return { success: true, paymentProcessed: true };
+      } catch (paymentError: any) {
+        console.error('Error processing payment:', paymentError);
+        return {
+          success: true, // Booking is completed
+          paymentProcessed: false,
+          error: paymentError.message,
+        };
+      }
+    }
+
+    return { success: true, paymentProcessed: false };
+  } catch (error: any) {
+    console.error('Error in completeBooking:', error);
+    return { success: false, error: error.message };
+  }
+}

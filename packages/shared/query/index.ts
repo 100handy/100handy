@@ -21,7 +21,7 @@ export {
   type GroupedCategory,
 } from './hooks/useCategories';
 
-// Booking hooks and utilities
+// Booking hooks and utilities (Client)
 export {
   useUpcomingBookings,
   usePastBookings,
@@ -30,11 +30,27 @@ export {
   useUserBookings,
   useInvalidateBookings,
   useCreateBooking,
+  useCancelBooking,
   bookingKeys,
+  // Professional (Handy) booking hooks
+  usePendingBookingsForHandy,
+  useUpcomingBookingsForHandy,
+  useCompletedBookingsForHandy,
+  useHandyBookings,
+  useAcceptBooking,
+  useDeclineBooking,
+  useStartBooking,
+  useCompleteBooking,
+  useInvalidateHandyBookings,
 } from './hooks/useBookings';
 
 // Booking types
-export type { CreateBookingInput } from '../supabase/bookings';
+export type {
+  CreateBookingInput,
+  BookingWithRelations,
+  BookingWithCustomer,
+  BookingStatus,
+} from '../supabase/bookings';
 
 // Profile hooks and utilities
 export {
@@ -156,3 +172,22 @@ export {
   handyProfileKeys,
   type HandyProfileExtras,
 } from './hooks/useHandyProfile';
+
+// Review hooks and utilities
+export {
+  useReviewsForProfessional,
+  useProfessionalRating,
+  useClientReviewHistory,
+  useClientRatingByProfessional,
+  useHasReviewedBooking,
+  useReviewByBooking,
+  useBookingsPendingReview,
+  useCreateCustomerReview,
+  useCreateProfessionalReview,
+  useInvalidateReviews,
+  reviewKeys,
+  type Review,
+  type ReviewWithBooking,
+  type ReviewerType,
+  type CreateReviewInput,
+} from './hooks/useReviews';
