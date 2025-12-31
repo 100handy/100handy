@@ -1,5 +1,5 @@
 import React, { useState, useRef, type ReactNode } from 'react';
-import { View, Text, Pressable, Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { View, Text, Pressable, Dimensions, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight } from 'lucide-react-native';
@@ -12,7 +12,10 @@ import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/
 import { supabase } from '@shared/supabase';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const GEOMETRIC_HEIGHT = SCREEN_HEIGHT * 0.42; // Top section for geometric shapes
+const BOTTOM_NAV_HEIGHT = 80; // Approximate height for pagination + safe area
+const CONTENT_HEIGHT = SCREEN_HEIGHT - GEOMETRIC_HEIGHT - BOTTOM_NAV_HEIGHT;
 
 // Colors from tailwind.config.js and Figma design
 const COLORS = {
@@ -240,7 +243,7 @@ const onboardingData = [
 
 export default function ClientOnboarding() {
   const [currentStep, setCurrentStep] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const totalSteps = onboardingData.length;
   const { isAuthenticated, updateOnboardingStatus } = useAuthStore();
   const { getPendingBooking } = usePendingBookingStore();
@@ -323,7 +326,7 @@ export default function ClientOnboarding() {
     if (currentStep < totalSteps - 1) {
       // Go to next screen
       const nextIndex = currentStep + 1;
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      scrollViewRef.current?.scrollTo({ x: SCREEN_WIDTH * nextIndex, animated: true });
       setCurrentStep(nextIndex);
     } else {
       // Last screen, complete onboarding
@@ -334,7 +337,9 @@ export default function ClientOnboarding() {
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / SCREEN_WIDTH);
-    setCurrentStep(index);
+    if (index !== currentStep) {
+      setCurrentStep(index);
+    }
   };
 
   const renderLogo = (): ReactNode => {
@@ -346,22 +351,14 @@ export default function ClientOnboarding() {
     ) as ReactNode;
   };
 
-  const renderItem = ({ item }: { item: typeof onboardingData[number] }) => (
-    <View style={{ width: SCREEN_WIDTH }}>
-      <View className="flex-col flex-1 items-start px-6" style={{ paddingTop: 120 }}>
-        {/* Logo (for first slide only) - positioned to match Figma design */}
-        {/* @ts-ignore - SVG component type inference issue */}
+  const renderSlide = (item: typeof onboardingData[number]) => (
+    <View key={item.id} style={{ width: SCREEN_WIDTH, height: CONTENT_HEIGHT }}>
+      <View style={{ paddingHorizontal: 24, paddingTop: 24 }}>
+        {/* Logo (for first slide only) */}
         {item.id === 0 ? renderLogo() : null}
 
-        {/* Title (for other slides if needed) */}
-        {'title' in item && item.title && (
-          <View className="flex-col items-start mb-6">
-            {item.title as React.ReactNode}
-          </View>
-        )}
-
         {/* Description */}
-        <View className="flex-col items-start mb-4" style={{ marginLeft: SCREEN_WIDTH * 0.0585 }}>
+        <View style={{ marginLeft: SCREEN_WIDTH * 0.0585, marginBottom: 16 }}>
           {item.description}
         </View>
 
@@ -373,64 +370,65 @@ export default function ClientOnboarding() {
 
   return (
     <View className="flex-1 bg-white">
-      <SafeAreaView className="flex-1" edges={['bottom']}>
-        <View className="flex-col flex-1">
-          {/* Background Decorative Shapes Layer */}
-          <View className="absolute w-full h-full overflow-hidden">
-            {/* Top Left Sage Green Shape - Rectangle 92 (rotated) */}
-            <View className="absolute -top-[100px] -left-[200px] w-[434px] h-[300px]" style={{ transform: [{ rotate: '302deg' }] }}>
-              <Svg width="434" height="300" viewBox="0 0 435 301" fill="none">
-                <Path d="M434.023 0H0V300.393H434.023V0Z" fill={COLORS.sageGreen} />
-              </Svg>
-            </View>
+      {/* Top Section - Geometric Shapes (fixed height) */}
+      <View style={{ height: GEOMETRIC_HEIGHT, overflow: 'hidden', position: 'relative' }}>
+        {/* Top Left Sage Green Shape - Rectangle 92 (rotated) */}
+        <View className="absolute" style={{ top: -80, left: -180, width: 434, height: 300, transform: [{ rotate: '302deg' }] }}>
+          <Svg width="434" height="300" viewBox="0 0 435 301" fill="none">
+            <Path d="M434.023 0H0V300.393H434.023V0Z" fill={COLORS.sageGreen} />
+          </Svg>
+        </View>
 
-            {/* Center Large Beige Square - Path 108 (rotated) */}
-            <View className="absolute top-[50px] left-[-60px] w-[421px] h-[426px]" style={{ transform: [{ rotate: '327deg' }] }}>
-              <Svg width="421" height="426" viewBox="0 0 422 427" fill="none">
-                <Path d="M0 13.6505L421.099 0V426.201L68.6965 351.575L0 13.6505Z" fill={COLORS.themeBackground} />
-              </Svg>
-            </View>
+        {/* Center Large Beige Square - Path 108 (rotated) */}
+        <View className="absolute" style={{ top: 30, left: -40, width: 421, height: 426, transform: [{ rotate: '327deg' }] }}>
+          <Svg width="421" height="426" viewBox="0 0 422 427" fill="none">
+            <Path d="M0 13.6505L421.099 0V426.201L68.6965 351.575L0 13.6505Z" fill={COLORS.themeBackground} />
+          </Svg>
+        </View>
 
-            {/* Top Right Brown/Taupe Shape - Path 107 (rotated) */}
-            <View className="absolute -top-[140px] -right-[340px] w-[584px] h-[393px]" style={{ transform: [{ rotate: '341deg' }] }}>
-              <Svg width="584" height="393" viewBox="0 0 584 393" fill="none">
-                <Path d="M0 102.254L583.814 0V300.393L183.748 392.49L0 102.254Z" fill={COLORS.warmTaupe} />
-              </Svg>
-            </View>
+        {/* Top Right Brown/Taupe Shape - Path 107 (rotated) */}
+        <View className="absolute" style={{ top: -120, right: -320, width: 584, height: 393, transform: [{ rotate: '341deg' }] }}>
+          <Svg width="584" height="393" viewBox="0 0 584 393" fill="none">
+            <Path d="M0 102.254L583.814 0V300.393L183.748 392.49L0 102.254Z" fill={COLORS.warmTaupe} />
+          </Svg>
+        </View>
 
-            {/* Bottom Right Terracotta Shape - Path 109 (rotated) */}
-            <View className="absolute -bottom-[240px] -right-[210px] w-[435px] h-[346px]" style={{ transform: [{ rotate: '302deg' }] }}>
-              <Svg width="435" height="346" viewBox="0 0 435 346" fill="none">
-                <Path d="M10 0L434.023 44.742V345.135H0L10 0Z" fill={COLORS.clayOrange} />
-              </Svg>
-            </View>
-          </View>
+        {/* Bottom Right Terracotta Shape - Path 109 (rotated) */}
+        <View className="absolute" style={{ bottom: -180, right: -180, width: 435, height: 346, transform: [{ rotate: '302deg' }] }}>
+          <Svg width="435" height="346" viewBox="0 0 435 346" fill="none">
+            <Path d="M10 0L434.023 44.742V345.135H0L10 0Z" fill={COLORS.clayOrange} />
+          </Svg>
+        </View>
 
-          {/* Skip Button - positioned on top right */}
-          <View className="absolute top-[40px] right-[24px] z-20">
-            <Pressable onPress={handleSkip}>
-              <Text className="text-[14px] font-worksans-medium text-white">
-                Skip
-              </Text>
-            </Pressable>
-          </View>
+        {/* Skip Button - positioned on top right within geometric area */}
+        <SafeAreaView className="absolute top-0 right-0" edges={['top']}>
+          <Pressable onPress={handleSkip} className="px-6 py-4">
+            <Text className="text-[14px] font-worksans-medium text-white">
+              Skip
+            </Text>
+          </Pressable>
+        </SafeAreaView>
+      </View>
 
-          {/* Main Content - Swipeable */}
-          <FlatList
-            ref={flatListRef}
-            data={onboardingData}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-            className="flex-1 z-10"
-          />
+      {/* Bottom Section - White background with content */}
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
+        {/* Main Content - Swipeable */}
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          {onboardingData.map((item) => renderSlide(item))}
+        </ScrollView>
 
-          {/* Bottom Section */}
-          <View className="px-6 pb-8 z-20">
+        {/* Bottom Navigation */}
+        <SafeAreaView edges={['bottom']}>
+          <View className="px-6 pb-6">
             <View className="flex-row justify-between items-center">
               {/* Pagination Dots */}
               <View className="flex-row gap-2">
@@ -460,8 +458,8 @@ export default function ClientOnboarding() {
               </Pressable>
             </View>
           </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </View>
     </View>
   );
 }

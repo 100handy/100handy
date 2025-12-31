@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { signUp } from '@shared/supabase/auth';
 import SignUpForm from '@/components/auth/SignUpForm';
 import { useToast } from '@/components/ui/toast';
+import Logo100Top from '@/assets/images/logo-100-top.svg';
 
 export default function ProfessionalSignUp() {
   const [isLoading, setIsLoading] = useState(false);
@@ -56,27 +57,8 @@ export default function ProfessionalSignUp() {
           </View>
 
           {/* Logo */}
-          <View className="items-center mb-6">
-            <View className="bg-white rounded-[20px] shadow-sm overflow-hidden" style={{ width: 100, height: 100 }}>
-              {/* 100 HANDY Text */}
-              <View className="flex-col items-center pt-2 pb-0">
-                <Text className="text-[20px] font-worksans-bold leading-[22px] tracking-wide" style={{ color: '#30352D' }}>
-                  100
-                </Text>
-                <Text className="text-[20px] font-worksans-bold leading-[22px] tracking-wide" style={{ color: '#30352D' }}>
-                  HANDY
-                </Text>
-              </View>
-              
-              {/* Task Button */}
-              <View className="items-center px-2 mt-0.5">
-                <View className="bg-clay-orange rounded-full px-4 py-1.5 shadow-sm" style={{ transform: [{ rotate: '-9deg' }] }}>
-                  <Text className="text-white text-[16px] font-worksans-bold tracking-wide">
-                    Task
-                  </Text>
-                </View>
-              </View>
-            </View>
+          <View className="items-center my-10">
+            <Logo100Top width={150} height={72} />
           </View>
 
           {/* Form Container */}

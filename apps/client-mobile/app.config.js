@@ -4,6 +4,7 @@ const enableWebServerOutput = process.env.EXPO_WEB_SSR === 'true';
 
 module.exports = {
   expo: {
+    owner: '100handy',
     name: '100Handy',
     slug: '100handy',
     version: '1.0.0',
@@ -20,6 +21,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.oxdpr.handy',
+      buildNumber: '1',
       associatedDomains: ['applinks:auth.yourdomain.com'],
       infoPlist: {
         NSLocationWhenInUseUsageDescription:

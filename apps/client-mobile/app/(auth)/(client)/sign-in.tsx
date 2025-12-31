@@ -9,6 +9,7 @@ import { type SignInFormData } from '@shared/schemas/auth';
 import AuthFooter from '@/components/auth/AuthFooter';
 import { useToast } from '@/components/ui/toast';
 import { useAuthStore } from '@shared/supabase';
+import Logo100Top from '@/assets/images/logo-100-top.svg';
 
 export default function ClientSignIn() {
   const [isLoading, setIsLoading] = useState(false);
@@ -52,14 +53,7 @@ export default function ClientSignIn() {
 
               {/* Logo */}
               <View className="items-center my-12">
-                <View className="flex-col items-center">
-                  <Text className="text-5xl font-cardo-regular tracking-widest" style={{ color: '#30352D' }}>
-                    100
-                  </Text>
-                  <Text className="text-5xl font-cardo-bold tracking-widest" style={{ color: '#30352D' }}>
-                    HANDY
-                  </Text>
-                </View>
+                <Logo100Top width={150} height={72} />
               </View>
 
               {/* Form Container */}
