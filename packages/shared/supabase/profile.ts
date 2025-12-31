@@ -201,15 +201,23 @@ export interface BusinessPhoto {
   user_id: string;
   user_skill_id: string;
   photo_url: string;
+  display_order: number;
   created_at: string;
 }
 
 /**
  * Upload a business photo for a specific skill
+ * Saves to both Supabase Storage and business_photos table
  */
-export async function uploadBusinessPhoto(userSkillId: string, imageUri: string): Promise<string | null> {
+export async function uploadBusinessPhoto(
+  userSkillId: string,
+  imageUri: string
+): Promise<BusinessPhoto | null> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       console.error('Error getting authenticated user:', authError);
@@ -240,14 +248,40 @@ export async function uploadBusinessPhoto(userSkillId: string, imageUri: string)
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('business-photos')
-      .getPublicUrl(filePath);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('business-photos').getPublicUrl(filePath);
 
-    // Save photo reference in database (if you have a business_photos table)
-    // For now, we'll just return the URL. You may want to save this to a table later.
+    // Get current max display_order for this skill
+    const { data: existingPhotos } = await supabase
+      .from('business_photos')
+      .select('display_order')
+      .eq('user_skill_id', userSkillId)
+      .order('display_order', { ascending: false })
+      .limit(1);
 
-    return publicUrl;
+    const nextOrder = existingPhotos?.[0]?.display_order ?? -1;
+
+    // Save photo reference to database
+    const { data: photoRecord, error: dbError } = await supabase
+      .from('business_photos')
+      .insert({
+        user_id: user.id,
+        user_skill_id: userSkillId,
+        photo_url: publicUrl,
+        display_order: nextOrder + 1,
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Error saving photo to database:', dbError);
+      // Clean up storage if DB insert failed
+      await supabase.storage.from('business-photos').remove([filePath]);
+      return null;
+    }
+
+    return photoRecord;
   } catch (error) {
     console.error('Error in uploadBusinessPhoto:', error);
     return null;
@@ -255,21 +289,45 @@ export async function uploadBusinessPhoto(userSkillId: string, imageUri: string)
 }
 
 /**
- * Delete a business photo
+ * Delete a business photo from both storage and database
  */
-export async function deleteBusinessPhoto(photoUrl: string): Promise<boolean> {
+export async function deleteBusinessPhoto(photoId: string): Promise<boolean> {
   try {
+    // Get the photo record to get the URL
+    const { data: photo, error: fetchError } = await supabase
+      .from('business_photos')
+      .select('photo_url')
+      .eq('id', photoId)
+      .single();
+
+    if (fetchError || !photo) {
+      console.error('Error fetching photo record:', fetchError);
+      return false;
+    }
+
     // Extract file path from URL
-    const url = new URL(photoUrl);
-    const filePath = url.pathname.split('/').slice(-2).join('/'); // Get 'business-photos/filename'
+    const url = new URL(photo.photo_url);
+    const pathParts = url.pathname.split('/');
+    const fileName = pathParts[pathParts.length - 1];
 
     // Delete from storage
-    const { error: deleteError } = await supabase.storage
+    const { error: storageError } = await supabase.storage
       .from('business-photos')
-      .remove([filePath]);
+      .remove([fileName]);
 
-    if (deleteError) {
-      console.error('Error deleting business photo from storage:', deleteError);
+    if (storageError) {
+      console.error('Error deleting from storage:', storageError);
+      // Continue to delete DB record anyway
+    }
+
+    // Delete from database
+    const { error: dbError } = await supabase
+      .from('business_photos')
+      .delete()
+      .eq('id', photoId);
+
+    if (dbError) {
+      console.error('Error deleting photo from database:', dbError);
       return false;
     }
 
@@ -277,6 +335,69 @@ export async function deleteBusinessPhoto(photoUrl: string): Promise<boolean> {
   } catch (error) {
     console.error('Error in deleteBusinessPhoto:', error);
     return false;
+  }
+}
+
+/**
+ * Get all business photos for a user, grouped by skill
+ */
+export async function getBusinessPhotosByUser(
+  userId?: string
+): Promise<BusinessPhoto[]> {
+  try {
+    let query = supabase
+      .from('business_photos')
+      .select('*')
+      .order('user_skill_id')
+      .order('display_order', { ascending: true });
+
+    if (userId) {
+      query = query.eq('user_id', userId);
+    } else {
+      // Get current user's photos
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return [];
+      query = query.eq('user_id', user.id);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching business photos:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getBusinessPhotosByUser:', error);
+    return [];
+  }
+}
+
+/**
+ * Get business photos for a specific skill
+ */
+export async function getBusinessPhotosForSkill(
+  userSkillId: string
+): Promise<BusinessPhoto[]> {
+  try {
+    const { data, error } = await supabase
+      .from('business_photos')
+      .select('*')
+      .eq('user_skill_id', userSkillId)
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching photos for skill:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getBusinessPhotosForSkill:', error);
+    return [];
   }
 }
 
