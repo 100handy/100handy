@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, RefreshControl, Image as RNImage, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Star, MapPin, Calendar } from 'lucide-react-native';
+import { Star, MapPin, Calendar, Users } from 'lucide-react-native';
 import { useFavoriteHandymen } from '@shared/supabase/query';
 import { useUserBookings, useAuthStore } from '@shared/supabase';
 import { Loader } from '@/components/ui/loader';
@@ -148,12 +148,19 @@ const TaskersScreen = () => {
         >
           {!user?.id ? (
             <View className="flex-col items-center justify-center py-12 px-8">
-              <Text className="text-lg font-medium text-[#333a31] mb-2">
+              <Users size={64} color="#D17852" />
+              <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
                 Please sign in
               </Text>
-              <Text className="text-sm text-[#666] text-center">
+              <Text className="text-sm text-[#666666] text-center mb-6">
                 You need to be signed in to view your taskers.
               </Text>
+              <Pressable
+                onPress={() => router.push('/(auth)/role-selection')}
+                className="bg-[#D17852] px-8 py-3 rounded-full"
+              >
+                <Text className="text-white font-medium">Sign In</Text>
+              </Pressable>
             </View>
           ) : isLoading ? (
             <Loader text="Loading taskers..." />

@@ -19,12 +19,19 @@ export default function MessagesScreen() {
           <Text className="text-2xl font-bold text-[#30352D]">Messages</Text>
         </View>
         <View className="flex-1 items-center justify-center py-12">
-          <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
+          <MessageCircle size={64} color="#D17852" />
+          <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
             Please sign in
           </Text>
-          <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
+          <Text className="text-sm text-[#666666] text-center px-8 mb-6">
             You need to be signed in to view your messages.
           </Text>
+          <Pressable
+            onPress={() => router.push('/(auth)/role-selection')}
+            className="bg-[#D17852] px-8 py-3 rounded-full"
+          >
+            <Text className="text-white font-medium">Sign In</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );

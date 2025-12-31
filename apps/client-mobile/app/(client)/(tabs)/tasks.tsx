@@ -1,8 +1,8 @@
 import React from 'react';
-import { ScrollView, RefreshControl, View, Text } from 'react-native';
+import { ScrollView, RefreshControl, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Loader } from '@/components/ui/loader';
-import { WrenchIcon, PaintbrushIcon } from 'lucide-react-native';
+import { WrenchIcon, PaintbrushIcon, ClipboardList } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { TaskCard, Tab, EmptyState } from '@/components/tasks';
 import { useUserBookings, useConversationByBooking } from '@shared/supabase/query';
@@ -148,12 +148,19 @@ export default function TasksScreen() {
         >
           {!user?.id ? (
             <View className="flex-col items-center justify-center py-12">
-              <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
+              <ClipboardList size={64} color="#D17852" />
+              <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
                 Please sign in
               </Text>
-              <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
+              <Text className="text-sm text-[#666666] text-center px-8 mb-6">
                 You need to be signed in to view your tasks.
               </Text>
+              <Pressable
+                onPress={() => router.push('/(auth)/role-selection')}
+                className="bg-[#D17852] px-8 py-3 rounded-full"
+              >
+                <Text className="text-white font-medium">Sign In</Text>
+              </Pressable>
             </View>
           ) : showLoading ? (
             <Loader text="Loading tasks..." />
