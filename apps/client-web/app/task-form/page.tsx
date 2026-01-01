@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/marketing/footer";
@@ -15,31 +15,57 @@ import { ConfirmDetails } from "@/components/confirm-booking/confirm-details";
 import { TaskSummary } from "@/components/confirm-booking/task-summary";
 import { LocationAutocomplete } from "@/components/LocationAutocomplete";
 import { DynamicFormRenderer } from "@/components/booking";
-import { getCategoryByName } from "@/lib/supabase/categories";
-import { getHandymenByCategory, type HandymanProfile } from "@/lib/supabase/handymen";
 import { findOrCreateAddress } from "@/lib/supabase/addresses";
 import { createBooking } from "@/lib/supabase/bookings";
 import { createPaymentIntent } from "@/lib/stripe/payment";
 import { createClient } from "@/lib/supabase";
-import type { Category } from "@/lib/supabase/types";
-import type { FormResponse, PendingBookingData } from "@shared/supabase";
-import { usePendingBookingStore, useLocationStore } from "@shared/supabase";
+import type { FormResponse, PendingBookingData, Category, HandymanProfile, AvailabilitySlot } from "@shared/supabase";
+import { usePendingBookingStore, useLocationStore, useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds } from "@shared/supabase";
+
+// Sort options type
+type SortOption = 'recommended' | 'price_low' | 'price_high' | 'rating' | 'reviews';
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'price_low', label: 'Price (Lowest)' },
+  { value: 'price_high', label: 'Price (Highest)' },
+  { value: 'rating', label: 'Rating' },
+  { value: 'reviews', label: 'Reviews' },
+];
+
+// Time ranges for filtering
+const TIME_RANGES: Record<string, { start: string; end: string }> = {
+  morning: { start: '08:00:00', end: '12:00:00' },
+  afternoon: { start: '12:00:00', end: '17:00:00' },
+  evening: { start: '17:00:00', end: '21:30:00' },
+};
 
 function TaskFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const categoryFromUrl = searchParams.get("category");
+  const stepFromUrl = searchParams.get("step");
 
   // Pending booking store for saving booking before auth
   const { getPendingBooking, setPendingBooking, clearPendingBooking } = usePendingBookingStore();
   const { setLocation } = useLocationStore();
 
+  // Fetch category using shared hook
+  const categoryNames = useMemo(() => categoryFromUrl ? [categoryFromUrl] : [], [categoryFromUrl]);
+  const { data: categoriesData, isLoading: categoryLoading, error: categoryError } = useCategoriesByNames(categoryNames);
+
+  // Derive category from hook data
+  const category = useMemo(() => {
+    if (!categoriesData || categoriesData.length === 0) return null;
+    return categoriesData[0] as Category;
+  }, [categoriesData]);
+
+  const taskCategory = category?.name || categoryFromUrl || "";
+
   // Track if pending booking was restored
   const [pendingBookingRestored, setPendingBookingRestored] = useState(false);
 
   // Task details state
-  const [category, setCategory] = useState<Category | null>(null);
-  const [taskCategory, setTaskCategory] = useState(categoryFromUrl || "");
   const [streetAddress, setStreetAddress] = useState("");
   const [unitFlat, setUnitFlat] = useState("");
   const [googlePlaceData, setGooglePlaceData] = useState<any>(null);
@@ -51,9 +77,120 @@ function TaskFormContent() {
   const [showBrowsePros, setShowBrowsePros] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
+  // Sort state
+  const [selectedSort, setSelectedSort] = useState<SortOption>('recommended');
+
+  // Fetch handymen using shared hook
+  // Only fetch when we have a valid category ID and are showing browse pros
+  const shouldFetchHandymen = !!category?.id && showBrowsePros;
+  const {
+    data: handymenData,
+    isLoading: handymenLoading,
+    isError: handymenError,
+  } = useHandymenByCategory(shouldFetchHandymen ? category.id : '', {
+    sortBy: selectedSort,
+  });
+
+  // Derive handymen from hook data
+  const handymen = handymenData || [];
+
+  // Fetch availability for all handymen in a single query (batch)
+  const handymenUserIds = useMemo(() => handymen.map(h => h.user_id), [handymen]);
+  const {
+    data: availabilityCache,
+    isLoading: isLoadingAvailability,
+  } = useAvailabilityByUserIds(handymenUserIds);
+
+  // Track applied filters to derive filtered handymen
+  const [appliedFilters, setAppliedFilters] = useState<FilterValues | null>(null);
+
+  // Derive filtered handymen using useMemo (no useEffect needed)
+  const filteredHandymen = useMemo(() => {
+    if (!handymen.length) return [];
+    if (!appliedFilters) return handymen;
+
+    // Use empty object if availability data is still loading
+    const availability = availabilityCache || {};
+
+    let filtered = [...handymen];
+
+    // Filter by price range (convert to pounds for comparison)
+    filtered = filtered.filter(handyman => {
+      const hourlyRate = handyman.hourly_rate_cents / 100;
+      return hourlyRate >= appliedFilters.priceMin && hourlyRate <= appliedFilters.priceMax;
+    });
+
+    // Filter by elite status (verified)
+    if (appliedFilters.isEliteTasker) {
+      filtered = filtered.filter(handyman => handyman.verified);
+    }
+
+    // Filter by date (today/3days/week)
+    if (appliedFilters.selectedDate && appliedFilters.selectedDate !== 'custom') {
+      const today = new Date();
+      const daysAhead: Record<string, number> = {
+        today: 0,
+        '3days': 3,
+        week: 7,
+      };
+      const maxDays = daysAhead[appliedFilters.selectedDate] ?? 7;
+
+      // Get days of week for the range
+      const validDays = new Set<number>();
+      for (let i = 0; i <= maxDays; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        validDays.add(d.getDay()); // 0-6 (Sunday-Saturday)
+      }
+
+      filtered = filtered.filter(handyman => {
+        const slots = availability[handyman.user_id] || [];
+        if (slots.length === 0) return true; // No availability set = available anytime
+        return slots.some(slot => slot.is_active && validDays.has(slot.day_of_week));
+      });
+    }
+
+    // Filter by custom date range
+    if (appliedFilters.selectedDate === 'custom' && appliedFilters.customDateRange) {
+      const { start, end } = appliedFilters.customDateRange;
+      const validDays = new Set<number>();
+
+      // Get all days of week in the range
+      const current = new Date(start);
+      while (current <= end) {
+        validDays.add(current.getDay());
+        current.setDate(current.getDate() + 1);
+      }
+
+      filtered = filtered.filter(handyman => {
+        const slots = availability[handyman.user_id] || [];
+        if (slots.length === 0) return true;
+        return slots.some(slot => slot.is_active && validDays.has(slot.day_of_week));
+      });
+    }
+
+    // Filter by time of day
+    if (appliedFilters.selectedTimes && appliedFilters.selectedTimes.length > 0) {
+      filtered = filtered.filter(handyman => {
+        const slots = availability[handyman.user_id] || [];
+        if (slots.length === 0) return true; // No availability set = available anytime
+
+        return appliedFilters.selectedTimes.some(timeSlot => {
+          const range = TIME_RANGES[timeSlot];
+          if (!range) return false;
+          return slots.some(slot => {
+            if (!slot.is_active) return false;
+            // Check if slot overlaps with selected time range
+            return slot.start_time < range.end && slot.end_time > range.start;
+          });
+        });
+      });
+    }
+
+    return filtered;
+  }, [handymen, appliedFilters, availabilityCache]);
+
   // Data state
-  const [handymen, setHandymen] = useState<HandymanProfile[]>([]);
-  const [filteredHandymen, setFilteredHandymen] = useState<HandymanProfile[]>([]);
   const [selectedHandyman, setSelectedHandyman] = useState<HandymanProfile | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -70,6 +207,41 @@ function TaskFormContent() {
   const [paymentIntentClientSecret, setPaymentIntentClientSecret] = useState<string>("");
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
 
+
+  // Restore state from sessionStorage when step >= 2 (on page refresh)
+  useEffect(() => {
+    const step = parseInt(stepFromUrl || "1", 10);
+    if (step >= 2) {
+      const savedLocation = sessionStorage.getItem('taskForm_location');
+      const savedResponses = sessionStorage.getItem('taskForm_responses');
+
+      if (savedLocation) {
+        try {
+          const loc = JSON.parse(savedLocation);
+          setStreetAddress(loc.streetAddress || "");
+          setUnitFlat(loc.unitNumber || ""); // Read unitNumber for consistency with Zustand store
+          setGooglePlaceData(loc.googlePlaceData);
+          if (loc.addressId) setAddressId(loc.addressId);
+        } catch (e) {
+          console.error('Failed to parse saved location:', e);
+        }
+      }
+
+      if (savedResponses) {
+        try {
+          setFormResponses(JSON.parse(savedResponses));
+        } catch (e) {
+          console.error('Failed to parse saved responses:', e);
+        }
+      }
+
+      setLocationConfirmed(true);
+      setTaskOptionsCompleted(true);
+      if (step === 2) setShowBrowsePros(true);
+      if (step === 3) setShowConfirmation(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
 
   // Check authentication - but don't redirect, just track auth state
   useEffect(() => {
@@ -94,8 +266,6 @@ function TaskFormContent() {
 
     const pendingBooking = getPendingBooking();
     if (pendingBooking) {
-      console.log('Restoring pending booking:', pendingBooking);
-
       // Restore location
       setStreetAddress(pendingBooking.location.formattedAddress || pendingBooking.location.streetAddress);
       setUnitFlat(pendingBooking.location.unitNumber || '');
@@ -114,31 +284,18 @@ function TaskFormContent() {
     }
   }, [isAuthenticated, pendingBookingRestored, getPendingBooking, setLocation, clearPendingBooking]);
 
-  // Load category from URL
+  // Handle category loading errors
   useEffect(() => {
-    const loadCategory = async () => {
-      if (!categoryFromUrl) {
-        setError('No category specified. Please select a service category.');
-        return;
-      }
-
-      try {
-        const cat = await getCategoryByName(categoryFromUrl);
-        if (cat) {
-          setCategory(cat);
-          setTaskCategory(cat.name);
-          setError(null); // Clear any previous errors
-        } else {
-          setError(`Category "${categoryFromUrl}" not found. Please select a valid service from the homepage.`);
-        }
-      } catch (error) {
-        console.error('Error loading category:', error);
-        setError('Failed to load category. Please try again or select a different service.');
-      }
-    };
-
-    loadCategory();
-  }, [categoryFromUrl]);
+    if (!categoryFromUrl) {
+      setError('No category specified. Please select a service category.');
+    } else if (categoryError) {
+      setError('Failed to load category. Please try again or select a different service.');
+    } else if (!categoryLoading && categoriesData && categoriesData.length === 0 && categoryFromUrl) {
+      setError(`Category "${categoryFromUrl}" not found. Please select a valid service from the homepage.`);
+    } else if (category) {
+      setError(null); // Clear any previous errors when category is loaded
+    }
+  }, [categoryFromUrl, categoryError, categoryLoading, categoriesData, category]);
 
   // Auto-proceed to browse pros when pending booking is restored and category is loaded
   useEffect(() => {
@@ -146,6 +303,37 @@ function TaskFormContent() {
       handleBrowsePros();
     }
   }, [pendingBookingRestored, category, taskOptionsCompleted, showBrowsePros]);
+
+  // Save location to sessionStorage when confirmed
+  useEffect(() => {
+    if (locationConfirmed && streetAddress) {
+      sessionStorage.setItem('taskForm_location', JSON.stringify({
+        streetAddress,
+        unitNumber: unitFlat, // Use unitNumber for consistency with Zustand store
+        googlePlaceData,
+        addressId,
+      }));
+    }
+  }, [locationConfirmed, streetAddress, unitFlat, googlePlaceData, addressId]);
+
+  // Save form responses to sessionStorage when completed
+  useEffect(() => {
+    if (taskOptionsCompleted && Object.keys(formResponses).length > 0) {
+      sessionStorage.setItem('taskForm_responses', JSON.stringify(formResponses));
+    }
+  }, [taskOptionsCompleted, formResponses]);
+
+  // Update URL when step changes (without page reload)
+  useEffect(() => {
+    const currentStep = getCurrentStep();
+    const params = new URLSearchParams(searchParams.toString());
+    const existingStep = params.get("step");
+
+    if (existingStep !== currentStep.toString()) {
+      params.set("step", currentStep.toString());
+      router.replace(`/task-form?${params.toString()}`, { scroll: false });
+    }
+  }, [showBrowsePros, showConfirmation, searchParams, router]);
 
   const handleLocationContinue = async () => {
     if (!streetAddress.trim()) return;
@@ -194,45 +382,16 @@ function TaskFormContent() {
     handleBrowsePros();
   };
 
-  const handleBrowsePros = async () => {
-    // Debug logging
-    console.log('handleBrowsePros called', { category, categoryFromUrl });
-
+  const handleBrowsePros = () => {
     if (!category) {
       setError('Cannot load handymen: Missing category');
-      console.error('Missing required data:', { category });
       return;
     }
 
-    try {
-      setLoading(true);
-      setError(null);
-
-      console.log('Fetching handymen for category:', category.id, category.name);
-
-      // Fetch handymen for this category
-      const handymenData = await getHandymenByCategory(category.id);
-      console.log('Fetched handymen:', handymenData.length, handymenData);
-
-      if (handymenData.length === 0) {
-        setError('No handymen available for this category yet. Please try another service or check back later.');
-      }
-
-      setHandymen(handymenData);
-      setFilteredHandymen(handymenData);
-      setShowBrowsePros(true);
-    } catch (err: any) {
-      console.error('Error fetching handymen:', err);
-      console.error('Error details:', {
-        message: err?.message,
-        code: err?.code,
-        details: err?.details,
-        hint: err?.hint,
-      });
-      setError(`Failed to load handymen: ${err?.message || 'Unknown error'}. Please try again.`);
-    } finally {
-      setLoading(false);
-    }
+    // Clear any previous errors and show browse pros
+    // The useHandymenByCategory hook will automatically fetch when showBrowsePros becomes true
+    setError(null);
+    setShowBrowsePros(true);
   };
 
   // Save pending booking and redirect to sign-in
@@ -324,24 +483,9 @@ function TaskFormContent() {
   };
 
   const handleFilterChange = useCallback((filters: FilterValues) => {
-    // Apply filters to handymen list
-    let filtered = [...handymen];
-
-    // Filter by price range (convert to pounds for comparison)
-    filtered = filtered.filter(handyman => {
-      const hourlyRate = handyman.hourly_rate_cents / 100;
-      return hourlyRate >= filters.priceMin && hourlyRate <= filters.priceMax;
-    });
-
-    // Filter by elite status (verified)
-    if (filters.isEliteTasker) {
-      filtered = filtered.filter(handyman => handyman.verified);
-    }
-
-    // TODO: Add date/time availability filtering when we have availability data
-
-    setFilteredHandymen(filtered);
-  }, [handymen]);
+    // Store filters - filteredHandymen is derived via useMemo
+    setAppliedFilters(filters);
+  }, []);
 
   const handlePaymentSuccess = async (authorizedPaymentIntentId: string) => {
     // Payment authorization successful! Now create the booking
@@ -374,8 +518,9 @@ function TaskFormContent() {
       });
 
       if (booking) {
-        console.log('Booking created successfully:', booking);
-        console.log('Payment authorized (ID):', authorizedPaymentIntentId);
+        // Clear sessionStorage on successful booking
+        sessionStorage.removeItem('taskForm_location');
+        sessionStorage.removeItem('taskForm_responses');
 
         // Navigate to booking confirmation page
         router.push(`/bookings/${booking.id}`);
@@ -397,7 +542,7 @@ function TaskFormContent() {
 
   const handleEditTask = () => {
     setShowConfirmation(false);
-    setShowBrowsePros(true);
+    setShowBrowsePros(false);
   };
 
   // Memoize the place selected callback to prevent Google Autocomplete from re-initializing
@@ -675,17 +820,30 @@ function TaskFormContent() {
                   <span className="text-sm font-medium text-gray-700">
                     Sorted by:
                   </span>
-                  <select className="border border-gray-300 rounded-md px-3 py-1.5 text-sm">
-                    <option>Recommended</option>
+                  <select
+                    className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-terracotta"
+                    value={selectedSort}
+                    onChange={(e) => setSelectedSort(e.target.value as SortOption)}
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               <div className="space-y-6">
-                {loading ? (
+                {handymenLoading ? (
                   <div className="text-center py-12">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-terracotta"></div>
                     <p className="mt-4 text-gray-600">Loading handymen...</p>
+                  </div>
+                ) : handymenError ? (
+                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200 p-8">
+                    <p className="text-gray-600 text-lg mb-2">Failed to load handymen</p>
+                    <p className="text-gray-500 text-sm">Please try again later</p>
                   </div>
                 ) : filteredHandymen.length === 0 ? (
                   <div className="text-center py-12 bg-white rounded-lg border border-gray-200 p-8">
@@ -698,6 +856,8 @@ function TaskFormContent() {
                       key={handyman.user_id}
                       handyman={handyman}
                       categoryName={category?.name || ''}
+                      availability={availabilityCache?.[handyman.user_id]}
+                      isAvailabilityLoading={isLoadingAvailability}
                       onSelectContinue={(date, time) => {
                         handleSelectHandyman(handyman, date, time);
                       }}

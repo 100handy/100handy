@@ -2,37 +2,24 @@
 
 import { Search } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
-import { getAllCategories } from "@/lib/supabase/categories";
-import type { Category } from "@/lib/supabase/types";
+import { useCategories } from "@shared/supabase";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: allCategories, isLoading: loading } = useCategories();
 
-  // Fetch categories from database
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const allCategories = await getAllCategories();
-        // Filter to show only subcategories (level 1) or popular ones
-        const displayCategories = allCategories.filter(cat => cat.level === 1).slice(0, 10);
-        setCategories(displayCategories);
-      } catch (error) {
-        console.error('Error loading categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCategories();
-  }, []);
+  // Derive display categories from the hook data
+  const categories = useMemo(() => {
+    if (!allCategories) return [];
+    // Filter to show only subcategories (level 1) or popular ones
+    return allCategories.filter(cat => cat.level === 1).slice(0, 10);
+  }, [allCategories]);
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);

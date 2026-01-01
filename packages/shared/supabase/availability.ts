@@ -159,6 +159,41 @@ export async function getAvailabilityByUserId(userId: string): Promise<Availabil
 }
 
 /**
+ * Get availability for multiple taskers in a single query (for batch client booking)
+ * @param userIds - Array of tasker user IDs
+ * @returns Record mapping user ID to array of availability slots
+ * @throws {Error} If query fails
+ */
+export async function getAvailabilityByUserIds(userIds: string[]): Promise<Record<string, AvailabilitySlot[]>> {
+  if (!userIds.length) return {};
+
+  const { data, error } = await supabase
+    .from('professional_availability')
+    .select('*')
+    .in('user_id', userIds)
+    .eq('is_active', true)
+    .order('day_of_week')
+    .order('start_time');
+
+  if (error) {
+    throw new Error(`Failed to fetch availability: ${error.message}`);
+  }
+
+  // Group by user_id
+  const result: Record<string, AvailabilitySlot[]> = {};
+  userIds.forEach(id => { result[id] = []; });
+
+  (data || []).forEach(slot => {
+    if (!result[slot.user_id]) {
+      result[slot.user_id] = [];
+    }
+    result[slot.user_id]!.push(slot);
+  });
+
+  return result;
+}
+
+/**
  * Save availability for a specific day
  * This replaces all slots for that day (delete + insert pattern with rollback)
  * @param input - Day index and array of time slots

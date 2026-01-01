@@ -1,20 +1,26 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { SelectDateTimeModal } from "./select-datetime-modal";
 import type { HandymanProfile } from "@/lib/supabase/handymen";
+import type { AvailabilitySlot } from "@shared/supabase";
 
 interface TaskerCardProps {
   handyman: HandymanProfile;
   categoryName: string;
   onSelectContinue?: (date: string, time: string) => void;
+  availability?: AvailabilitySlot[];
+  isAvailabilityLoading?: boolean;
 }
 
 export function TaskerCard({
   handyman,
   categoryName,
-  onSelectContinue
+  onSelectContinue,
+  availability,
+  isAvailabilityLoading,
 }: TaskerCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -44,9 +50,12 @@ export function TaskerCard({
                 className="w-full h-full object-cover"
               />
             </div>
-            <button className="text-[#C1856A] text-sm font-medium hover:underline whitespace-nowrap">
+            <Link
+              href={`/professionals/${handyman.user_id}`}
+              className="text-[#C1856A] text-sm font-medium hover:underline whitespace-nowrap text-center"
+            >
               View Profile &<br />Reviews
-            </button>
+            </Link>
             <button
               onClick={() => setIsModalOpen(true)}
               className="bg-[#C1856A] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#a67359] transition-colors whitespace-nowrap"
@@ -145,6 +154,8 @@ export function TaskerCard({
         onOpenChange={setIsModalOpen}
         onConfirm={handleSelectContinue}
         taskerName={displayName}
+        availability={availability}
+        isAvailabilityLoading={isAvailabilityLoading}
       />
     </>
   );

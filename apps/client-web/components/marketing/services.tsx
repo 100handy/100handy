@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getAllCategories } from "@/lib/supabase/categories";
-import type { Category } from "@/lib/supabase/types";
+import { useCategories, type Category } from "@shared/supabase";
 
 // Fallback categories for when DB is unavailable
 const fallbackMainCategories = [
@@ -19,49 +18,30 @@ const fallbackMainCategories = [
 
 export function Services() {
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState<string | null>("Assembly");
-  const [mainCategories, setMainCategories] = useState<Category[]>([]);
-  const [subCategories, setSubCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categories, isLoading: loading } = useCategories();
 
-  // Fetch categories from database
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const allCategories = await getAllCategories();
+  // Derive main and sub categories from the hook data
+  const { mainCategories, subCategories, activeCategory } = useMemo(() => {
+    if (!categories || categories.length === 0) {
+      return { mainCategories: [], subCategories: [], activeCategory: "Assembly" };
+    }
 
-        // Main categories are level 0 (parent categories)
-        const parents = allCategories.filter(cat => cat.level === 0);
-        setMainCategories(parents);
+    // Main categories are level 0 (parent categories)
+    const parents = categories.filter(cat => cat.level === 0);
 
-        // Sub categories are level 1 (first level of children)
-        const children = allCategories.filter(cat => cat.level === 1);
-        setSubCategories(children.slice(0, 6)); // Show first 6
+    // Get first parent as active
+    const firstParent = parents[0];
+    const active = firstParent?.name ?? "Assembly";
 
-        // Set first category as active
-        if (parents.length > 0) {
-          const firstParent = parents[0];
-          if (firstParent) {
-            setActiveCategory(firstParent.name);
-            // Filter subcategories for the active parent
-            const filteredChildren = allCategories.filter(
-              cat => cat.parent_id === firstParent.id && cat.level === 1
-            );
-            setSubCategories(filteredChildren.slice(0, 6));
-          }
-        }
-      } catch (error) {
-        console.error('Error loading categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Filter subcategories for the first parent
+    const children = firstParent
+      ? categories.filter(cat => cat.parent_id === firstParent.id && cat.level === 1).slice(0, 6)
+      : categories.filter(cat => cat.level === 1).slice(0, 6);
 
-    loadCategories();
-  }, []);
+    return { mainCategories: parents, subCategories: children, activeCategory: active };
+  }, [categories]);
 
   const handleMainCategoryClick = (category: Category) => {
-    setActiveCategory(category.name);
     // Navigate to task form with category
     router.push(`/task-form?category=${encodeURIComponent(category.name)}`);
   };

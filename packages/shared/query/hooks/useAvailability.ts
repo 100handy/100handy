@@ -4,6 +4,7 @@ import {
   getAvailability,
   getWeeklyAvailability,
   getAvailabilityByUserId,
+  getAvailabilityByUserIds,
   saveDayAvailability,
   saveWeeklyAvailability,
   deleteAvailabilitySlot,
@@ -20,6 +21,7 @@ export const availabilityKeys = {
   list: () => [...availabilityKeys.all, 'list'] as const,
   weekly: () => [...availabilityKeys.all, 'weekly'] as const,
   byUser: (userId: string) => [...availabilityKeys.all, 'user', userId] as const,
+  byUsers: (userIds: string[]) => [...availabilityKeys.all, 'users', userIds.sort().join(',')] as const,
 };
 
 /**
@@ -54,6 +56,20 @@ export function useAvailabilityByUserId(userId: string | null) {
     queryKey: availabilityKeys.byUser(userId!),
     queryFn: () => getAvailabilityByUserId(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook for fetching availability for multiple taskers in a single query (batch)
+ * This is more efficient than calling useAvailabilityByUserId for each user
+ */
+export function useAvailabilityByUserIds(userIds: string[]) {
+  return useQuery({
+    queryKey: availabilityKeys.byUsers(userIds),
+    queryFn: () => getAvailabilityByUserIds(userIds),
+    enabled: userIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

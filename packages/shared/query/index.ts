@@ -148,6 +148,7 @@ export {
   useAvailability,
   useWeeklyAvailability,
   useAvailabilityByUserId,
+  useAvailabilityByUserIds,
   useSaveDayAvailability,
   useSaveWeeklyAvailability,
   useDeleteAvailabilitySlot,

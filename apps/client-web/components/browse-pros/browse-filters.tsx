@@ -1,13 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DateRangePickerModal } from "./date-range-picker-modal";
+
+// Type-safe date filter options
+export type DateFilterOption = 'today' | '3days' | 'week' | 'custom';
+
+// Type-safe time slot options
+export type TimeSlotOption = 'morning' | 'afternoon' | 'evening';
 
 export interface FilterValues {
-  selectedDate: string;
-  selectedTimes: string[];
+  selectedDate: DateFilterOption;
+  selectedTimes: TimeSlotOption[];
   priceMin: number;
   priceMax: number;
   isEliteTasker: boolean;
+  customDateRange?: { start: Date; end: Date } | null;
 }
 
 interface BrowseFiltersProps {
@@ -15,11 +23,15 @@ interface BrowseFiltersProps {
 }
 
 export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
-  const [selectedDate, setSelectedDate] = useState<string>("week");
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+  const [selectedDate, setSelectedDate] = useState<DateFilterOption>("week");
+  const [selectedTimes, setSelectedTimes] = useState<TimeSlotOption[]>([]);
   const [priceRange, setPriceRange] = useState({ min: 10, max: 150 });
   const [sliderValues, setSliderValues] = useState({ min: 10, max: 90 });
   const [isEliteTasker, setIsEliteTasker] = useState(false);
+
+  // Custom date range state
+  const [customDateRange, setCustomDateRange] = useState<{ start: Date; end: Date } | null>(null);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   // Notify parent of filter changes
   useEffect(() => {
@@ -30,23 +42,55 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
         priceMin: sliderValues.min,
         priceMax: sliderValues.max,
         isEliteTasker,
+        customDateRange: selectedDate === 'custom' ? customDateRange : null,
       });
     }
-  }, [selectedDate, selectedTimes, sliderValues, isEliteTasker, onFilterChange]);
+  }, [selectedDate, selectedTimes, sliderValues, isEliteTasker, customDateRange, onFilterChange]);
+
+  // Handle date option click
+  const handleDateOptionClick = (value: DateFilterOption) => {
+    if (value === 'custom') {
+      setIsDatePickerOpen(true);
+    } else {
+      setSelectedDate(value);
+      setCustomDateRange(null);
+    }
+  };
+
+  // Handle custom date range apply
+  const handleDateRangeApply = (start: Date, end: Date) => {
+    setCustomDateRange({ start, end });
+    setSelectedDate('custom');
+  };
+
+  // Handle custom date range clear
+  const handleDateRangeClear = () => {
+    setCustomDateRange(null);
+    setSelectedDate('week');
+  };
+
+  // Format date range for display
+  const formatDateRange = (range: { start: Date; end: Date }) => {
+    const formatDate = (date: Date) => {
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return `${months[date.getMonth()]} ${date.getDate()}`;
+    };
+    return `${formatDate(range.start)} - ${formatDate(range.end)}`;
+  };
 
   const priceDistribution = [
     0.2, 0.3, 0.4, 0.6, 0.9, 1, 0.8, 0.7, 0.5, 0.4, 0.3, 0.2, 0.25, 0.35, 0.55,
     0.75, 0.95, 0.85, 0.65, 0.45, 0.25,
   ];
 
-  const dateOptions = [
+  const dateOptions: { value: DateFilterOption; label: string }[] = [
     { value: "today", label: "Today" },
     { value: "3days", label: "Within 3 Days" },
     { value: "week", label: "Within A Week" },
     { value: "custom", label: "Choose Dates" },
   ];
 
-  const timeSlots = [
+  const timeSlots: { value: TimeSlotOption; label: string }[] = [
     { value: "morning", label: "Morning (8:00 - 12:00)" },
     { value: "afternoon", label: "Afternoon (12:00 - 17:00)" },
     { value: "evening", label: "Evening (17:00 - 21:30)" },
@@ -80,13 +124,15 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
           {dateOptions.map((option) => (
             <button
               key={option.value}
-              onClick={() => setSelectedDate(option.value)}
+              onClick={() => handleDateOptionClick(option.value)}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${selectedDate === option.value
                   ? "bg-[#30352D] text-white"
                   : "border border-gray-300 text-[#30352D] bg-white hover:border-[#30352D]"
                 }`}
             >
-              {option.label}
+              {option.value === 'custom' && customDateRange
+                ? formatDateRange(customDateRange)
+                : option.label}
             </button>
           ))}
         </div>
@@ -107,10 +153,10 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
                   if (e.target.checked) {
                     setSelectedTimes([...selectedTimes, slot.value]);
                   } else {
-                    setSelectedTimes(selectedTimes.filter((t) => t !== slot.value));
+                    setSelectedTimes(selectedTimes.filter((t): t is TimeSlotOption => t !== slot.value));
                   }
                 }}
-                className="appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#30352D] checked:border-transparent focus:outline-none"
+                className="w-4 h-4 rounded-sm border border-gray-300 accent-[#30352D] focus:outline-none focus:ring-1 focus:ring-[#30352D]"
               />
               <span className="text-[#30352D] text-sm">{slot.label}</span>
             </label>
@@ -228,11 +274,21 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
             type="checkbox"
             checked={isEliteTasker}
             onChange={(e) => setIsEliteTasker(e.target.checked)}
-            className="appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#30352D] checked:border-transparent focus:outline-none"
+            className="w-4 h-4 rounded-sm border border-gray-300 accent-[#30352D] focus:outline-none focus:ring-1 focus:ring-[#30352D]"
           />
           <span className="text-[#30352D] text-sm">Elite Tasker</span>
         </label>
       </div>
+
+      {/* Date Range Picker Modal */}
+      <DateRangePickerModal
+        open={isDatePickerOpen}
+        onOpenChange={setIsDatePickerOpen}
+        onApply={handleDateRangeApply}
+        onClear={handleDateRangeClear}
+        initialStartDate={customDateRange?.start}
+        initialEndDate={customDateRange?.end}
+      />
     </div>
   );
 }
