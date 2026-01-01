@@ -179,7 +179,7 @@ export default function ProfileScreen() {
                   className="flex-row items-center bg-bg-primary p-profile-lg rounded-profile-small mb-3"
                   onPress={() => {
                     if (item.title === 'Notifications') {
-                      router.push('/profile/notifications');
+                      router.push('/(client)/profile/notifications');
                     } else if (item.title === 'Account Security') {
                       router.push('/profile/account-security');
                     } else if (item.title === 'Payments') {

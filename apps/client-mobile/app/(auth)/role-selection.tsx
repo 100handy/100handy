@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StatusBar, View, Text, Pressable, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { User, Briefcase, ArrowRight } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 import Logo100Top from '../../assets/images/logo-100-top.svg';
@@ -18,13 +18,25 @@ const COLORS = {
 
 export default function AuthRoleSelectionScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const ref = useMemo(() => {
+    const value = params.ref;
+    if (typeof value === 'string' && value.trim().length > 0) return value.trim();
+    return undefined;
+  }, [params.ref]);
 
   const handleClientAuth = (): void => {
-    router.push('/(auth)/(client)');
+    router.push({
+      pathname: '/(auth)/(client)',
+      params: ref ? { ref } : {},
+    } as any);
   };
 
   const handleProfessionalAuth = (): void => {
-    router.push('/(auth)/(professional)/sign-up');
+    router.push({
+      pathname: '/(auth)/(professional)/sign-up',
+      params: ref ? { ref } : {},
+    } as any);
   };
 
   return (

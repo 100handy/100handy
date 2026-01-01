@@ -1,17 +1,23 @@
 import "@/globals.css";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { SplashScreen } from "expo-router";
-import { AppState } from "react-native";
+import { AppState, Platform } from "react-native";
 import * as Linking from "expo-linking";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { supabase } from "@shared/supabase/supabaseClient";
-import { AuthWrapper } from "@/components/AuthWrapper";
+import { useAuthStore, upsertDevicePushToken } from "@shared/supabase";
 import { QueryProvider } from "@/components/providers";
 import { ToastProvider } from "@/components/ui/toast";
 import { StripeProviderWrapper } from "@/components/StripeProviderWrapper";
 import { initializePendingBookingStorage } from "@/lib/pending-booking-storage";
+import * as Notifications from "expo-notifications";
+import {
+  configureNotifications,
+  getRouteFromNotificationData,
+  registerForPushNotificationsAsync,
+} from "@/lib/notifications";
 
 // Initialize pending booking storage with AsyncStorage
 initializePendingBookingStorage();
@@ -40,6 +46,76 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  const userId = useAuthStore((state) => state.user?.id);
+  const lastRegisteredUserIdRef = useRef<string | null>(null);
+  const lastRegisteredTokenRef = useRef<string | null>(null);
+
+  // Push notifications: configure handlers, handle taps, and register device token (once per user/device).
+  useEffect(() => {
+    configureNotifications();
+
+    const responseSub = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const route = getRouteFromNotificationData(
+          response.notification.request.content.data
+        );
+        if (route) {
+          router.push(route as any);
+        }
+      }
+    );
+
+    // Handle cold start / backgrounded app tap.
+    (async () => {
+      const lastResponse = await Notifications.getLastNotificationResponseAsync();
+      if (!lastResponse) return;
+      const route = getRouteFromNotificationData(
+        lastResponse.notification.request.content.data
+      );
+      if (route) {
+        router.push(route as any);
+      }
+    })();
+
+    return () => {
+      responseSub.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const register = async () => {
+      if (!userId) return;
+
+      const token = await registerForPushNotificationsAsync();
+      if (isCancelled || !token) return;
+
+      // Avoid noisy upserts on rerenders.
+      if (
+        lastRegisteredUserIdRef.current === userId &&
+        lastRegisteredTokenRef.current === token
+      ) {
+        return;
+      }
+
+      lastRegisteredUserIdRef.current = userId;
+      lastRegisteredTokenRef.current = token;
+
+      await upsertDevicePushToken({
+        expoPushToken: token,
+        platform: Platform.OS === "ios" ? "ios" : "android",
+        deviceId: null,
+      });
+    };
+
+    register();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [userId]);
 
   // AppState listener for token auto-refresh
   // This tells Supabase Auth to continuously refresh the session automatically if
@@ -83,14 +159,12 @@ export default function RootLayout() {
       <StripeProviderWrapper>
         <QueryProvider>
           <ToastProvider>
-            {/* <AuthWrapper> */}
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="(client)" />
-                <Stack.Screen name="(professional)" />
-              </Stack>
-            {/* </AuthWrapper> */}
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(client)" />
+              <Stack.Screen name="(professional)" />
+            </Stack>
           </ToastProvider>
         </QueryProvider>
       </StripeProviderWrapper>

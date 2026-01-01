@@ -4,3 +4,5 @@ import { NotificationsPreferencesScreen } from '@/components/profile/Notificatio
 export default function NotificationsScreen() {
   return <NotificationsPreferencesScreen />;
 }
+
+

@@ -35,7 +35,7 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: 'com.oxdpr.handy',
-      permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION'],
+      permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION', 'POST_NOTIFICATIONS'],
       config: {
         googleMaps: {
           apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY',
@@ -62,6 +62,7 @@ module.exports = {
     plugins: [
       'expo-router',
       'expo-font',
+      'expo-notifications',
       'expo-secure-store',
       'expo-web-browser',
       [

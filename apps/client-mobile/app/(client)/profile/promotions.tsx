@@ -1,23 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Gift, ChevronLeft } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
+import ReferralShareModal from '@/components/modals/ReferralShareModal';
 
 export default function PromotionsScreen() {
   const router = useRouter();
+  const [showReferralModal, setShowReferralModal] = useState(false);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FBF4ED' }}>
-      <StatusBar style="dark" />
+    <>
+      <SafeAreaView className="flex-1 bg-[#FBF4ED]" edges={['top', 'bottom']}>
+        <StatusBar style="dark" />
       {/* Header */}
-      <View className="flex-row px-4 py-3 items-center"
-        style={{
-          borderBottomColor: '#E5E7EB',
-          borderBottomWidth: 1,
-        }}
-      >
+      <View className="flex-row px-4 py-3 items-center border-b border-gray-200">
         <Pressable
           onPress={() => router.back()}
           className="flex-row items-center"
@@ -31,27 +29,27 @@ export default function PromotionsScreen() {
       </View>
 
       {/* Main Content */}
-      <View className="flex-col flex-1 justify-center items-center px-8 space-y-6">
-        <View className="w-28 h-28 bg-white rounded-full justify-center items-center">
-          <Gift size={56} color="#C1856A" />
-        </View>
-
-        <Text
-          className="text-2xl font-bold text-center"
-          style={{ color: '#333A31' }}
-        >
-          Help your friends, Get £10
-        </Text>
-
+      <View className="flex-1 px-4 pt-4">
         <Pressable
-          className="w-full py-4 rounded-full"
-          style={{ backgroundColor: '#C1856A' }}
+          onPress={() => setShowReferralModal(true)}
+          className="bg-white rounded-xl border border-gray-200 px-4 py-4 flex-row items-center"
         >
-          <Text className="text-white text-center font-bold text-lg">
-            Refer a Friend
-          </Text>
+          <View className="w-12 h-12 rounded-full bg-[#C1856A]/10 items-center justify-center mr-4">
+            <Gift size={24} color="#C1856A" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-base font-semibold text-[#333A31]">
+              Help Your Friends, Get £10
+            </Text>
+            <Text className="text-sm text-[#333A31]/70 mt-1">
+              Refer a Friend
+            </Text>
+          </View>
         </Pressable>
       </View>
-    </SafeAreaView>
+      </SafeAreaView>
+
+      <ReferralShareModal isOpen={showReferralModal} onClose={() => setShowReferralModal(false)} />
+    </>
   );
 }

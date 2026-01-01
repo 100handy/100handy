@@ -303,6 +303,12 @@ export async function cancelBooking(bookingId: string): Promise<boolean> {
       return false;
     }
 
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: { event: 'booking_status', bookingId, status: 'cancelled' },
+      })
+      .catch(() => undefined);
+
     return true;
   } catch (error) {
     console.error('Error in cancelBooking:', error);
@@ -476,6 +482,13 @@ export async function acceptBooking(bookingId: string): Promise<boolean> {
       return false;
     }
 
+    // Best-effort push notification to the other party.
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: { event: 'booking_status', bookingId, status: 'accepted' },
+      })
+      .catch(() => undefined);
+
     return true;
   } catch (error) {
     console.error('Error in acceptBooking:', error);
@@ -511,6 +524,12 @@ export async function declineBooking(
       return false;
     }
 
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: { event: 'booking_status', bookingId, status: 'cancelled' },
+      })
+      .catch(() => undefined);
+
     return true;
   } catch (error) {
     console.error('Error in declineBooking:', error);
@@ -537,6 +556,12 @@ export async function startBooking(bookingId: string): Promise<boolean> {
       console.error(`Error starting booking ${bookingId}:`, error);
       return false;
     }
+
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: { event: 'booking_status', bookingId, status: 'in_progress' },
+      })
+      .catch(() => undefined);
 
     return true;
   } catch (error) {
@@ -588,6 +613,12 @@ export async function completeBooking(
       console.error(`Error completing booking ${bookingId}:`, updateError);
       return { success: false, error: 'Failed to update booking status' };
     }
+
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: { event: 'booking_status', bookingId, status: 'completed' },
+      })
+      .catch(() => undefined);
 
     // Process payment if requested and payment intent exists
     if (options?.processPayment && booking.payment_intent_id) {

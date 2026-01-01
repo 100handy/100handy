@@ -3,6 +3,7 @@ import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { supabase } from '@shared/supabase';
 
 interface MenuItem {
   label: string;
@@ -23,9 +24,26 @@ export default function SupportScreen() {
     // Open support center URL or navigate to support center
   };
 
-  const handleTestNotifications = () => {
-    console.log('Test push notifications');
-    // Trigger test notification functionality
+  const handleTestNotifications = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-push-notification', {
+        body: {
+          event: 'test',
+          title: 'Test notification',
+          body: 'If you see this, push notifications are working.',
+          route: '/(professional)/(tabs)/dashboard',
+        },
+      });
+
+      if (error) {
+        console.error('Test push notification failed:', error);
+        return;
+      }
+
+      console.log('Test push notification result:', data);
+    } catch (e) {
+      console.error('Test push notification error:', e);
+    }
   };
 
   const menuItems: MenuItem[] = [

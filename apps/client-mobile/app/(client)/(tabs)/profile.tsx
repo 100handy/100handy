@@ -25,6 +25,7 @@ import { useAuthStore } from '@shared/supabase';
 import { useProfile } from '@shared/query';
 import { useRouter } from 'expo-router';
 import { useSecureNavigation } from '@/hooks/useSecureNavigation';
+import ReferralShareModal from '@/components/modals/ReferralShareModal';
 
 // --- Data for list items ---
 // requiresSecurity: true means 2FA must be enabled to access this section
@@ -33,8 +34,8 @@ const menuItems = [
   { icon: Shield, title: 'Account Security', route: '/(client)/profile/account-security', requiresSecurity: false },
   { icon: Lock, title: 'Change Password', route: '/profile/change-password', requiresSecurity: true },
   { icon: CreditCard, title: 'Payment', route: '/profile/payments', requiresSecurity: true },
-  { icon: Megaphone, title: 'Promos', route: '/profile/promotions', requiresSecurity: false },
-  { icon: Bell, title: 'Notifications', route: '/profile/notifications', requiresSecurity: false },
+  { icon: Megaphone, title: 'Promos', route: '/(client)/profile/promotions', requiresSecurity: false },
+  { icon: Bell, title: 'Notifications', route: '/(client)/profile/notifications', requiresSecurity: false },
   { icon: HelpCircle, title: 'Privacy settings', route: '/profile/privacy-settings', requiresSecurity: false },
   { icon: MessageSquare, title: 'Support', route: '/profile/support', requiresSecurity: false },
   { icon: Info, title: 'About', route: '/profile/about', requiresSecurity: false },
@@ -47,6 +48,7 @@ export default function ProfileScreen() {
   const { navigateWithSecurityCheck } = useSecureNavigation();
   const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -180,7 +182,7 @@ export default function ProfileScreen() {
             {/* Referral Banner */}
             <Pressable
               className="border-2 border-[#C1856A] rounded-full py-3 px-4 flex-row items-center justify-center"
-              onPress={() => console.log('Referral program')}
+              onPress={() => setShowReferralModal(true)}
             >
               <Gift size={20} color="#C1856A" className="mr-2" />
               <Text className="text-[#C1856A] font-bold text-base">Help your friends, Get £10</Text>
@@ -250,7 +252,8 @@ export default function ProfileScreen() {
 
               {/* Description */}
               <Text className="text-[#333A31] text-xs text-center leading-5 mb-6">
-                By selecting "Accept All", you agree to the app storing information to enhance device navigation, analyze usage, and assist in our marketing efforts
+                By selecting {`\"`}Accept All{`\"`}, you agree to the app storing information to
+                enhance device navigation, analyze usage, and assist in our marketing efforts
               </Text>
 
               {/* Accept All Cookies Button */}
@@ -273,6 +276,8 @@ export default function ProfileScreen() {
           </ModalBody>
         </ModalContent>
       </Modal>
+
+      <ReferralShareModal isOpen={showReferralModal} onClose={() => setShowReferralModal(false)} />
     </>
   );
 }

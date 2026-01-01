@@ -14,6 +14,7 @@ export interface UserProfile {
   rating?: number;
   jobs_completed?: number;
   two_factor_enabled: boolean;
+  referral_code?: string;
   // Privacy settings (stored in profiles table)
   privacy_location_sharing?: boolean;
   privacy_profile_visibility?: boolean;
@@ -34,6 +35,80 @@ export interface UpdateProfileData {
   phone?: string;
   postcode?: string;
   avatar_url?: string;
+  referral_code?: string;
+}
+
+function generateReferralCode(length: number = 8): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < length; i += 1) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+export function buildReferralDeepLink(code: string): string {
+  const normalized = code.trim().toUpperCase();
+  return `handy://(auth)/role-selection?ref=${encodeURIComponent(normalized)}`;
+}
+
+/**
+ * Ensure the current user has a referral_code set on profiles.
+ * Generates and stores an 8-char code if missing.
+ */
+export async function ensureReferralCode(): Promise<string | null> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return null;
+    }
+
+    const { data: existing, error: existingError } = await supabase
+      .from('profiles')
+      .select('referral_code')
+      .eq('user_id', user.id)
+      .single();
+
+    if (existingError) {
+      console.error('Error fetching existing referral_code:', existingError);
+      return null;
+    }
+
+    if (existing?.referral_code) {
+      return String(existing.referral_code).toUpperCase();
+    }
+
+    // Retry a few times in case of unique constraint collision.
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const code = generateReferralCode(8);
+      const { data: updated, error: updateError } = await supabase
+        .from('profiles')
+        .update({ referral_code: code })
+        .eq('user_id', user.id)
+        .select('referral_code')
+        .single();
+
+      if (!updateError && updated?.referral_code) {
+        return String(updated.referral_code).toUpperCase();
+      }
+
+      // 23505 = unique_violation
+      if (updateError?.code === '23505') {
+        continue;
+      }
+
+      console.error('Error updating referral_code:', updateError);
+      return null;
+    }
+
+    console.error('Failed to generate unique referral_code after retries');
+    return null;
+  } catch (error) {
+    console.error('Error in ensureReferralCode:', error);
+    return null;
+  }
 }
 
 /**

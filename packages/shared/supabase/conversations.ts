@@ -291,6 +291,25 @@ export async function sendConversationMessage(input: SendConversationMessageInpu
       throw new Error(error.message);
     }
 
+    // Fire-and-forget push notification to the other participant (best effort).
+    // The Edge Function validates sender membership and recipient preferences.
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: {
+          event: 'chat_message',
+          conversationId: input.conversation_id,
+          messagePreview: input.message,
+        },
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn('[push] send-push-notification failed:', error);
+        }
+      })
+      .catch((e) => {
+        console.warn('[push] send-push-notification error:', e);
+      });
+
     return data;
   } catch (error) {
     console.error('Error in sendConversationMessage:', error);

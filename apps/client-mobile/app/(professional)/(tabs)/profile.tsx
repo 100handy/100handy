@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Megaphone,
   CreditCard,
+  Bell,
   HelpCircle,
   Shield,
   Info,
@@ -129,6 +130,11 @@ export default function ProfessionalProfileScreen() {
       icon: <CreditCard color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Payments',
       onPress: () => router.push('/profile/payments'),
+    },
+    {
+      icon: <Bell color="#B8926A" size={24} strokeWidth={1.5} />,
+      label: 'Notifications',
+      onPress: () => router.push('/(professional)/profile/notifications'),
     },
     {
       icon: <HelpCircle color="#B8926A" size={24} strokeWidth={1.5} />,
