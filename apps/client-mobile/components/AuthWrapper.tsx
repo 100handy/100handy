@@ -130,23 +130,15 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         return;
       }
 
-      // Verification complete - check onboarding status
-      if (isVerified && (isIdentityVerified === true || isIdentityVerified === null)) {
+      // Verification complete - route to appropriate home
+      // Note: Professionals should land on the dashboard immediately and complete onboarding/verification there.
+      if (isVerified) {
         const isProfessional = userRole === 'handy';
 
         // If on auth screens or index, redirect to appropriate home
         if (inAuthGroup || isOnIndex) {
           if (isProfessional) {
-            // Check if they completed onboarding/verification from database
-            const onboardingComplete = professionalOnboardingComplete !== null
-              ? professionalOnboardingComplete
-              : hasCompletedOnboarding;
-
-            if (!onboardingComplete) {
-              router.replace('/(auth)/(professional)/verify-info');
-            } else {
-              router.replace('/(professional)/(tabs)/dashboard');
-            }
+            router.replace('/(professional)/(tabs)/dashboard');
           } else {
             // Client - check onboarding
             if (!hasCompletedOnboarding) {
@@ -173,7 +165,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       const tryingToAccessProtectedRoute = (inTabsGroup || inClientGroup || inProfessionalGroup) && !inAuthGroup && isProtectedRoute;
 
       if (tryingToAccessProtectedRoute) {
-        router.replace('/(auth)/role-selection');
+        router.replace('/(auth)/(client)');
       }
     }
   }, [isAuthenticated, isEmailVerified, hasCompletedOnboarding, professionalOnboardingComplete, isIdentityVerified, userRole, user, isLoading, isCheckingOnboarding, segments, router]);

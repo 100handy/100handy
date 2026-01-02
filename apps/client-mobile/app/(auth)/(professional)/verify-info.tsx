@@ -154,7 +154,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
           {/* Buttons */}
           <View className="flex-row gap-3">
             <Pressable 
-              className="flex-1 rounded-full py-4 border-2"
+              className="flex-1 min-w-0 h-11 rounded-full border-2 items-center justify-center"
               style={{ borderColor: '#C1856A' }}
               onPress={onClose}
             >
@@ -164,7 +164,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
             </Pressable>
 
             <Button
-              className="flex-1 rounded-full py-4"
+              className="flex-1 min-w-0 rounded-full"
               size="lg"
               style={{ backgroundColor: '#C1856A' }}
               onPress={onConfirm}

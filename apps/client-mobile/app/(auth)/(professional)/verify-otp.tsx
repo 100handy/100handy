@@ -70,7 +70,7 @@ export default function ProfessionalVerifyOtp() {
       if (result.user) {
         // OTP verified successfully - navigate to next step
         toast.success('Success', 'Phone number verified!');
-        router.replace('/(auth)/(professional)/verify-info');
+        router.replace('/(professional)/(tabs)/dashboard');
       }
     } catch (error) {
       console.error('OTP verification error:', error);

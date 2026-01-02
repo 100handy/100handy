@@ -1,8 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCategories, type Category } from "@shared/supabase";
+import {
+  useSubcategories,
+  useTopLevelCategories,
+  type Category,
+} from "@shared/supabase";
 
 // Fallback categories for when DB is unavailable
 const fallbackMainCategories = [
@@ -18,32 +22,34 @@ const fallbackMainCategories = [
 
 export function Services() {
   const router = useRouter();
-  const { data: categories, isLoading: loading } = useCategories();
+  const { data: mainCategories, isLoading: loadingMainCategories } =
+    useTopLevelCategories();
 
-  // Derive main and sub categories from the hook data
-  const { mainCategories, subCategories, activeCategory } = useMemo(() => {
-    if (!categories || categories.length === 0) {
-      return { mainCategories: [], subCategories: [], activeCategory: "Assembly" };
-    }
+  const [activeParentId, setActiveParentId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>("Assembly");
 
-    // Main categories are level 0 (parent categories)
-    const parents = categories.filter(cat => cat.level === 0);
+  // Set default active parent once main categories load
+  useEffect(() => {
+    if (activeParentId) return;
+    const first = mainCategories?.[0];
+    if (!first) return;
+    setActiveParentId(first.id);
+    setActiveCategory(first.name);
+  }, [activeParentId, mainCategories]);
 
-    // Get first parent as active
-    const firstParent = parents[0];
-    const active = firstParent?.name ?? "Assembly";
-
-    // Filter subcategories for the first parent
-    const children = firstParent
-      ? categories.filter(cat => cat.parent_id === firstParent.id && cat.level === 1).slice(0, 6)
-      : categories.filter(cat => cat.level === 1).slice(0, 6);
-
-    return { mainCategories: parents, subCategories: children, activeCategory: active };
-  }, [categories]);
+  const { data: subcategories, isLoading: loadingSubcategories } =
+    useSubcategories(activeParentId);
 
   const handleMainCategoryClick = (category: Category) => {
-    // Navigate to task form with category
-    router.push(`/task-form?category=${encodeURIComponent(category.name)}`);
+    // Avoid querying subcategories when we're using fallback IDs
+    if (category.id.startsWith("fallback-")) {
+      setActiveParentId(null);
+      setActiveCategory(category.name);
+      return;
+    }
+
+    setActiveParentId(category.id);
+    setActiveCategory(category.name);
   };
 
   const handleSubCategoryClick = (subCategory: Category) => {
@@ -56,17 +62,28 @@ export function Services() {
   };
 
   // Use fallback if no categories loaded
-  const displayMainCategories = mainCategories.length > 0
-    ? mainCategories
-    : fallbackMainCategories.map((cat, idx) => ({
-        id: `fallback-${idx}`,
-        name: cat.name,
-        description: null,
-        icon_url: null,
-        parent_id: null,
-        level: 0,
-        display_order: idx
-      }));
+  const usingFallbackMainCategories =
+    !loadingMainCategories && (!mainCategories || mainCategories.length === 0);
+
+  const displayMainCategories =
+    mainCategories && mainCategories.length > 0
+      ? mainCategories
+      : fallbackMainCategories.map((cat, idx) => ({
+          id: `fallback-${idx}`,
+          name: cat.name,
+          description: null,
+          icon_url: null,
+          parent_id: null,
+          level: 0,
+          display_order: idx,
+        }));
+
+  const displaySubCategories = useMemo(() => {
+    if (usingFallbackMainCategories) return [];
+    return (subcategories ?? []).filter((c) => c.level === 1).slice(0, 6);
+  }, [subcategories, usingFallbackMainCategories]);
+
+  const loading = loadingMainCategories || loadingSubcategories;
 
   return (
     <section className="border-y border-gray-200 bg-white py-8">
@@ -116,8 +133,8 @@ export function Services() {
         <div className="flex flex-wrap items-center justify-center gap-3">
           {loading ? (
             <div className="text-gray-500 text-sm">Loading services...</div>
-          ) : subCategories.length > 0 ? (
-            subCategories.map((subCategory) => (
+          ) : displaySubCategories.length > 0 ? (
+            displaySubCategories.map((subCategory) => (
               <button
                 key={subCategory.id}
                 onClick={() => handleSubCategoryClick(subCategory)}
@@ -126,17 +143,21 @@ export function Services() {
                 {subCategory.name}
               </button>
             ))
+          ) : usingFallbackMainCategories && activeCategory === "Assembly" ? (
+            // Fallback static subcategories for Assembly
+            ["Furniture Assembly", "Garden Assembly", "Office Furniture", "Bed Assembly", "Wardrobe Assembly", "Crib Assembly"].map(
+              (name) => (
+                <button
+                  key={name}
+                  onClick={() => router.push(`/task-form?category=${encodeURIComponent(name)}`)}
+                  className="rounded-full border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-[#30352D] transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+                >
+                  {name}
+                </button>
+              )
+            )
           ) : (
-            // Fallback static subcategories
-            ["Furniture Assembly", "Garden Assembly", "Office Furniture", "Bed Assembly", "Wardrobe Assembly", "Crib Assembly"].map((name) => (
-              <button
-                key={name}
-                onClick={() => router.push(`/task-form?category=${encodeURIComponent(name)}`)}
-                className="rounded-full border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-[#30352D] transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
-              >
-                {name}
-              </button>
-            ))
+            <div className="text-gray-500 text-sm">No subcategories available</div>
           )}
         </div>
 

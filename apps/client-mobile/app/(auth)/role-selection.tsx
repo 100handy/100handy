@@ -34,7 +34,7 @@ export default function AuthRoleSelectionScreen() {
 
   const handleProfessionalAuth = (): void => {
     router.push({
-      pathname: '/(auth)/(professional)/sign-up',
+      pathname: '/(auth)/(professional)',
       params: ref ? { ref } : {},
     } as any);
   };

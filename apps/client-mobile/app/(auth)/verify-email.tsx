@@ -34,7 +34,7 @@ export default function VerifyEmail() {
   };
 
   const handleBackToSignIn = () => {
-    router.replace('/(auth)/role-selection');
+    router.replace('/(auth)/(client)');
   };
 
   return (

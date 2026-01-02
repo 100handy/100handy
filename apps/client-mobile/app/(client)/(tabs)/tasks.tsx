@@ -156,7 +156,7 @@ export default function TasksScreen() {
                 You need to be signed in to view your tasks.
               </Text>
               <Pressable
-                onPress={() => router.push('/(auth)/role-selection')}
+                onPress={() => router.push('/(auth)/(client)')}
                 className="bg-[#D17852] px-8 py-3 rounded-full"
               >
                 <Text className="text-white font-medium">Sign In</Text>

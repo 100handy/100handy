@@ -69,8 +69,8 @@ export default function VerifyOtp() {
 
       const role = metadata.role;
       if (role === 'handy') {
-        // Professional - go to verification flow
-        router.replace('/(auth)/(professional)/verify-info');
+        // Professional - go to dashboard (complete onboarding/verification from there)
+        router.replace('/(professional)/(tabs)/dashboard');
       } else {
         // Customer - go to client onboarding or home
         router.replace('/(client)/(tabs)/home');

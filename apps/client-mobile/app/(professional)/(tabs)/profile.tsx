@@ -124,7 +124,7 @@ export default function ProfessionalProfileScreen() {
     {
       icon: <Megaphone color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Promote yourself',
-      onPress: () => console.log('Promote yourself'),
+      onPress: () => router.push('/(professional)/profile/promote-yourself'),
     },
     {
       icon: <CreditCard color="#B8926A" size={24} strokeWidth={1.5} />,
@@ -149,12 +149,12 @@ export default function ProfessionalProfileScreen() {
     {
       icon: <Info color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'About',
-      onPress: () => console.log('About'),
+      onPress: () => router.push('/profile/about'),
     },
     {
       icon: <Lock color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Password',
-      onPress: () => console.log('Password'),
+      onPress: () => router.push('/profile/change-password'),
     },
     {
       icon: <LogOut color="#D17852" size={24} strokeWidth={1.5} />,

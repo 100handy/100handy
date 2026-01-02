@@ -53,11 +53,11 @@ export default function Index() {
       
       if (hasSeenOnboarding === 'true') {
         // Returning user but not authenticated - redirect to login
-        router.replace('/(auth)/role-selection');
+        router.replace('/(auth)/(client)');
         setIsChecking(false);
       } else {
         // First time user - show welcome flow
-        router.replace('/(auth)/role-selection');
+        router.replace('/(auth)/(client)');
         setIsChecking(false);
       }
     } catch (error) {
@@ -66,7 +66,7 @@ export default function Index() {
       if (isAuthenticated && user) {
         await routeAuthenticatedUser();
       } else {
-        router.replace('/(auth)/role-selection');
+        router.replace('/(auth)/(client)');
         setIsChecking(false);
       }
     }
@@ -129,8 +129,8 @@ export default function Index() {
           router.replace('/(professional)/(tabs)/dashboard');
         } catch (error) {
           console.error('Error checking professional onboarding:', error);
-          // If error, assume not completed and send to verification
-          router.replace('/(auth)/(professional)/verify-info');
+          // If error, still send to dashboard (onboarding/verification is completed there)
+          router.replace('/(professional)/(tabs)/dashboard');
         }
       } else if (isClient) {
         // Client - check onboarding first
@@ -146,11 +146,11 @@ export default function Index() {
         }
       } else {
         // Unknown role - redirect to role selection
-        router.replace('/(auth)/role-selection');
+        router.replace('/(auth)/(client)');
       }
     } catch (error) {
       console.error('Error routing authenticated user:', error);
-      router.replace('/(auth)/role-selection');
+      router.replace('/(auth)/(client)');
     } finally {
       setIsChecking(false);
     }

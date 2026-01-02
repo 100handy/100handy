@@ -13,7 +13,7 @@ export default function NotificationsRedirectScreen() {
 
   useEffect(() => {
     if (!userId) {
-      router.replace('/(auth)/role-selection');
+      router.replace('/(auth)/(client)');
       return;
     }
 

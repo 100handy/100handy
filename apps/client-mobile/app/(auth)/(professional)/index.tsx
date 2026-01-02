@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Image, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 export default function ProfessionalWelcome() {
   const [selectedCountry, setSelectedCountry] = useState('GB');
+  const params = useLocalSearchParams();
+  const ref = useMemo(() => {
+    const value = params.ref;
+    if (typeof value === 'string' && value.trim().length > 0) return value.trim();
+    return undefined;
+  }, [params.ref]);
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#3E433D' }}>
@@ -81,7 +87,12 @@ export default function ProfessionalWelcome() {
               <Button
                 className="rounded-full shadow-md mb-4"
                 style={{ backgroundColor: '#C1856A' }}
-                onPress={() => router.push('/(auth)/(professional)/sign-up')}
+                onPress={() =>
+                  router.push({
+                    pathname: '/(auth)/(professional)/sign-up',
+                    params: { ...(ref ? { ref } : {}), via: 'welcome' },
+                  } as any)
+                }
               >
                 <ButtonText className="text-[18px] font-worksans-bold">
                   Create Account
@@ -92,7 +103,12 @@ export default function ProfessionalWelcome() {
               <Pressable 
                 className="rounded-full py-4 border-2 mb-10"
                 style={{ borderColor: '#C1856A', backgroundColor: 'transparent' }}
-                onPress={() => router.push('/(auth)/(professional)/sign-in')}
+                onPress={() =>
+                  router.push({
+                    pathname: '/(auth)/(professional)/sign-in',
+                    params: ref ? { ref } : {},
+                  } as any)
+                }
               >
                 <Text className="text-center text-[18px] font-worksans-bold" style={{ color: '#C1856A' }}>
                   Sign in

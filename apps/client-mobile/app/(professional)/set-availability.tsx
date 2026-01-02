@@ -16,6 +16,7 @@ import {
   type TimeSlotInput,
   type AvailabilitySlot,
 } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast';
 
 interface TimeSlot {
   id: string;
@@ -65,6 +66,7 @@ const isOverlapping = (start1: number, end1: number, start2: number, end2: numbe
 };
 
 export default function SetAvailability() {
+  const toast = useToast();
   const [selectedDay, setSelectedDay] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
   const [startHour, setStartHour] = useState('18');
@@ -118,7 +120,7 @@ export default function SetAvailability() {
 
   const handleSave = () => {
     if (selectionEnd <= selectionStart) {
-      // Simple validation
+      toast.error('Invalid time', 'End time must be after start time');
       return;
     }
 
@@ -175,6 +177,9 @@ export default function SetAvailability() {
     saveDayMutation(
       { dayIndex: selectedDay, slots: slotsForDB },
       {
+        onSuccess: () => {
+          toast.success('Saved', 'Availability updated');
+        },
         onError: (error) => {
           console.error('Failed to save availability:', error);
           // Rollback to previous state on error
@@ -182,6 +187,10 @@ export default function SetAvailability() {
             ...prev,
             [selectedDay]: previousSlots,
           }));
+          toast.error(
+            'Save failed',
+            error instanceof Error ? error.message : 'Please try again'
+          );
         },
       }
     );
@@ -331,6 +340,8 @@ export default function SetAvailability() {
               const endMins = timeToMinutes(slot.endTime);
               const top = (startMins / 60) * HOUR_HEIGHT;
               const height = ((endMins - startMins) / 60) * HOUR_HEIGHT;
+              const durationMins = Math.max(0, endMins - startMins);
+              const isCompact = durationMins < 45 || height < 48;
 
               return (
                 <View
@@ -342,14 +353,26 @@ export default function SetAvailability() {
                     left: 10,
                     right: 10,
                   }}
-                  className="bg-[#5FA08E] rounded-lg p-2 overflow-hidden shadow-sm"
+                  className={`bg-[#5FA08E] rounded-lg overflow-hidden shadow-sm ${isCompact ? 'px-2 py-1' : 'p-2'}`}
                 >
                   <View className="flex-row justify-between items-start">
-                    <View>
-                      <Text className="text-white font-worksans-bold text-sm">Available</Text>
-                      <Text className="text-white font-worksans text-xs opacity-90">
-                        {slot.startTime} - {slot.endTime}
-                      </Text>
+                    <View className="flex-1 min-w-0 pr-2">
+                      {isCompact ? (
+                        <Text
+                          className="text-white font-worksans-bold text-sm"
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          Available · {slot.startTime}–{slot.endTime}
+                        </Text>
+                      ) : (
+                        <>
+                          <Text className="text-white font-worksans-bold text-sm">Available</Text>
+                          <Text className="text-white font-worksans text-xs opacity-90">
+                            {slot.startTime} - {slot.endTime}
+                          </Text>
+                        </>
+                      )}
                     </View>
                     <Pressable
                       onPress={() => removeTimeSlot(slot.id)}

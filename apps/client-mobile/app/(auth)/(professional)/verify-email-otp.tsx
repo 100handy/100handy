@@ -42,9 +42,9 @@ export default function ProfessionalVerifyEmailOtp() {
       const result = await verifyEmailOTP(email, otpCode);
 
       if (result.user) {
-        // OTP verified successfully - navigate to professional verification flow
+        // OTP verified successfully - go to dashboard (complete onboarding/verification from there)
         toast.success('Success', 'Email verified!');
-        router.replace('/(auth)/(professional)/verify-info');
+        router.replace('/(professional)/(tabs)/dashboard');
       }
     } catch (error) {
       console.error('Email OTP verification error:', error);

@@ -534,14 +534,14 @@ export async function getHandyProfile(): Promise<HandyProfile | null> {
       .from('handy_profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching handy profile:', error);
       return null;
     }
 
-    return data;
+    return data ?? null;
   } catch (error) {
     console.error('Error in getHandyProfile:', error);
     return null;
@@ -589,6 +589,58 @@ export async function ensureHandyProfile(): Promise<HandyProfile | null> {
   } catch (error) {
     console.error('Error in ensureHandyProfile:', error);
     return null;
+  }
+}
+
+/**
+ * Switch the current authenticated user to professional (handy) mode.
+ *
+ * Updates:
+ * - auth user metadata: role = 'handy'
+ * - profiles.role = 'handy'
+ * - ensures a handy_profiles row exists
+ */
+export async function switchToProfessionalRole(): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    // Ensure handy profile exists first (so onboarding screens can load safely)
+    const handyProfile = await ensureHandyProfile();
+    if (!handyProfile) {
+      console.error('Failed to ensure handy profile exists');
+      return false;
+    }
+
+    // Update profiles table role
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ role: 'handy' })
+      .eq('user_id', user.id);
+
+    if (profileError) {
+      console.error('Error updating profiles.role:', profileError);
+      return false;
+    }
+
+    // Update auth user metadata role (used by client routing)
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: { role: 'handy' },
+    });
+
+    if (metadataError) {
+      console.error('Error updating auth user metadata role:', metadataError);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in switchToProfessionalRole:', error);
+    return false;
   }
 }
 

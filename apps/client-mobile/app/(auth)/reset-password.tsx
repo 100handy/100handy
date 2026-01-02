@@ -34,7 +34,7 @@ export default function ResetPassword() {
       
       // Navigate to sign in after a short delay
       setTimeout(() => {
-        router.replace('/(auth)/role-selection');
+        router.replace('/(auth)/(client)');
       }, 1500);
     } catch (error) {
       console.error('Password update error:', error);

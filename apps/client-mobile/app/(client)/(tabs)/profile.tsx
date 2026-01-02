@@ -21,7 +21,7 @@ import {
   Megaphone,
   Globe,
 } from 'lucide-react-native';
-import { useAuthStore } from '@shared/supabase';
+import { useAuthStore, switchToProfessionalRole } from '@shared/supabase';
 import { useProfile } from '@shared/query';
 import { useRouter } from 'expo-router';
 import { useSecureNavigation } from '@/hooks/useSecureNavigation';
@@ -43,12 +43,13 @@ const menuItems = [
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { signOut, user, isLoading: authLoading } = useAuthStore();
+  const { signOut, user, isLoading: authLoading, checkAuth } = useAuthStore();
   const { data: profile, isLoading, error, refetch } = useProfile();
   const { navigateWithSecurityCheck } = useSecureNavigation();
   const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
+  const [isSwitchingToProfessional, setIsSwitchingToProfessional] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -60,11 +61,34 @@ export default function ProfileScreen() {
     try {
       await signOut();
       // Navigate directly to auth screen after successful logout
-      router.replace('/(auth)/role-selection');
+      router.replace('/(auth)/(client)');
     } catch (error) {
       console.error('Sign out error:', error);
       // Even if signOut fails, try to navigate to auth screen
-      router.replace('/(auth)/role-selection');
+      router.replace('/(auth)/(client)');
+    }
+  };
+
+  const handleGo100Task = async (): Promise<void> => {
+    if (!user?.id) {
+      router.push('/(auth)/(client)');
+      return;
+    }
+
+    setIsSwitchingToProfessional(true);
+    try {
+      const ok = await switchToProfessionalRole();
+      if (!ok) {
+        console.error('Failed to switch to professional role');
+        return;
+      }
+
+      await checkAuth();
+      router.replace('/(professional)/(tabs)/dashboard');
+    } catch (err) {
+      console.error('Error switching to professional:', err);
+    } finally {
+      setIsSwitchingToProfessional(false);
     }
   };
 
@@ -110,7 +134,7 @@ export default function ProfileScreen() {
             You need to be signed in to view your profile.
           </Text>
           <Pressable
-            onPress={() => router.push('/(auth)/role-selection')}
+            onPress={() => router.push('/(auth)/(client)')}
             className="bg-[#D17852] px-8 py-3 rounded-full"
           >
             <Text className="text-white font-medium">Sign In</Text>
@@ -216,7 +240,8 @@ export default function ProfileScreen() {
             {/* Go 100Task */}
             <Pressable
               className="flex-row items-center px-6 py-5 border-b border-gray-100"
-              onPress={() => console.log('Go to 100Task')}
+              onPress={handleGo100Task}
+              disabled={isSwitchingToProfessional}
             >
               <Globe size={20} color="#C1856A" strokeWidth={1.5} />
               <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Go 100Task</Text>

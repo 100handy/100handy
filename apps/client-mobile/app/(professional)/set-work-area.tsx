@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { ArrowLeft, Hand, X } from 'lucide-react-native';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useWorkArea, useSaveWorkArea, type Coordinate } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast';
 
 const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -14,6 +15,7 @@ const LATITUDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default function SetWorkAreaScreen() {
+  const toast = useToast();
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
 
@@ -122,10 +124,15 @@ export default function SetWorkAreaScreen() {
         { coordinates },
         {
           onSuccess: () => {
+            toast.success('Saved', 'Work area updated');
             router.push('/(professional)/(tabs)/dashboard');
           },
           onError: (error) => {
             console.error('Failed to save work area:', error);
+            toast.error(
+              'Save failed',
+              error instanceof Error ? error.message : 'Please try again'
+            );
           },
         }
       );

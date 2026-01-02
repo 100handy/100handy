@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { signUp } from '@shared/supabase/auth';
 import SignUpForm from '@/components/auth/SignUpForm';
 import { useToast } from '@/components/ui/toast';
@@ -11,6 +11,17 @@ import Logo100Top from '@/assets/images/logo-100-top.svg';
 export default function ProfessionalSignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
+  const params = useLocalSearchParams();
+  const cameFromWelcome = useMemo(() => {
+    const value = params.via;
+    return typeof value === 'string' && value === 'welcome';
+  }, [params.via]);
+
+  useEffect(() => {
+    if (!cameFromWelcome) {
+      router.replace('/(auth)/(professional)');
+    }
+  }, [cameFromWelcome]);
 
   const handleSignUp = async (email: string, password: string, metadata: any): Promise<void> => {
     try {
