@@ -16,9 +16,10 @@ import {
   LogOut,
   ChevronRight,
   Camera,
+  Globe,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '@shared/supabase';
+import { switchToCustomerRole, useAuthStore } from '@shared/supabase';
 import { useProfileStore } from '@shared/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
@@ -27,20 +28,45 @@ interface MenuItem {
   icon: React.ReactNode;
   label: string;
   isLogout?: boolean;
+  isDisabled?: boolean;
   onPress?: () => void;
 }
 
 export default function ProfessionalProfileScreen() {
   const router = useRouter();
-  const { signOut, user } = useAuthStore();
+  const { signOut, user, checkAuth } = useAuthStore();
   const { profile, fetchProfile, uploadAvatar } = useProfileStore();
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [isSwitchingToClient, setIsSwitchingToClient] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user, fetchProfile]);
+
+  const handleSwitchToClient = async (): Promise<void> => {
+    if (!user?.id) {
+      router.replace('/(auth)/(client)');
+      return;
+    }
+
+    setIsSwitchingToClient(true);
+    try {
+      const ok = await switchToCustomerRole();
+      if (!ok) {
+        console.error('Failed to switch to customer role');
+        return;
+      }
+
+      await checkAuth();
+      router.replace('/(client)/(tabs)/home');
+    } catch (err) {
+      console.error('Error switching to customer:', err);
+    } finally {
+      setIsSwitchingToClient(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -157,6 +183,12 @@ export default function ProfessionalProfileScreen() {
       onPress: () => router.push('/profile/change-password'),
     },
     {
+      icon: <Globe color="#B8926A" size={24} strokeWidth={1.5} />,
+      label: 'Go 100Handy',
+      isDisabled: isSwitchingToClient,
+      onPress: handleSwitchToClient,
+    },
+    {
       icon: <LogOut color="#D17852" size={24} strokeWidth={1.5} />,
       label: 'Log out',
       isLogout: true,
@@ -221,8 +253,9 @@ export default function ProfessionalProfileScreen() {
           {menuItems.map((item, index) => (
             <Pressable
               key={index}
-              className="px-5 py-5 border-b border-gray-100"
+              className={`px-5 py-5 border-b border-gray-100 ${item.isDisabled ? 'opacity-50' : ''}`}
               onPress={item.onPress}
+              disabled={item.isDisabled}
             >
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center flex-1">

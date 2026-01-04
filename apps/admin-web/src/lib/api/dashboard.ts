@@ -106,7 +106,7 @@ export function useRecentActivity(limit = 5) {
           status,
           scheduled_date,
           customer_id,
-          profiles!bookings_customer_id_fkey (
+          profiles!bookings_customer_profile_fkey (
             first_name,
             last_name,
             avatar_url

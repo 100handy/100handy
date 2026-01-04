@@ -3,6 +3,7 @@ import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, Bac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useConfirmPayment } from '@stripe/stripe-react-native';
 import {
   useHandymanProfile,
   useLocationStore,
@@ -13,6 +14,9 @@ import {
   type PendingBookingData,
   listPaymentMethods,
   type PaymentMethod,
+  getOrCreateStripeCustomer,
+  createPaymentIntent,
+  cancelPaymentIntent,
   checkBookingConflict,
   getWorkAreaByUserId,
   getAvailabilityByUserId,
@@ -64,6 +68,7 @@ export default function ConfirmBookingScreen() {
   const [promoCode, setPromoCode] = useState('');
   const [showPromoInput, setShowPromoInput] = useState(false);
   const toast = useToast();
+  const { confirmPayment } = useConfirmPayment();
 
   // Fetch payment methods on mount and when screen is focused
   useFocusEffect(
@@ -215,6 +220,8 @@ export default function ConfirmBookingScreen() {
       return;
     }
 
+    let authorizedPaymentIntentId: string | null = null;
+
     try {
       setIsSubmitting(true);
 
@@ -293,6 +300,67 @@ export default function ConfirmBookingScreen() {
 
       // --- END VALIDATION ---
 
+      // --- PAYMENT AUTHORIZATION HOLD ---
+      // Taskrabbit-style: authorize (hold) now, capture later when job is completed.
+      // Match web behavior: hold minimum 2 hours worth of the hourly rate.
+      const minimumHours = Math.max(2, estimatedHours);
+      const authorizationAmount = profile.hourly_rate_cents * minimumHours;
+
+      const customerId = await getOrCreateStripeCustomer();
+      if (!customerId) {
+        setIsSubmitting(false);
+        Alert.alert('Payment Error', 'Unable to initialize payments. Please try again.');
+        return;
+      }
+
+      const defaultMethod = paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0];
+      const paymentMethodId = defaultMethod?.id;
+      if (!paymentMethodId) {
+        setIsSubmitting(false);
+        Alert.alert('Payment Error', 'No valid payment method found. Please add a payment method and try again.');
+        return;
+      }
+
+      const paymentIntent = await createPaymentIntent(authorizationAmount, customerId, {
+        handy_id: profile.user_id,
+        category_id: categoryId,
+        estimated_hours: estimatedHours.toString(),
+        source: 'mobile',
+      });
+
+      if (!paymentIntent) {
+        setIsSubmitting(false);
+        Alert.alert('Payment Error', 'Failed to initialize payment authorization. Please try again.');
+        return;
+      }
+
+      const { error: paymentError, paymentIntent: confirmedPaymentIntent } = await confirmPayment(
+        paymentIntent.clientSecret,
+        {
+          paymentMethodType: 'Card',
+          paymentMethodData: {
+            paymentMethodId,
+          },
+        }
+      );
+
+      if (paymentError) {
+        setIsSubmitting(false);
+        Alert.alert('Payment Error', paymentError.message || 'Payment authorization failed. Please try again.');
+        return;
+      }
+
+      if (!confirmedPaymentIntent || confirmedPaymentIntent.status !== 'RequiresCapture') {
+        setIsSubmitting(false);
+        Alert.alert(
+          'Payment Error',
+          `Unexpected payment status: ${confirmedPaymentIntent?.status || 'unknown'}`
+        );
+        return;
+      }
+
+      authorizedPaymentIntentId = confirmedPaymentIntent.id;
+
       const bookingInput: CreateBookingInput = {
         customer_id: user.id,
         handy_id: profile.user_id,
@@ -309,6 +377,7 @@ export default function ConfirmBookingScreen() {
         hourly_rate_cents: profile.hourly_rate_cents,
         estimated_hours: estimatedHours,
         form_responses: formResponses,
+        payment_intent_id: authorizedPaymentIntentId,
       };
 
       const newBooking = await createBookingMutation.mutateAsync(bookingInput);
@@ -330,6 +399,10 @@ export default function ConfirmBookingScreen() {
       });
     } catch (error: any) {
       console.error('Error creating booking:', error);
+      // Best-effort: if payment was authorized but booking creation failed, release the hold.
+      if (authorizedPaymentIntentId) {
+        cancelPaymentIntent(authorizedPaymentIntentId).catch(() => undefined);
+      }
       Alert.alert('Error', error.message || 'Failed to create booking. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -524,7 +597,8 @@ export default function ConfirmBookingScreen() {
               ) : paymentMethods.length > 0 ? (
                 <>
                   <Text className="text-base text-[#30352D] capitalize">
-                    {paymentMethods[0].card.brand} •••• {paymentMethods[0].card.last4}
+                    {(paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0]).card.brand} ••••{' '}
+                    {(paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0]).card.last4}
                   </Text>
                   <ChevronRight size={20} color="#6B7280" />
                 </>

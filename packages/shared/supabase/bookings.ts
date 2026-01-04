@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { FormResponse } from './types/forms';
+import type { PaymentStatus } from './payments';
 
 // Define types based on the database schema we saw
 export interface Booking {
@@ -15,6 +16,8 @@ export interface Booking {
   hourly_rate_cents: number;
   estimated_hours: number;
   status: BookingStatus;
+  payment_intent_id?: string | null;
+  payment_status?: PaymentStatus | null;
   form_responses: FormResponse; // Category-specific form responses
   created_at: string;
 }
@@ -171,6 +174,7 @@ export interface CreateBookingInput {
   hourly_rate_cents: number;
   estimated_hours: number;
   form_responses?: FormResponse; // Category-specific form responses
+  payment_intent_id?: string; // Stripe PaymentIntent ID (manual capture hold)
 }
 
 export async function createBooking(input: CreateBookingInput): Promise<Booking> {
@@ -211,6 +215,8 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
         estimated_hours: input.estimated_hours,
         form_responses: input.form_responses || {},
         status: 'pending',
+        payment_intent_id: input.payment_intent_id || null,
+        payment_status: input.payment_intent_id ? 'authorized' : 'pending',
       })
       .select()
       .single();
@@ -293,6 +299,27 @@ export async function checkBookingConflict(
  */
 export async function cancelBooking(bookingId: string): Promise<boolean> {
   try {
+    // Best-effort release of authorization hold, if any.
+    // Taskrabbit-style: cancel booking before completion should release the hold.
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('payment_intent_id, payment_status')
+      .eq('id', bookingId)
+      .single();
+
+    if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
+      try {
+        // Import dynamically to avoid circular dependency
+        const { cancelPaymentIntent, updateBookingPaymentStatus } = await import('./payments');
+        const released = await cancelPaymentIntent(booking.payment_intent_id);
+        if (released) {
+          await updateBookingPaymentStatus(bookingId, 'cancelled');
+        }
+      } catch (e) {
+        console.error('Failed to release authorization hold for booking:', bookingId, e);
+      }
+    }
+
     const { error } = await supabase
       .from('bookings')
       .update({ status: 'cancelled' })
@@ -505,6 +532,26 @@ export async function declineBooking(
   reason?: string
 ): Promise<boolean> {
   try {
+    // Best-effort release of authorization hold, if any (professional declined).
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('payment_intent_id, payment_status')
+      .eq('id', bookingId)
+      .single();
+
+    if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
+      try {
+        // Import dynamically to avoid circular dependency
+        const { cancelPaymentIntent, updateBookingPaymentStatus } = await import('./payments');
+        const released = await cancelPaymentIntent(booking.payment_intent_id);
+        if (released) {
+          await updateBookingPaymentStatus(bookingId, 'cancelled');
+        }
+      } catch (e) {
+        console.error('Failed to release authorization hold for declined booking:', bookingId, e);
+      }
+    }
+
     const updateData: { status: BookingStatus; decline_reason?: string } = {
       status: 'cancelled',
     };

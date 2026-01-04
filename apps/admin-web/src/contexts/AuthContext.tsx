@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react'
 import type { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { UserRole } from '@/lib/database.types'
@@ -35,6 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
+  const signingInRef = useRef(false)
 
   // Fetch user profile and check admin status
   const fetchProfile = async (userId: string) => {
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Sign in with email and password
   const signIn = async (email: string, password: string) => {
+    signingInRef.current = true
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -96,6 +98,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           status: 500,
         } as AuthError,
       }
+    } finally {
+      signingInRef.current = false
     }
   }
 
@@ -150,9 +154,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+
+      // Skip INITIAL_SESSION - we handle that in getSession().then() above
+      // Also skip if signIn is handling this to prevent race condition
+      if (event === 'INITIAL_SESSION' || signingInRef.current) {
+        return
+      }
 
       if (session?.user) {
         try {

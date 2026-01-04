@@ -99,14 +99,14 @@ export function useTasks(filters: TaskFilters = {}) {
         .select(
           `
           *,
-          customer:profiles!bookings_customer_id_fkey (
+          customer:profiles!bookings_customer_profile_fkey (
             user_id,
             first_name,
             last_name,
             avatar_url,
             phone
           ),
-          handy:profiles!bookings_handy_id_fkey (
+          handy:profiles!bookings_handy_profile_fkey (
             user_id,
             first_name,
             last_name,
@@ -183,14 +183,14 @@ export function useTask(taskId: string | undefined) {
         .select(
           `
           *,
-          customer:profiles!bookings_customer_id_fkey (
+          customer:profiles!bookings_customer_profile_fkey (
             user_id,
             first_name,
             last_name,
             avatar_url,
             phone
           ),
-          handy:profiles!bookings_handy_id_fkey (
+          handy:profiles!bookings_handy_profile_fkey (
             user_id,
             first_name,
             last_name,

@@ -64,7 +64,7 @@ export function useUsers(filters: UserFilters = {}) {
         .from('profiles')
         .select(`
           *,
-          bookings:bookings!bookings_customer_id_fkey(id)
+          bookings:bookings!bookings_customer_profile_fkey(id)
         `)
         .order('created_at', { ascending: false })
 

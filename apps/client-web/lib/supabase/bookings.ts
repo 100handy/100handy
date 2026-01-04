@@ -1,5 +1,6 @@
 import { createClient } from '../supabase';
 import type { FormResponse } from '@shared/supabase';
+import { cancelPaymentIntent as cancelStripePaymentIntent } from '../stripe/payment';
 
 export interface CreateBookingData {
   customer_id: string;
@@ -39,7 +40,7 @@ export interface Booking {
   form_responses: FormResponse;
   status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
   payment_intent_id: string | null;
-  payment_status: 'pending' | 'authorized' | 'captured' | 'failed' | 'refunded';
+  payment_status: 'pending' | 'authorized' | 'captured' | 'failed' | 'refunded' | 'cancelled';
   created_at: string;
   // Joined data
   customer_name?: string;
@@ -317,6 +318,27 @@ export async function updateBooking(
  */
 export async function cancelBooking(bookingId: string): Promise<boolean> {
   const supabase = createClient();
+
+  // Best-effort release of authorization hold, if any.
+  try {
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('payment_intent_id, payment_status')
+      .eq('id', bookingId)
+      .single();
+
+    if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
+      const released = await cancelStripePaymentIntent({ paymentIntentId: booking.payment_intent_id });
+      if (released?.success) {
+        await supabase
+          .from('bookings')
+          .update({ payment_status: 'cancelled' })
+          .eq('id', bookingId);
+      }
+    }
+  } catch (e) {
+    console.error('Failed to release authorization hold for booking:', bookingId, e);
+  }
 
   const { error } = await supabase
     .from('bookings')

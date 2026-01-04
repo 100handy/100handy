@@ -112,6 +112,30 @@ function TaskFormContent() {
     // Use empty object if availability data is still loading
     const availability = availabilityCache || {};
 
+    const candidateDays = new Set<number>();
+    if (appliedFilters.selectedDate === 'custom' && appliedFilters.customDateRange) {
+      const { start, end } = appliedFilters.customDateRange;
+      const current = new Date(start);
+      while (current <= end) {
+        candidateDays.add(current.getDay());
+        current.setDate(current.getDate() + 1);
+      }
+    } else if (appliedFilters.selectedDate && appliedFilters.selectedDate !== 'custom') {
+      const today = new Date();
+      const daysAhead: Record<string, number> = {
+        today: 0,
+        '3days': 3,
+        week: 7,
+      };
+      const maxDays = daysAhead[appliedFilters.selectedDate] ?? 7;
+
+      for (let i = 0; i <= maxDays; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        candidateDays.add(d.getDay()); // 0-6 (Sunday-Saturday)
+      }
+    }
+
     let filtered = [...handymen];
 
     // Filter by price range (convert to pounds for comparison)
@@ -125,52 +149,33 @@ function TaskFormContent() {
       filtered = filtered.filter(handyman => handyman.verified);
     }
 
-    // Filter by date (today/3days/week)
-    if (appliedFilters.selectedDate && appliedFilters.selectedDate !== 'custom') {
-      const today = new Date();
-      const daysAhead: Record<string, number> = {
-        today: 0,
-        '3days': 3,
-        week: 7,
-      };
-      const maxDays = daysAhead[appliedFilters.selectedDate] ?? 7;
-
-      // Get days of week for the range
-      const validDays = new Set<number>();
-      for (let i = 0; i <= maxDays; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() + i);
-        validDays.add(d.getDay()); // 0-6 (Sunday-Saturday)
-      }
-
+    // Filter by date window (today/3days/week/custom)
+    if (candidateDays.size > 0) {
       filtered = filtered.filter(handyman => {
         const slots = availability[handyman.user_id] || [];
         if (slots.length === 0) return true; // No availability set = available anytime
-        return slots.some(slot => slot.is_active && validDays.has(slot.day_of_week));
+        return slots.some(slot => slot.is_active && candidateDays.has(slot.day_of_week));
       });
     }
 
-    // Filter by custom date range
-    if (appliedFilters.selectedDate === 'custom' && appliedFilters.customDateRange) {
-      const { start, end } = appliedFilters.customDateRange;
-      const validDays = new Set<number>();
-
-      // Get all days of week in the range
-      const current = new Date(start);
-      while (current <= end) {
-        validDays.add(current.getDay());
-        current.setDate(current.getDate() + 1);
-      }
-
+    // Filter by exact time (or "I'm flexible")
+    if (appliedFilters.specificTime) {
+      const specificTime = `${appliedFilters.specificTime}:00`; // HH:MM:SS
       filtered = filtered.filter(handyman => {
         const slots = availability[handyman.user_id] || [];
-        if (slots.length === 0) return true;
-        return slots.some(slot => slot.is_active && validDays.has(slot.day_of_week));
+        if (slots.length === 0) return true; // No availability set = available anytime
+
+        return slots.some(slot => {
+          if (!slot.is_active) return false;
+          if (candidateDays.size > 0 && !candidateDays.has(slot.day_of_week)) return false;
+          // Inclusive start, exclusive end
+          return slot.start_time <= specificTime && slot.end_time > specificTime;
+        });
       });
     }
 
     // Filter by time of day
-    if (appliedFilters.selectedTimes && appliedFilters.selectedTimes.length > 0) {
+    if (!appliedFilters.specificTime && appliedFilters.selectedTimes && appliedFilters.selectedTimes.length > 0) {
       filtered = filtered.filter(handyman => {
         const slots = availability[handyman.user_id] || [];
         if (slots.length === 0) return true; // No availability set = available anytime

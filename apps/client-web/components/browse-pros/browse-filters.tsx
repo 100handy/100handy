@@ -12,6 +12,7 @@ export type TimeSlotOption = 'morning' | 'afternoon' | 'evening';
 export interface FilterValues {
   selectedDate: DateFilterOption;
   selectedTimes: TimeSlotOption[];
+  specificTime?: string | null; // "HH:MM" (24h) or null for flexible
   priceMin: number;
   priceMax: number;
   isEliteTasker: boolean;
@@ -25,6 +26,7 @@ interface BrowseFiltersProps {
 export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
   const [selectedDate, setSelectedDate] = useState<DateFilterOption>("week");
   const [selectedTimes, setSelectedTimes] = useState<TimeSlotOption[]>([]);
+  const [specificTime, setSpecificTime] = useState<string>(""); // empty = flexible
   const [priceRange, setPriceRange] = useState({ min: 10, max: 150 });
   const [sliderValues, setSliderValues] = useState({ min: 10, max: 90 });
   const [isEliteTasker, setIsEliteTasker] = useState(false);
@@ -39,13 +41,14 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
       onFilterChange({
         selectedDate,
         selectedTimes,
+        specificTime: specificTime || null,
         priceMin: sliderValues.min,
         priceMax: sliderValues.max,
         isEliteTasker,
         customDateRange: selectedDate === 'custom' ? customDateRange : null,
       });
     }
-  }, [selectedDate, selectedTimes, sliderValues, isEliteTasker, customDateRange, onFilterChange]);
+  }, [selectedDate, selectedTimes, specificTime, sliderValues, isEliteTasker, customDateRange, onFilterChange]);
 
   // Handle date option click
   const handleDateOptionClick = (value: DateFilterOption) => {
@@ -95,6 +98,17 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
     { value: "afternoon", label: "Afternoon (12:00 - 17:00)" },
     { value: "evening", label: "Evening (17:00 - 21:30)" },
   ];
+
+  const formatTimeLabel = (time: string) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    const hour = hours ?? 0;
+    const minute = minutes ?? 0;
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${String(minute).padStart(2, "0")} ${ampm}`;
+  };
+
+  const specificTimeOptions = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, "0")}:00`);
 
   const handleSliderChange = (type: 'min' | 'max', value: number) => {
     setSliderValues(prev => {
@@ -150,6 +164,8 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
                 type="checkbox"
                 checked={selectedTimes.includes(slot.value)}
                 onChange={(e) => {
+                  // "or choose a specific time" - switching to time-of-day clears a specific-time choice
+                  if (specificTime) setSpecificTime("");
                   if (e.target.checked) {
                     setSelectedTimes([...selectedTimes, slot.value]);
                   } else {
@@ -166,8 +182,22 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
           <span className="text-gray-500 text-xs">or choose a specific time</span>
         </div>
         <div className="mt-3">
-          <select className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-[#30352D] focus:outline-none focus:ring-1 focus:ring-[#30352D]">
-            <option>I'm flexible</option>
+          <select
+            value={specificTime}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSpecificTime(value);
+              // "or" behavior: picking a specific time clears time-of-day buckets
+              if (value) setSelectedTimes([]);
+            }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-[#30352D] focus:outline-none focus:ring-1 focus:ring-[#30352D]"
+          >
+            <option value="">I'm flexible</option>
+            {specificTimeOptions.map((time) => (
+              <option key={time} value={time}>
+                {formatTimeLabel(time)}
+              </option>
+            ))}
           </select>
         </div>
       </div>

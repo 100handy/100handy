@@ -62,3 +62,26 @@ export async function capturePayment(params: {
 
   return data;
 }
+
+/**
+ * Cancel an authorized payment intent (release the authorization hold)
+ * Call this when a booking is cancelled before completion.
+ */
+export async function cancelPaymentIntent(params: {
+  paymentIntentId: string;
+}): Promise<{ success: boolean } | null> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.functions.invoke('cancel-payment-intent', {
+    body: {
+      paymentIntentId: params.paymentIntentId,
+    },
+  });
+
+  if (error) {
+    console.error('Error canceling payment intent:', error);
+    throw new Error(error.message || 'Failed to cancel payment intent');
+  }
+
+  return data;
+}

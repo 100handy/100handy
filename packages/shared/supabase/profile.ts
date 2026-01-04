@@ -645,6 +645,50 @@ export async function switchToProfessionalRole(): Promise<boolean> {
 }
 
 /**
+ * Switch the current authenticated user to customer mode.
+ *
+ * Updates:
+ * - auth user metadata: role = 'customer'
+ * - profiles.role = 'customer'
+ */
+export async function switchToCustomerRole(): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    // Update profiles table role
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ role: 'customer' })
+      .eq('user_id', user.id);
+
+    if (profileError) {
+      console.error('Error updating profiles.role:', profileError);
+      return false;
+    }
+
+    // Update auth user metadata role (used by client routing)
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: { role: 'customer' },
+    });
+
+    if (metadataError) {
+      console.error('Error updating auth user metadata role:', metadataError);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in switchToCustomerRole:', error);
+    return false;
+  }
+}
+
+/**
  * Update professional verification data (from verify-info.tsx)
  */
 export async function updateVerificationData(data: VerificationData): Promise<boolean> {
