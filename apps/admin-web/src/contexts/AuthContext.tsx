@@ -47,14 +47,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .eq('user_id', userId)
         .single()
 
-      const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) => {
+      const timeoutPromise = new Promise<{
+        data: Profile | null
+        error: Error | null
+      }>((_, reject) => {
         setTimeout(() => reject(new Error('Fetch profile timed out')), 5000)
       })
 
       const { data, error } = await Promise.race([queryPromise, timeoutPromise])
 
-      if (error) {
-        console.error('Error fetching profile:', error)
+      if (error || !data) {
+        console.error('Error fetching profile:', error ?? 'No data returned')
         return null
       }
 
@@ -205,6 +208,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 }
 
 // Custom hook to use auth context
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)
 

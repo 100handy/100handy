@@ -334,6 +334,7 @@ export function useUpdateUserStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     mutationFn: async (_input: { userId: string; status: 'active' | 'inactive' }) => {
       // This would require adding a 'status' field to profiles table
       // For now, we can use the metadata or implement later

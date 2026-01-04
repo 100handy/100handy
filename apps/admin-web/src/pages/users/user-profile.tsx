@@ -67,7 +67,7 @@ export default function UserProfilePage() {
         role: formData.role,
       })
       setIsEditing(false)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update user:', error)
       alert('Failed to update user. Please try again.')
     }
@@ -87,7 +87,7 @@ export default function UserProfilePage() {
     try {
       await deleteUser.mutateAsync(userId)
       navigate('/users', { replace: true })
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to delete user:', error)
       alert('Failed to delete user. Please try again.')
     }

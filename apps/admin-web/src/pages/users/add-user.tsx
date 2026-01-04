@@ -63,10 +63,11 @@ export default function AddUserPage() {
         replace: true,
         state: { message: 'User created successfully!' },
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create user:', error)
+      const message = error instanceof Error ? error.message : 'Failed to create user. Please try again.'
       setErrors({
-        submit: error.message || 'Failed to create user. Please try again.',
+        submit: message,
       })
     }
   }
@@ -118,9 +119,8 @@ export default function AddUserPage() {
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                     placeholder="e.g., John"
-                    className={`w-full h-12 px-4 rounded-lg bg-white dark:bg-slate-900/50 border ${
-                      errors.firstName ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
-                    } focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow`}
+                    className={`w-full h-12 px-4 rounded-lg bg-white dark:bg-slate-900/50 border ${errors.firstName ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
+                      } focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow`}
                   />
                   {errors.firstName && (
                     <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>
@@ -140,9 +140,8 @@ export default function AddUserPage() {
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     placeholder="e.g., Doe"
-                    className={`w-full h-12 px-4 rounded-lg bg-white dark:bg-slate-900/50 border ${
-                      errors.lastName ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
-                    } focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow`}
+                    className={`w-full h-12 px-4 rounded-lg bg-white dark:bg-slate-900/50 border ${errors.lastName ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
+                      } focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow`}
                   />
                   {errors.lastName && (
                     <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
@@ -163,9 +162,8 @@ export default function AddUserPage() {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="e.g., john.doe@example.com"
-                  className={`w-full h-12 px-4 rounded-lg bg-white dark:bg-slate-900/50 border ${
-                    errors.email ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
-                  } focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow`}
+                  className={`w-full h-12 px-4 rounded-lg bg-white dark:bg-slate-900/50 border ${errors.email ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
+                    } focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow`}
                 />
                 {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
               </div>
@@ -183,9 +181,8 @@ export default function AddUserPage() {
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   placeholder="Enter a secure password (min 6 characters)"
-                  className={`w-full h-12 px-4 rounded-lg bg-white dark:bg-slate-900/50 border ${
-                    errors.password ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
-                  } focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow`}
+                  className={`w-full h-12 px-4 rounded-lg bg-white dark:bg-slate-900/50 border ${errors.password ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
+                    } focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow`}
                 />
                 {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
               </div>
@@ -234,19 +231,17 @@ export default function AddUserPage() {
                   <button
                     type="button"
                     onClick={() => handleInputChange('role', 'customer')}
-                    className={`flex items-center p-4 rounded-lg border-2 transition-colors ${
-                      formData.role === 'customer'
+                    className={`flex items-center p-4 rounded-lg border-2 transition-colors ${formData.role === 'customer'
                         ? 'bg-primary/10 border-primary text-primary'
                         : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 hover:border-primary/50'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          formData.role === 'customer'
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${formData.role === 'customer'
                             ? 'border-primary'
                             : 'border-slate-300 dark:border-slate-700'
-                        }`}
+                          }`}
                       >
                         {formData.role === 'customer' && (
                           <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -259,19 +254,17 @@ export default function AddUserPage() {
                   <button
                     type="button"
                     onClick={() => handleInputChange('role', 'handy')}
-                    className={`flex items-center p-4 rounded-lg border-2 transition-colors ${
-                      formData.role === 'handy'
+                    className={`flex items-center p-4 rounded-lg border-2 transition-colors ${formData.role === 'handy'
                         ? 'bg-primary/10 border-primary text-primary'
                         : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 hover:border-primary/50'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          formData.role === 'handy'
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${formData.role === 'handy'
                             ? 'border-primary'
                             : 'border-slate-300 dark:border-slate-700'
-                        }`}
+                          }`}
                       >
                         {formData.role === 'handy' && (
                           <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -284,19 +277,17 @@ export default function AddUserPage() {
                   <button
                     type="button"
                     onClick={() => handleInputChange('role', 'admin')}
-                    className={`flex items-center p-4 rounded-lg border-2 transition-colors ${
-                      formData.role === 'admin'
+                    className={`flex items-center p-4 rounded-lg border-2 transition-colors ${formData.role === 'admin'
                         ? 'bg-primary/10 border-primary text-primary'
                         : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 hover:border-primary/50'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          formData.role === 'admin'
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${formData.role === 'admin'
                             ? 'border-primary'
                             : 'border-slate-300 dark:border-slate-700'
-                        }`}
+                          }`}
                       >
                         {formData.role === 'admin' && (
                           <div className="w-2 h-2 rounded-full bg-primary"></div>

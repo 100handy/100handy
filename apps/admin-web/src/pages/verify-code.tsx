@@ -39,8 +39,9 @@ export default function VerifyCodePage() {
         // No error but no session/user - unexpected state
         setError('Verification failed. Please try again.')
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
@@ -61,7 +62,7 @@ export default function VerifyCodePage() {
         setError(null)
         alert('Verification code resent to your email!')
       }
-    } catch (err) {
+    } catch {
       setError('Failed to resend code. Please try again.')
     } finally {
       setResending(false)

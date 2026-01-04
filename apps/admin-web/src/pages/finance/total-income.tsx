@@ -120,9 +120,8 @@ export default function TotalIncome() {
                 </div>
                 {kpi.change && (
                   <p
-                    className={`text-xs flex items-center gap-1 mt-2 ${
-                      kpi.isPositive ? 'text-green-500' : 'text-red-500'
-                    }`}
+                    className={`text-xs flex items-center gap-1 mt-2 ${kpi.isPositive ? 'text-green-500' : 'text-red-500'
+                      }`}
                   >
                     {kpi.isPositive ? (
                       <TrendingUp className="w-4 h-4" />
@@ -207,6 +206,7 @@ export default function TotalIncome() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     label={(entry: any) =>
                       `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
                     }
@@ -285,19 +285,17 @@ export default function TotalIncome() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          transaction.type === 'Payout'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
-                            : 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${transaction.type === 'Payout'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+                          : 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                          }`}
                       >
                         {transaction.type}
                       </span>
                     </td>
                     <td
-                      className={`px-6 py-4 text-right font-semibold ${
-                        transaction.amount > 0 ? 'text-green-500' : 'text-red-500'
-                      }`}
+                      className={`px-6 py-4 text-right font-semibold ${transaction.amount > 0 ? 'text-green-500' : 'text-red-500'
+                        }`}
                     >
                       {transaction.amount > 0 ? '+' : ''}$
                       {Math.abs(transaction.amount).toLocaleString('en-US', {
