@@ -40,11 +40,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Fetch user profile and check admin status
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Add a 5-second timeout to detect hangs
+      const queryPromise = supabase
         .from('profiles')
         .select('user_id, role, first_name, last_name, phone, avatar_url')
         .eq('user_id', userId)
         .single()
+
+      const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) => {
+        setTimeout(() => reject(new Error('Fetch profile timed out')), 5000)
+      })
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise])
 
       if (error) {
         console.error('Error fetching profile:', error)

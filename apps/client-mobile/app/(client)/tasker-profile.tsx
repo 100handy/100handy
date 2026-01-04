@@ -95,7 +95,8 @@ export default function TaskerProfileScreen() {
   const [selectedFilter, setSelectedFilter] = useState<RatingFilter>('All mounting');
 
   // Fetch tasker profile and reviews
-  const { data: profile, isLoading: profileLoading, isError: profileError } = useHandymanProfile(taskerId);
+  // Pass categoryId to get skill-specific pricing
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useHandymanProfile(taskerId, categoryId);
   const { data: apiReviews, isLoading: reviewsLoading } = useHandymanReviews(taskerId, 10);
 
   // Use API reviews if available, otherwise fallback to mock data

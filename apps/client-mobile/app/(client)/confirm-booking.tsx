@@ -56,8 +56,8 @@ export default function ConfirmBookingScreen() {
   // Pending booking store for saving booking before auth
   const { setPendingBooking, clearPendingBooking } = usePendingBookingStore();
 
-  // Fetch tasker profile
-  const { data: profile, isLoading: profileLoading } = useHandymanProfile(taskerId);
+  // Fetch tasker profile with skill-specific pricing
+  const { data: profile, isLoading: profileLoading } = useHandymanProfile(taskerId, categoryId);
 
   // Create booking mutation
   const createBookingMutation = useCreateBooking();

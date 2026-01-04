@@ -44,27 +44,92 @@ export const handymenKeys = {
   lists: () => [...handymenKeys.all, 'list'] as const,
   list: (filters: HandymanFilters) => [...handymenKeys.lists(), filters] as const,
   details: () => [...handymenKeys.all, 'detail'] as const,
-  detail: (id: string) => [...handymenKeys.details(), id] as const,
-  reviews: (id: string) => [...handymenKeys.detail(id), 'reviews'] as const,
-  categories: (id: string) => [...handymenKeys.detail(id), 'categories'] as const,
+  detail: (id: string, categoryId?: string) => [...handymenKeys.details(), id, categoryId] as const,
+  reviews: (id: string) => [...handymenKeys.all, 'detail', id, 'reviews'] as const,
+  categories: (id: string) => [...handymenKeys.all, 'detail', id, 'categories'] as const,
 };
 
 /**
+ * Helper to get skill ID from category ID by matching names
+ */
+async function getSkillIdFromCategoryId(categoryId: string): Promise<string | null> {
+  // 1. Get category name
+  const { data: category, error: categoryError } = await supabase
+    .from('categories')
+    .select('name')
+    .eq('id', categoryId)
+    .single();
+
+  if (categoryError || !category) {
+    console.error('Error fetching category:', categoryError);
+    return null;
+  }
+
+  // 2. Find matching skill by name (case-insensitive)
+  const { data: skill, error: skillError } = await supabase
+    .from('skills')
+    .select('id')
+    .ilike('name', category.name)
+    .single();
+
+  if (skillError || !skill) {
+    // No matching skill found - this is okay, just means no professionals have this skill
+    console.log(`No skill found matching category name: ${category.name}`);
+    return null;
+  }
+
+  return skill.id;
+}
+
+/**
  * Get all handymen profiles with optional filters
+ * When categoryId is provided, uses skill-specific pricing from user_skills table (TaskRabbit style)
  */
 export async function getHandymen(filters?: HandymanFilters): Promise<HandymanProfile[]> {
-  // Get user IDs filtered by category first
+  // Map of user_id -> skill-specific hourly rate (when category filter is used)
+  let skillRateMap: Map<string, number> | undefined;
   let userIds: string[] | undefined;
-  if (filters?.categoryId) {
-    const { data: categoryHandymen } = await supabase
-      .from('handy_categories')
-      .select('handy_id')
-      .eq('category_id', filters.categoryId);
 
-    if (!categoryHandymen || categoryHandymen.length === 0) {
+  // When categoryId is provided, filter by professionals who have set up that skill with pricing
+  if (filters?.categoryId) {
+    const skillId = await getSkillIdFromCategoryId(filters.categoryId);
+    
+    if (!skillId) {
+      // No matching skill found, return empty
       return [];
     }
-    userIds = categoryHandymen.map(item => item.handy_id);
+
+    // Get professionals with this skill configured (is_active=true, hourly_rate_cents > 0)
+    let userSkillsQuery = supabase
+      .from('user_skills')
+      .select('user_id, hourly_rate_cents')
+      .eq('skill_id', skillId)
+      .eq('is_active', true)
+      .gt('hourly_rate_cents', 0);
+
+    // Apply price filters to skill rates
+    if (filters?.minPrice !== undefined) {
+      userSkillsQuery = userSkillsQuery.gte('hourly_rate_cents', filters.minPrice * 100);
+    }
+    if (filters?.maxPrice !== undefined) {
+      userSkillsQuery = userSkillsQuery.lte('hourly_rate_cents', filters.maxPrice * 100);
+    }
+
+    const { data: userSkills, error: userSkillsError } = await userSkillsQuery;
+
+    if (userSkillsError) {
+      console.error('Error fetching user_skills:', userSkillsError);
+      throw new Error(`Failed to fetch user skills: ${userSkillsError.message}`);
+    }
+
+    if (!userSkills || userSkills.length === 0) {
+      // No professionals have set up this skill with pricing
+      return [];
+    }
+
+    // Build rate map and user IDs list
+    skillRateMap = new Map(userSkills.map(us => [us.user_id, us.hourly_rate_cents]));
+    userIds = userSkills.map(us => us.user_id);
   }
 
   // Build handy_profiles query
@@ -74,33 +139,14 @@ export async function getHandymen(filters?: HandymanFilters): Promise<HandymanPr
     handyQuery = handyQuery.in('user_id', userIds);
   }
 
-  // Apply price filter
-  if (filters?.minPrice !== undefined) {
-    handyQuery = handyQuery.gte('hourly_rate_cents', filters.minPrice * 100);
-  }
-  if (filters?.maxPrice !== undefined) {
-    handyQuery = handyQuery.lte('hourly_rate_cents', filters.maxPrice * 100);
-  }
-
   // Apply elite filter
   if (filters?.isElite) {
     handyQuery = handyQuery.eq('verified', true);
   }
 
-  // Apply sorting
-  const sortBy = filters?.sortBy || 'recommended';
-  switch (sortBy) {
-    case 'price_low':
-      handyQuery = handyQuery.order('hourly_rate_cents', { ascending: true });
-      break;
-    case 'price_high':
-      handyQuery = handyQuery.order('hourly_rate_cents', { ascending: false });
-      break;
-    default:
-      handyQuery = handyQuery.order('verified', { ascending: false });
-      handyQuery = handyQuery.order('experience_years', { ascending: false });
-      break;
-  }
+  // Default sorting (price sorting will be done in frontend with skill rates)
+  handyQuery = handyQuery.order('verified', { ascending: false });
+  handyQuery = handyQuery.order('experience_years', { ascending: false });
 
   const { data: handyProfiles, error: handyError } = await handyQuery;
 
@@ -128,13 +174,16 @@ export async function getHandymen(filters?: HandymanFilters): Promise<HandymanPr
   // Create a map for quick lookup
   const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-  // Combine data
+  // Combine data - use skill-specific rate if available, otherwise use profile rate
   let handymen = handyProfiles.map((handy) => {
     const profile = profileMap.get(handy.user_id);
+    // Use skill-specific rate when category filter is applied, otherwise use profile rate
+    const hourlyRateCents = skillRateMap?.get(handy.user_id) ?? handy.hourly_rate_cents;
+    
     return {
       user_id: handy.user_id,
       bio: handy.bio,
-      hourly_rate_cents: handy.hourly_rate_cents,
+      hourly_rate_cents: hourlyRateCents,
       experience_years: handy.experience_years,
       verified: handy.verified,
       created_at: handy.created_at,
@@ -155,8 +204,13 @@ export async function getHandymen(filters?: HandymanFilters): Promise<HandymanPr
     handymen = handymen.filter(h => h.rating >= 4.8);
   }
 
-  // Apply frontend sorting for fields we can't sort in the database
-  if (sortBy === 'rating' || sortBy === 'recommended') {
+  // Apply frontend sorting
+  const sortBy = filters?.sortBy || 'recommended';
+  if (sortBy === 'price_low') {
+    handymen.sort((a, b) => a.hourly_rate_cents - b.hourly_rate_cents);
+  } else if (sortBy === 'price_high') {
+    handymen.sort((a, b) => b.hourly_rate_cents - a.hourly_rate_cents);
+  } else if (sortBy === 'rating' || sortBy === 'recommended') {
     handymen.sort((a, b) => b.rating - a.rating);
   } else if (sortBy === 'reviews') {
     handymen.sort((a, b) => b.jobs_completed - a.jobs_completed);
@@ -166,9 +220,34 @@ export async function getHandymen(filters?: HandymanFilters): Promise<HandymanPr
 }
 
 /**
- * Get a single handyman's detailed profile
+ * Get skill-specific hourly rate for a handyman
  */
-export async function getHandymanProfile(handyId: string): Promise<HandymanProfile | null> {
+async function getSkillRateForHandyman(handyId: string, categoryId: string): Promise<number | null> {
+  const skillId = await getSkillIdFromCategoryId(categoryId);
+  if (!skillId) return null;
+
+  const { data: userSkill, error } = await supabase
+    .from('user_skills')
+    .select('hourly_rate_cents')
+    .eq('user_id', handyId)
+    .eq('skill_id', skillId)
+    .eq('is_active', true)
+    .gt('hourly_rate_cents', 0)
+    .single();
+
+  if (error || !userSkill) {
+    return null;
+  }
+
+  return userSkill.hourly_rate_cents;
+}
+
+/**
+ * Get a single handyman's detailed profile
+ * @param handyId - The handyman's user ID
+ * @param categoryId - Optional category ID to get skill-specific pricing
+ */
+export async function getHandymanProfile(handyId: string, categoryId?: string): Promise<HandymanProfile | null> {
   // Fetch handy_profile
   const { data: handyProfile, error: handyError } = await supabase
     .from('handy_profiles')
@@ -192,10 +271,19 @@ export async function getHandymanProfile(handyId: string): Promise<HandymanProfi
     console.error(`Error fetching profile ${handyId}:`, profileError);
   }
 
+  // Get skill-specific rate if categoryId is provided
+  let hourlyRateCents = handyProfile.hourly_rate_cents;
+  if (categoryId) {
+    const skillRate = await getSkillRateForHandyman(handyId, categoryId);
+    if (skillRate !== null) {
+      hourlyRateCents = skillRate;
+    }
+  }
+
   return {
     user_id: handyProfile.user_id,
     bio: handyProfile.bio,
-    hourly_rate_cents: handyProfile.hourly_rate_cents,
+    hourly_rate_cents: hourlyRateCents,
     experience_years: handyProfile.experience_years,
     verified: handyProfile.verified,
     created_at: handyProfile.created_at,
@@ -310,11 +398,13 @@ export const useHandymenByCategory = (
 
 /**
  * Hook to get a single handyman profile
+ * @param handyId - The handyman's user ID
+ * @param categoryId - Optional category ID to get skill-specific pricing
  */
-export const useHandymanProfile = (handyId: string) => {
+export const useHandymanProfile = (handyId: string, categoryId?: string) => {
   return useQuery({
-    queryKey: handymenKeys.detail(handyId),
-    queryFn: () => getHandymanProfile(handyId),
+    queryKey: handymenKeys.detail(handyId, categoryId),
+    queryFn: () => getHandymanProfile(handyId, categoryId),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     enabled: !!handyId,
