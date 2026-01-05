@@ -1,46 +1,33 @@
-import { Download, TrendingUp, Users, Wrench, CheckCircle2, Star } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-
-const userGrowthData = [
-  { month: 'Jan', users: 1200, handys: 200 },
-  { month: 'Feb', users: 1500, handys: 250 },
-  { month: 'Mar', users: 1800, handys: 300 },
-  { month: 'Apr', users: 1700, handys: 280 },
-  { month: 'May', users: 2100, handys: 350 },
-  { month: 'Jun', users: 2400, handys: 400 },
-  { month: 'Jul', users: 2300, handys: 380 },
-]
-
-const completionData = [
-  { name: 'Completed', value: 85, color: '#16a34a' },
-  { name: 'Cancelled', value: 10, color: '#ef4444' },
-  { name: 'Pending', value: 5, color: '#f97316' },
-]
-
-const reports = [
-  {
-    name: 'Monthly User Acquisition',
-    description: 'Detailed breakdown of new user and handy sign-ups.',
-    lastGenerated: '2024-07-01',
-  },
-  {
-    name: 'Task Category Performance',
-    description: 'Analysis of task volume and revenue per category.',
-    lastGenerated: '2024-07-28',
-  },
-  {
-    name: 'Handy Engagement & Retention',
-    description: 'Metrics on handy activity, earnings, and churn rate.',
-    lastGenerated: '2024-07-25',
-  },
-  {
-    name: 'Platform Fee Analysis',
-    description: 'In-depth report on collected platform fees vs. payouts.',
-    lastGenerated: '2024-07-29',
-  },
-]
+import { Download, TrendingUp, Users, Wrench, CheckCircle2, Star, Loader2 } from 'lucide-react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts'
+import {
+  useAnalyticsKPIs,
+  useUserGrowthData,
+  useTaskCompletionRate,
+  usePerformanceReports,
+} from '@/lib/api/analytics'
 
 export default function DataAnalyticsPage() {
+  const { data: kpis, isLoading: kpisLoading } = useAnalyticsKPIs()
+  const { data: userGrowthData, isLoading: growthLoading } = useUserGrowthData(7)
+  const { data: completionData, isLoading: completionLoading } = useTaskCompletionRate()
+  const { data: reports } = usePerformanceReports()
+
+  // Calculate completion rate percentage for display
+  const completionRate = completionData?.find((d) => d.name === 'Completed')?.value || 0
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -69,55 +56,85 @@ export default function DataAnalyticsPage() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Total Users</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">15,789</p>
+              {kpisLoading ? (
+                <div className="h-9 w-20 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+              ) : (
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                  {kpis?.totalUsers.toLocaleString() || 0}
+                </p>
+              )}
             </div>
             <div className="p-2 bg-primary/10 rounded-lg">
               <Users className="w-6 h-6 text-primary" />
             </div>
           </div>
-          <p className="text-xs text-green-500 flex items-center gap-1 mt-2">
-            <TrendingUp className="w-4 h-4" />
-            <span>5.2% vs last month</span>
-          </p>
+          {!kpisLoading && kpis && (
+            <p className="text-xs text-green-500 flex items-center gap-1 mt-2">
+              <TrendingUp className="w-4 h-4" />
+              <span>{kpis.usersChange > 0 ? '+' : ''}{kpis.usersChange}% vs last month</span>
+            </p>
+          )}
         </div>
 
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Active Handys</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">1,234</p>
+              {kpisLoading ? (
+                <div className="h-9 w-16 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+              ) : (
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                  {kpis?.activeHandys.toLocaleString() || 0}
+                </p>
+              )}
             </div>
             <div className="p-2 bg-primary/10 rounded-lg">
               <Wrench className="w-6 h-6 text-primary" />
             </div>
           </div>
-          <p className="text-xs text-green-500 flex items-center gap-1 mt-2">
-            <TrendingUp className="w-4 h-4" />
-            <span>3.1% vs last month</span>
-          </p>
+          {!kpisLoading && kpis && (
+            <p className="text-xs text-green-500 flex items-center gap-1 mt-2">
+              <TrendingUp className="w-4 h-4" />
+              <span>{kpis.handysChange > 0 ? '+' : ''}{kpis.handysChange}% vs last month</span>
+            </p>
+          )}
         </div>
 
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Completed Tasks</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">22,456</p>
+              {kpisLoading ? (
+                <div className="h-9 w-20 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+              ) : (
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                  {kpis?.completedTasks.toLocaleString() || 0}
+                </p>
+              )}
             </div>
             <div className="p-2 bg-primary/10 rounded-lg">
               <CheckCircle2 className="w-6 h-6 text-primary" />
             </div>
           </div>
-          <p className="text-xs text-green-500 flex items-center gap-1 mt-2">
-            <TrendingUp className="w-4 h-4" />
-            <span>8.7% vs last month</span>
-          </p>
+          {!kpisLoading && kpis && (
+            <p className="text-xs text-green-500 flex items-center gap-1 mt-2">
+              <TrendingUp className="w-4 h-4" />
+              <span>{kpis.tasksChange > 0 ? '+' : ''}{kpis.tasksChange}% vs last month</span>
+            </p>
+          )}
         </div>
 
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Average Rating</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">4.85</p>
+              {kpisLoading ? (
+                <div className="h-9 w-14 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+              ) : (
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                  {kpis?.averageRating.toFixed(2) || '0.00'}
+                </p>
+              )}
             </div>
             <div className="p-2 bg-primary/10 rounded-lg">
               <Star className="w-6 h-6 text-primary" />
@@ -125,7 +142,7 @@ export default function DataAnalyticsPage() {
           </div>
           <p className="text-xs text-gray-500 flex items-center gap-1 mt-2">
             <TrendingUp className="w-4 h-4 text-green-500" />
-            <span>+0.02 vs last month</span>
+            <span>Based on all reviews</span>
           </p>
         </div>
       </div>
@@ -137,31 +154,34 @@ export default function DataAnalyticsPage() {
             User Growth Over Time
           </h3>
           <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={userGrowthData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-                <XAxis 
-                  dataKey="month" 
-                  stroke="#9ca3af"
-                  style={{ fontSize: '12px' }}
-                />
-                <YAxis 
-                  stroke="#9ca3af"
-                  style={{ fontSize: '12px' }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1f2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#fff'
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="users" name="New Users" fill="#1173d4" />
-                <Bar dataKey="handys" name="New Handys" fill="#16a34a" />
-              </BarChart>
-            </ResponsiveContainer>
+            {growthLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : userGrowthData && userGrowthData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={userGrowthData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                  <XAxis dataKey="month" stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                  <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#fff',
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="users" name="New Users" fill="#1173d4" />
+                  <Bar dataKey="handys" name="New Handys" fill="#16a34a" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-500">
+                No growth data available
+              </div>
+            )}
           </div>
         </div>
 
@@ -170,44 +190,55 @@ export default function DataAnalyticsPage() {
             Task Completion Rate
           </h3>
           <div className="h-80 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={completionData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={80}
-                  outerRadius={120}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {completionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1f2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#fff'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {completionLoading ? (
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            ) : completionData && completionData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={completionData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={80}
+                    outerRadius={120}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {completionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#fff',
+                    }}
+                    formatter={(value: number) => `${value}%`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-gray-500">No completion data available</p>
+            )}
           </div>
-          <div className="text-center mt-4">
-            <p className="text-4xl font-bold text-gray-900 dark:text-white">85%</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Completion Rate</p>
-          </div>
-          <div className="flex justify-center gap-4 mt-4 text-xs">
-            {completionData.map((item) => (
-              <div key={item.name} className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-gray-600 dark:text-gray-400">{item.name}</span>
+          {!completionLoading && (
+            <>
+              <div className="text-center mt-4">
+                <p className="text-4xl font-bold text-gray-900 dark:text-white">{completionRate}%</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Completion Rate</p>
               </div>
-            ))}
-          </div>
+              <div className="flex justify-center gap-4 mt-4 text-xs">
+                {completionData?.map((item) => (
+                  <div key={item.name} className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-gray-600 dark:text-gray-400">{item.name}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -227,7 +258,7 @@ export default function DataAnalyticsPage() {
               </tr>
             </thead>
             <tbody>
-              {reports.map((report, index) => (
+              {reports?.map((report, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/20"

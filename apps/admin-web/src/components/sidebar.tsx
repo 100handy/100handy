@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LayoutDashboard, Shield, Users, ClipboardList, Wrench, CreditCard, TrendingUp, Megaphone, FileText, UserCog, Bell, Headset, ChevronDown } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardList, Wrench, CreditCard, TrendingUp, Megaphone, FileText, UserCog, Bell, Headset, ChevronDown } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
@@ -164,19 +164,6 @@ export default function Sidebar() {
                         </div>
                     )}
                 </div>
-
-                <Link
-                    to="/admin"
-                    className={cn(
-                        'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                        location.pathname === '/admin'
-                            ? 'text-white bg-primary/90 dark:bg-primary/80'
-                            : 'text-slate-600 dark:text-slate-300 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-primary'
-                    )}
-                >
-                    <Shield className="w-5 h-5" />
-                    <span>Admin</span>
-                </Link>
 
                 <div className="relative group">
                     <button

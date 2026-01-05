@@ -57,7 +57,6 @@ function App() {
           <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/dashboard/announcements" element={<AnnouncementsPage />} />
-          <Route path="/admin" element={<div className="p-6">Admin Page</div>} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/users/add" element={<AddUserPage />} />
           <Route path="/users/remove" element={<RemoveUsersPage />} />

@@ -214,3 +214,100 @@ export function useAvailableHandys() {
     staleTime: 60 * 1000,
   })
 }
+
+// ============================================================================
+// Availability Types
+// ============================================================================
+
+export type AvailabilityStatus = 'Available' | 'Partially Available' | 'Unavailable'
+
+export interface HandyWithAvailability {
+  user_id: string
+  first_name: string | null
+  last_name: string | null
+  avatar_url: string | null
+  status: AvailabilityStatus
+  statusColor: 'green' | 'yellow' | 'red'
+  activeSlots: number
+  totalSlots: number
+}
+
+/**
+ * Fetch handys with their availability status
+ * Derives status from professional_availability table
+ */
+export function useHandysWithAvailability() {
+  return useQuery({
+    queryKey: ['handys', 'with-availability'],
+    queryFn: async (): Promise<HandyWithAvailability[]> => {
+      // Step 1: Fetch all handys
+      const { data: handys, error: handysError } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, avatar_url')
+        .eq('role', 'handy')
+        .order('created_at', { ascending: false })
+
+      if (handysError) throw handysError
+
+      if (!handys || handys.length === 0) {
+        return []
+      }
+
+      // Step 2: Fetch availability slots for all handys
+      const handyIds = handys.map((h) => h.user_id)
+
+      const { data: availabilitySlots, error: availError } = await supabase
+        .from('professional_availability')
+        .select('user_id, is_active')
+        .in('user_id', handyIds)
+
+      if (availError) throw availError
+
+      // Step 3: Group availability by handy and derive status
+      const availabilityMap = new Map<string, { active: number; total: number }>()
+
+      for (const slot of availabilitySlots || []) {
+        const current = availabilityMap.get(slot.user_id) || { active: 0, total: 0 }
+        current.total++
+        if (slot.is_active) {
+          current.active++
+        }
+        availabilityMap.set(slot.user_id, current)
+      }
+
+      // Step 4: Transform to result format
+      return handys.map((handy) => {
+        const availability = availabilityMap.get(handy.user_id) || { active: 0, total: 0 }
+
+        let status: AvailabilityStatus
+        let statusColor: 'green' | 'yellow' | 'red'
+
+        if (availability.total === 0 || availability.active === 0) {
+          // No slots or no active slots
+          status = 'Unavailable'
+          statusColor = 'red'
+        } else if (availability.active === availability.total) {
+          // All slots are active
+          status = 'Available'
+          statusColor = 'green'
+        } else {
+          // Some slots active
+          status = 'Partially Available'
+          statusColor = 'yellow'
+        }
+
+        return {
+          user_id: handy.user_id,
+          first_name: handy.first_name,
+          last_name: handy.last_name,
+          avatar_url: handy.avatar_url,
+          status,
+          statusColor,
+          activeSlots: availability.active,
+          totalSlots: availability.total,
+        }
+      })
+    },
+    staleTime: 30 * 1000,
+  })
+}
