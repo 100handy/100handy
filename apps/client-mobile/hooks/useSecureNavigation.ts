@@ -2,33 +2,20 @@ import { useRouter } from 'expo-router';
 import { useProfile } from '@shared/query';
 
 /**
- * Hook for navigating to sensitive profile sections with 2FA security check
- * If 2FA is not enabled, redirects to account security screen first
+ * Hook for navigating to profile sections
+ * 2FA is optional - users are not forced to enable it to access routes
  */
 export function useSecureNavigation() {
   const router = useRouter();
   const { data: profile } = useProfile();
 
   /**
-   * Navigate to a route with security check
+   * Navigate to a route
    * @param route - The route to navigate to
-   * @param requiresSecurity - Whether this route requires 2FA to be enabled
+   * @param _requiresSecurity - Kept for backwards compatibility (not enforced)
    */
-  const navigateWithSecurityCheck = (route: string, requiresSecurity = false) => {
-    if (!requiresSecurity) {
-      // Non-sensitive routes can be accessed directly
-      router.push(route as any);
-      return;
-    }
-
-    // Check if 2FA is enabled
-    if (!profile?.two_factor_enabled) {
-      // Redirect to account security screen to enable 2FA
-      router.push('/(client)/profile/account-security' as any);
-      return;
-    }
-
-    // 2FA is enabled, proceed to requested route
+  const navigateWithSecurityCheck = (route: string, _requiresSecurity = false) => {
+    // Navigate directly - 2FA is optional, not required
     router.push(route as any);
   };
 

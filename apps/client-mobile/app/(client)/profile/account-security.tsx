@@ -3,14 +3,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Mail, Shield, ShieldOff } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { supabase, disable2FA, useProfile } from '@shared/supabase';
-import { useAuthStore } from '@shared/supabase';
+import { supabase, disable2FA, useAuthStore } from '@shared/supabase';
+import { useProfile, useInvalidateProfile } from '@shared/query';
 import { Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
 
 export default function AccountSecurityScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { data: profile, refetch: refetchProfile } = useProfile();
+  const { invalidateProfile } = useInvalidateProfile();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +44,7 @@ export default function AccountSecurityScreen() {
               const success = await disable2FA();
 
               if (success) {
+                invalidateProfile(); // Invalidate cache globally
                 await refetchProfile();
                 Alert.alert(
                   'Success',

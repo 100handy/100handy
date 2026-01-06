@@ -192,3 +192,9 @@ export {
   type ReviewerType,
   type CreateReviewInput,
 } from './hooks/useReviews';
+
+// Account balance hooks and utilities
+export {
+  useAccountBalance,
+  accountBalanceKeys,
+} from './hooks/useAccountBalance';

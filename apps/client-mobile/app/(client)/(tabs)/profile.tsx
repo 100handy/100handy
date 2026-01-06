@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import { Image } from 'expo-image';
 import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
@@ -24,6 +24,7 @@ import {
 import { useAuthStore, switchToProfessionalRole } from '@shared/supabase';
 import { useProfile } from '@shared/query';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSecureNavigation } from '@/hooks/useSecureNavigation';
 import ReferralShareModal from '@/components/modals/ReferralShareModal';
 
@@ -50,6 +51,13 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [isSwitchingToProfessional, setIsSwitchingToProfessional] = useState(false);
+
+  // Refetch profile when screen comes into focus (e.g., after changing 2FA settings)
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

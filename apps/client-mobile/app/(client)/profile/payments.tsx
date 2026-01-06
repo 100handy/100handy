@@ -1,9 +1,8 @@
-import React from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, View, Text, Pressable, Platform, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-
-// Import gluestack-ui components
+import { useStripe } from '@stripe/stripe-react-native';
 
 // Import lucide-react-native icons
 import { ChevronRight } from 'lucide-react-native';
@@ -11,8 +10,61 @@ import { ChevronRight } from 'lucide-react-native';
 // Import Header component
 import Header from '@/components/Header';
 
+// Import shared supabase functions
+import { createSetupIntent } from '@shared/supabase';
+
 export default function PaymentsScreen() {
     const router = useRouter();
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+    const [isWalletLoading, setIsWalletLoading] = useState(false);
+
+    const handleWalletPayment = async () => {
+        setIsWalletLoading(true);
+        try {
+            // 1. Create SetupIntent to save the payment method
+            const setupIntent = await createSetupIntent();
+            if (!setupIntent) {
+                Alert.alert('Error', 'Failed to initialize payment. Please try again.');
+                return;
+            }
+
+            // 2. Initialize PaymentSheet with wallet support
+            const { error: initError } = await initPaymentSheet({
+                setupIntentClientSecret: setupIntent.clientSecret,
+                merchantDisplayName: '100Handy',
+                applePay: { merchantCountryCode: 'GB' },
+                googlePay: { merchantCountryCode: 'GB', testEnv: __DEV__ },
+                style: 'automatic',
+            });
+
+            if (initError) {
+                console.error('PaymentSheet init error:', initError);
+                Alert.alert('Error', initError.message);
+                return;
+            }
+
+            // 3. Present the PaymentSheet
+            const { error: presentError } = await presentPaymentSheet();
+
+            if (presentError) {
+                // User cancelled or error
+                if (presentError.code !== 'Canceled') {
+                    Alert.alert('Error', presentError.message);
+                }
+                return;
+            }
+
+            // Success - card was saved
+            Alert.alert('Success', 'Payment method added successfully!', [
+                { text: 'OK', onPress: () => router.push('/profile/payment-methods') }
+            ]);
+        } catch (error) {
+            console.error('Wallet payment error:', error);
+            Alert.alert('Error', 'Something went wrong. Please try again.');
+        } finally {
+            setIsWalletLoading(false);
+        }
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-white">
@@ -29,8 +81,7 @@ export default function PaymentsScreen() {
                     {/* Redemptions Section */}
                     <Pressable
                         onPress={() => {
-                            // Navigate to redemptions screen
-                            console.log('Navigate to Redemptions');
+                            router.push('/(client)/profile/redemptions');
                         }}
                         className="border-b border-gray-200"
                     >
@@ -64,29 +115,50 @@ export default function PaymentsScreen() {
                         </View>
                     </Pressable>
 
-                    {/* Apple Pay Option */}
+                    {/* Apple Pay / Google Pay Option */}
                     <Pressable
-                        onPress={() => {
-                            // Navigate to Apple Pay screen
-                            console.log('Navigate to Apple Pay');
-                        }}
+                        onPress={handleWalletPayment}
+                        disabled={isWalletLoading}
                         className="border-b border-gray-200"
                     >
                         <View className="flex-row items-center justify-between px-6 py-5">
                             <View className="flex-row items-center gap-2">
-                                <View className="rounded bg-black px-1.5 py-0.5 flex-row items-center justify-center">
-                                    <Text className="text-white text-[10px] font-medium">
-                                        🍎
-                                    </Text>
-                                    <Text className="text-white text-[10px] font-medium">
-                                        Pay
-                                    </Text>
-                                </View>
-                                <Text className="font-work-sans text-lg font-light" style={{ color: '#30352D' }}>
-                                    Apple Pay
-                                </Text>
+                                {Platform.OS === 'ios' ? (
+                                    <>
+                                        <View className="rounded bg-black px-1.5 py-0.5 flex-row items-center justify-center">
+                                            <Text className="text-white text-[10px] font-medium">
+
+                                            </Text>
+                                            <Text className="text-white text-[10px] font-medium">
+                                                Pay
+                                            </Text>
+                                        </View>
+                                        <Text className="font-work-sans text-lg font-light" style={{ color: '#30352D' }}>
+                                            Apple Pay
+                                        </Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <View className="rounded bg-white border border-gray-300 px-2 py-1 flex-row items-center justify-center">
+                                            <Text className="text-[12px] font-medium" style={{ color: '#4285F4' }}>G</Text>
+                                            <Text className="text-[12px] font-medium" style={{ color: '#EA4335' }}>o</Text>
+                                            <Text className="text-[12px] font-medium" style={{ color: '#FBBC05' }}>o</Text>
+                                            <Text className="text-[12px] font-medium" style={{ color: '#4285F4' }}>g</Text>
+                                            <Text className="text-[12px] font-medium" style={{ color: '#34A853' }}>l</Text>
+                                            <Text className="text-[12px] font-medium" style={{ color: '#EA4335' }}>e</Text>
+                                            <Text className="text-[12px] font-medium text-gray-700"> Pay</Text>
+                                        </View>
+                                        <Text className="font-work-sans text-lg font-light" style={{ color: '#30352D' }}>
+                                            Google Pay
+                                        </Text>
+                                    </>
+                                )}
                             </View>
-                            <ChevronRight size={24} color="#9ca3af" />
+                            {isWalletLoading ? (
+                                <ActivityIndicator size="small" color="#9ca3af" />
+                            ) : (
+                                <ChevronRight size={24} color="#9ca3af" />
+                            )}
                         </View>
                     </Pressable>
 
