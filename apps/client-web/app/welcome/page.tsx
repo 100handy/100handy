@@ -28,7 +28,7 @@ export default function WelcomePage() {
 
         {/* Welcome Text */}
         <p className="text-center text-brand-dark font-semibold text-lg sm:text-xl mb-8">
-          Wellcome to 100 Handy
+          Welcome to 100 Handy
         </p>
 
         {/* Sign Up Button */}
@@ -45,26 +45,26 @@ export default function WelcomePage() {
           variant="outline"
           className="w-full border-2 border-brand-terracotta text-brand-terracotta hover:bg-brand-terracotta hover:text-white font-bold text-lg py-6 rounded-full mb-6"
         >
-          <Link href="/login">Log in</Link>
+          <Link href="/sign-in">Log in</Link>
         </Button>
 
         {/* Terms and Privacy */}
         <div className="text-center text-sm text-brand-dark space-y-1">
           <p>
-            By singing up, you agree to the{" "}
+            By signing up, you agree to the{" "}
             <Link href="/terms" className="text-brand-terracotta hover:underline">
-              Term of service
+              Terms of Service
             </Link>
           </p>
           <p>
             and have reviewed the{" "}
-            <Link href="/privacy" className="text-brand-terracotta hover:underline">
+            <Link href="/terms" className="text-brand-terracotta hover:underline">
               Privacy Policy.
             </Link>
           </p>
           <p>
             Manage{" "}
-            <Link href="/privacy-settings" className="text-brand-terracotta hover:underline">
+            <Link href="/cookie-settings" className="text-brand-terracotta hover:underline">
               privacy settings
             </Link>
           </p>

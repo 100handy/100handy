@@ -40,4 +40,8 @@ yarn-error.log*
 
 #cursor
 .cursor
+.claude
+icons
 temp/
+opencode.json
+Copy of 100 Handy*.md

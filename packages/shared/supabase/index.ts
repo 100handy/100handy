@@ -3,6 +3,7 @@ export * from './supabaseClient.native';
 export * from './auth';
 export * from './profile';
 export * from './bookings';
+export * from './recurring-bookings';
 export * from './reviews';
 export * from './payments';
 export * from './conversations';

@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourco.handy",
+      "bundleIdentifier": "com.oxdpr.handy",
       "associatedDomains": [
         "applinks:auth.yourdomain.com"
       ],
@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.yourco.handy",
+      "package": "com.oxdpr.handy",
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",

@@ -20,10 +20,13 @@ export function WhatIsHandy(): React.JSX.Element {
           {/* Right side - Content */}
           <div>
             <h2 className="mb-6 text-[28px] font-bold text-brand-dark-alt">
-              What is 100Handy?
+              What is 100 Handy?
             </h2>
             <p className="text-[18px] font-medium leading-relaxed text-brand-dark-alt">
-              100Handy connects busy people in need of help with trusted local professionals who can lend a hand with everything from home repairs to errands. As a Handy Pro, you can get paid to do what you love, when and where you want — all while helping others in your community.
+              100 Handy connects customers who need help with skilled local Pros - like you. From home repairs and mounting to cleaning and moving help, we make it simple for people to book services they can trust.
+            </p>
+            <p className="mt-4 text-[18px] font-medium leading-relaxed text-brand-dark-alt">
+              You bring the skills. We help you get discovered, manage bookings, and get paid securely - so you can focus on doing great work.
             </p>
           </div>
         </div>

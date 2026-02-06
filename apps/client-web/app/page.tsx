@@ -1,4 +1,4 @@
-import { Header } from "@/components/marketing/header";
+import { Header, Footer } from "@/components/layout";
 import { Hero } from "@/components/marketing/hero";
 import { Services } from "@/components/marketing/services";
 import { Stats } from "@/components/marketing/stats";
@@ -7,7 +7,6 @@ import { Testimonials } from "@/components/marketing/testimonials";
 import { Guarantees } from "@/components/marketing/guarantees";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { GetHelpToday } from "@/components/marketing/get-help-today";
-import { Footer } from "@/components/marketing/footer";
 import { PendingBookingBanner } from "@/components/pending-booking-banner";
 
 export default function HomePage() {

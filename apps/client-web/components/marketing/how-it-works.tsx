@@ -3,15 +3,18 @@
 const steps = [
   {
     number: 1,
-    title: "Choose a Tasker by price, reviews, and skills",
+    title: "Find Your Expert",
+    description: "Tell us what you need. Browse profiles, check ratings, and compare transparent pricing to find the perfect pro.",
   },
   {
     number: 2,
-    title: "Schedule at no-obligation chat",
+    title: "Book Instantly",
+    description: "Select a date and time that fits your busy schedule. No phone tag, no waiting windows.",
   },
   {
     number: 3,
-    title: "Chat, play, bill, review, done",
+    title: "Relax & Enjoy",
+    description: "Your pro arrives fully equipped to handle the job. Payment is released securely only when the work is done.",
   },
 ];
 
@@ -37,9 +40,9 @@ export function HowItWorks() {
           </div>
 
           {/* White info card */}
-          <div className="absolute left-8 top-1/2 z-10 w-[320px] -translate-y-1/2 rounded-2xl bg-white p-7 shadow-xl">
+          <div className="absolute left-8 top-1/2 z-10 w-[380px] -translate-y-1/2 rounded-2xl bg-white p-7 shadow-xl">
             <h3 className="mb-6 text-[24px] font-medium text-[#30352D]">
-              How it works
+              Home Improvement in 3 Steps
             </h3>
             <div className="space-y-5">
               {steps.map((step) => (
@@ -47,9 +50,14 @@ export function HowItWorks() {
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand-terracotta text-[14px] font-bold text-white">
                     {step.number}
                   </div>
-                  <p className="pt-1.5 text-[14px] leading-snug text-[#30352D]">
-                    {step.title}
-                  </p>
+                  <div className="pt-0.5">
+                    <p className="text-[15px] font-semibold text-[#30352D]">
+                      {step.title}
+                    </p>
+                    <p className="mt-1 text-[13px] leading-snug text-[#30352D]/70">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

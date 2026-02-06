@@ -7,10 +7,10 @@ import Link from "next/link";
 import type { JSX } from "react";
 
 const discoverLinks = [
-  { label: "Become a Tasker", href: "/become-tasker" },
+  { label: "Become a Handy", href: "/become-tasker" },
   { label: "Services By City", href: "/services-by-city" },
   { label: "All Services", href: "/all-services" },
-  { label: "Elite Taskers", href: "/elite-taskers" },
+  { label: "Elite Handies", href: "/elite-taskers" },
   { label: "Help", href: "/help" },
 ];
 
@@ -28,7 +28,7 @@ const companyLinks = [
 
 export function Footer(): JSX.Element {
   return (
-    <footer className="bg-[#2D332B] py-12 text-gray-300">
+    <footer className="bg-brand-dark-alt py-12 text-gray-300">
       <div className="mx-auto max-w-[1920px] px-8">
         <div className="mb-6 text-sm text-gray-400">
           Follow us! We're friendly:
@@ -124,6 +124,7 @@ export function Footer(): JSX.Element {
             <div className="space-y-3">
               <a
                 href="#"
+                aria-label="Download on the App Store"
                 className="flex items-center justify-center gap-2 rounded-lg bg-black px-4 py-3 transition-colors hover:bg-black/80"
               >
                 <svg
@@ -144,6 +145,7 @@ export function Footer(): JSX.Element {
               </a>
               <a
                 href="#"
+                aria-label="Get it on Google Play"
                 className="flex items-center justify-center gap-2 rounded-lg bg-black px-4 py-3 transition-colors hover:bg-black/80"
               >
                 <svg
@@ -167,7 +169,7 @@ export function Footer(): JSX.Element {
         {/* Bottom */}
         <div className="mt-12 border-t border-gray-700 pt-8 text-center">
           <p className="text-[14px] text-gray-400">
-            © 2025 100Handy. All rights reserved.
+            © {new Date().getFullYear()} 100Handy. All rights reserved.
           </p>
         </div>
       </div>

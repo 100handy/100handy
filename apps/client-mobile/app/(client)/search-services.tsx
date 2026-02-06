@@ -5,84 +5,12 @@ import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
 import {
   ChevronLeft,
   Search,
-  Armchair,
-  Sparkles,
-  Wrench,
-  Truck,
-  Monitor,
-  Flower2,
-  ShoppingBag,
-  Briefcase,
-  Baby,
-  Building,
-  Snowflake,
-  Wifi,
-  Music,
-  Palette,
-  Heart,
-  Coffee,
-  Users,
-  Dumbbell,
-  Calendar,
-  Camera,
-  Scissors,
-  Wind,
-  Smile,
-  Hand,
-  Droplets,
-  HeartPulse,
-  UserCircle,
   ChevronRight,
-  Home,
-  PaintRoller,
-  Hammer,
-  Laptop,
-  Car,
-  LucideIcon,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useCategories } from '@shared/supabase';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
-
-// Icon mapping function - maps category names/keywords to icons
-const getCategoryIcon = (categoryName: string): LucideIcon => {
-  const name = categoryName.toLowerCase();
-
-  // Map based on keywords in category name
-  if (name.includes('furniture') || name.includes('assembly')) return Armchair;
-  if (name.includes('clean')) return Sparkles;
-  if (name.includes('handyman') || name.includes('repair') || name.includes('maintenance')) return Wrench;
-  if (name.includes('moving') || name.includes('lifting') || name.includes('delivery')) return Truck;
-  if (name.includes('mount') || name.includes('installation') || name.includes('tv')) return Monitor;
-  if (name.includes('yard') || name.includes('lawn') || name.includes('garden') || name.includes('outdoor') || name.includes('landscaping')) return Flower2;
-  if (name.includes('shopping') || name.includes('errand')) return ShoppingBag;
-  if (name.includes('assistant') || name.includes('virtual') || name.includes('office')) return Briefcase;
-  if (name.includes('baby') || name.includes('family') || name.includes('child')) return Baby;
-  if (name.includes('seasonal') || name.includes('holiday')) return Snowflake;
-  if (name.includes('contactless') || name.includes('online') || name.includes('tech')) return Wifi;
-  if (name.includes('entertainment') || name.includes('music') || name.includes('event')) return Music;
-  if (name.includes('creative') || name.includes('artistic') || name.includes('art')) return Palette;
-  if (name.includes('relaxation') || name.includes('luxury') || name.includes('spa')) return Heart;
-  if (name.includes('food') || name.includes('dining') || name.includes('cook') || name.includes('chef')) return Coffee;
-  if (name.includes('group') || name.includes('social')) return Users;
-  if (name.includes('fitness') || name.includes('gym') || name.includes('workout')) return Dumbbell;
-  if (name.includes('themed') || name.includes('experience')) return Calendar;
-  if (name.includes('photography') || name.includes('photo') || name.includes('media')) return Camera;
-  if (name.includes('hair') || name.includes('salon') || name.includes('barber')) return Scissors;
-  if (name.includes('removal') || name.includes('wax')) return Wind;
-  if (name.includes('face') || name.includes('beauty') || name.includes('facial') || name.includes('makeup')) return Smile;
-  if (name.includes('nail') || name.includes('manicure') || name.includes('pedicure')) return Hand;
-  if (name.includes('body') || name.includes('treatment')) return Droplets;
-  if (name.includes('massage') || name.includes('wellness') || name.includes('spa')) return HeartPulse;
-  if (name.includes('men') || name.includes('grooming')) return UserCircle;
-  if (name.includes('paint')) return PaintRoller;
-  if (name.includes('building') || name.includes('construction')) return Hammer;
-  if (name.includes('computer') || name.includes('laptop')) return Laptop;
-  if (name.includes('car') || name.includes('automotive') || name.includes('vehicle')) return Car;
-
-  // Default icon
-  return Home;
-};
+import { getCategoryIcon } from '@/lib/category-icons';
 
 // Determine group based on category name
 const getCategoryGroup = (categoryName: string): string => {
@@ -212,7 +140,7 @@ export default function SearchServicesScreen() {
         ) : Object.keys(groupedCategories).length > 0 ? (
           <View className="flex-col py-4">
             {Object.entries(groupedCategories).map(([group, categoryList]) => (
-              <View className="flex-col" key={group} className="mb-6">
+              <View className="flex-col mb-6" key={group}>
                 {/* Group Header */}
                 <Text className="font-worksans-bold text-[16px] text-[#30352D] px-5 mb-3">
                   {group}

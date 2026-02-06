@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
@@ -123,12 +124,12 @@ const CitiesSection = () => {
               <ul className="space-y-3">
                 {neighborhoods.map((neighborhood) => (
                   <li key={neighborhood}>
-                    <a
-                      href="#"
+                    <Link
+                      href="/locations/london"
                       className="text-[18px] text-brand-terracotta hover:underline transition-colors"
                     >
                       {neighborhood}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>

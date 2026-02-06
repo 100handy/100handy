@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
@@ -31,6 +32,51 @@ const serviceData: Record<string, { name: string; description: string; category:
     name: "Help Moving",
     description: "Get help with your move from experienced Taskers who can handle heavy lifting and transport.",
     category: "Moving"
+  },
+  "home-repairs-and-fixes": {
+    name: "Home Repairs & Fixes",
+    description: "Small issues can become big headaches. Our pros handle quick fixes and touch-ups that keep your home feeling solid, smooth, and well maintained.",
+    category: "Repairs"
+  },
+  "home-repairs": {
+    name: "Home Repairs",
+    description: "From minor fixes to major repairs, our skilled Taskers can handle all your home maintenance needs.",
+    category: "Repairs"
+  },
+  "plumbing": {
+    name: "Plumbing",
+    description: "Whether it's a drip, a leak, or a drain that won't cooperate, our plumbing pros get things back to normal—cleanly and efficiently.",
+    category: "Plumbing"
+  },
+  "electrical": {
+    name: "Electrical",
+    description: "Power problems? New lights? Socket acting up? Our electricians handle installations and repairs with safety, care, and attention to detail.",
+    category: "Electrical"
+  },
+  "cleaning": {
+    name: "Cleaning",
+    description: "A cleaner space changes everything. From regular cleans to deep refreshes, our pros leave homes looking sharp and feeling brand new.",
+    category: "Cleaning"
+  },
+  "sparkle-clean": {
+    name: "Sparkle Clean",
+    description: "A cleaner space changes everything. From regular cleans to deep refreshes, our pros leave homes, offices, and rentals looking sharp.",
+    category: "Cleaning"
+  },
+  "packing-moving": {
+    name: "Packing & Moving",
+    description: "Moving doesn't have to be chaos. Get help packing, lifting, loading, and shifting—so you can move faster with less effort.",
+    category: "Moving"
+  },
+  "outdoor": {
+    name: "Outdoor Services",
+    description: "From quick tidy-ups to full garden care, our outdoor pros help you keep things clean, trimmed, and looking their best.",
+    category: "Outdoor"
+  },
+  "great-outdoors": {
+    name: "The Great Outdoors",
+    description: "From quick tidy-ups to full garden care, our outdoor pros help you keep things clean, trimmed, and looking their best—season after season.",
+    category: "Outdoor"
   },
 };
 
@@ -129,7 +175,13 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
       <div className="bg-white py-4 border-b border-gray-200">
         <div className="max-w-[1920px] mx-auto px-8">
           <p className="text-brand-terracotta text-sm">
-            Home &gt; Locations &gt; {city.name} &gt; {service.name}
+            <Link href="/" className="hover:underline">Home</Link>
+            {" > "}
+            <Link href="/services-by-city" className="hover:underline">Locations</Link>
+            {" > "}
+            <Link href={`/locations/${citySlug}`} className="hover:underline">{city.name}</Link>
+            {" > "}
+            <span>{service.name}</span>
           </p>
         </div>
       </div>

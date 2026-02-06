@@ -1,5 +1,4 @@
-import { Header } from "@/components/marketing/header";
-import { Footer } from "@/components/marketing/footer";
+import { Header, Footer } from "@/components/layout";
 import {
   TaskerHero,
   FlexibleWork,

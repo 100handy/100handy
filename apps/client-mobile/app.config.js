@@ -21,7 +21,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.oxdpr.handy',
-      buildNumber: '2',
+      buildNumber: '3',
       associatedDomains: ['applinks:auth.yourdomain.com'],
       infoPlist: {
         NSLocationWhenInUseUsageDescription:

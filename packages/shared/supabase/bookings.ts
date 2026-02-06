@@ -2,6 +2,65 @@ import { supabase } from './supabaseClient';
 import type { FormResponse } from './types/forms';
 import type { PaymentStatus } from './payments';
 
+// Booking frequency options for recurring bookings
+export type BookingFrequency = 'once' | 'weekly' | 'biweekly' | 'monthly';
+
+// Frequency configuration with discounts
+export interface FrequencyOption {
+  value: BookingFrequency;
+  label: string;
+  description: string;
+  discountPercent: number;
+  intervalWeeks: number; // 0 for once, 1 for weekly, 2 for biweekly, 4 for monthly
+}
+
+export const FREQUENCY_OPTIONS: FrequencyOption[] = [
+  {
+    value: 'weekly',
+    label: 'Weekly',
+    description: 'Same day, same time every week',
+    discountPercent: 15,
+    intervalWeeks: 1,
+  },
+  {
+    value: 'biweekly',
+    label: 'Every 2 weeks',
+    description: 'Same day, same time every 2 weeks',
+    discountPercent: 10,
+    intervalWeeks: 2,
+  },
+  {
+    value: 'monthly',
+    label: 'Every 4 weeks',
+    description: 'Same day, same time every 4 weeks',
+    discountPercent: 5,
+    intervalWeeks: 4,
+  },
+  {
+    value: 'once',
+    label: 'Just Once',
+    description: 'One-time booking',
+    discountPercent: 0,
+    intervalWeeks: 0,
+  },
+];
+
+// Recurring series interface
+export interface RecurringBookingSeries {
+  id: string;
+  customer_id: string;
+  handy_id: string;
+  category_id: string | null;
+  frequency: BookingFrequency;
+  discount_percent: number;
+  original_scheduled_date: string;
+  original_scheduled_time: string;
+  occurrences_count: number;
+  is_active: boolean;
+  cancelled_at: string | null;
+  created_at: string;
+}
+
 // Define types based on the database schema we saw
 export interface Booking {
   id: string; // TEXT nanoid (migrated from bigint)
@@ -20,6 +79,12 @@ export interface Booking {
   payment_status?: PaymentStatus | null;
   form_responses: FormResponse; // Category-specific form responses
   created_at: string;
+  // Recurring booking fields
+  recurring_series_id?: string | null;
+  occurrence_number?: number;
+  discount_percent?: number;
+  discount_amount_cents?: number;
+  original_hourly_rate_cents?: number;
 }
 
 // Category interface - not exported to avoid conflict with query/index.ts export
@@ -175,6 +240,12 @@ export interface CreateBookingInput {
   estimated_hours: number;
   form_responses?: FormResponse; // Category-specific form responses
   payment_intent_id?: string; // Stripe PaymentIntent ID (manual capture hold)
+  // Recurring booking fields (optional)
+  recurring_series_id?: string;
+  occurrence_number?: number;
+  discount_percent?: number;
+  discount_amount_cents?: number;
+  original_hourly_rate_cents?: number;
 }
 
 export async function createBooking(input: CreateBookingInput): Promise<Booking> {
@@ -217,6 +288,12 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
         status: 'pending',
         payment_intent_id: input.payment_intent_id || null,
         payment_status: input.payment_intent_id ? 'authorized' : 'pending',
+        // Recurring booking fields
+        recurring_series_id: input.recurring_series_id || null,
+        occurrence_number: input.occurrence_number || 1,
+        discount_percent: input.discount_percent || 0,
+        discount_amount_cents: input.discount_amount_cents || 0,
+        original_hourly_rate_cents: input.original_hourly_rate_cents || null,
       })
       .select()
       .single();

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
 import type { Location } from './location';
 import type { FormResponse } from '../supabase/types/forms';
+import type { BookingFrequency } from '../supabase/bookings';
 
 // Storage key for pending booking
 export const PENDING_BOOKING_STORAGE_KEY = '@pendingBooking';
@@ -42,6 +43,10 @@ export interface PendingBookingData {
 
   // Form responses (dynamic based on category)
   formResponses: FormResponse;
+
+  // Recurring booking fields
+  frequency?: BookingFrequency;
+  discountPercent?: number;
 
   // Timestamp when booking was created (for expiry)
   createdAt: number;

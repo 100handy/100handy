@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Header } from "@/components/marketing/header";
-import { Footer } from "@/components/marketing/footer";
+import { Header, Footer } from "@/components/layout";
 import { getCategoryTree } from "@/lib/supabase/categories";
 import type { CategoryWithChildren } from "@/lib/supabase/types";
+import { getCategoryIcon } from "@/components/icons/category-icons";
+import { getCategoryRouteSlug, getServiceRoute } from "@/lib/service-routes";
 
-// Helper function to create slug from service name
+// Helper function to create slug from service name (fallback only)
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -18,44 +19,24 @@ function slugify(text: string): string {
     .trim();
 }
 
-// Default images for different category types (can be customized later)
-const getCategoryImage = (categoryName: string): string => {
-  const imageMap: Record<string, string> = {
-    'Furniture & Assembly': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop',
-    'Home Cleaning & Maintenance': 'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&h=600&fit=crop',
-    'Handyman & Home Repairs': 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&h=600&fit=crop',
-    'Moving & Heavy Lifting': 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=800&h=600&fit=crop',
-    'Mounting & Installation': 'https://images.unsplash.com/photo-1585412727339-54e4bae3bbf9?w=800&h=600&fit=crop',
-    'Yard & Outdoor Services': 'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop',
-    'Errands, Shopping & Delivery': 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=600&fit=crop',
-    'Beauty & Grooming Services': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&h=600&fit=crop',
-    'Men\'s Grooming & At-Home Treatments': 'https://images.unsplash.com/photo-1621607512214-68297480165e?w=800&h=600&fit=crop',
-  };
-
-  return imageMap[categoryName] || 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop';
-};
-
 // Service Category Card Component
 function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
-  const slug = slugify(category.name);
+  const categorySlug = getCategoryRouteSlug(category.name) ?? slugify(category.name);
   const subcategories = category.subcategories || [];
+  const Icon = getCategoryIcon(category.name);
 
   // Get first 6 subcategories to display
   const displayedSubcategories = subcategories.slice(0, 6);
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Category Image */}
-      <div className="relative h-48 bg-gray-200">
-        <img
-          src={category.icon_url || getCategoryImage(category.name)}
-          alt={category.name}
-          className="w-full h-full object-cover"
-        />
+      {/* Category Icon */}
+      <div className="flex h-48 items-center justify-center bg-brand-dark-alt">
+        <Icon className="h-16 w-16 text-brand-cream" />
       </div>
 
       {/* Category Content */}
       <div className="p-6">
-        <h2 className="text-[20px] font-bold text-[#30352D] mb-2">
+        <h2 className="text-[20px] font-bold text-brand-dark-alt mb-2">
           {category.name}
         </h2>
         <p className="text-[14px] text-gray-600 mb-4">
@@ -65,23 +46,29 @@ function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
         {/* Subcategory Links */}
         {displayedSubcategories.length > 0 && (
           <ul className="space-y-2 mb-4">
-            {displayedSubcategories.map((subcategory) => (
-              <li key={subcategory.id}>
-                <Link
-                  href={`/services/${slug}/${slugify(subcategory.name)}`}
-                  className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 hover:underline transition-colors"
-                >
-                  {subcategory.name}
-                </Link>
-              </li>
-            ))}
+            {displayedSubcategories.map((subcategory) => {
+              const route = getServiceRoute(subcategory.name);
+              const href = route
+                ? `/services/${route.category}/${route.service}`
+                : `/services/${categorySlug}/${slugify(subcategory.name)}`;
+              return (
+                <li key={subcategory.id}>
+                  <Link
+                    href={href}
+                    className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 hover:underline transition-colors"
+                  >
+                    {subcategory.name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
 
         {/* See More Link */}
         {subcategories.length > 6 && (
           <Link
-            href={`/services#${slug}`}
+            href={`/services#${categorySlug}`}
             className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 font-medium hover:underline transition-colors"
           >
             See more {category.name} services →

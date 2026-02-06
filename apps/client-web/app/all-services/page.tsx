@@ -1,31 +1,32 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
 
-// --- Services Data from Figma --- //
+// --- Services Data with Links --- //
 const services = [
-  "Appliance Repair Near Me",
-  "Blind Repairs Near Me",
-  "Cabinet Installation Help Near Me",
-  "Carpet Cleaning Near Me",
-  "Ceiling Fan Installation Help Near Me",
-  "Drywall Repair & Patching Near Me",
-  "Furniture Assembly Near Me",
-  "Furniture Removal Help Near Me",
-  "Gutter Cleaning Near Me",
-  "Handyman Near Me – Find a Local Handyman",
-  "Hedge Trimming Near Me",
-  "Moving Help Near Me",
-  "House Cleaning Near Me",
-  "Air Conditioner Installation Near Me",
-  "Junk Removal Near Me",
-  "Lawn Mowing & Trimming Near Me",
-  "Painting Help Near Me",
-  "Pressure Washing Near Me",
-  "TV Mounting Near Me",
-  "Wallpapering Near Me"
+  { name: "Appliance Repair Near Me", href: "/services/home-repairs/home-repairs" },
+  { name: "Blind Repairs Near Me", href: "/services/home-repairs/home-repairs" },
+  { name: "Cabinet Installation Help Near Me", href: "/services/furniture-assembly/furniture-assembly" },
+  { name: "Carpet Cleaning Near Me", href: "/services/cleaning/sparkle-clean" },
+  { name: "Ceiling Fan Installation Help Near Me", href: "/services/electrical/electricians" },
+  { name: "Drywall Repair & Patching Near Me", href: "/services/home-repairs/home-repairs" },
+  { name: "Furniture Assembly Near Me", href: "/services/furniture-assembly/furniture-assembly" },
+  { name: "Furniture Removal Help Near Me", href: "/services/packing-moving/moving" },
+  { name: "Gutter Cleaning Near Me", href: "/services/outdoor/great-outdoors" },
+  { name: "Handyman Near Me", href: "/services/handyman/general" },
+  { name: "Hedge Trimming Near Me", href: "/services/outdoor/great-outdoors" },
+  { name: "Moving Help Near Me", href: "/services/packing-moving/moving" },
+  { name: "House Cleaning Near Me", href: "/services/cleaning/sparkle-clean" },
+  { name: "Air Conditioner Installation Near Me", href: "/services/electrical/electricians" },
+  { name: "Junk Removal Near Me", href: "/services/packing-moving/moving" },
+  { name: "Lawn Mowing & Trimming Near Me", href: "/services/outdoor/great-outdoors" },
+  { name: "Painting Help Near Me", href: "/services/home-repairs/home-repairs" },
+  { name: "Pressure Washing Near Me", href: "/services/outdoor/great-outdoors" },
+  { name: "TV Mounting Near Me", href: "/services/tv-wall-mounting/tv-mounting" },
+  { name: "Wallpapering Near Me", href: "/services/home-repairs/home-repairs" },
 ];
 
 // --- Components --- //
@@ -40,13 +41,13 @@ const ServicesSection = () => {
 
         <div className="space-y-6">
           {services.map((service) => (
-            <div key={service}>
-              <a
-                href="#"
+            <div key={service.name}>
+              <Link
+                href={service.href}
                 className="text-[22px] text-brand-terracotta hover:underline transition-colors inline-block"
               >
-                {service}
-              </a>
+                {service.name}
+              </Link>
             </div>
           ))}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
@@ -62,28 +63,28 @@ const handymanServices = [
 ];
 
 const relatedServices = [
-  "Furniture Removal",
-  "Hang Pictures",
-  "Tree Trimming",
-  "Electrical Help",
-  "Heavy Lifting",
-  "Handyman"
+  { name: "Furniture Removal", href: "/services/furniture-assembly/furniture-assembly" },
+  { name: "Hang Pictures", href: "/services/home-repair/home-repair" },
+  { name: "Tree Trimming", href: "/services/gardening/gardening" },
+  { name: "Electrical Help", href: "/services/electrical/electrical" },
+  { name: "Heavy Lifting", href: "/services/moving/moving" },
+  { name: "Handyman", href: "/services/home-repair/home-repair" },
 ];
 
 const popularServices = [
-  "TV Mounting",
-  "Furniture Assembly",
-  "House Cleaning",
-  "Help Moving",
-  "Lawn Mowing"
+  { name: "TV Mounting", href: "/services/home-repair/home-repair" },
+  { name: "Furniture Assembly", href: "/services/furniture-assembly/furniture-assembly" },
+  { name: "House Cleaning", href: "/services/cleaning/sparkle-clean" },
+  { name: "Help Moving", href: "/services/moving/moving" },
+  { name: "Lawn Mowing", href: "/services/gardening/gardening" },
 ];
 
 const otherServices = [
-  "Furniture Disassembly",
-  "Move Out Cleaning",
-  "Landscaping Services",
-  "Help Moving",
-  "Plumbing"
+  { name: "Furniture Disassembly", href: "/services/furniture-assembly/furniture-assembly" },
+  { name: "Move Out Cleaning", href: "/services/cleaning/sparkle-clean" },
+  { name: "Landscaping Services", href: "/services/gardening/gardening" },
+  { name: "Help Moving", href: "/services/moving/moving" },
+  { name: "Plumbing", href: "/services/plumbing/plumbers" },
 ];
 
 // --- Components --- //
@@ -93,7 +94,7 @@ const BreadcrumbSection = () => {
     <div className="bg-white py-4 border-b border-gray-200">
       <div className="max-w-[1920px] mx-auto px-8">
         <p className="text-brand-terracotta text-sm">
-          Home &gt; Locations &gt; London &gt; Handyman
+          <Link href="/" className="hover:underline">Home</Link> &gt; <Link href="/services-by-city" className="hover:underline">Locations</Link> &gt; <Link href="/locations/london" className="hover:underline">London</Link> &gt; Handyman
         </p>
       </div>
     </div>
@@ -202,7 +203,7 @@ const FeaturedTaskersSection = () => {
 
 const SatisfactionSection = () => {
   return (
-    <section className="bg-[#F5F3F1] py-20">
+    <section className="bg-gray-100 py-20">
       <div className="max-w-[1920px] mx-auto px-8">
         <h2 className="text-brand-dark-alt font-bold text-[44px] mb-16 text-center">
           Your satisfaction, guaranteed
@@ -376,7 +377,7 @@ const ReviewsSection = () => {
 
 const SEOContentSection = () => {
   return (
-    <section className="bg-[#F5F3F1] py-20">
+    <section className="bg-gray-100 py-20">
       <div className="max-w-[1920px] mx-auto px-8">
         <h2 className="text-brand-dark-alt font-bold text-[37px] mb-8">Handyman in London</h2>
 
@@ -447,7 +448,7 @@ const HandymanServicesSection = () => {
 
 const ServicesLinksSection = () => {
   return (
-    <section className="bg-[#F5F3F1] py-20">
+    <section className="bg-gray-100 py-20">
       <div className="max-w-[1920px] mx-auto px-8">
         <div className="grid grid-cols-3 gap-16">
           <div>
@@ -455,15 +456,15 @@ const ServicesLinksSection = () => {
             <ul className="space-y-3">
               {relatedServices.map((service, index) => (
                 <li key={index}>
-                  <a href="#" className="text-brand-dark-alt text-[22px] hover:text-brand-terracotta transition-colors">
-                    {service}
-                  </a>
+                  <Link href={service.href} className="text-brand-dark-alt text-[22px] hover:text-brand-terracotta transition-colors">
+                    {service.name}
+                  </Link>
                 </li>
               ))}
             </ul>
-            <a href="#" className="text-brand-terracotta text-[22px] font-semibold inline-block mt-6 hover:underline">
+            <Link href="/all-services" className="text-brand-terracotta text-[22px] font-semibold inline-block mt-6 hover:underline">
               See more
-            </a>
+            </Link>
           </div>
 
           <div>
@@ -471,15 +472,15 @@ const ServicesLinksSection = () => {
             <ul className="space-y-3">
               {popularServices.map((service, index) => (
                 <li key={index}>
-                  <a href="#" className="text-brand-dark-alt text-[22px] hover:text-brand-terracotta transition-colors">
-                    {service}
-                  </a>
+                  <Link href={service.href} className="text-brand-dark-alt text-[22px] hover:text-brand-terracotta transition-colors">
+                    {service.name}
+                  </Link>
                 </li>
               ))}
             </ul>
-            <a href="#" className="text-brand-terracotta text-[22px] font-semibold inline-block mt-6 hover:underline">
+            <Link href="/all-services" className="text-brand-terracotta text-[22px] font-semibold inline-block mt-6 hover:underline">
               See more
-            </a>
+            </Link>
           </div>
 
           <div>
@@ -487,15 +488,15 @@ const ServicesLinksSection = () => {
             <ul className="space-y-3">
               {otherServices.map((service, index) => (
                 <li key={index}>
-                  <a href="#" className="text-brand-dark-alt text-[22px] hover:text-brand-terracotta transition-colors">
-                    {service}
-                  </a>
+                  <Link href={service.href} className="text-brand-dark-alt text-[22px] hover:text-brand-terracotta transition-colors">
+                    {service.name}
+                  </Link>
                 </li>
               ))}
             </ul>
-            <a href="#" className="text-brand-terracotta text-[22px] font-semibold inline-block mt-6 hover:underline">
+            <Link href="/all-services" className="text-brand-terracotta text-[22px] font-semibold inline-block mt-6 hover:underline">
               See more
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -505,7 +506,7 @@ const ServicesLinksSection = () => {
 
 const HelpButton = () => {
   return (
-    <button className="fixed bottom-6 left-6 bg-[#A0B194] text-white p-4 rounded-full shadow-lg hover:bg-[#8a9a7e] transition-colors flex items-center justify-center">
+    <button aria-label="Get help" className="fixed bottom-6 left-6 bg-brand-sage text-white p-4 rounded-full shadow-lg hover:bg-brand-sage/85 transition-colors flex items-center justify-center">
       <HelpIcon />
     </button>
   );

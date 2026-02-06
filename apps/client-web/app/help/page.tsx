@@ -1,4 +1,5 @@
 import { Search, BookOpen, Globe, CheckSquare, Handshake, User } from "lucide-react";
+import { Footer } from "@/components/marketing/footer";
 
 export default function HelpPage() {
     return (
@@ -129,52 +130,7 @@ export default function HelpPage() {
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="bg-brand-dark text-white py-[67px]">
-                <div className="max-w-[1920px] mx-auto px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <div>
-                            <h3 className="text-lg font-medium text-gray-200 leading-[1.221] mb-[35px]">Discover</h3>
-                            <ul className="space-y-[24px] text-brand-sage text-base font-bold leading-[1.221]">
-                                <li><a href="#" className="hover:text-white transition-colors">Become a Tasker</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Services By City</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">All Services</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Elite Taskers</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Help</a></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h3 className="text-lg font-medium text-gray-200 leading-[1.221] mb-[35px]">Company</h3>
-                            <ul className="space-y-[24px] text-brand-sage text-base font-bold leading-[1.221]">
-                                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Partner with 100 Handy</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">100 Handy for Good</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Terms & Privacy</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Legal</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Cookies Settings</a></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h3 className="text-lg font-medium text-gray-200 leading-[1.221] mb-[25px]">Download our app</h3>
-                            <p className="text-brand-sage text-base font-medium leading-[1.221] mb-4">
-                                Tackle your to-do list wherever you are with our mobile app.
-                            </p>
-                        </div>
-
-                        <div>
-                            <h3 className="text-lg font-medium text-gray-200 leading-[1.221] mb-[6px]">Follow us! We're friendly:</h3>
-                            <div className="flex gap-[10px] mt-[22px]">
-                                {/* Social icons would go here */}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }

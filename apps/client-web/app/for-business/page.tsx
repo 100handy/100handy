@@ -52,10 +52,10 @@ const HeroSection = () => {
     <section className="bg-white pt-16 pb-8">
       <div className="max-w-[1920px] mx-auto px-8 text-center">
         <h1 className="text-brand-dark-alt font-bold text-[42px] mb-6">
-          Lift Sales without lifting a finger.
+          Boost sales — without adding operational load
         </h1>
         <p className="text-brand-dark-alt text-[24px] mb-10">
-          Taskrabbit partners with leading retailers to provide assembly, mounting and installation services in key markets.
+          100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation — so customers get a complete &quot;buy-to-done&quot; experience.
         </p>
         <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px] mb-4">
           Get in touch to learn more
@@ -74,7 +74,7 @@ const BenefitsSection = () => {
   return (
     <section className="bg-white py-16">
       <div className="max-w-[1920px] mx-auto px-8">
-        <div className="grid grid-cols-3 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           <div className="text-center">
             <div className="w-[160px] h-[160px] mx-auto mb-8 bg-brand-dark rounded-full flex items-center justify-center overflow-hidden">
               <svg width="180" height="136" viewBox="0 0 180 136" className="text-gray-500">
@@ -82,13 +82,11 @@ const BenefitsSection = () => {
                 <polygon points="90,10 170,126 10,126" fill="currentColor" opacity="0.5" />
               </svg>
             </div>
-            <h3 className="text-brand-dark-alt font-bold text-[42px] mb-4 leading-tight">
-              Build Customer<br />Loyalty
+            <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4 leading-tight">
+              Build Customer Loyalty
             </h3>
-            <p className="text-brand-dark-alt text-[24px] leading-relaxed">
-              Provide your customers with a<br />
-              convenient and trusted solution<br />
-              for home delivery and assembly.
+            <p className="text-brand-dark-alt text-[20px] leading-relaxed">
+              Offer a convenient, reliable solution for assembly and installation — so your customers feel supported from delivery to done.
             </p>
           </div>
 
@@ -99,13 +97,11 @@ const BenefitsSection = () => {
                 <polygon points="90,10 170,126 10,126" fill="currentColor" opacity="0.5" />
               </svg>
             </div>
-            <h3 className="text-brand-dark-alt font-bold text-[42px] mb-4 leading-tight">
-              Increase Sales &<br />Reduce Returns
+            <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4 leading-tight">
+              Increase Sales & Reduce Returns
             </h3>
-            <p className="text-brand-dark-alt text-[24px] leading-relaxed">
-              Scheduling and paying for<br />
-              assembly help is as easy as<br />
-              "Add to Cart."
+            <p className="text-brand-dark-alt text-[20px] leading-relaxed">
+              When customers know help is available, they&apos;re more likely to buy — and less likely to return items because setup felt overwhelming.
             </p>
           </div>
 
@@ -116,13 +112,11 @@ const BenefitsSection = () => {
                 <polygon points="90,10 170,126 10,126" fill="currentColor" opacity="0.5" />
               </svg>
             </div>
-            <h3 className="text-brand-dark-alt font-bold text-[42px] mb-4 leading-tight">
-              Seamless<br />Integration
+            <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4 leading-tight">
+              Seamless Integration
             </h3>
-            <p className="text-brand-dark-alt text-[24px] leading-relaxed">
-              Scheduling and paying for<br />
-              assembly help is as easy as<br />
-              "Add to Cart."
+            <p className="text-brand-dark-alt text-[20px] leading-relaxed">
+              We can support scheduling and service workflows to make booking and payment feel effortless for your customers and your team.
             </p>
           </div>
         </div>
@@ -168,6 +162,8 @@ const FormSection = () => {
 
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedTaskTypes, setSelectedTaskTypes] = useState<string[]>([]);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -184,21 +180,48 @@ const FormSection = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", { ...formData, selectedCountries, selectedTaskTypes });
+    setIsSubmitting(true);
+    // Simulate form submission
+    setTimeout(() => {
+      console.log("Form submitted:", { ...formData, selectedCountries, selectedTaskTypes });
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+    }, 1000);
   };
+
+  if (isSubmitted) {
+    return (
+      <section className="bg-white py-20">
+        <div className="max-w-[1920px] mx-auto px-8">
+          <div className="max-w-[539px] mx-auto text-center">
+            <div className="mb-6 flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="text-brand-dark-alt font-bold text-[29px] mb-4">
+              Thank You for Your Interest!
+            </h2>
+            <p className="text-brand-dark-alt text-[20px] leading-relaxed">
+              We&apos;ve received your inquiry and will be in touch within 2 business days to discuss partnership opportunities.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-white py-20">
       <div className="max-w-[1920px] mx-auto px-8">
         <div className="max-w-[539px] mx-auto">
           <h2 className="text-brand-dark-alt font-bold text-[29px] mb-6">
-            Want to learn more about our work with IKEA?
+            Want to Learn More About Partnering With 100 Handy?
           </h2>
-          <p className="text-brand-dark-alt text-[29px] mb-10 leading-relaxed">
-            We'd love to learn more about your interest in<br />
-            partnering with us. Please share a few details<br />
-            so we can send you a case study and<br />
-            connect.
+          <p className="text-brand-dark-alt text-[20px] mb-10 leading-relaxed">
+            Tell us a bit about your business and what you&apos;re looking to enable. We&apos;ll follow up with relevant details, example workflows, and a case study — then explore the best partnership model for you.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -229,7 +252,7 @@ const FormSection = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Enter your full name"
+                placeholder="Enter your business email"
                 className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-terracotta text-[20px]"
               />
             </div>
@@ -245,7 +268,7 @@ const FormSection = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                placeholder="Enter your full name"
+                placeholder="Enter your phone number"
                 className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-terracotta text-[20px]"
               />
             </div>
@@ -261,7 +284,7 @@ const FormSection = () => {
                 name="company"
                 value={formData.company}
                 onChange={handleInputChange}
-                placeholder="Enter your full name"
+                placeholder="Enter your company name"
                 className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-terracotta text-[20px]"
               />
             </div>
@@ -277,7 +300,7 @@ const FormSection = () => {
                 name="website"
                 value={formData.website}
                 onChange={handleInputChange}
-                placeholder="Enter your full name"
+                placeholder="Enter your website URL"
                 className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-terracotta text-[20px]"
               />
             </div>
@@ -364,17 +387,18 @@ const FormSection = () => {
             <div>
               <button
                 type="submit"
-                className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-4 px-12 rounded-md transition-colors text-[20px]"
+                disabled={isSubmitting}
+                className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-4 px-12 rounded-md transition-colors text-[20px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Submit
+                {isSubmitting ? "Submitting..." : "Submit"}
               </button>
             </div>
 
             {/* Footer Link */}
             <div>
               <p className="text-brand-dark-alt text-[20px]">
-                Looking to sign up as a Tasker?{" "}
-                <a href="#" className="text-brand-terracotta underline hover:text-brand-coral">
+                Looking to sign up as a Handy?{" "}
+                <a href="/become-tasker" className="text-brand-terracotta underline hover:text-brand-coral">
                   Submit your application here
                 </a>
               </p>

@@ -1,5 +1,5 @@
 import { BookingWithRelations } from '@shared/supabase/bookings';
-import { WrenchIcon, PaintbrushIcon, HammerIcon, HomeIcon, CarIcon, HeartIcon } from 'lucide-react-native';
+import { getCategoryIcon } from '@/lib/category-icons';
 
 // Map booking status to TaskCard status tone
 export function getStatusTone(status: string): 'scheduled' | 'progress' | 'neutral' {
@@ -33,33 +33,6 @@ export function getStatusLabel(status: string): string {
     default:
       return 'Unknown';
   }
-}
-
-// Map category to icon
-export function getCategoryIcon(categoryName: string) {
-  const name = categoryName.toLowerCase();
-  
-  if (name.includes('plumbing') || name.includes('pipe') || name.includes('water')) {
-    return WrenchIcon;
-  }
-  if (name.includes('painting') || name.includes('decorating')) {
-    return PaintbrushIcon;
-  }
-  if (name.includes('electrical') || name.includes('electric')) {
-    return HammerIcon;
-  }
-  if (name.includes('cleaning') || name.includes('housekeeping')) {
-    return HomeIcon;
-  }
-  if (name.includes('automotive') || name.includes('car')) {
-    return CarIcon;
-  }
-  if (name.includes('health') || name.includes('care')) {
-    return HeartIcon;
-  }
-  
-  // Default icon
-  return WrenchIcon;
 }
 
 // Map category to icon tone

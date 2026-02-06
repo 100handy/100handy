@@ -101,7 +101,7 @@ export default function SignUp() {
         <div className="bg-white rounded-[12px] shadow-2xl px-12 py-8">
             {/* Logo */}
             <div className="text-center mb-6">
-              <h1 className="text-[40px] text-[#30352d]">
+              <h1 className="text-[40px] text-brand-dark-alt">
                 <span className="font-light">100</span>
                 <span className="font-bold">HANDY</span>
               </h1>
@@ -114,7 +114,7 @@ export default function SignUp() {
                 <div>
                   <label
                     htmlFor="first-name"
-                    className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                    className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                   >
                     First Name
                   </label>
@@ -122,7 +122,7 @@ export default function SignUp() {
                     id="first-name"
                     type="text"
                     {...register("firstName")}
-                    className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                    className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none"
                   />
                   {errors.firstName && (
                     <p className="text-xs text-red-600 mt-1">
@@ -133,7 +133,7 @@ export default function SignUp() {
                 <div>
                   <label
                     htmlFor="last-name"
-                    className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                    className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                   >
                     Last Name
                   </label>
@@ -141,7 +141,7 @@ export default function SignUp() {
                     id="last-name"
                     type="text"
                     {...register("lastName")}
-                    className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                    className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none"
                   />
                   {errors.lastName && (
                     <p className="text-xs text-red-600 mt-1">
@@ -155,7 +155,7 @@ export default function SignUp() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                  className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                 >
                   Email
                 </label>
@@ -163,7 +163,7 @@ export default function SignUp() {
                   id="email"
                   type="email"
                   {...register("email")}
-                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none"
                 />
                 {errors.email && (
                   <p className="text-xs text-red-600 mt-1">
@@ -176,7 +176,7 @@ export default function SignUp() {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                  className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                 >
                   Password
                 </label>
@@ -184,7 +184,7 @@ export default function SignUp() {
                   id="password"
                   type="password"
                   {...register("password")}
-                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none"
                 />
                 {errors.password && (
                   <p className="text-xs text-red-600 mt-1">
@@ -197,7 +197,7 @@ export default function SignUp() {
               <div>
                 <label
                   htmlFor="phone"
-                  className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                  className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                 >
                   Phone Number
                 </label>
@@ -207,7 +207,7 @@ export default function SignUp() {
                       <SelectValue>
                         <div className="flex items-center gap-1">
                           <span className="text-lg">{countryCode === "+44" ? "🇬🇧" : "🇮🇳"}</span>
-                          <span className="text-[15px] font-bold text-[#30352d]">{countryCode}</span>
+                          <span className="text-[15px] font-bold text-brand-dark-alt">{countryCode}</span>
                         </div>
                       </SelectValue>
                     </SelectTrigger>
@@ -244,7 +244,7 @@ export default function SignUp() {
               <div>
                 <label
                   htmlFor="postcode"
-                  className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                  className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                 >
                   Post code
                 </label>
@@ -252,7 +252,7 @@ export default function SignUp() {
                   id="postcode"
                   type="text"
                   {...register("postcode")}
-                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none"
+                  className="w-full border-0 border-b border-gray-300 rounded-none px-0 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none"
                 />
                 {errors.postcode && (
                   <p className="text-xs text-red-600 mt-1">
@@ -262,7 +262,7 @@ export default function SignUp() {
               </div>
 
               {/* Help Text */}
-              <p className="text-[12px] font-medium text-[#30352d] leading-relaxed">
+              <p className="text-[12px] font-medium text-brand-dark-alt leading-relaxed">
                 Your phone and postcode help us match and <br />
                 Connect you with right Taskers.
               </p>
@@ -275,11 +275,11 @@ export default function SignUp() {
                   onCheckedChange={(checked) =>
                     setAgreedToTerms(checked as boolean)
                   }
-                  className="mt-0.5 data-[state=checked]:bg-[#C17B6B] data-[state=checked]:border-[#C17B6B]"
+                  className="mt-0.5 data-[state=checked]:bg-brand-terracotta data-[state=checked]:border-brand-terracotta"
                 />
                 <label
                   htmlFor="terms"
-                  className="text-[15px] font-light text-[#30352d] leading-relaxed cursor-pointer select-none"
+                  className="text-[15px] font-light text-brand-dark-alt leading-relaxed cursor-pointer select-none"
                 >
                   I agree to the{" "}
                   <Link
@@ -290,7 +290,7 @@ export default function SignUp() {
                   </Link>{" "}
                   and have reviewed the{" "}
                   <Link
-                    href="/privacy"
+                    href="/terms"
                     className="underline hover:text-black"
                   >
                     Privacy Policy
@@ -306,8 +306,8 @@ export default function SignUp() {
                   disabled={loading || !agreedToTerms || !isValid}
                   className={`w-full h-11 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
                     !loading && agreedToTerms && isValid
-                      ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
-                      : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
+                      ? "bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90"
+                      : "bg-gray-100 border border-gray-200 text-gray-400 hover:bg-gray-100"
                   }`}
                   variant="outline"
                 >
@@ -326,7 +326,7 @@ export default function SignUp() {
               Already have an account?{" "}
               <Link
                 href="/sign-in"
-                className="text-[#30352d] font-semibold hover:underline"
+                className="text-brand-dark-alt font-semibold hover:underline"
               >
                 Sign In
               </Link>

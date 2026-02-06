@@ -74,7 +74,7 @@ export default function SignIn() {
         <div className="bg-white rounded-[12px] shadow-2xl px-12 py-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-[40px] text-[#30352d]">
+            <h1 className="text-[40px] text-brand-dark-alt">
               <span className="font-light">100</span>
               <span className="font-bold">HANDY</span>
             </h1>
@@ -86,7 +86,7 @@ export default function SignIn() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
               >
                 Email Address
               </label>
@@ -95,7 +95,7 @@ export default function SignIn() {
                 type="email"
                 placeholder="Email Address"
                 {...register("email")}
-                className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
+                className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
               />
               {errors.email && (
                 <p className="text-xs text-red-600 mt-1">
@@ -108,7 +108,7 @@ export default function SignIn() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
               >
                 Password
               </label>
@@ -117,7 +117,7 @@ export default function SignIn() {
                 type="password"
                 placeholder="Password"
                 {...register("password")}
-                className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
+                className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
               />
               {errors.password && (
                 <p className="text-xs text-red-600 mt-1">
@@ -130,9 +130,9 @@ export default function SignIn() {
             <div className="text-left">
               <Link
                 href="/forgot-password"
-                className="text-[15px] text-[#C1856A] hover:underline"
+                className="text-[15px] text-brand-terracotta hover:underline"
               >
-                Forget password?
+                Forgot password?
               </Link>
             </div>
 
@@ -143,8 +143,8 @@ export default function SignIn() {
                 disabled={loading || !isValid}
                 className={`w-full h-12 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
                   !loading && isValid
-                    ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
-                    : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
+                    ? "bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90"
+                    : "bg-gray-100 border border-gray-200 text-gray-400 hover:bg-gray-100"
                 }`}
                 variant="outline"
               >
@@ -159,20 +159,20 @@ export default function SignIn() {
 
           {/* Terms Text */}
           <div className="mt-6 text-center">
-            <p className="text-[13px] text-[#30352d] leading-relaxed">
-              By log in, you agree to the{" "}
-              <Link href="/terms" className="text-[#C1856A] hover:underline">
-                Term of service
+            <p className="text-[13px] text-brand-dark-alt leading-relaxed">
+              By logging in, you agree to the{" "}
+              <Link href="/terms" className="text-brand-terracotta hover:underline">
+                Terms of Service
               </Link>
               <br />
               and have reviewed the{" "}
-              <Link href="/privacy" className="text-[#C1856A] hover:underline">
+              <Link href="/terms" className="text-brand-terracotta hover:underline">
                 Privacy Policy
               </Link>
               .
               <br />
               Manage{" "}
-              <Link href="/privacy-settings" className="text-[#C1856A] hover:underline">
+              <Link href="/cookie-settings" className="text-brand-terracotta hover:underline">
                 privacy settings
               </Link>
               .

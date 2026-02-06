@@ -22,9 +22,14 @@ import {
   getAvailabilityByUserId,
   isLocationInWorkArea,
   type Coordinate,
+  type BookingFrequency,
+  FREQUENCY_OPTIONS,
+  createRecurringBookings,
+  calculateDiscountedRate,
 } from '@shared/supabase';
 import { useAuthStore } from '@shared/supabase';
 import { useToast } from '@/components/ui/toast';
+import { FrequencySelector } from '@/components/booking';
 
 export default function ConfirmBookingScreen() {
   const router = useRouter();
@@ -67,6 +72,7 @@ export default function ConfirmBookingScreen() {
   const [loadingPayment, setLoadingPayment] = useState(true);
   const [promoCode, setPromoCode] = useState('');
   const [showPromoInput, setShowPromoInput] = useState(false);
+  const [selectedFrequency, setSelectedFrequency] = useState<BookingFrequency>('once');
   const toast = useToast();
   const { confirmPayment } = useConfirmPayment();
 
@@ -140,8 +146,19 @@ export default function ConfirmBookingScreen() {
   // Calculate estimated price from form responses
   const taskSize = formResponses.task_size as string | undefined;
   const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'large' ? 4 : 2.5; // Default to medium
-  const hourlyRate = profile ? profile.hourly_rate_cents / 100 : 0;
-  const estimatedPrice = hourlyRate * estimatedHours;
+  const originalHourlyRateCents = profile ? profile.hourly_rate_cents : 0;
+  const hourlyRate = originalHourlyRateCents / 100;
+
+  // Calculate discount based on frequency
+  const frequencyOption = FREQUENCY_OPTIONS.find((f) => f.value === selectedFrequency);
+  const discountPercent = frequencyOption?.discountPercent || 0;
+  const { discountedRateCents, discountAmountCents } = calculateDiscountedRate(
+    originalHourlyRateCents,
+    discountPercent
+  );
+  const discountedHourlyRate = discountedRateCents / 100;
+  const estimatedPrice = discountedHourlyRate * estimatedHours;
+  const savingsAmount = (hourlyRate - discountedHourlyRate) * estimatedHours;
 
   // Save pending booking data to storage and redirect to auth
   const savePendingBookingAndRedirect = () => {
@@ -173,6 +190,8 @@ export default function ConfirmBookingScreen() {
         placeId: location.placeId,
       },
       formResponses,
+      frequency: selectedFrequency,
+      discountPercent,
       createdAt: Date.now(),
       returnPath: '/(client)/confirm-booking',
     };
@@ -303,8 +322,9 @@ export default function ConfirmBookingScreen() {
       // --- PAYMENT AUTHORIZATION HOLD ---
       // Taskrabbit-style: authorize (hold) now, capture later when job is completed.
       // Match web behavior: hold minimum 2 hours worth of the hourly rate.
+      // Use discounted rate for recurring bookings.
       const minimumHours = Math.max(2, estimatedHours);
-      const authorizationAmount = profile.hourly_rate_cents * minimumHours;
+      const authorizationAmount = discountedRateCents * minimumHours;
 
       const customerId = await getOrCreateStripeCustomer();
       if (!customerId) {
@@ -361,7 +381,8 @@ export default function ConfirmBookingScreen() {
 
       authorizedPaymentIntentId = confirmedPaymentIntent.id;
 
-      const bookingInput: CreateBookingInput = {
+      // Create booking(s) - use recurring bookings for non-once frequencies
+      const bookingInput = {
         customer_id: user.id,
         handy_id: profile.user_id,
         category_id: categoryId,
@@ -374,13 +395,28 @@ export default function ConfirmBookingScreen() {
         address_postcode: location.postalCode || '',
         address_city: location.city || '',
         address_country: location.country || 'UK',
-        hourly_rate_cents: profile.hourly_rate_cents,
+        hourly_rate_cents: originalHourlyRateCents,
         estimated_hours: estimatedHours,
         form_responses: formResponses,
         payment_intent_id: authorizedPaymentIntentId,
+        frequency: selectedFrequency,
       };
 
-      const newBooking = await createBookingMutation.mutateAsync(bookingInput);
+      // Create recurring bookings if frequency is not 'once', otherwise create single booking
+      let newBookingId: string;
+      if (selectedFrequency !== 'once') {
+        const result = await createRecurringBookings(bookingInput);
+        newBookingId = result.bookings[0]?.id || '';
+        if (result.totalSavings > 0) {
+          toast.success(
+            'Recurring booking created!',
+            `You'll save ${(result.totalSavings / 100).toFixed(2)} with your recurring booking.`
+          );
+        }
+      } else {
+        const newBooking = await createBookingMutation.mutateAsync(bookingInput);
+        newBookingId = newBooking.id;
+      }
 
       // Clear any pending booking after successful creation
       clearPendingBooking();
@@ -394,7 +430,7 @@ export default function ConfirmBookingScreen() {
           categoryName,
           selectedDate,
           selectedTime,
-          bookingId: newBooking.id,
+          bookingId: newBookingId,
         },
       });
     } catch (error: any) {
@@ -583,6 +619,13 @@ export default function ConfirmBookingScreen() {
             </View>
           </View>
 
+          {/* Frequency Selection */}
+          <FrequencySelector
+            selectedFrequency={selectedFrequency}
+            onFrequencyChange={setSelectedFrequency}
+            hourlyRate={hourlyRate}
+          />
+
           {/* Payment Method */}
           <Pressable
             onPress={() => router.push('/(client)/profile/payment-methods')}
@@ -652,15 +695,34 @@ export default function ConfirmBookingScreen() {
             <Text className="text-lg font-semibold text-[#30352D]">
               Hourly Rate
             </Text>
-            <Text className="text-lg font-semibold text-[#30352D]">
-              £{hourlyRate.toFixed(2)}/hr
-            </Text>
+            <View className="flex-row items-center gap-2">
+              {discountPercent > 0 && (
+                <Text className="text-base text-gray-400 line-through">
+                  £{hourlyRate.toFixed(2)}/hr
+                </Text>
+              )}
+              <Text className="text-lg font-semibold" style={{ color: discountPercent > 0 ? '#82BE56' : '#30352D' }}>
+                £{discountedHourlyRate.toFixed(2)}/hr
+              </Text>
+            </View>
           </View>
+
+          {/* Savings Banner - only show when discount applied */}
+          {discountPercent > 0 && (
+            <View
+              className="flex-row items-center px-4 py-3 rounded-lg mb-4"
+              style={{ backgroundColor: '#E8F5E1' }}
+            >
+              <Text className="flex-1 text-sm font-medium" style={{ color: '#2E7D32' }}>
+                You're saving {discountPercent}% with your recurring booking!
+              </Text>
+            </View>
+          )}
 
           {/* Payment Hold Notice */}
           <View className="flex-col py-6">
             <Text className="text-sm text-gray-600 leading-5 mb-4">
-              You may see a temporary hold on your payment method in the amount of £{hourlyRate.toFixed(2)}/hr. Don't worry -- you're only billed when your task is complete!
+              You may see a temporary hold on your payment method in the amount of £{discountedHourlyRate.toFixed(2)}/hr. Don't worry -- you're only billed when your task is complete!
             </Text>
 
             <Text className="text-sm text-gray-600 leading-5 mb-4">

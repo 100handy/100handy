@@ -31,10 +31,13 @@ export function Hero() {
         <div className="mx-auto max-w-2xl text-center">
           {/* Hero Title */}
           <h1 className="text-[59px] font-bold leading-tight text-[#30352D]">
-            Find trusted help
-            <br />
-            for every home task
+            Book trusted help for your home — fast.
           </h1>
+
+          {/* Subheadline */}
+          <p className="mt-6 text-[20px] leading-relaxed text-[#30352D]/80">
+            Assembly, repairs, cleaning, moving, and more—handled by vetted pros, scheduled when it suits you, and paid securely in one place.
+          </p>
 
           {/* Search Bar */}
           <div className="mt-10">

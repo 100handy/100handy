@@ -4,27 +4,27 @@ const steps = [
   {
     number: 1,
     title: "Sign up",
-    description: "Create your account. Then download the 100Handy app to continue registration.",
+    description: "Create your account in minutes with your email or social login.",
   },
   {
     number: 2,
     title: "Build your profile",
-    description: "Select what services you want to offer and where.",
+    description: "Add your skills, experience, service areas, and a friendly intro. A strong profile helps you win more bookings.",
   },
   {
     number: 3,
     title: "Verify your eligibility to task",
-    description: "Build a level of trust you want to offer and where.",
+    description: "Complete identity checks and any requirements needed for your location and categories.",
   },
   {
     number: 4,
     title: "Set your schedule and work area",
-    description: "Set your weekly availability and opt in to receive same-day jobs.",
+    description: "Choose your availability and where you want to work - near home, across the city, or both.",
   },
   {
     number: 5,
     title: "Start getting jobs",
-    description: "Grow your business on your own terms.",
+    description: "Receive requests, accept the work that fits, show up prepared, and get paid when the job is done.",
   },
 ];
 
@@ -33,7 +33,7 @@ export function GettingStarted(): React.JSX.Element {
     <section className="bg-gray-50 py-20">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-12 text-center text-[36px] font-bold text-brand-dark-alt">
-          Getting Started
+          Getting started is simple
         </h2>
 
         <div className="grid gap-16 md:gap-12 lg:gap-16">

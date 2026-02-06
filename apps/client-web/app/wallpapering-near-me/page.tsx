@@ -141,30 +141,30 @@ export default function WallpaperingNearMe() {
         <div className="bg-white py-4 border-b border-gray-200">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
             <p className="text-brand-terracotta text-sm font-medium">
-              Home &gt; Locations &gt; London &gt; Wallpapering Near Me
+              <Link href="/" className="hover:underline">Home</Link> &gt; <Link href="/services-by-city" className="hover:underline">Locations</Link> &gt; <Link href="/locations/london" className="hover:underline">London</Link> &gt; Wallpapering Near Me
             </p>
           </div>
         </div>
 
         {/* Hero Section */}
-        <section className="bg-[#3E4840] py-12 lg:py-16">
+        <section className="bg-brand-dark py-12 lg:py-16">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               {/* Left Side - Form */}
               <div className="bg-white rounded-2xl shadow-lg p-8 lg:p-10">
-                <h1 className="text-[#30352D] font-bold text-4xl mb-4 leading-tight">
+                <h1 className="text-brand-dark-alt font-bold text-4xl mb-4 leading-tight">
                   Wallpapering Near
                   <br />
                   Me
                 </h1>
-                <p className="text-[#30352D] mb-6 text-base leading-relaxed">
+                <p className="text-brand-dark-alt mb-6 text-base leading-relaxed">
                   Transform your space with expert wallpapering! Find a local
                   100Handy pro for quick and seamless wall decor.
                 </p>
                 <div className="mb-4">
                   <label
                     htmlFor="zipCode"
-                    className="text-[#30352D] text-sm font-semibold mb-2 block"
+                    className="text-brand-dark-alt text-sm font-semibold mb-2 block"
                   >
                     ZIP code
                   </label>
@@ -230,7 +230,7 @@ export default function WallpaperingNearMe() {
         {/* Top Wallpaper Services */}
         <section className="py-12 lg:py-16 bg-white">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <h2 className="text-[#30352D] font-bold text-3xl lg:text-4xl mb-12">
+            <h2 className="text-brand-dark-alt font-bold text-3xl lg:text-4xl mb-12">
               Top Wallpaper Services near you
             </h2>
 
@@ -245,7 +245,7 @@ export default function WallpaperingNearMe() {
                       {/* Avatar placeholder */}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-[#333A31] font-bold text-xl mb-1">
+                      <h3 className="text-brand-dark font-bold text-xl mb-1">
                         {tasker.name}
                       </h3>
                       <div className="flex items-center gap-1 mb-2">
@@ -256,20 +256,20 @@ export default function WallpaperingNearMe() {
                         >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
-                        <span className="text-[#333A31] text-sm font-medium">
+                        <span className="text-brand-dark text-sm font-medium">
                           {tasker.rating} ({tasker.reviews} reviews)
                         </span>
                       </div>
-                      <p className="text-[#333A31] font-semibold text-xs">
+                      <p className="text-brand-dark font-semibold text-xs">
                         {tasker.tasks}
                       </p>
                     </div>
                   </div>
-                  <p className="text-[#333A31] text-sm mb-4 leading-relaxed">
+                  <p className="text-brand-dark text-sm mb-4 leading-relaxed">
                     {tasker.description}
                   </p>
                   <Link
-                    href="#"
+                    href="/sign-up"
                     className="text-brand-terracotta font-medium text-sm hover:underline inline-block"
                   >
                     Book now
@@ -287,9 +287,9 @@ export default function WallpaperingNearMe() {
         </section>
 
         {/* Your satisfaction, guaranteed */}
-        <section className="py-12 lg:py-16 bg-[#F9FAFB]">
+        <section className="py-12 lg:py-16 bg-gray-50">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <h2 className="text-[#30352D] font-bold text-3xl lg:text-4xl mb-12 text-center">
+            <h2 className="text-brand-dark-alt font-bold text-3xl lg:text-4xl mb-12 text-center">
               Your satisfaction,{" "}
               <span className="text-brand-terracotta">guaranteed</span>
             </h2>
@@ -361,10 +361,10 @@ export default function WallpaperingNearMe() {
                   <div className="w-20 h-20 mx-auto mb-6 bg-brand-sage rounded-full flex items-center justify-center shadow-lg">
                     {feature.icon}
                   </div>
-                  <h3 className="text-[#333A31] font-bold text-2xl mb-3">
+                  <h3 className="text-brand-dark font-bold text-2xl mb-3">
                     {feature.title}
                   </h3>
-                  <p className="text-[#333A31] text-lg leading-relaxed">
+                  <p className="text-brand-dark text-lg leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -376,7 +376,7 @@ export default function WallpaperingNearMe() {
         {/* Customer Reviews */}
         <section className="py-12 lg:py-16 bg-white">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <h2 className="text-[#30352D] font-bold text-3xl lg:text-4xl mb-12">
+            <h2 className="text-brand-dark-alt font-bold text-3xl lg:text-4xl mb-12">
               See what happy customers are saying about handyman services in
               London
             </h2>
@@ -399,10 +399,10 @@ export default function WallpaperingNearMe() {
                       </svg>
                     ))}
                   </div>
-                  <h4 className="text-[#333A31] font-bold text-xl mb-3">
+                  <h4 className="text-brand-dark font-bold text-xl mb-3">
                     Michelle D.
                   </h4>
-                  <p className="text-[#333A31] text-base leading-relaxed">
+                  <p className="text-brand-dark text-base leading-relaxed">
                     Thanks to Ken for a great and efficient job fixing our
                     fridge! He knew the problem immediately and worked
                     efficiently and effectively!
@@ -420,9 +420,9 @@ export default function WallpaperingNearMe() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-12 lg:py-16 bg-[#F9FAFB]">
+        <section className="py-12 lg:py-16 bg-gray-50">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <h2 className="text-[#30352D] font-bold text-3xl lg:text-4xl mb-10">
+            <h2 className="text-brand-dark-alt font-bold text-3xl lg:text-4xl mb-10">
               Frequently asked questions about Wallpaper Installation
             </h2>
 
@@ -433,7 +433,7 @@ export default function WallpaperingNearMe() {
                   className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all"
                 >
                   <summary className="flex justify-between items-center cursor-pointer p-6 list-none">
-                    <span className="text-[#30352D] font-semibold text-lg pr-4">
+                    <span className="text-brand-dark-alt font-semibold text-lg pr-4">
                       {item.question}
                     </span>
                     <svg
@@ -451,7 +451,7 @@ export default function WallpaperingNearMe() {
                     </svg>
                   </summary>
                   <div className="px-6 pb-6">
-                    <p className="text-[#333A31] leading-relaxed">
+                    <p className="text-brand-dark leading-relaxed">
                       {item.answer}
                     </p>
                   </div>
@@ -464,11 +464,11 @@ export default function WallpaperingNearMe() {
         {/* Explore our blog */}
         <section className="py-16 lg:py-20 bg-white">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <h2 className="text-[#30352D] font-bold text-3xl lg:text-4xl mb-6">
+            <h2 className="text-brand-dark-alt font-bold text-3xl lg:text-4xl mb-6">
               Explore our blog
             </h2>
 
-            <p className="text-[#30352D] mb-10 text-lg">
+            <p className="text-brand-dark-alt mb-10 text-lg">
               We're unlocking community knowledge in a new way. Experts add
               insights directly into each article, started with the help of AI.
             </p>
@@ -481,14 +481,14 @@ export default function WallpaperingNearMe() {
                 >
                   <div className="h-48 bg-gradient-to-br from-gray-300 to-gray-400 group-hover:scale-105 transition-transform duration-300" />
                   <div className="p-6">
-                    <h3 className="text-[#30352D] font-bold text-lg mb-3 leading-tight">
+                    <h3 className="text-brand-dark-alt font-bold text-lg mb-3 leading-tight">
                       {post.title}
                     </h3>
-                    <p className="text-[#30352D] text-sm mb-4 leading-relaxed">
+                    <p className="text-brand-dark-alt text-sm mb-4 leading-relaxed">
                       {post.description}
                     </p>
                     <Link
-                      href="#"
+                      href="/blog"
                       className="text-brand-terracotta font-semibold text-sm hover:underline inline-flex items-center gap-1"
                     >
                       Read more
@@ -501,9 +501,9 @@ export default function WallpaperingNearMe() {
         </section>
 
         {/* Join millions */}
-        <section className="py-16 lg:py-20 bg-[#F9FAFB]">
+        <section className="py-16 lg:py-20 bg-gray-50">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <h2 className="text-[#30352D] font-bold text-3xl lg:text-4xl mb-16 text-center">
+            <h2 className="text-brand-dark-alt font-bold text-3xl lg:text-4xl mb-16 text-center">
               Join millions in enjoying easy Wallpaper Installation
             </h2>
 
@@ -557,10 +557,10 @@ export default function WallpaperingNearMe() {
                   <div className="w-24 h-24 mx-auto mb-6 bg-brand-terracotta rounded-full flex items-center justify-center shadow-xl">
                     {stat.icon}
                   </div>
-                  <h3 className="text-[#30352D] font-bold text-4xl mb-2">
+                  <h3 className="text-brand-dark-alt font-bold text-4xl mb-2">
                     {stat.value}
                   </h3>
-                  <p className="text-[#333A31] text-lg">{stat.label}</p>
+                  <p className="text-brand-dark text-lg">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -570,7 +570,7 @@ export default function WallpaperingNearMe() {
         {/* You Might Also Like */}
         <section className="py-16 lg:py-20 bg-white">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <h2 className="text-[#30352D] font-bold text-3xl lg:text-4xl mb-10">
+            <h2 className="text-brand-dark-alt font-bold text-3xl lg:text-4xl mb-10">
               You Might Also Like
             </h2>
 
@@ -582,7 +582,7 @@ export default function WallpaperingNearMe() {
                 >
                   <div className="h-40 bg-gradient-to-br from-gray-300 to-gray-400 group-hover:scale-105 transition-transform duration-300" />
                   <div className="p-5">
-                    <h3 className="text-[#30352D] font-bold text-lg">
+                    <h3 className="text-brand-dark-alt font-bold text-lg">
                       {service.name}
                     </h3>
                   </div>
@@ -598,7 +598,7 @@ export default function WallpaperingNearMe() {
                 >
                   <div className="h-40 bg-gradient-to-br from-gray-300 to-gray-400 group-hover:scale-105 transition-transform duration-300" />
                   <div className="p-5">
-                    <h3 className="text-[#30352D] font-bold text-lg">
+                    <h3 className="text-brand-dark-alt font-bold text-lg">
                       {service.name}
                     </h3>
                   </div>
@@ -615,27 +615,27 @@ export default function WallpaperingNearMe() {
         </section>
 
         {/* SEO Content Section */}
-        <section className="py-16 lg:py-20 bg-[#F9FAFB]">
+        <section className="py-16 lg:py-20 bg-gray-50">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <h2 className="text-[#30352D] font-bold text-3xl lg:text-4xl mb-6">
+            <h2 className="text-brand-dark-alt font-bold text-3xl lg:text-4xl mb-6">
               Handyman in London
             </h2>
 
             <div className="prose prose-lg max-w-none">
-              <h3 className="text-[#30352D] font-bold text-2xl mb-4 mt-8">
+              <h3 className="text-brand-dark-alt font-bold text-2xl mb-4 mt-8">
                 Where money
               </h3>
-              <p className="text-[#333A31] mb-6 leading-relaxed">
+              <p className="text-brand-dark mb-6 leading-relaxed">
                 Whatever it is that needs doing, chances are great that there's
                 a Tasker in London who'd love to help you with it! Since there's
                 a wide variety of home improvement tasks available, here's a
                 brief list of the most popular ones on 100handy:
               </p>
 
-              <h3 className="text-[#30352D] font-bold text-2xl mb-4 mt-8">
+              <h3 className="text-brand-dark-alt font-bold text-2xl mb-4 mt-8">
                 The expertise you need
               </h3>
-              <p className="text-[#333A31] mb-6 leading-relaxed">
+              <p className="text-brand-dark mb-6 leading-relaxed">
                 Before hiring a Tasker on 100handy, check out their reviews,
                 ratings, and the tasks they've completed for other customers.
                 Get more information on each Tasker by going to their unique
@@ -643,10 +643,10 @@ export default function WallpaperingNearMe() {
                 right for you, and they'll get to work on your home project!
               </p>
 
-              <h3 className="text-[#30352D] font-bold text-2xl mb-4 mt-8">
+              <h3 className="text-brand-dark-alt font-bold text-2xl mb-4 mt-8">
                 When day service available
               </h3>
-              <p className="text-[#333A31] mb-6 leading-relaxed">
+              <p className="text-brand-dark mb-6 leading-relaxed">
                 Same-day booking is available on 100handy. You can also browse
                 prices and choose a time that works best for you and your
                 Tasker. Need help? Rely on our dedicated customer support team
@@ -655,10 +655,10 @@ export default function WallpaperingNearMe() {
                 booking, or contact them after the job.
               </p>
 
-              <h3 className="text-[#30352D] font-bold text-2xl mb-4 mt-8">
+              <h3 className="text-brand-dark-alt font-bold text-2xl mb-4 mt-8">
                 There's a tasker map
               </h3>
-              <p className="text-[#333A31] leading-relaxed">
+              <p className="text-brand-dark leading-relaxed">
                 Convenient services that fit your schedule and budget are just a
                 click away. You can book online, knowing that you're backed by
                 our Happiness Pledge.

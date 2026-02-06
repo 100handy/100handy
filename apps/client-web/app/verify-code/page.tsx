@@ -138,11 +138,11 @@ function VerifyCodeForm() {
           <div className="mb-8">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-[#30352d] hover:text-[#30352d]/80 mb-4 transition-colors"
+              className="flex items-center gap-2 text-brand-dark-alt hover:text-brand-dark-alt/80 mb-4 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-[24px] font-semibold text-[#30352d]">
+            <h1 className="text-[24px] font-semibold text-brand-dark-alt">
               {isPasswordReset
                 ? "Reset your password"
                 : "Verify your authentication code"}
@@ -151,14 +151,14 @@ function VerifyCodeForm() {
 
           {/* Instructions */}
           <div className="text-center mb-8">
-            <p className="text-[15px] text-[#30352d] leading-relaxed">
+            <p className="text-[15px] text-brand-dark-alt leading-relaxed">
               {isPasswordReset
                 ? "Enter the 6-digit code sent to your email to reset your password"
                 : isEmailVerification
                 ? "Enter the 6-digit code sent to your email"
                 : "Enter the 6-digit code sent to your phone number"}
             </p>
-            <p className="text-[15px] font-semibold text-[#30352d] mt-1">
+            <p className="text-[15px] font-semibold text-brand-dark-alt mt-1">
               {verificationTarget}
             </p>
           </div>
@@ -179,7 +179,7 @@ function VerifyCodeForm() {
                   const value = e.target.value.replace(/\D/g, "");
                   setCode(value);
                 }}
-                className="w-full max-w-[320px] h-12 border border-gray-300 rounded-md px-4 text-center text-[16px] focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
+                className="w-full max-w-[320px] h-12 border border-gray-300 rounded-md px-4 text-center text-[16px] focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
               />
             </div>
 
@@ -188,7 +188,7 @@ function VerifyCodeForm() {
               <button
                 type="button"
                 onClick={handleResendCode}
-                className="text-[15px] text-[#C1856A] hover:underline"
+                className="text-[15px] text-brand-terracotta hover:underline"
               >
                 Resend code
               </button>
@@ -201,8 +201,8 @@ function VerifyCodeForm() {
                 disabled={loading || code.length !== 6}
                 className={`w-full h-12 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
                   !loading && code.length === 6
-                    ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
-                    : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
+                    ? "bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90"
+                    : "bg-gray-100 border border-gray-200 text-gray-400 hover:bg-gray-100"
                 }`}
                 variant="outline"
               >
@@ -217,20 +217,20 @@ function VerifyCodeForm() {
 
           {/* Terms Text */}
           <div className="mt-8 text-center">
-            <p className="text-[13px] text-[#30352d] leading-relaxed">
-              By singing up, you agree to the{" "}
-              <Link href="/terms" className="text-[#C1856A] hover:underline">
+            <p className="text-[13px] text-brand-dark-alt leading-relaxed">
+              By signing up, you agree to the{" "}
+              <Link href="/terms" className="text-brand-terracotta hover:underline">
                 Term of service
               </Link>
               <br />
               and have reviewed the{" "}
-              <Link href="/privacy" className="text-[#C1856A] hover:underline">
+              <Link href="/terms" className="text-brand-terracotta hover:underline">
                 Privacy Policy
               </Link>
               .
               <br />
               Manage{" "}
-              <Link href="/privacy-settings" className="text-[#C1856A] hover:underline">
+              <Link href="/cookie-settings" className="text-brand-terracotta hover:underline">
                 privacy settings
               </Link>
               .
