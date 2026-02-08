@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight, Star, BarChart3 } from 'lucide-react-native';
@@ -32,6 +32,13 @@ function PerformanceCard({ title, children, onPress }: PerformanceCardProps) {
 export default function ProfessionalEarnings() {
   const router = useRouter();
 
+  const { currentMonthLabel, currentMonthYear } = useMemo(() => {
+    const now = new Date();
+    const monthLabel = now.toLocaleDateString('en-GB', { month: 'short' });
+    const monthYear = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    return { currentMonthLabel: monthLabel, currentMonthYear: monthYear };
+  }, []);
+
   return (
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
       {/* Header */}
@@ -51,7 +58,7 @@ export default function ProfessionalEarnings() {
             <View className="flex-col gap-1">
               <View className="flex-row items-baseline gap-2">
                 <Text className="font-worksans text-[14px] text-[#6B6B6B]">
-                  Sep Total
+                  {currentMonthLabel} Total
                 </Text>
                 <Text className="font-worksans-bold text-[24px] text-[#30352D]">
                   £0
@@ -88,7 +95,7 @@ export default function ProfessionalEarnings() {
           {/* Analytics Card */}
           <PerformanceCard 
             title="Analytics" 
-            onPress={() => router.push('/profile/analytics')}
+            onPress={() => router.push('/(professional)/profile/analytics')}
           >
             <View className="flex-col gap-1">
               <View className="flex-row items-center gap-2">
@@ -145,7 +152,7 @@ export default function ProfessionalEarnings() {
                     Elite progress
                   </Text>
                   <Text className="font-worksans-bold text-[32px] text-[#1F3A2C] mb-4">
-                    December 2025
+                    {currentMonthYear}
                   </Text>
 
                   {/* Progress Bar */}

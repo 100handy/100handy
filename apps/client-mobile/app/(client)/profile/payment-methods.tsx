@@ -34,8 +34,6 @@ export default function PaymentMethodsScreen() {
   const loadPaymentMethods = async () => {
     setIsLoading(true);
     const methods = await listPaymentMethods();
-    console.log('[DEBUG] PaymentMethodsScreen - Received methods:', methods);
-    console.log('[DEBUG] PaymentMethodsScreen - Number of methods:', methods.length);
     setPaymentMethods(methods);
     setIsLoading(false);
   };
@@ -43,7 +41,6 @@ export default function PaymentMethodsScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     const methods = await listPaymentMethods();
-    console.log('[DEBUG] PaymentMethodsScreen (onRefresh) - Received methods:', methods);
     setPaymentMethods(methods);
     setRefreshing(false);
   }, []);
@@ -161,12 +158,9 @@ export default function PaymentMethodsScreen() {
           ) : (
             /* Payment Methods List */
             <View className="flex-col gap-3">
-              {paymentMethods.map((method, index) => {
-                console.log(`[DEBUG] Rendering payment method ${index}:`, method);
-
+              {paymentMethods.map((method) => {
                 // Skip if card data is missing
                 if (!method.card) {
-                  console.warn('[DEBUG] Payment method missing card data, skipping:', method);
                   return null;
                 }
 

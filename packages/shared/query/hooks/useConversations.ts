@@ -11,6 +11,7 @@ import {
   ConversationMessage,
   ConversationWithProfiles,
 } from '../../supabase/conversations';
+import { supabase } from '../../supabase/supabaseClient';
 
 // Query keys
 export const conversationKeys = {
@@ -89,6 +90,9 @@ export function useSendConversationMessage() {
         conversationKeys.messages(newMessage.conversation_id)
       );
 
+      // Get actual user ID for the optimistic message
+      const { data: { user } } = await supabase.auth.getUser();
+
       // Optimistically update to the new value
       queryClient.setQueryData<ConversationMessage[]>(
         conversationKeys.messages(newMessage.conversation_id),
@@ -99,7 +103,7 @@ export function useSendConversationMessage() {
           const optimisticMessage: ConversationMessage = {
             id: `temp-${Date.now()}`,
             conversation_id: newMessage.conversation_id,
-            sender_id: 'current-user', // Will be replaced with actual sender_id
+            sender_id: user?.id || '',
             message: newMessage.message,
             message_type: newMessage.message_type || 'text',
             attachment_url: newMessage.attachment_url || null,

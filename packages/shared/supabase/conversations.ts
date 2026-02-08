@@ -77,7 +77,7 @@ export async function getConversations(): Promise<ConversationWithProfiles[]> {
 
     // Get unique user IDs for profile lookup
     const userIds = new Set<string>();
-    conversations.forEach((conv: any) => {
+    conversations.forEach((conv) => {
       userIds.add(conv.client_id);
       userIds.add(conv.tasker_id);
     });
@@ -95,12 +95,12 @@ export async function getConversations(): Promise<ConversationWithProfiles[]> {
 
     // Create profile lookup map
     const profileMap = new Map();
-    profiles?.forEach((profile: any) => {
+    profiles?.forEach((profile) => {
       profileMap.set(profile.user_id, profile);
     });
 
     // Combine conversations with profiles
-    const result = conversations.map((conv: any) => ({
+    const result = conversations.map((conv) => ({
       ...conv,
       client: profileMap.get(conv.client_id) || null,
       tasker: profileMap.get(conv.tasker_id) || null,
@@ -154,7 +154,7 @@ export async function getConversation(conversationId: string): Promise<Conversat
 
     // Create profile lookup map
     const profileMap = new Map();
-    profiles?.forEach((profile: any) => {
+    profiles?.forEach((profile) => {
       profileMap.set(profile.user_id, profile);
     });
 

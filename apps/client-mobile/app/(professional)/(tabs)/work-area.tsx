@@ -88,8 +88,8 @@ export default function WorkAreaTab() {
       if (status !== 'granted') {
         console.error('Permission to access location was denied');
         const defaultRegion = {
-          latitude: 37.78825,
-          longitude: -122.4324,
+          latitude: 51.5074,
+          longitude: -0.1278,
           latitudeDelta: LATITUDE_DELTA,
           longitudeDelta: LONGITUDE_DELTA,
         };

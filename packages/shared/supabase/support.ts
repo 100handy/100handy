@@ -29,7 +29,7 @@ export interface SupportMessage {
   attachment_name: string | null;
   attachment_size: number | null;
   read_at: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 
@@ -47,8 +47,8 @@ export interface SendMessageInput {
   ticket_id: string;
   message: string;
   message_type?: MessageType;
-  attachment?: any | null;
-  metadata?: Record<string, any>;
+  attachment?: File | { uri: string; name?: string; fileName?: string; size?: number; fileSize?: number; mimeType?: string; type?: string } | null;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -250,13 +250,14 @@ export async function sendMessage(input: SendMessageInput): Promise<SupportMessa
 export async function uploadAttachment(
   userId: string,
   ticketId: string,
-  file: any
+  file: File | { uri: string; name?: string; fileName?: string; size?: number; fileSize?: number; mimeType?: string; type?: string }
 ): Promise<{ url: string; name: string; size: number }> {
   try {
-    // Handle React Native file object (from expo-document-picker or expo-image-picker)
-    const fileName = file.name || file.fileName || `file_${Date.now()}`;
-    const fileUri = file.uri || file;
-    const fileSize = file.size || file.fileSize || 0;
+    // Handle both web File objects and React Native file objects
+    const isNativeFile = 'uri' in file;
+    const fileName = file.name || (isNativeFile ? file.fileName : undefined) || `file_${Date.now()}`;
+    const fileUri = isNativeFile ? file.uri : '';
+    const fileSize = file.size || (isNativeFile ? file.fileSize : undefined) || 0;
 
     const fileExt = fileName.split('.').pop() || 'jpg';
     const uniqueFileName = `${Date.now()}.${fileExt}`;
@@ -266,11 +267,11 @@ export async function uploadAttachment(
     const formData = new FormData();
 
     // Create the file object for FormData in React Native format
-    const fileObject: any = {
+    const fileObject = {
       uri: fileUri,
       name: uniqueFileName,
-      type: file.mimeType || file.type || 'image/jpeg',
-    };
+      type: ('mimeType' in file ? file.mimeType : file.type) || 'image/jpeg',
+    } as unknown as Blob;
 
     formData.append('file', fileObject);
 
@@ -282,7 +283,7 @@ export async function uploadAttachment(
     }
 
     // Get the project URL from supabase client
-    const supabaseUrl = (supabase as any).supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const supabaseUrl = (supabase as unknown as { supabaseUrl?: string }).supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL;
     const uploadUrl = `${supabaseUrl}/storage/v1/object/support-attachments/${filePath}`;
 
     // Upload using fetch with FormData

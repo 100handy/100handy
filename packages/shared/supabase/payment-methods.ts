@@ -117,26 +117,17 @@ export async function listPaymentMethods(): Promise<PaymentMethod[]> {
       return [];
     }
 
-    console.log('[DEBUG] listPaymentMethods - Using customer ID:', customerId);
-
     // Fetch payment methods via edge function
     const { data, error } = await supabase.functions.invoke('list-payment-methods', {
       body: { customerId },
     });
-
-    console.log('[DEBUG] listPaymentMethods - Raw API response:', JSON.stringify(data, null, 2));
-    console.log('[DEBUG] listPaymentMethods - API error:', error);
 
     if (error) {
       console.error('Error listing payment methods:', error);
       return [];
     }
 
-    const paymentMethods = data?.paymentMethods || [];
-    console.log('[DEBUG] listPaymentMethods - Extracted payment methods:', JSON.stringify(paymentMethods, null, 2));
-    console.log('[DEBUG] listPaymentMethods - Number of payment methods:', paymentMethods.length);
-
-    return paymentMethods;
+    return data?.paymentMethods || [];
   } catch (error) {
     console.error('Error in listPaymentMethods:', error);
     return [];
@@ -305,7 +296,7 @@ export async function getOrCreateStripeConnectAccount(
       status: data.status,
       isExisting: data.isExisting,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in getOrCreateStripeConnectAccount:', error);
     throw error;
   }

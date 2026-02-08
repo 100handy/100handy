@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -11,6 +11,10 @@ export default function EliteScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('progress');
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+  const currentMonthYear = useMemo(() => {
+    return new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  }, []);
 
   useEffect(() => {
     loadSkills();
@@ -119,7 +123,7 @@ export default function EliteScreen() {
                 className="text-3xl font-bold text-gray-900 mb-6"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
-                December 2025
+                {currentMonthYear}
               </Text>
 
               {/* Progress Bar */}
