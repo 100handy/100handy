@@ -250,24 +250,49 @@ export interface CreateBookingInput {
 
 export async function createBooking(input: CreateBookingInput): Promise<Booking> {
   try {
-    // First, create or get the address
-    const { data: addressData, error: addressError } = await supabase
+    // First, check for existing address with same details for this user
+    const apartment = input.address_apartment || null;
+    let query = supabase
       .from('addresses')
-      .insert({
-        user_id: input.customer_id,
-        street: input.address_street,
-        apartment: input.address_apartment || null,
-        postcode: input.address_postcode,
-        city: input.address_city || null,
-        country: input.address_country,
-        is_primary: false,
-      })
-      .select()
-      .single();
+      .select('id')
+      .eq('user_id', input.customer_id)
+      .eq('street', input.address_street)
+      .eq('postcode', input.address_postcode)
+      .eq('country', input.address_country);
 
-    if (addressError) {
-      console.error('Error creating address:', addressError);
-      throw new Error(`Failed to create address: ${addressError.message}`);
+    // Handle null apartment comparison (SQL NULL != NULL with .eq)
+    if (apartment) {
+      query = query.eq('apartment', apartment);
+    } else {
+      query = query.is('apartment', null);
+    }
+
+    const { data: existingAddress } = await query.limit(1).maybeSingle();
+
+    let addressId: string;
+
+    if (existingAddress) {
+      addressId = existingAddress.id;
+    } else {
+      const { data: newAddress, error: addressError } = await supabase
+        .from('addresses')
+        .insert({
+          user_id: input.customer_id,
+          street: input.address_street,
+          apartment: input.address_apartment || null,
+          postcode: input.address_postcode,
+          city: input.address_city || null,
+          country: input.address_country,
+          is_primary: false,
+        })
+        .select()
+        .single();
+
+      if (addressError) {
+        console.error('Error creating address:', addressError);
+        throw new Error(`Failed to create address: ${addressError.message}`);
+      }
+      addressId = newAddress.id;
     }
 
     // Then create the booking
@@ -281,7 +306,7 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
         task_details: input.task_details || null,
         scheduled_date: input.scheduled_date,
         scheduled_time: input.scheduled_time,
-        address_id: addressData.id,
+        address_id: addressId,
         hourly_rate_cents: input.hourly_rate_cents,
         estimated_hours: input.estimated_hours,
         form_responses: input.form_responses || {},
@@ -320,18 +345,17 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
 export async function checkBookingConflict(
   handyId: string,
   scheduledDate: string,
-  scheduledTime: string
+  scheduledTime: string,
+  estimatedHours: number = 1
 ): Promise<boolean> {
   try {
-    // Normalize time format to HH:MM for comparison
-    const normalizedTime = scheduledTime.slice(0, 5); // Get "HH:MM" part
-
+    // Single query to get all active bookings for this handy on the given date
     const { data, error } = await supabase
       .from('bookings')
-      .select('id')
+      .select('id, scheduled_time, estimated_hours')
       .eq('handy_id', handyId)
       .eq('scheduled_date', scheduledDate)
-      .in('status', ['pending', 'accepted', 'in_progress']); // Only check non-cancelled/completed bookings
+      .in('status', ['pending', 'accepted', 'in_progress']);
 
     if (error) {
       console.error('Error checking booking conflict:', error);
@@ -339,30 +363,27 @@ export async function checkBookingConflict(
     }
 
     if (!data || data.length === 0) {
-      return false; // No conflict
+      return false;
     }
 
-    // Check if any existing booking overlaps with the requested time
-    // For now, we do an exact match on the time (within the same hour)
-    const { data: conflictData, error: conflictError } = await supabase
-      .from('bookings')
-      .select('id, scheduled_time')
-      .eq('handy_id', handyId)
-      .eq('scheduled_date', scheduledDate)
-      .in('status', ['pending', 'accepted', 'in_progress']);
+    // Parse time string "HH:MM" to minutes since midnight for easy comparison
+    const parseTime = (time: string): number => {
+      const parts = time.slice(0, 5).split(':').map(Number);
+      return (parts[0] ?? 0) * 60 + (parts[1] ?? 0);
+    };
 
-    if (conflictError) {
-      console.error('Error checking time conflict:', conflictError);
-      throw new Error(`Failed to check time conflict: ${conflictError.message}`);
-    }
+    const newStart = parseTime(scheduledTime);
+    const newEnd = newStart + estimatedHours * 60;
 
-    // Check if any booking starts at the same time
-    const hasConflict = conflictData?.some((booking) => {
-      const bookingTime = booking.scheduled_time.slice(0, 5);
-      return bookingTime === normalizedTime;
+    // Check if any existing booking's time range overlaps with the new one
+    const hasConflict = data.some((booking) => {
+      const existingStart = parseTime(booking.scheduled_time);
+      const existingEnd = existingStart + (booking.estimated_hours || 1) * 60;
+      // Two ranges overlap if one starts before the other ends
+      return newStart < existingEnd && existingStart < newEnd;
     });
 
-    return hasConflict || false;
+    return hasConflict;
   } catch (error) {
     console.error('Error in checkBookingConflict:', error);
     throw error;

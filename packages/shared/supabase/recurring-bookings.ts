@@ -160,10 +160,12 @@ export async function createRecurringBookings(
 export async function cancelRecurringSeries(seriesId: string): Promise<boolean> {
   try {
     // Mark series as inactive
-    await supabase
+    const { error: seriesError } = await supabase
       .from('recurring_booking_series')
       .update({ is_active: false, cancelled_at: new Date().toISOString() })
       .eq('id', seriesId);
+
+    if (seriesError) throw seriesError;
 
     // Cancel all pending/accepted bookings in the series
     const { error } = await supabase

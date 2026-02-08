@@ -29,40 +29,38 @@ export async function getAccountBalance(): Promise<number> {
       0
     ) || 0;
 
-    // Get total paid amount (amount user has spent)
-    const { data: payments, error: paymentsError } = await supabase
-      .from('payments')
-      .select('amount_cents, booking_id')
-      .eq('status', 'paid')
-      .not('booking_id', 'is', null);
-
-    if (paymentsError) {
-      console.error('Error fetching payments:', paymentsError);
-      return totalRedeemed;
-    }
-
-    // Need to filter payments by customer_id through bookings
-    const bookingIds = payments?.map(p => p.booking_id) || [];
-
-    if (bookingIds.length === 0) {
-      return totalRedeemed;
-    }
-
-    const { data: bookings, error: bookingsError } = await supabase
+    // Get total paid amount for this user's bookings
+    // First get the user's booking IDs, then fetch only those payments
+    const { data: userBookings, error: bookingsError } = await supabase
       .from('bookings')
       .select('id')
-      .eq('customer_id', user.id)
-      .in('id', bookingIds);
+      .eq('customer_id', user.id);
 
     if (bookingsError) {
       console.error('Error fetching bookings:', bookingsError);
       return totalRedeemed;
     }
 
-    const userBookingIds = new Set(bookings?.map(b => b.id) || []);
-    const totalSpent = payments
-      ?.filter(p => userBookingIds.has(p.booking_id))
-      .reduce((sum, payment) => sum + payment.amount_cents, 0) || 0;
+    const bookingIds = userBookings?.map(b => b.id) || [];
+
+    if (bookingIds.length === 0) {
+      return totalRedeemed;
+    }
+
+    const { data: payments, error: paymentsError } = await supabase
+      .from('payments')
+      .select('amount_cents')
+      .eq('status', 'paid')
+      .in('booking_id', bookingIds);
+
+    if (paymentsError) {
+      console.error('Error fetching payments:', paymentsError);
+      return totalRedeemed;
+    }
+
+    const totalSpent = payments?.reduce(
+      (sum, payment) => sum + payment.amount_cents, 0
+    ) || 0;
 
     // Balance = redeemed promo codes - amount spent
     return totalRedeemed - totalSpent;

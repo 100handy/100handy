@@ -305,7 +305,8 @@ export default function ConfirmBookingScreen() {
       const hasConflict = await checkBookingConflict(
         profile.user_id,
         selectedDate,
-        selectedTime
+        selectedTime,
+        estimatedHours
       );
       if (hasConflict) {
         setIsSubmitting(false);

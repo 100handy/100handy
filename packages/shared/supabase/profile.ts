@@ -246,9 +246,9 @@ export async function deleteUserAvatar(): Promise<boolean> {
       return true; // No avatar to delete
     }
 
-    // Extract file path from URL
+    // Extract file name from URL (bucket is already scoped via .from('avatars'))
     const url = new URL(profile.avatar_url);
-    const filePath = url.pathname.split('/').slice(-2).join('/'); // Get 'avatars/filename'
+    const filePath = url.pathname.split('/').pop() || '';
 
     // Delete from storage
     const { error: deleteError } = await supabase.storage
@@ -1877,36 +1877,25 @@ export async function updatePrivacySettings(
  */
 export async function deleteUserAccount(): Promise<boolean> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
 
-    if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+    if (authError || !session) {
+      console.error('Error getting authenticated session:', authError);
       return false;
     }
 
-    // First, delete profile data
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('user_id', user.id);
+    // Call the edge function which uses admin privileges to fully delete the account
+    const { error } = await supabase.functions.invoke('delete-user-account', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
 
-    if (profileError) {
-      console.error('Error deleting user profile:', profileError);
-      // Continue anyway to attempt auth deletion
-    }
-
-    // Then, delete the auth account (this will sign out the user)
-    // Note: This requires admin privileges. In production, this should be done
-    // via an Edge Function or backend API with admin access
-    // For now, we'll just sign out the user and mark the account for deletion
-
-    // Sign out the user
-    const { error: signOutError } = await supabase.auth.signOut();
-
-    if (signOutError) {
-      console.error('Error signing out after account deletion:', signOutError);
+    if (error) {
+      console.error('Error deleting user account:', error);
       return false;
     }
+
+    // Sign out locally after successful deletion
+    await supabase.auth.signOut();
 
     return true;
   } catch (error) {
