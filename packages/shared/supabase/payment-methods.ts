@@ -1,5 +1,5 @@
 // packages/shared/supabase/payment-methods.ts
-import { supabase } from './supabaseClient.native';
+import { supabase } from './supabaseClient';
 
 export interface PaymentMethod {
   id: string;

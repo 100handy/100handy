@@ -2,17 +2,17 @@ import React from 'react';
 import { ScrollView, RefreshControl, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Loader } from '@/components/ui/loader';
-import { WrenchIcon, PaintbrushIcon, ClipboardList } from 'lucide-react-native';
+import { ClipboardList } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { TaskCard, Tab, EmptyState } from '@/components/tasks';
-import { useUserBookings, useConversationByBooking } from '@shared/supabase/query';
+import { useUserBookings } from '@shared/supabase/query';
 import { useAuthStore } from '@shared/supabase';
 import { bookingToTaskCardProps } from '@/lib/bookings';
 
 // Using Tailwind design tokens - colors are now defined in tailwind.config.js
 
 export default function TasksScreen() {
-  const [activeTab, setActiveTab] = React.useState('redemptions');
+  const [activeTab, setActiveTab] = React.useState('upcoming');
   const router = useRouter();
   
   // Get user from auth store
@@ -32,92 +32,29 @@ export default function TasksScreen() {
   // Show loading only if we have a user ID and are actually loading
   const showLoading = isLoading && !!user?.id;
 
-  // Fallback data for when no real bookings exist
-  const fallbackBookings = {
-    redemptions: [
-      {
-        id: 1,
-        title: 'Deep Cleaning (1 Bedroom Flat)',
-        dateTime: '21 Oct 2025, 14:00',
-        taskerName: 'Sam O.',
-        taskerRating: 5.0,
-        taskerReviews: 124,
-        location: 'Wanstead, London E11',
-        statusLabel: 'In Progress',
-        price: '£70.27 /hr',
-        icon: PaintbrushIcon,
-        iconTone: 'sage' as const,
-      },
-      {
-        id: 2,
-        title: 'Furniture Assembly',
-        dateTime: '22 Oct 2025, 10:30',
-        taskerName: 'Maria T.',
-        taskerRating: 5.0,
-        taskerReviews: 124,
-        location: 'Leytonstone, E11',
-        statusLabel: 'Scheduled',
-        price: '£60.67 /hr',
-        icon: WrenchIcon,
-        iconTone: 'orange' as const,
-      }
-    ],
-    complated: []
-  };
-
   const onRefresh = React.useCallback(() => {
     refetch();
   }, [refetch]);
 
   const getCurrentBookings = () => {
-    const realBookings = (() => {
-      switch (activeTab) {
-        case 'redemptions':
-          return upcoming;
-        case 'complated':
-          return [...past, ...cancelled];
-        default:
-          return [];
-      }
-    })();
-
-    // If no real bookings, use fallback data
-    if (realBookings.length === 0) {
-      switch (activeTab) {
-        case 'redemptions':
-          return fallbackBookings.redemptions as any[];
-        case 'complated':
-          return fallbackBookings.complated as any[];
-        default:
-          return [];
-      }
+    switch (activeTab) {
+      case 'upcoming':
+        return upcoming;
+      case 'completed':
+        return [...past, ...cancelled];
+      default:
+        return [];
     }
-
-    return realBookings;
   };
 
   // Transform bookings to TaskCard props
   const getCurrentTaskCards = () => {
     const bookings = getCurrentBookings();
-
-    // If using fallback data, return it directly (already in correct format)
-    // Fallback data has 'id' while real data has 'bookingId'
-    if (bookings.length > 0 && 'dateTime' in bookings[0] && !('category' in bookings[0])) {
-      return bookings as any[];
-    }
-
-    // Otherwise transform real booking data
     return bookings.map(booking => bookingToTaskCardProps(booking));
   };
 
-  const handleTaskCardPress = async (bookingId?: string | number) => {
-    if (!bookingId) {
-      // Fallback data was clicked, just go to messages tab
-      router.push('/(client)/(tabs)/messages');
-      return;
-    }
-
-    // Navigate to booking details page
+  const handleTaskCardPress = (bookingId?: string | number) => {
+    if (!bookingId) return;
     router.push(`/(client)/booking-details/${bookingId}`);
   };
 
@@ -133,8 +70,8 @@ export default function TasksScreen() {
 
         {/* Segmented Tabs */}
         <View className="flex-row bg-bg-primary">
-          <Tab id="redemptions" label="Redemptions" active={activeTab === 'redemptions'} onPress={setActiveTab} />
-          <Tab id="complated" label="Complated" active={activeTab === 'complated'} onPress={setActiveTab} />
+          <Tab id="upcoming" label="Upcoming" active={activeTab === 'upcoming'} onPress={setActiveTab} />
+          <Tab id="completed" label="Completed" active={activeTab === 'completed'} onPress={setActiveTab} />
         </View>
 
         <View className="h-px bg-border opacity-80" />

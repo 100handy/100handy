@@ -436,9 +436,17 @@ export default function ConfirmBookingScreen() {
       });
     } catch (error: any) {
       console.error('Error creating booking:', error);
-      // Best-effort: if payment was authorized but booking creation failed, release the hold.
+      // If payment was authorized but booking creation failed, release the hold.
       if (authorizedPaymentIntentId) {
-        cancelPaymentIntent(authorizedPaymentIntentId).catch(() => undefined);
+        try {
+          await cancelPaymentIntent(authorizedPaymentIntentId);
+        } catch {
+          Alert.alert(
+            'Payment Hold Notice',
+            'Your booking failed and we could not release the card hold automatically. The hold will expire within 7 days, or contact support for immediate release.'
+          );
+          return;
+        }
       }
       Alert.alert('Error', error.message || 'Failed to create booking. Please try again.');
     } finally {

@@ -1,5 +1,5 @@
 // packages/shared/supabase/availability.ts
-import { supabase } from './supabaseClient.native';
+import { supabase } from './supabaseClient';
 
 // Types
 export interface AvailabilitySlot {

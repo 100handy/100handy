@@ -189,7 +189,7 @@ const TaskersScreen = () => {
                   className="mb-4"
                   onPress={() => {
                     // Navigate to handyman details screen
-                    router.push(`/(tabs)/professionals/${tasker.id}`);
+                    router.push({ pathname: '/(client)/tasker-profile', params: { taskerId: tasker.id } });
                   }}
                 >
                   <View
