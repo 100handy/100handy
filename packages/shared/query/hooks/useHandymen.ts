@@ -174,12 +174,26 @@ export async function getHandymen(filters?: HandymanFilters): Promise<HandymanPr
   // Create a map for quick lookup
   const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
+  // Fetch review counts for all handymen in a single query
+  const { data: reviewCounts } = await supabase
+    .from('reviews')
+    .select('handy_id')
+    .in('handy_id', profileIds)
+    .eq('reviewer_type', 'customer');
+
+  const reviewCountMap = new Map<string, number>();
+  if (reviewCounts) {
+    for (const review of reviewCounts) {
+      reviewCountMap.set(review.handy_id, (reviewCountMap.get(review.handy_id) || 0) + 1);
+    }
+  }
+
   // Combine data - use skill-specific rate if available, otherwise use profile rate
   let handymen = handyProfiles.map((handy) => {
     const profile = profileMap.get(handy.user_id);
     // Use skill-specific rate when category filter is applied, otherwise use profile rate
     const hourlyRateCents = skillRateMap?.get(handy.user_id) ?? handy.hourly_rate_cents;
-    
+
     return {
       user_id: handy.user_id,
       bio: handy.bio,
@@ -195,7 +209,7 @@ export async function getHandymen(filters?: HandymanFilters): Promise<HandymanPr
       rating: profile?.rating || 0,
       jobs_completed: profile?.jobs_completed || 0,
       display_name: profile?.first_name ? `${profile.first_name} ${profile.last_name?.charAt(0) || ''}.` : 'Handyman',
-      review_count: profile?.jobs_completed || 0,
+      review_count: reviewCountMap.get(handy.user_id) || 0,
     };
   });
 
@@ -280,6 +294,13 @@ export async function getHandymanProfile(handyId: string, categoryId?: string): 
     }
   }
 
+  // Fetch actual review count
+  const { count: reviewCount } = await supabase
+    .from('reviews')
+    .select('id', { count: 'exact', head: true })
+    .eq('handy_id', handyId)
+    .eq('reviewer_type', 'customer');
+
   return {
     user_id: handyProfile.user_id,
     bio: handyProfile.bio,
@@ -295,7 +316,7 @@ export async function getHandymanProfile(handyId: string, categoryId?: string): 
     rating: profile?.rating || 0,
     jobs_completed: profile?.jobs_completed || 0,
     display_name: profile?.first_name ? `${profile.first_name} ${profile.last_name?.charAt(0) || ''}.` : 'Handyman',
-    review_count: profile?.jobs_completed || 0,
+    review_count: reviewCount || 0,
   };
 }
 

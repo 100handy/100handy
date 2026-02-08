@@ -736,7 +736,7 @@ export default function ConfirmBookingScreen() {
 
             <Text className="text-sm text-gray-600 leading-5 mb-4">
               Pricing is inclusive of a{' '}
-              <Text style={{ color: '#C1856A' }}>£7.46/hr Trust and Support fee</Text>, as well as VAT, which is billed on the TaskRabbit's fees.
+              <Text style={{ color: '#C1856A' }}>£7.46/hr Trust and Support fee</Text>, as well as VAT, which is billed on 100Handy's fees.
             </Text>
 
             <Text className="text-sm text-gray-600 leading-5">

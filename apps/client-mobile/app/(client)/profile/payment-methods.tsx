@@ -49,7 +49,7 @@ export default function PaymentMethodsScreen() {
   }, []);
 
   const handleAddPaymentMethod = () => {
-    router.push('/profile/add-payment-method');
+    router.push('/(client)/profile/add-payment-method');
   };
 
   const handleDeletePaymentMethod = (paymentMethodId: string) => {

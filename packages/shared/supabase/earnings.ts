@@ -43,7 +43,7 @@ export async function getProfessionalEarnings(
     // Get completed bookings for this professional in the given month
     const { data: bookings, error } = await supabase
       .from('bookings')
-      .select('id, hourly_rate_cents, estimated_hours, status, payment_status')
+      .select('id, hourly_rate_cents, estimated_hours, status, payment_status, discount_amount_cents')
       .eq('handy_id', userId)
       .eq('status', 'completed')
       .gte('scheduled_date', startDate)
@@ -62,7 +62,9 @@ export async function getProfessionalEarnings(
 
     if (bookings) {
       for (const booking of bookings) {
-        const bookingAmount = booking.hourly_rate_cents * (booking.estimated_hours || 1);
+        const grossAmount = booking.hourly_rate_cents * (booking.estimated_hours || 1);
+        const discount = booking.discount_amount_cents || 0;
+        const bookingAmount = grossAmount - discount;
         totalEarned += bookingAmount;
         hoursInvoiced += booking.estimated_hours || 1;
         taskCount += 1;

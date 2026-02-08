@@ -17,82 +17,6 @@ import {
 } from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
-// Mock data for taskers - in production, this would come from an API
-const mockTaskers: TaskerData[] = [
-  {
-    id: '1',
-    name: 'Mike W.',
-    avatarUrl: 'https://i.pravatar.cc/150?u=mike',
-    rating: 5.0,
-    reviewCount: 124,
-    pricePerHour: 70.27,
-    taskCount: 124,
-    taskType: 'tv mounting tasks',
-    description: 'I have 8 years of experience. I come with all the right rawlplugs, fixings and tools and not forgetting my trust…',
-    isSuperTasker: true,
-  },
-  {
-    id: '2',
-    name: 'Sami T.',
-    avatarUrl: 'https://i.pravatar.cc/150?u=sami',
-    rating: 5.0,
-    reviewCount: 124,
-    pricePerHour: 65.19,
-    taskCount: 54,
-    taskType: 'tv mounting tasks',
-    description: 'Got years of experience, the right tools, and a steady hand for TV mounting. Let me take care of getting your…',
-    isSuperTasker: true,
-  },
-  {
-    id: '3',
-    name: 'Maria R.',
-    avatarUrl: 'https://i.pravatar.cc/150?u=maria',
-    rating: 5.0,
-    reviewCount: 124,
-    pricePerHour: 64.77,
-    taskCount: 90,
-    taskType: 'tv mounting tasks',
-    description: 'From start to finish, I communicate clearly and work carefully to deliver exactly what you need',
-    isSuperTasker: false,
-  },
-  {
-    id: '4',
-    name: 'Lucas P.',
-    avatarUrl: 'https://i.pravatar.cc/150?u=lucas',
-    rating: 5.0,
-    reviewCount: 124,
-    pricePerHour: 53.17,
-    taskCount: 31,
-    taskType: 'tv mounting tasks',
-    description: 'Friendly, punctual, and experienced—I focus on providing quality service and customer satisfaction every time.',
-    isSuperTasker: false,
-  },
-  {
-    id: '5',
-    name: 'Lore V.',
-    avatarUrl: 'https://i.pravatar.cc/150?u=lore',
-    rating: 5.0,
-    reviewCount: 124,
-    pricePerHour: 60.24,
-    taskCount: 64,
-    taskType: 'tv mounting tasks',
-    description: 'Whether it\'s a quick fix or a larger project, I\'m committed to delivering dependable, professional results.',
-    isSuperTasker: false,
-  },
-  {
-    id: '6',
-    name: 'Sam O.',
-    avatarUrl: 'https://i.pravatar.cc/150?u=samo',
-    rating: 5.0,
-    reviewCount: 124,
-    pricePerHour: 70.27,
-    taskCount: 73,
-    taskType: 'tv mounting tasks',
-    description: 'With over 6 years of experience, I bring the right tools and skills to ensure your job is completed safely and efficiently.',
-    isSuperTasker: false,
-  },
-];
-
 const filterOptions = ['Within a week', 'Flexible', 'Price'];
 
 type SortOption = 
@@ -257,7 +181,7 @@ export default function SelectTaskerScreen() {
 
   // Transform handymen data to TaskerData format
   const taskers: TaskerData[] = useMemo(() => {
-    if (!filteredHandymen) return mockTaskers; // Fallback to mock data if no real data
+    if (!filteredHandymen) return []; // No data available yet
 
     return filteredHandymen.map((handyman) => {
       const slots = availabilityCache[handyman.user_id] || [];

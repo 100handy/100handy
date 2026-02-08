@@ -26,10 +26,11 @@ export const profileKeys = {
 };
 
 // Hook for fetching user profile
-export function useProfile() {
+export function useProfile(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: profileKeys.detail(),
     queryFn: getUserProfile,
+    enabled: options?.enabled ?? true,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });

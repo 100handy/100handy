@@ -38,17 +38,17 @@ export default function BookingSuccessScreen() {
       });
     } else {
       // Fallback to messages tab
-      router.push('/(client)/(tabs)/messages');
+      router.replace('/(client)/(tabs)/messages');
     }
   };
 
   const handleViewBookings = () => {
     // Navigate to bookings tab
-    router.push('/(client)/(tabs)/tasks');
+    router.replace('/(client)/(tabs)/tasks');
   };
 
   const handleGoHome = () => {
-    router.push('/(client)/(tabs)/home');
+    router.replace('/(client)/(tabs)/home');
   };
 
   return (
