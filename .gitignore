@@ -41,7 +41,7 @@ yarn-error.log*
 #cursor
 .cursor
 .claude
-icons
+/icons
 temp/
 opencode.json
 Copy of 100 Handy*.md
