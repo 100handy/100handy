@@ -90,46 +90,58 @@ export async function getHandymen(filters?: HandymanFilters): Promise<HandymanPr
   let skillRateMap: Map<string, number> | undefined;
   let userIds: string[] | undefined;
 
-  // When categoryId is provided, filter by professionals who have set up that skill with pricing
+  // When categoryId is provided, filter by professionals via user_skills (preferred) or handy_categories (fallback)
   if (filters?.categoryId) {
     const skillId = await getSkillIdFromCategoryId(filters.categoryId);
-    
-    if (!skillId) {
-      // No matching skill found, return empty
-      return [];
+
+    // Try user_skills first for skill-specific pricing
+    if (skillId) {
+      let userSkillsQuery = supabase
+        .from('user_skills')
+        .select('user_id, hourly_rate_cents')
+        .eq('skill_id', skillId)
+        .eq('is_active', true)
+        .gt('hourly_rate_cents', 0);
+
+      if (filters?.minPrice !== undefined) {
+        userSkillsQuery = userSkillsQuery.gte('hourly_rate_cents', filters.minPrice * 100);
+      }
+      if (filters?.maxPrice !== undefined) {
+        userSkillsQuery = userSkillsQuery.lte('hourly_rate_cents', filters.maxPrice * 100);
+      }
+
+      const { data: userSkills, error: userSkillsError } = await userSkillsQuery;
+
+      if (userSkillsError) {
+        console.error('Error fetching user_skills:', userSkillsError);
+        throw new Error(`Failed to fetch user skills: ${userSkillsError.message}`);
+      }
+
+      if (userSkills && userSkills.length > 0) {
+        skillRateMap = new Map(userSkills.map(us => [us.user_id, us.hourly_rate_cents]));
+        userIds = userSkills.map(us => us.user_id);
+      }
     }
 
-    // Get professionals with this skill configured (is_active=true, hourly_rate_cents > 0)
-    let userSkillsQuery = supabase
-      .from('user_skills')
-      .select('user_id, hourly_rate_cents')
-      .eq('skill_id', skillId)
-      .eq('is_active', true)
-      .gt('hourly_rate_cents', 0);
+    // Fallback: use handy_categories when user_skills returns no professionals
+    if (!userIds || userIds.length === 0) {
+      const { data: handyCategories, error: hcError } = await supabase
+        .from('handy_categories')
+        .select('handy_id')
+        .eq('category_id', filters.categoryId);
 
-    // Apply price filters to skill rates
-    if (filters?.minPrice !== undefined) {
-      userSkillsQuery = userSkillsQuery.gte('hourly_rate_cents', filters.minPrice * 100);
+      if (hcError) {
+        console.error('Error fetching handy_categories:', hcError);
+        throw new Error(`Failed to fetch handy categories: ${hcError.message}`);
+      }
+
+      if (handyCategories && handyCategories.length > 0) {
+        userIds = handyCategories.map(hc => hc.handy_id);
+        // No skill-specific rates; handy_profiles.hourly_rate_cents will be used
+      } else {
+        return [];
+      }
     }
-    if (filters?.maxPrice !== undefined) {
-      userSkillsQuery = userSkillsQuery.lte('hourly_rate_cents', filters.maxPrice * 100);
-    }
-
-    const { data: userSkills, error: userSkillsError } = await userSkillsQuery;
-
-    if (userSkillsError) {
-      console.error('Error fetching user_skills:', userSkillsError);
-      throw new Error(`Failed to fetch user skills: ${userSkillsError.message}`);
-    }
-
-    if (!userSkills || userSkills.length === 0) {
-      // No professionals have set up this skill with pricing
-      return [];
-    }
-
-    // Build rate map and user IDs list
-    skillRateMap = new Map(userSkills.map(us => [us.user_id, us.hourly_rate_cents]));
-    userIds = userSkills.map(us => us.user_id);
   }
 
   // Build handy_profiles query

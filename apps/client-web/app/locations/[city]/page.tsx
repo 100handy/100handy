@@ -16,6 +16,19 @@ const cityData: Record<string, { name: string; taskerCount: number; reviewCount:
   "edinburgh": { name: "Edinburgh", taskerCount: 900, reviewCount: "130k" },
   "bristol": { name: "Bristol", taskerCount: 1300, reviewCount: "190k" },
   "sheffield": { name: "Sheffield", taskerCount: 800, reviewCount: "120k" },
+  "nottingham": { name: "Nottingham", taskerCount: 750, reviewCount: "110k" },
+  "leicester": { name: "Leicester", taskerCount: 680, reviewCount: "95k" },
+  "newcastle-upon-tyne": { name: "Newcastle upon Tyne", taskerCount: 950, reviewCount: "140k" },
+  "cardiff": { name: "Cardiff", taskerCount: 720, reviewCount: "100k" },
+  "belfast": { name: "Belfast", taskerCount: 650, reviewCount: "90k" },
+  "coventry": { name: "Coventry", taskerCount: 580, reviewCount: "80k" },
+  "brighton": { name: "Brighton", taskerCount: 870, reviewCount: "125k" },
+  "southampton": { name: "Southampton", taskerCount: 640, reviewCount: "88k" },
+  "reading": { name: "Reading", taskerCount: 560, reviewCount: "78k" },
+  "cambridge": { name: "Cambridge", taskerCount: 620, reviewCount: "85k" },
+  "oxford": { name: "Oxford", taskerCount: 600, reviewCount: "82k" },
+  "norwich": { name: "Norwich", taskerCount: 430, reviewCount: "60k" },
+  "exeter": { name: "Exeter", taskerCount: 380, reviewCount: "52k" },
 };
 
 // Services available in each city

@@ -25,11 +25,10 @@ export default function AllPagesPage() {
       { path: "/browse-pros", label: "Browse Pros" },
       { path: "/book-task", label: "Book Task" },
       { path: "/task-form", label: "Task Form" },
-      { path: "/confirm-booking", label: "Confirm Booking" },
     ],
     "Tasker Pages": [
       { path: "/become-tasker", label: "Become Tasker" },
-      { path: "/taskers", label: "Taskers" },
+      { path: "/elite-taskers", label: "Elite Taskers" },
     ],
     "Location-Based Pages": [
       { path: "/handyman-london", label: "Handyman London" },

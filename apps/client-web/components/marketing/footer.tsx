@@ -10,7 +10,7 @@ const discoverLinks = [
   { label: "Become a Handy", href: "/become-tasker" },
   { label: "Services By City", href: "/services-by-city" },
   { label: "All Services", href: "/all-services" },
-  { label: "Elite Handies", href: "/elite-taskers" },
+  { label: "Elite Taskers", href: "/elite-taskers" },
   { label: "Help", href: "/help" },
 ];
 

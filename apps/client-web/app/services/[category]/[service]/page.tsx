@@ -367,7 +367,7 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
           tasks={serviceData.tasks}
         />
         <ServiceHowItWorks />
-        <CTASection />
+        <CTASection categoryName={serviceData.title} />
         <FAQs service={serviceData.title} faqs={serviceData.faqs} />
         <Cities service={serviceData.title} />
       </main>

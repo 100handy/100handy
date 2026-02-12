@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
 import Link from "next/link";
 import { getBooking, cancelBooking, type Booking } from "@/lib/supabase/bookings";
@@ -16,7 +17,6 @@ export default function BookingDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuthAndLoadBooking = async () => {
@@ -27,8 +27,6 @@ export default function BookingDetailsPage() {
         router.push('/sign-in');
         return;
       }
-
-      setUserId(user.id);
 
       try {
         setLoading(true);
@@ -142,17 +140,7 @@ export default function BookingDetailsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <div className="flex items-center h-[70px]">
-              <Link href="/" className="flex items-center gap-2">
-                <span className="text-brand-dark-alt font-bold text-lg sm:text-xl font-display">
-                  100<span className="font-normal">HANDY</span>
-                </span>
-              </Link>
-            </div>
-          </div>
-        </header>
+        <Header currentPage="my-tasks" />
 
         <main className="flex-1 py-8 flex items-center justify-center">
           <div className="text-center">
@@ -169,17 +157,7 @@ export default function BookingDetailsPage() {
   if (error || !booking) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-            <div className="flex items-center h-[70px]">
-              <Link href="/" className="flex items-center gap-2">
-                <span className="text-brand-dark-alt font-bold text-lg sm:text-xl font-display">
-                  100<span className="font-normal">HANDY</span>
-                </span>
-              </Link>
-            </div>
-          </div>
-        </header>
+        <Header currentPage="my-tasks" />
 
         <main className="flex-1 py-8">
           <div className="max-w-[800px] mx-auto px-4 sm:px-8">
@@ -220,25 +198,7 @@ export default function BookingDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
-          <div className="flex items-center justify-between h-[70px]">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-brand-dark-alt font-bold text-lg sm:text-xl font-display">
-                100<span className="font-normal">HANDY</span>
-              </span>
-            </Link>
-
-            <Link
-              href="/dashboard"
-              className="text-brand-dark hover:text-brand-terracotta transition-colors"
-            >
-              View All Bookings
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header currentPage="my-tasks" />
 
       {/* Success Banner */}
       {booking.status === 'pending' && (

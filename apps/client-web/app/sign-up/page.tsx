@@ -3,11 +3,11 @@
 import { Button } from "@100handy/ui/components/button";
 import { Input } from "@100handy/ui/components/input";
 import { Checkbox } from "@100handy/ui/components/checkbox";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import { Loader2, ChevronDown } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Select,
@@ -21,12 +21,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpFormData } from "@shared/schemas/auth";
 
-export default function SignUp() {
+function SignUpForm() {
   const [countryCode, setCountryCode] = useState("+44");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
+  const safeRedirect =
+    redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : "/dashboard";
 
   const {
     register,
@@ -75,7 +81,9 @@ export default function SignUp() {
         },
         onSuccess: async () => {
           // Redirect to verify-code page with email parameter
-          router.push(`/verify-code?email=${encodeURIComponent(formData.email)}`);
+          router.push(
+            `/verify-code?email=${encodeURIComponent(formData.email)}&redirect=${encodeURIComponent(safeRedirect)}`
+          );
         },
       }
     );
@@ -325,7 +333,7 @@ export default function SignUp() {
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
               <Link
-                href="/sign-in"
+                href={`/sign-in?redirect=${encodeURIComponent(safeRedirect)}`}
                 className="text-brand-dark-alt font-semibold hover:underline"
               >
                 Sign In
@@ -335,5 +343,20 @@ export default function SignUp() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignUp() {
+  return (
+    <Suspense fallback={
+      <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 bg-gray-200" />
+        <div className="relative z-10 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-brand-terracotta animate-spin" />
+        </div>
+      </div>
+    }>
+      <SignUpForm />
+    </Suspense>
   );
 }

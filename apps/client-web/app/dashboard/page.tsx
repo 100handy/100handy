@@ -2,14 +2,15 @@
 
 import { Search } from "lucide-react";
 import Image from "next/image";
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
 import { useCategories } from "@shared/supabase";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { data: allCategories, isLoading: loading } = useCategories();
@@ -20,6 +21,21 @@ export default function DashboardPage() {
     // Filter to show only subcategories (level 1) or popular ones
     return allCategories.filter(cat => cat.level === 1).slice(0, 10);
   }, [allCategories]);
+
+  const filteredCategories = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return categories;
+    return categories.filter((category) =>
+      category.name.toLowerCase().includes(query)
+    );
+  }, [categories, searchQuery]);
+
+  useEffect(() => {
+    const initialSearch = searchParams.get("search");
+    if (initialSearch) {
+      setSearchQuery(initialSearch);
+    }
+  }, [searchParams]);
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
@@ -59,11 +75,15 @@ export default function DashboardPage() {
           <div className="flex flex-wrap justify-center gap-3 mb-12 max-w-4xl mx-auto">
             {loading ? (
               <div className="text-gray-500">Loading categories...</div>
-            ) : categories.length === 0 ? (
-              <div className="text-gray-500">No categories available</div>
+            ) : filteredCategories.length === 0 ? (
+              <div className="text-gray-500">
+                {searchQuery.trim()
+                  ? "No categories match your search"
+                  : "No categories available"}
+              </div>
             ) : (
               <>
-                {categories.map((category) => (
+                {filteredCategories.map((category) => (
                   <button
                     key={category.id}
                     onClick={() => handleCategoryClick(category.name)}
@@ -128,5 +148,17 @@ export default function DashboardPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-terracotta" />
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

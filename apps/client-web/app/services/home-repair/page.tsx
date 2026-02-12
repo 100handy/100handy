@@ -38,7 +38,7 @@ export default function HomeRepairServicePage(): React.JSX.Element {
           ]}
         />
         <ServiceHowItWorks />
-        <CTASection />
+        <CTASection categoryName="Home Repair" />
         <FAQs service="Home Repair" />
         <Cities service="Home Repair" />
       </main>

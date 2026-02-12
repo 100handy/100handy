@@ -18,6 +18,11 @@ function VerifyCodeForm() {
   const email = searchParams.get("email");
   const phoneNumber = searchParams.get("phone") || "+44 7784 - 500446";
   const isPasswordReset = searchParams.get("reset") === "true";
+  const redirectParam = searchParams.get("redirect");
+  const safeRedirect =
+    redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : "/dashboard";
 
   // Determine if we're verifying email or phone
   const isEmailVerification = !!email;
@@ -46,7 +51,7 @@ function VerifyCodeForm() {
         await authClient.verifyEmailOTP(email!, code, {
           onSuccess: () => {
             toast.success("Email verified successfully!");
-            router.push("/dashboard");
+            router.push(safeRedirect);
           },
           onError: (ctx) => {
             console.error("Email OTP verification error:", ctx.error.message);
@@ -58,7 +63,7 @@ function VerifyCodeForm() {
         await authClient.verifyOTP(phoneNumber, code, {
           onSuccess: () => {
             toast.success("Phone verified successfully!");
-            router.push("/dashboard");
+            router.push(safeRedirect);
           },
           onError: (ctx) => {
             console.error("Phone OTP verification error:", ctx.error.message);

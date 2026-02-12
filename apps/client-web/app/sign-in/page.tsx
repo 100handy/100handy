@@ -2,20 +2,26 @@
 
 import { Button } from "@100handy/ui/components/button";
 import { Input } from "@100handy/ui/components/input";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, type SignInFormData } from "@shared/schemas/auth";
 
-export default function SignIn() {
+function SignInForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
+  const safeRedirect =
+    redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : "/dashboard";
 
   const {
     register,
@@ -48,7 +54,7 @@ export default function SignIn() {
           toast.error(ctx.error.message || "Failed to sign in");
         },
         onSuccess: async () => {
-          router.push("/dashboard");
+          router.push(safeRedirect);
         },
       }
     );
@@ -181,5 +187,20 @@ export default function SignIn() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={
+      <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 bg-gray-200" />
+        <div className="relative z-10 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-brand-terracotta animate-spin" />
+        </div>
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   );
 }

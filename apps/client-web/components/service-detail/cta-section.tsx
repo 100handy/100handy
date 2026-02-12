@@ -1,6 +1,16 @@
 "use client";
 
-export function CTASection(): React.JSX.Element {
+import Link from "next/link";
+
+interface CTASectionProps {
+  categoryName?: string;
+}
+
+export function CTASection({ categoryName }: CTASectionProps): React.JSX.Element {
+  const href = categoryName
+    ? `/task-form?category=${encodeURIComponent(categoryName)}`
+    : "/dashboard";
+
   return (
     <section className="bg-[#F5EBE5] py-16">
       <div className="mx-auto max-w-[1920px] px-8">
@@ -22,9 +32,12 @@ export function CTASection(): React.JSX.Element {
             <h2 className="mb-8 text-[39px] font-bold text-brand-dark-alt">
               Ready to hire a Tasker?
             </h2>
-            <button className="rounded-full bg-brand-terracotta px-14 py-[14px] text-[20px] font-medium text-white transition-colors hover:bg-brand-terracotta/90">
+            <Link
+              href={href}
+              className="rounded-full bg-brand-terracotta px-14 py-[14px] text-[20px] font-medium text-white transition-colors hover:bg-brand-terracotta/90"
+            >
               Find help now
-            </button>
+            </Link>
           </div>
         </div>
       </div>

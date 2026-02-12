@@ -78,12 +78,23 @@ const getCategoriesByLevel = async (level: number): Promise<Category[]> => {
   return data || [];
 };
 
-// Fetch categories by specific names
+// Fetch categories by specific names (case-insensitive match)
 const getCategoriesByNames = async (names: string[]): Promise<Category[]> => {
+  if (names.length === 0) return [];
+
+  // Use case-insensitive search since category names may differ in casing (e.g. "Furniture Assembly" vs "Furniture assembly")
+  // Escape names with commas by wrapping in double quotes for PostgREST
+  const orConditions = names
+    .map((n) => {
+      const escaped = n.replace(/"/g, '""');
+      return `name.ilike."${escaped}"`;
+    })
+    .join(',');
+
   const { data, error } = await supabase
     .from('categories')
     .select('*')
-    .in('name', names)
+    .or(orConditions)
     .order('name');
 
   if (error) {
