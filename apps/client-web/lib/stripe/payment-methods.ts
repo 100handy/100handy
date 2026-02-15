@@ -92,7 +92,16 @@ export async function listPaymentMethods(customerId: string): Promise<PaymentMet
   }
 
   const { paymentMethods } = await response.json();
-  return paymentMethods;
+
+  // Map edge function response (nested card object) to flat PaymentMethod interface
+  return (paymentMethods || []).map((pm: any) => ({
+    id: pm.id,
+    brand: pm.card?.brand || pm.brand,
+    last4: pm.card?.last4 || pm.last4,
+    expMonth: pm.card?.exp_month || pm.expMonth,
+    expYear: pm.card?.exp_year || pm.expYear,
+    isDefault: pm.isDefault ?? false,
+  }));
 }
 
 /**

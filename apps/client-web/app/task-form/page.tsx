@@ -211,6 +211,7 @@ function TaskFormContent() {
   // Payment state
   const [paymentIntentClientSecret, setPaymentIntentClientSecret] = useState<string>("");
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
+  const [paymentAuthorized, setPaymentAuthorized] = useState(false);
 
 
   // Restore state from sessionStorage when step >= 2 (on page refresh)
@@ -447,6 +448,7 @@ function TaskFormContent() {
     setSelectedTime(time);
     setShowBrowsePros(false);
     setShowConfirmation(true);
+    setPaymentAuthorized(false);
 
     try {
       setLoading(true);
@@ -493,6 +495,9 @@ function TaskFormContent() {
   }, []);
 
   const handlePaymentSuccess = async (authorizedPaymentIntentId: string) => {
+    // Track that payment has been authorized to avoid re-confirming with Stripe on retry
+    setPaymentAuthorized(true);
+
     // Payment authorization successful! Now create the booking
     if (!userId || !selectedHandyman || !category || !addressId) {
       setError('Missing required booking information');
@@ -666,6 +671,7 @@ function TaskFormContent() {
               {/* Left Column - Payment Form */}
               <ConfirmDetails
                 clientSecret={paymentIntentClientSecret}
+                authorizedPaymentId={paymentAuthorized ? paymentIntentId : undefined}
                 onPaymentSuccess={handlePaymentSuccess}
                 onPaymentError={handlePaymentError}
                 isSubmitting={isSubmitting}

@@ -7,6 +7,7 @@ interface ConfirmDetailsProps {
   onPaymentSuccess: (paymentIntentId: string) => void;
   onPaymentError: (error: string) => void;
   isSubmitting: boolean;
+  authorizedPaymentId?: string;
 }
 
 export function ConfirmDetails({
@@ -14,6 +15,7 @@ export function ConfirmDetails({
   onPaymentSuccess,
   onPaymentError,
   isSubmitting,
+  authorizedPaymentId,
 }: ConfirmDetailsProps) {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-8">
@@ -31,8 +33,25 @@ export function ConfirmDetails({
           You may see a temporary hold on your payment method in the amount of your Tasker's hourly rate. Don't worry - you're only billed when your task is complete!
         </p>
 
-        {/* Stripe Payment Form */}
-        {clientSecret ? (
+        {/* Payment already authorized - show retry booking button */}
+        {authorizedPaymentId ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 p-3">
+              <svg className="h-5 w-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-green-800 text-sm">Payment authorized successfully. Your card has been held.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onPaymentSuccess(authorizedPaymentId)}
+              disabled={isSubmitting}
+              className="w-full rounded-lg bg-brand-terracotta px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Processing...' : 'Complete Booking'}
+            </button>
+          </div>
+        ) : clientSecret ? (
           <StripeCardElement
             clientSecret={clientSecret}
             onSuccess={onPaymentSuccess}

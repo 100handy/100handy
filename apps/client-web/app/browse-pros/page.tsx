@@ -210,6 +210,7 @@ function BrowseProsContent() {
   const [paymentIntentClientSecret, setPaymentIntentClientSecret] =
     useState<string>("");
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
+  const [paymentAuthorized, setPaymentAuthorized] = useState(false);
   const [isPreparingPayment, setIsPreparingPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -319,6 +320,7 @@ function BrowseProsContent() {
     setCurrentStep(3);
     setPaymentIntentClientSecret("");
     setPaymentIntentId("");
+    setPaymentAuthorized(false);
 
     if (!location || !streetAddress.trim()) {
       setLocationConfirmed(false);
@@ -425,6 +427,9 @@ function BrowseProsContent() {
   };
 
   const handlePaymentSuccess = async (authorizedPaymentIntentId: string) => {
+    // Track that payment has been authorized to avoid re-confirming with Stripe on retry
+    setPaymentAuthorized(true);
+
     if (!userId || !selectedTasker || !categoryId || !addressId) {
       setError("Missing required booking information");
       return;
@@ -473,6 +478,7 @@ function BrowseProsContent() {
     setSelectedTime("");
     setPaymentIntentClientSecret("");
     setPaymentIntentId("");
+    setPaymentAuthorized(false);
     setIsPreparingPayment(false);
     setError(null);
     initPaymentRef.current = false;
@@ -662,6 +668,7 @@ function BrowseProsContent() {
               <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
                 <ConfirmDetails
                   clientSecret={paymentIntentClientSecret}
+                  authorizedPaymentId={paymentAuthorized ? paymentIntentId : undefined}
                   onPaymentSuccess={handlePaymentSuccess}
                   onPaymentError={(msg) => setError(msg)}
                   isSubmitting={isSubmitting}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -121,12 +122,12 @@ export function TwoFactorDialog({
             <DialogTitle className="text-brand-dark text-xl font-semibold">
               Two-Factor Authentication
             </DialogTitle>
+            <DialogDescription className="text-brand-dark text-sm text-center">
+              We'll send a verification code to your email address
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            <p className="text-brand-dark text-sm text-center">
-              We'll send a verification code to your email address
-            </p>
 
             <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
               <p className="text-brand-dark text-sm font-medium text-center">
@@ -161,12 +162,12 @@ export function TwoFactorDialog({
             <DialogTitle className="text-brand-dark text-xl font-semibold">
               Verify Authentication Code
             </DialogTitle>
+            <DialogDescription className="text-brand-dark text-sm text-center">
+              Enter the 6-digit code sent to {userEmail}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            <p className="text-brand-dark text-sm text-center">
-              Enter the 6-digit code sent to {userEmail}
-            </p>
 
             <div className="space-y-2">
               <label className="text-brand-dark text-sm font-medium">Verification Code</label>
