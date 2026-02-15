@@ -43,7 +43,7 @@ export function Guarantees() {
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-[1920px] px-8">
-        <h2 className="mb-4 text-center text-[34px] font-bold text-[#30352D]">
+        <h2 className="mb-4 text-center text-[34px] font-bold text-brand-dark-alt">
           Peace of Mind, <span className="text-brand-terracotta">Always</span>
         </h2>
 
@@ -55,7 +55,7 @@ export function Guarantees() {
                   {guarantee.icon}
                 </div>
               </div>
-              <h3 className="mb-3 text-center text-[24px] font-medium text-[#30352D]">
+              <h3 className="mb-3 text-center text-[24px] font-medium text-brand-dark-alt">
                 {guarantee.title}
               </h3>
               <p className="text-center text-[16px] leading-relaxed text-black">

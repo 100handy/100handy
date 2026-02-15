@@ -26,7 +26,7 @@ export function SecurityTab() {
   return (
     <>
       <div className="flex flex-col sm:flex-row items-start justify-between mb-6 sm:mb-8 border-b border-gray-300 pb-4 sm:pb-6 gap-4 sm:gap-0">
-        <h2 className="text-brand-dark font-bold text-2xl sm:text-[34px]">Account</h2>
+        <h2 className="text-brand-dark font-bold text-2xl sm:text-[34px]">Account Security</h2>
       </div>
 
       <div className="space-y-6">

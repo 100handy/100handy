@@ -30,12 +30,12 @@ export function Hero() {
       <div className="mx-auto max-w-[1920px] px-8">
         <div className="mx-auto max-w-2xl text-center">
           {/* Hero Title */}
-          <h1 className="text-[59px] font-bold leading-tight text-[#30352D]">
+          <h1 className="text-[59px] font-bold leading-tight text-brand-dark-alt">
             Book trusted help for your home — fast.
           </h1>
 
           {/* Subheadline */}
-          <p className="mt-6 text-[20px] leading-relaxed text-[#30352D]/80">
+          <p className="mt-6 text-[20px] leading-relaxed text-brand-dark-alt/80">
             Assembly, repairs, cleaning, moving, and more—handled by vetted pros, scheduled when it suits you, and paid securely in one place.
           </p>
 
@@ -48,7 +48,7 @@ export function Hero() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="h-[52px] w-full rounded-lg border border-gray-300 bg-white py-3 pl-6 pr-14 text-[18px] text-[#30352D] placeholder:font-light placeholder:text-gray-400 focus:border-brand-terracotta focus:outline-none focus:ring-2 focus:ring-brand-terracotta/20"
+                className="h-[52px] w-full rounded-lg border border-gray-300 bg-white py-3 pl-6 pr-14 text-[18px] text-brand-dark-alt placeholder:font-light placeholder:text-gray-400 focus:border-brand-terracotta focus:outline-none focus:ring-2 focus:ring-brand-terracotta/20"
               />
               <button
                 type="submit"

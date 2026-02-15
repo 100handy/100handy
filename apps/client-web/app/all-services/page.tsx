@@ -58,7 +58,7 @@ const ServicesSection = () => {
 
 const HelpButton = () => {
   return (
-    <button className="fixed bottom-6 left-6 bg-[#A0B194] text-white p-4 rounded-full shadow-lg hover:bg-[#8a9a7e] transition-colors flex items-center justify-center">
+    <button className="fixed bottom-6 left-6 bg-brand-sage text-white p-4 rounded-full shadow-lg hover:bg-brand-sage/85 transition-colors flex items-center justify-center">
       <HelpIcon />
     </button>
   );

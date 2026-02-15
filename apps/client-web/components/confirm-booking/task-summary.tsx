@@ -66,30 +66,30 @@ export function TaskSummary({
           />
         </div>
         <div>
-          <p className="text-[18px] font-medium text-[#333A31]">{handymanName}</p>
+          <p className="text-[18px] font-medium text-brand-dark">{handymanName}</p>
         </div>
       </div>
 
       {/* Task Details */}
       <div className="mb-6 space-y-3">
         <div className="flex items-start gap-3">
-          <Calendar className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#333A31]" />
-          <p className="text-[18px] text-[#333A31]">{scheduledDate} at {scheduledTime}</p>
+          <Calendar className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-dark" />
+          <p className="text-[18px] text-brand-dark">{scheduledDate} at {scheduledTime}</p>
         </div>
 
         <div className="flex items-start gap-3">
-          <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#333A31]" />
-          <p className="text-[18px] text-[#333A31]">{address}</p>
+          <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-dark" />
+          <p className="text-[18px] text-brand-dark">{address}</p>
         </div>
 
         <div className="flex items-start gap-3">
-          <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#333A31]" />
-          <p className="text-[18px] text-[#333A31]">{getTaskSizeLabel(taskSize)}</p>
+          <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-dark" />
+          <p className="text-[18px] text-brand-dark">{getTaskSizeLabel(taskSize)}</p>
         </div>
 
         <div className="flex items-start gap-3">
-          <Truck className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#333A31]" />
-          <p className="text-[18px] text-[#333A31]">{getVehicleLabel(vehicleRequirement)}</p>
+          <Truck className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-dark" />
+          <p className="text-[18px] text-brand-dark">{getVehicleLabel(vehicleRequirement)}</p>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export function TaskSummary({
       {onEdit && (
         <button
           onClick={onEdit}
-          className="mb-6 w-full rounded-lg border border-[#C1856A] bg-white px-4 py-2.5 text-[16px] font-medium text-[#C1856A] transition-colors hover:bg-[#C1856A]/5"
+          className="mb-6 w-full rounded-lg border border-brand-terracotta bg-white px-4 py-2.5 text-[16px] font-medium text-brand-terracotta transition-colors hover:bg-brand-terracotta/5"
         >
           Edit Task
         </button>
@@ -105,11 +105,11 @@ export function TaskSummary({
 
       {/* Task Details */}
       <div className="mb-6">
-        <p className="mb-2 text-[14px] font-medium text-[#333A31]">
+        <p className="mb-2 text-[14px] font-medium text-brand-dark">
           Your Task details
         </p>
         <div className="rounded-lg bg-gray-50 p-4">
-          <p className="text-[18px] leading-relaxed text-[#333A31]">
+          <p className="text-[18px] leading-relaxed text-brand-dark">
             {taskDetails}
           </p>
         </div>
@@ -121,30 +121,30 @@ export function TaskSummary({
       {/* Hourly Rate */}
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <p className="text-[18px] font-bold text-[#333A31]">Hourly Rate</p>
-          <p className="text-[18px] font-bold text-[#333A31]">£{hourlyRate.toFixed(2)} /hr</p>
+          <p className="text-[18px] font-bold text-brand-dark">Hourly Rate</p>
+          <p className="text-[18px] font-bold text-brand-dark">£{hourlyRate.toFixed(2)} /hr</p>
         </div>
       </div>
 
       {/* Pricing Details */}
       <div className="space-y-2 text-[14px] mb-6">
-        <p className="text-[#333A31]">
+        <p className="text-brand-dark">
           <span>Pricing is inclusive of a </span>
-          <span className="font-medium text-[#C1856A]">£10.68/hr Trust & Support fee.</span>
-          <span className="font-medium text-[#C1856A]"> Pricing includes VAT </span>
+          <span className="font-medium text-brand-terracotta">£10.68/hr Trust & Support fee.</span>
+          <span className="font-medium text-brand-terracotta"> Pricing includes VAT </span>
           <span>which is billed on the Trust & Support Fee and our Service Fee.</span>
         </p>
 
-        <p className="text-[#333A31]">
+        <p className="text-brand-dark">
           You will not be billed until your task is complete. Tasks have a one-hour minimum. You can cancel or reschedule anytime.
         </p>
 
-        <p className="text-[#333A31]">
+        <p className="text-brand-dark">
           If you cancel your task within 24 hours of the scheduled start time, you may be billed a one-hour cancellation fee at the Pro's hourly rate.
         </p>
 
-        <p className="text-[#333A31]">
-          <span className="font-medium text-[#C1856A]">Learn more</span>
+        <p className="text-brand-dark">
+          <span className="font-medium text-brand-terracotta">Learn more</span>
           <span> about our cancellation policy.</span>
         </p>
       </div>
@@ -154,7 +154,7 @@ export function TaskSummary({
         <button
           onClick={onConfirm}
           disabled={isSubmitting}
-          className="w-full rounded-lg bg-[#C1856A] px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-[#a67359] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-brand-terracotta px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Creating booking...' : 'Confirm and Chat'}
         </button>

@@ -776,7 +776,7 @@ function TaskFormContent() {
                     </div>
                   </div>
                   <p className="text-brand-terracotta text-sm">
-                    Good news! Taskrabbit is available in your area
+                    Good news! 100 Handy is available in your area
                   </p>
                 </>
               )}
@@ -813,10 +813,10 @@ function TaskFormContent() {
             <main className="flex-1">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h1 className="text-2xl font-medium text-[#30352D]">
+                  <h1 className="text-2xl font-medium text-brand-dark-alt">
                     Browse Pros & Prices
                   </h1>
-                  <p className="text-[#30352D] text-base leading-relaxed mt-1">
+                  <p className="text-brand-dark-alt text-base leading-relaxed mt-1">
                     Filter and sort to find your 100Handy Pro. Then view their
                     availability to request your date and time.
                   </p>

@@ -343,7 +343,8 @@ export async function cancelBooking(bookingId: string): Promise<boolean> {
   const { error } = await supabase
     .from('bookings')
     .update({ status: 'cancelled' })
-    .eq('id', bookingId);
+    .eq('id', bookingId)
+    .in('status', ['pending', 'accepted']);
 
   if (error) {
     console.error(`Error cancelling booking ${bookingId}:`, error);
@@ -362,7 +363,8 @@ export async function acceptBooking(bookingId: string): Promise<boolean> {
   const { error } = await supabase
     .from('bookings')
     .update({ status: 'accepted' })
-    .eq('id', bookingId);
+    .eq('id', bookingId)
+    .eq('status', 'pending');
 
   if (error) {
     console.error(`Error accepting booking ${bookingId}:`, error);
@@ -381,7 +383,8 @@ export async function completeBooking(bookingId: string): Promise<boolean> {
   const { error } = await supabase
     .from('bookings')
     .update({ status: 'completed' })
-    .eq('id', bookingId);
+    .eq('id', bookingId)
+    .eq('status', 'in_progress');
 
   if (error) {
     console.error(`Error completing booking ${bookingId}:`, error);

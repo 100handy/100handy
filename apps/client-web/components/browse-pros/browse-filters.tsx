@@ -133,15 +133,15 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
     <div className="bg-white rounded-lg border border-gray-200 p-5 space-y-5">
       {/* Date Filter */}
       <div>
-        <h3 className="text-[#30352D] text-sm font-semibold mb-3">Date</h3>
+        <h3 className="text-brand-dark-alt text-sm font-semibold mb-3">Date</h3>
         <div className="grid grid-cols-2 gap-2">
           {dateOptions.map((option) => (
             <button
               key={option.value}
               onClick={() => handleDateOptionClick(option.value)}
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${selectedDate === option.value
-                  ? "bg-[#30352D] text-white"
-                  : "border border-gray-300 text-[#30352D] bg-white hover:border-[#30352D]"
+                  ? "bg-brand-dark-alt text-white"
+                  : "border border-gray-300 text-brand-dark-alt bg-white hover:border-brand-dark-alt"
                 }`}
             >
               {option.value === 'custom' && customDateRange
@@ -156,7 +156,7 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
 
       {/* Time of Day */}
       <div>
-        <h3 className="text-[#30352D] text-sm font-semibold mb-3">Time of day</h3>
+        <h3 className="text-brand-dark-alt text-sm font-semibold mb-3">Time of day</h3>
         <div className="space-y-2.5">
           {timeSlots.map((slot) => (
             <label key={slot.value} className="flex items-center gap-2.5 cursor-pointer">
@@ -172,9 +172,9 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
                     setSelectedTimes(selectedTimes.filter((t): t is TimeSlotOption => t !== slot.value));
                   }
                 }}
-                className="w-4 h-4 rounded-sm border border-gray-300 accent-[#30352D] focus:outline-none focus:ring-1 focus:ring-[#30352D]"
+                className="w-4 h-4 rounded-sm border border-gray-300 accent-brand-dark-alt focus:outline-none focus:ring-1 focus:ring-brand-dark-alt"
               />
-              <span className="text-[#30352D] text-sm">{slot.label}</span>
+              <span className="text-brand-dark-alt text-sm">{slot.label}</span>
             </label>
           ))}
         </div>
@@ -190,7 +190,7 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
               // "or" behavior: picking a specific time clears time-of-day buckets
               if (value) setSelectedTimes([]);
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-[#30352D] focus:outline-none focus:ring-1 focus:ring-[#30352D]"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-brand-dark-alt focus:outline-none focus:ring-1 focus:ring-brand-dark-alt"
           >
             <option value="">I'm flexible</option>
             {specificTimeOptions.map((time) => (
@@ -206,10 +206,10 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
 
       {/* Price Range */}
       <div>
-        <h3 className="text-[#30352D] text-sm font-semibold mb-3">Price</h3>
+        <h3 className="text-brand-dark-alt text-sm font-semibold mb-3">Price</h3>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <span className="text-[#30352D] text-sm font-medium">£{sliderValues.min}</span>
+            <span className="text-brand-dark-alt text-sm font-medium">£{sliderValues.min}</span>
             <div className="flex-1 relative h-8">
               {/* Bar chart background */}
               <div className="absolute bottom-0 w-full flex items-end justify-between h-full">
@@ -229,7 +229,7 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
               <div className="absolute top-1/2 -translate-y-1/2 w-full">
                 <div className="h-1.5 bg-transparent rounded-full">
                   <div
-                    className="absolute h-1.5 bg-[#C1856A] rounded-full"
+                    className="absolute h-1.5 bg-brand-terracotta rounded-full"
                     style={{ 
                       left: `${getSliderPosition(sliderValues.min)}%`, 
                       width: `${getSliderPosition(sliderValues.max) - getSliderPosition(sliderValues.min)}%` 
@@ -237,7 +237,7 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
                   />
                 </div>
                 <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-[#C1856A] rounded-full shadow cursor-pointer z-20"
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-brand-terracotta rounded-full shadow cursor-pointer z-20"
                   style={{ left: `${getSliderPosition(sliderValues.min)}%` }}
                   onMouseDown={(e) => {
                     const slider = e.currentTarget.parentElement;
@@ -260,7 +260,7 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
                   }}
                 />
                 <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-[#C1856A] rounded-full shadow cursor-pointer z-20"
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-brand-terracotta rounded-full shadow cursor-pointer z-20"
                   style={{ left: `${getSliderPosition(sliderValues.max)}%` }}
                   onMouseDown={(e) => {
                     const slider = e.currentTarget.parentElement;
@@ -284,7 +284,7 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
                 />
               </div>
             </div>
-            <span className="text-[#30352D] text-sm font-medium">
+            <span className="text-brand-dark-alt text-sm font-medium">
               £{sliderValues.max}+
             </span>
           </div>
@@ -298,15 +298,15 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
 
       {/* Tasker Type */}
       <div>
-        <h3 className="text-[#30352D] text-sm font-semibold mb-3">Tasker type</h3>
+        <h3 className="text-brand-dark-alt text-sm font-semibold mb-3">Tasker type</h3>
         <label className="flex items-center gap-2.5 cursor-pointer">
           <input
             type="checkbox"
             checked={isEliteTasker}
             onChange={(e) => setIsEliteTasker(e.target.checked)}
-            className="w-4 h-4 rounded-sm border border-gray-300 accent-[#30352D] focus:outline-none focus:ring-1 focus:ring-[#30352D]"
+            className="w-4 h-4 rounded-sm border border-gray-300 accent-brand-dark-alt focus:outline-none focus:ring-1 focus:ring-brand-dark-alt"
           />
-          <span className="text-[#30352D] text-sm">Elite Tasker</span>
+          <span className="text-brand-dark-alt text-sm">Elite Tasker</span>
         </label>
       </div>
 

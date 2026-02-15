@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
 
@@ -398,9 +399,9 @@ const FormSection = () => {
             <div>
               <p className="text-brand-dark-alt text-[20px]">
                 Looking to sign up as a Handy?{" "}
-                <a href="/become-tasker" className="text-brand-terracotta underline hover:text-brand-coral">
+                <Link href="/become-tasker" className="text-brand-terracotta underline hover:text-brand-coral">
                   Submit your application here
-                </a>
+                </Link>
               </p>
             </div>
           </form>
@@ -412,7 +413,7 @@ const FormSection = () => {
 
 const HelpButton = () => {
   return (
-    <button className="fixed bottom-6 left-6 bg-[#A0B194] text-white p-4 rounded-full shadow-lg hover:bg-[#8a9a7e] transition-colors flex items-center justify-center">
+    <button className="fixed bottom-6 left-6 bg-brand-sage text-white p-4 rounded-full shadow-lg hover:bg-brand-sage/85 transition-colors flex items-center justify-center">
       <HelpIcon />
     </button>
   );

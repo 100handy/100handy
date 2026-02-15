@@ -79,7 +79,7 @@ export function PendingBookingBanner() {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-sm text-[#30352D]">
+            <p className="text-sm text-brand-dark-alt">
               <span className="font-medium">You have an unfinished booking!</span>
               {pendingBookingDetails && (
                 <span className="ml-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,10 +17,12 @@ import {
 } from "@/components/account";
 import { TwoFactorDialog } from "@/components/TwoFactorDialog";
 import { useSecureNavigation } from "@/hooks/use-secure-navigation";
+import { Header } from "@/components/layout";
+import { Footer } from "@/components/marketing/footer";
+import Link from "next/link";
 
 export default function AccountPage() {
   const [activeSection, setActiveSection] = useState("profile");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [twoFactorDialogOpen, setTwoFactorDialogOpen] = useState(false);
   const [pendingSection, setPendingSection] = useState<string | null>(null);
   const { isTwoFactorEnabled, canAccessSection, refreshTwoFactorStatus } = useSecureNavigation();
@@ -94,7 +96,9 @@ export default function AccountPage() {
                 the task card. This will reveal the 'Cancel Task' button. Select 'Cancel Task' to cancel all
                 appointments for that task.
               </p>
-              <Button className="bg-brand-terracotta hover:bg-brand-coral text-white">Go to My Tasks</Button>
+              <Link href="/my-tasks">
+                <Button className="bg-brand-terracotta hover:bg-brand-coral text-white">Go to My Tasks</Button>
+              </Link>
             </div>
           </div>
         );
@@ -116,53 +120,8 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-8">
-          <div className="flex items-center justify-between h-[70px]">
-            <div className="flex items-center gap-2">
-              <span className="text-brand-dark-alt font-bold text-lg sm:text-xl font-display">100 HANDY</span>
-            </div>
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-              <Button variant="ghost" className="text-brand-dark font-bold hover:text-brand-terracotta">
-                Book a Task
-              </Button>
-              <Button variant="ghost" className="text-brand-dark font-bold hover:text-brand-terracotta">
-                My Tasks
-              </Button>
-              <Button variant="ghost" className="text-brand-dark font-bold hover:text-brand-terracotta">
-                Account
-              </Button>
-            </nav>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-brand-dark"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <Menu className="w-6 h-6" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Navigation Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 px-4 py-4">
-          <nav className="flex flex-col gap-4">
-            <Button variant="ghost" className="text-brand-dark font-bold hover:text-brand-terracotta justify-start">
-              Book a Task
-            </Button>
-            <Button variant="ghost" className="text-brand-dark font-bold hover:text-brand-terracotta justify-start">
-              My Tasks
-            </Button>
-            <Button variant="ghost" className="text-brand-dark font-bold hover:text-brand-terracotta justify-start">
-              Account
-            </Button>
-          </nav>
-        </div>
-      )}
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
 
       {/* Main Content */}
       <main className="max-w-[1400px] mx-auto px-4 sm:px-8 py-6 sm:py-12">
@@ -222,6 +181,8 @@ export default function AccountPage() {
         onOpenChange={setTwoFactorDialogOpen}
         onSuccess={handleTwoFactorSuccess}
       />
+
+      <Footer />
     </div>
   );
 }

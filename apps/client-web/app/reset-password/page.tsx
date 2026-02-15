@@ -76,7 +76,7 @@ function ResetPasswordForm() {
         <div className="bg-white rounded-[12px] shadow-2xl px-12 py-10">
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-[40px] text-[#30352d]">
+            <h1 className="text-[40px] text-brand-dark-alt">
               <span className="font-light">100</span>
               <span className="font-bold">HANDY</span>
             </h1>
@@ -86,10 +86,10 @@ function ResetPasswordForm() {
             <>
               {/* Title & Description */}
               <div className="text-center mb-8">
-                <h2 className="text-[24px] font-semibold text-[#30352d] mb-3">
+                <h2 className="text-[24px] font-semibold text-brand-dark-alt mb-3">
                   Reset your password
                 </h2>
-                <p className="text-[15px] text-[#30352d]/80 leading-relaxed">
+                <p className="text-[15px] text-brand-dark-alt/80 leading-relaxed">
                   Enter your new password below.
                 </p>
               </div>
@@ -100,7 +100,7 @@ function ResetPasswordForm() {
                 <div>
                   <label
                     htmlFor="new-password"
-                    className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                    className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                   >
                     New Password
                   </label>
@@ -110,12 +110,12 @@ function ResetPasswordForm() {
                       type={showNewPassword ? "text" : "password"}
                       placeholder="Enter new password"
                       {...register("password")}
-                      className="w-full h-12 border border-gray-300 rounded-md px-4 pr-12 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
+                      className="w-full h-12 border border-gray-300 rounded-md px-4 pr-12 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#30352d]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-brand-dark-alt"
                     >
                       {showNewPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -135,7 +135,7 @@ function ResetPasswordForm() {
                 <div>
                   <label
                     htmlFor="confirm-password"
-                    className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                    className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                   >
                     Confirm Password
                   </label>
@@ -145,12 +145,12 @@ function ResetPasswordForm() {
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm new password"
                       {...register("confirmPassword")}
-                      className="w-full h-12 border border-gray-300 rounded-md px-4 pr-12 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
+                      className="w-full h-12 border border-gray-300 rounded-md px-4 pr-12 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#30352d]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-brand-dark-alt"
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -168,7 +168,7 @@ function ResetPasswordForm() {
 
                 {/* Password Requirements */}
                 <div className="bg-gray-50 rounded-md p-4">
-                  <p className="text-[13px] text-[#30352d]/70 leading-relaxed">
+                  <p className="text-[13px] text-brand-dark-alt/70 leading-relaxed">
                     Password must be at least 8 characters long and contain uppercase, lowercase, and numbers
                   </p>
                 </div>
@@ -180,8 +180,8 @@ function ResetPasswordForm() {
                     disabled={loading || !isValid}
                     className={`w-full h-12 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
                       !loading && isValid
-                        ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
-                        : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
+                        ? "bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90"
+                        : "bg-gray-100 border border-gray-200 text-gray-400 hover:bg-gray-100"
                     }`}
                     variant="outline"
                   >
@@ -196,11 +196,11 @@ function ResetPasswordForm() {
 
               {/* Sign In Link */}
               <div className="mt-6 text-center">
-                <p className="text-[14px] text-[#30352d]">
+                <p className="text-[14px] text-brand-dark-alt">
                   Remember your password?{" "}
                   <Link
                     href="/sign-in"
-                    className="text-[#C1856A] font-semibold hover:underline"
+                    className="text-brand-terracotta font-semibold hover:underline"
                   >
                     Sign In
                   </Link>
@@ -213,9 +213,9 @@ function ResetPasswordForm() {
               <div className="text-center py-8">
                 {/* Success Icon */}
                 <div className="mb-6 flex justify-center">
-                  <div className="w-16 h-16 bg-[#C1856A]/10 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 bg-brand-terracotta/10 rounded-full flex items-center justify-center">
                     <svg
-                      className="w-8 h-8 text-[#C1856A]"
+                      className="w-8 h-8 text-brand-terracotta"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -230,10 +230,10 @@ function ResetPasswordForm() {
                   </div>
                 </div>
 
-                <h2 className="text-[24px] font-semibold text-[#30352d] mb-3">
+                <h2 className="text-[24px] font-semibold text-brand-dark-alt mb-3">
                   Password reset successful!
                 </h2>
-                <p className="text-[15px] text-[#30352d]/80 leading-relaxed mb-8">
+                <p className="text-[15px] text-brand-dark-alt/80 leading-relaxed mb-8">
                   Your password has been successfully reset.
                   <br />
                   You can now sign in with your new password.
@@ -242,7 +242,7 @@ function ResetPasswordForm() {
                 {/* Action Button */}
                 <Button
                   onClick={() => router.push("/sign-in")}
-                  className="w-full h-12 bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90 text-[18px] font-bold rounded-md shadow-sm"
+                  className="w-full h-12 bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90 text-[18px] font-bold rounded-md shadow-sm"
                   variant="outline"
                 >
                   Go to Sign In
@@ -253,9 +253,9 @@ function ResetPasswordForm() {
 
           {/* Terms Text */}
           <div className="mt-8 text-center">
-            <p className="text-[13px] text-[#30352d]/70 leading-relaxed">
+            <p className="text-[13px] text-brand-dark-alt/70 leading-relaxed">
               Need help?{" "}
-              <Link href="/help" className="text-[#C1856A] hover:underline">
+              <Link href="/help" className="text-brand-terracotta hover:underline">
                 Contact Support
               </Link>
             </p>

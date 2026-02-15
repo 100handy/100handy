@@ -163,8 +163,21 @@ function SignInForm() {
             </div>
           </form>
 
-          {/* Terms Text */}
+          {/* Sign Up Link */}
           <div className="mt-6 text-center">
+            <p className="text-[14px] text-brand-dark-alt">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/sign-up"
+                className="text-brand-terracotta font-semibold hover:underline"
+              >
+                Sign Up
+              </Link>
+            </p>
+          </div>
+
+          {/* Terms Text */}
+          <div className="mt-4 text-center">
             <p className="text-[13px] text-brand-dark-alt leading-relaxed">
               By logging in, you agree to the{" "}
               <Link href="/terms" className="text-brand-terracotta hover:underline">

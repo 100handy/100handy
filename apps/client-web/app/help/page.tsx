@@ -1,28 +1,11 @@
 import { Search, BookOpen, Globe, CheckSquare, Handshake, User } from "lucide-react";
+import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 
 export default function HelpPage() {
     return (
         <div className="min-h-screen bg-white">
-            {/* Header */}
-            <header className="bg-brand-dark border-b border-gray-500 border-opacity-20">
-                <div className="max-w-[1920px] mx-auto px-8">
-                    <div className="flex items-center justify-between h-[70px]">
-                        <div className="flex items-center gap-8">
-                            <div className="text-white font-bold text-base">100 HANDY</div>
-                        </div>
-                        <div className="flex items-center gap-12">
-                            <button className="text-white font-bold text-base hover:text-brand-terracotta transition-colors">
-                                Submit a request
-                            </button>
-                            <button className="text-white font-bold text-base hover:text-brand-terracotta transition-colors">
-                                Sign in
-                            </button>
-                            <Search className="w-[14.56px] h-[14.56px] text-white" />
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <Header />
 
             {/* Hero Section */}
             <section className="relative bg-gradient-to-b from-white to-brand-cream/47 pt-[98px] pb-[112px]">

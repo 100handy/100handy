@@ -17,13 +17,13 @@ export function Header() {
         <nav className="flex items-center gap-6">
           <Link
             href="/services"
-            className="text-[16px] font-medium text-[#30352D] transition-colors hover:text-brand-terracotta"
+            className="text-[16px] font-medium text-brand-dark-alt transition-colors hover:text-brand-terracotta"
           >
             Services
           </Link>
           <Link
             href="/sign-in"
-            className="text-[16px] font-medium text-[#30352D] transition-colors hover:text-brand-terracotta"
+            className="text-[16px] font-medium text-brand-dark-alt transition-colors hover:text-brand-terracotta"
           >
             Sign up / Log in
           </Link>

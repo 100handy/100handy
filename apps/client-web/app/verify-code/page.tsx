@@ -16,7 +16,7 @@ function VerifyCodeForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
-  const phoneNumber = searchParams.get("phone") || "+44 7784 - 500446";
+  const phoneNumber = searchParams.get("phone") || "";
   const isPasswordReset = searchParams.get("reset") === "true";
   const redirectParam = searchParams.get("redirect");
   const safeRedirect =
@@ -225,7 +225,7 @@ function VerifyCodeForm() {
             <p className="text-[13px] text-brand-dark-alt leading-relaxed">
               By signing up, you agree to the{" "}
               <Link href="/terms" className="text-brand-terracotta hover:underline">
-                Term of service
+                Terms of Service
               </Link>
               <br />
               and have reviewed the{" "}

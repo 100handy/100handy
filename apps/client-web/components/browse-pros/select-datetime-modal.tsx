@@ -178,17 +178,17 @@ export function SelectDateTimeModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl p-8">
         <DialogHeader>
-          <DialogTitle className="mb-6 text-2xl font-bold text-[#30352D]">
+          <DialogTitle className="mb-6 text-2xl font-bold text-brand-dark-alt">
             Choose your task date and start time:
           </DialogTitle>
         </DialogHeader>
 
         {/* Tasker Name and Availability */}
         <div className="mb-4">
-          <p className="text-sm font-medium text-[#30352D]">
+          <p className="text-sm font-medium text-brand-dark-alt">
             {taskerName}&rsquo;s Availability
           </p>
-          <p className="text-sm text-[#30352D]">
+          <p className="text-sm text-brand-dark-alt">
             {currentMonthName} → {nextMonthName} {year}
           </p>
           {isLoading && (
@@ -229,12 +229,12 @@ export function SelectDateTimeModal({
                     aria-disabled={isDisabled}
                     className={`relative aspect-square rounded-lg p-2 text-center text-sm font-medium transition-colors ${
                       isSelected
-                        ? "bg-[#C1856A] text-white"
+                        ? "bg-brand-terracotta text-white"
                         : isDisabled
                           ? "text-gray-300 cursor-not-allowed"
                           : !day.isCurrentMonth
                             ? "text-gray-400 hover:bg-gray-100"
-                            : "text-[#30352D] hover:bg-gray-100"
+                            : "text-brand-dark-alt hover:bg-gray-100"
                     }`}
                   >
                     {day.date.getDate()}
@@ -256,7 +256,7 @@ export function SelectDateTimeModal({
                 type="time"
                 value={selectedTime}
                 onChange={(e) => setSelectedTime(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-lg font-medium text-[#30352D] focus:border-[#C1856A] focus:outline-none focus:ring-2 focus:ring-[#C1856A]/20"
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-lg font-medium text-brand-dark-alt focus:border-brand-terracotta focus:outline-none focus:ring-2 focus:ring-brand-terracotta/20"
               />
               <p className="mt-2 text-xs text-gray-600">
                 You can chat to adjust task details or change start time after confirming.
@@ -271,7 +271,7 @@ export function SelectDateTimeModal({
                     <select
                       value={selectedTime}
                       onChange={(e) => setSelectedTime(e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#30352D] focus:border-[#C1856A] focus:outline-none focus:ring-2 focus:ring-[#C1856A]/20"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-brand-dark-alt focus:border-brand-terracotta focus:outline-none focus:ring-2 focus:ring-brand-terracotta/20"
                     >
                       {availableTimes.map((time) => (
                         <option key={time} value={time}>
@@ -292,10 +292,10 @@ export function SelectDateTimeModal({
           {/* Right side - Summary and Action */}
           <div className="flex flex-col justify-between">
             <div>
-              <p className="mb-2 text-sm font-medium text-[#30352D]">
+              <p className="mb-2 text-sm font-medium text-brand-dark-alt">
                 Request for:
               </p>
-              <p className="text-lg font-semibold text-[#30352D]">
+              <p className="text-lg font-semibold text-brand-dark-alt">
                 {formatDisplayDate(selectedDate)}, {formatTimeLabel(selectedTime)}
               </p>
             </div>
@@ -304,8 +304,8 @@ export function SelectDateTimeModal({
               <button
                 onClick={handleConfirm}
                 disabled={!selectedTime}
-                className={`w-full rounded-full bg-[#C1856A] px-6 py-3 font-semibold text-white transition-colors ${
-                  selectedTime ? "hover:bg-[#a67359]" : "opacity-70"
+                className={`w-full rounded-full bg-brand-terracotta px-6 py-3 font-semibold text-white transition-colors ${
+                  selectedTime ? "hover:bg-brand-terracotta/85" : "opacity-70"
                 }`}
               >
                 Select & Continue
@@ -313,7 +313,7 @@ export function SelectDateTimeModal({
 
               <div className="mt-4 flex items-start gap-2">
                 <svg
-                  className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#82BE56]"
+                  className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >

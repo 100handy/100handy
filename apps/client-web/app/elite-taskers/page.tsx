@@ -1,5 +1,6 @@
 import { Header, Footer } from "@/components/layout";
 import { Star, Clock, Award } from "lucide-react";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -145,12 +146,12 @@ export default function EliteTaskersPage() {
                   <p className="mb-8 text-[18px] leading-relaxed text-brand-dark-alt/80">
                     It&apos;s simple. When you search for a service, look for the Star badge on a Handy&apos;s profile or in your search results. Then compare reviews, rates, and availability to book the right match.
                   </p>
-                  <a
+                  <Link
                     href="/dashboard"
                     className="inline-block rounded-lg bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
                   >
                     Find your Star today
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

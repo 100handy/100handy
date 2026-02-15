@@ -18,10 +18,10 @@ export function PeaceOfMindCard() {
         />
       </svg>
       <div>
-        <p className="text-[#30352D] text-sm leading-relaxed">
+        <p className="text-brand-dark-alt text-sm leading-relaxed">
           Always have peace of mind. All Taskers undergo ID checks.
         </p>
-        <button className="text-[#C1856A] text-sm font-medium mt-1 hover:underline">
+        <button className="text-brand-terracotta text-sm font-medium mt-1 hover:underline">
           Learn More
         </button>
       </div>

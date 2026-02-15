@@ -13,17 +13,17 @@ export function MediaResources(): React.JSX.Element {
   return (
     <section className="bg-white py-20">
       <div className="mx-auto max-w-[1920px] px-8">
-        <h2 className="mb-6 text-center text-[32px] font-bold text-[#30352D]">
+        <h2 className="mb-6 text-center text-[32px] font-bold text-brand-dark-alt">
           Media Resources
         </h2>
 
         <div className="mx-auto mb-12 max-w-3xl text-center">
-          <p className="mb-2 text-[20px] text-[#30352D]">
+          <p className="mb-2 text-[20px] text-brand-dark-alt">
             A collection of brand assets for your use.
           </p>
-          <p className="text-[20px] text-[#30352D]">
+          <p className="text-[20px] text-brand-dark-alt">
             All logo and media usage must follow the 100Handy brand guidelines. For specific media requests, please contact{" "}
-            <a href="mailto:press@100handy.com" className="text-[#C1856A] underline hover:text-[#A06854]">
+            <a href="mailto:press@100handy.com" className="text-brand-terracotta underline hover:text-brand-terracotta/85">
               press@100handy.com
             </a>
           </p>
@@ -47,7 +47,7 @@ export function MediaResources(): React.JSX.Element {
 
               {/* Title */}
               <div className="p-6">
-                <h3 className="text-[24px] font-bold text-[#333A31] underline group-hover:text-[#C1856A]">
+                <h3 className="text-[24px] font-bold text-brand-dark underline group-hover:text-brand-terracotta">
                   {resource.title}
                 </h3>
               </div>

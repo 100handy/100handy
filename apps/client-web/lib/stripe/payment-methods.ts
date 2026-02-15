@@ -12,24 +12,31 @@ export interface PaymentMethod {
   isDefault: boolean;
 }
 
+async function getAuthHeaders() {
+  const supabase = createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
+    throw new Error('User not authenticated');
+  }
+  const { data: { session } } = await supabase.auth.getSession();
+  return {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token}`,
+    },
+    user,
+  };
+}
+
 /**
  * Get or create Stripe customer for the current user
  */
 export async function getOrCreateStripeCustomer(): Promise<string> {
-  const supabase = createClient();
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error('User not authenticated');
-  }
+  const { headers, user } = await getAuthHeaders();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-stripe-customer`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-    },
+    headers,
     body: JSON.stringify({
       userId: user.id,
       email: user.email,
@@ -50,14 +57,11 @@ export async function getOrCreateStripeCustomer(): Promise<string> {
  * Create a SetupIntent for adding a new payment method
  */
 export async function createSetupIntent(customerId: string): Promise<string> {
-  const supabase = createClient();
+  const { headers } = await getAuthHeaders();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-setup-intent`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-    },
+    headers,
     body: JSON.stringify({ customerId }),
   });
 
@@ -74,14 +78,11 @@ export async function createSetupIntent(customerId: string): Promise<string> {
  * List all payment methods for a customer
  */
 export async function listPaymentMethods(customerId: string): Promise<PaymentMethod[]> {
-  const supabase = createClient();
+  const { headers } = await getAuthHeaders();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/list-payment-methods`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-    },
+    headers,
     body: JSON.stringify({ customerId }),
   });
 
@@ -98,14 +99,11 @@ export async function listPaymentMethods(customerId: string): Promise<PaymentMet
  * Set a payment method as default
  */
 export async function setDefaultPaymentMethod(customerId: string, paymentMethodId: string): Promise<void> {
-  const supabase = createClient();
+  const { headers } = await getAuthHeaders();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/set-default-payment-method`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-    },
+    headers,
     body: JSON.stringify({ customerId, paymentMethodId }),
   });
 
@@ -119,14 +117,11 @@ export async function setDefaultPaymentMethod(customerId: string, paymentMethodI
  * Delete a payment method
  */
 export async function deletePaymentMethod(paymentMethodId: string): Promise<void> {
-  const supabase = createClient();
+  const { headers } = await getAuthHeaders();
 
   const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/delete-payment-method`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-    },
+    headers,
     body: JSON.stringify({ paymentMethodId }),
   });
 

@@ -41,7 +41,7 @@ export function HowItWorks() {
 
           {/* White info card */}
           <div className="absolute left-8 top-1/2 z-10 w-[380px] -translate-y-1/2 rounded-2xl bg-white p-7 shadow-xl">
-            <h3 className="mb-6 text-[24px] font-medium text-[#30352D]">
+            <h3 className="mb-6 text-[24px] font-medium text-brand-dark-alt">
               Home Improvement in 3 Steps
             </h3>
             <div className="space-y-5">
@@ -51,10 +51,10 @@ export function HowItWorks() {
                     {step.number}
                   </div>
                   <div className="pt-0.5">
-                    <p className="text-[15px] font-semibold text-[#30352D]">
+                    <p className="text-[15px] font-semibold text-brand-dark-alt">
                       {step.title}
                     </p>
-                    <p className="mt-1 text-[13px] leading-snug text-[#30352D]/70">
+                    <p className="mt-1 text-[13px] leading-snug text-brand-dark-alt/70">
                       {step.description}
                     </p>
                   </div>

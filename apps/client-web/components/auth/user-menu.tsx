@@ -33,7 +33,7 @@ export function UserMenu() {
         </Link>
         <Link
           href="/sign-up"
-          className="px-4 py-2 text-sm font-medium text-white bg-[#C1856A] rounded-md hover:bg-[#C1856A]/90"
+          className="px-4 py-2 text-sm font-medium text-white bg-brand-terracotta rounded-md hover:bg-brand-terracotta/90"
         >
           Sign Up
         </Link>
@@ -47,7 +47,7 @@ export function UserMenu() {
         {user?.user_metadata?.first_name || user?.email}
       </div>
       <div className="relative group">
-        <button className="h-10 w-10 rounded-full bg-[#C1856A] text-white flex items-center justify-center">
+        <button className="h-10 w-10 rounded-full bg-brand-terracotta text-white flex items-center justify-center">
           {user?.user_metadata?.first_name?.[0] || user?.email?.[0]?.toUpperCase()}
         </button>
         

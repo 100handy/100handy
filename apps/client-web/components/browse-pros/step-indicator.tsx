@@ -26,16 +26,16 @@ export function StepIndicator({ currentStep }: { currentStep: number }) {
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium z-10 ${
                   step.number < currentStep
-                    ? "bg-[#C1856A] text-white"
+                    ? "bg-brand-terracotta text-white"
                     : step.number === currentStep
-                    ? "bg-white border-2 border-[#C1856A] text-[#30352D]"
+                    ? "bg-white border-2 border-brand-terracotta text-brand-dark-alt"
                     : "bg-[#D1D5DB] text-gray-800"
                 }`}
               >
                 {step.number < currentStep ? "✔" : step.number}
               </div>
               {step.number === currentStep && (
-                <span className="text-xs text-[#C1856A] mt-1 whitespace-nowrap absolute top-full">
+                <span className="text-xs text-brand-terracotta mt-1 whitespace-nowrap absolute top-full">
                   {step.number}: {step.label}
                 </span>
               )}
@@ -44,7 +44,7 @@ export function StepIndicator({ currentStep }: { currentStep: number }) {
             {index < steps.length - 1 && (
               <div
                 className={`h-0.5 flex-1 ${
-                  step.number < currentStep ? "bg-[#C1856A]" : "bg-[#D1D5DB]"
+                  step.number < currentStep ? "bg-brand-terracotta" : "bg-[#D1D5DB]"
                 }`}
               />
             )}

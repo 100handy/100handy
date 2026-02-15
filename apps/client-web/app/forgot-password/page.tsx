@@ -76,7 +76,7 @@ export default function ForgotPassword() {
           <div className="mb-6">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-[#30352d] hover:text-[#30352d]/80 transition-colors"
+              className="flex items-center gap-2 text-brand-dark-alt hover:text-brand-dark-alt/80 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
               <span className="text-[15px] font-medium">Back to Sign In</span>
@@ -85,7 +85,7 @@ export default function ForgotPassword() {
 
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-[40px] text-[#30352d]">
+            <h1 className="text-[40px] text-brand-dark-alt">
               <span className="font-light">100</span>
               <span className="font-bold">HANDY</span>
             </h1>
@@ -93,10 +93,10 @@ export default function ForgotPassword() {
 
           {/* Title & Description */}
               <div className="text-center mb-8">
-                <h2 className="text-[24px] font-semibold text-[#30352d] mb-3">
+                <h2 className="text-[24px] font-semibold text-brand-dark-alt mb-3">
                   Forgot your password?
                 </h2>
-                <p className="text-[15px] text-[#30352d]/80 leading-relaxed">
+                <p className="text-[15px] text-brand-dark-alt/80 leading-relaxed">
                   Enter your email address and we'll send you a verification code to reset your password.
                 </p>
               </div>
@@ -107,7 +107,7 @@ export default function ForgotPassword() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-[15px] font-medium text-[#30352d] mb-1.5"
+                    className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                   >
                     Email Address
                   </label>
@@ -116,7 +116,7 @@ export default function ForgotPassword() {
                     type="email"
                     placeholder="Enter your email address"
                     {...register("email")}
-                    className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-[#30352d] shadow-none placeholder:text-gray-400"
+                    className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
                   />
                   {errors.email && (
                     <p className="text-xs text-red-600 mt-1">
@@ -132,8 +132,8 @@ export default function ForgotPassword() {
                     disabled={loading || !isValid}
                     className={`w-full h-12 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
                       !loading && isValid
-                        ? "bg-[#C1856A] text-white border-[#C1856A] hover:bg-[#C1856A]/90"
-                        : "bg-[#f5f5f5] border border-gray-200 text-[#b7b7b7] hover:bg-gray-100"
+                        ? "bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90"
+                        : "bg-gray-100 border border-gray-200 text-gray-400 hover:bg-gray-100"
                     }`}
                     variant="outline"
                   >
@@ -148,11 +148,11 @@ export default function ForgotPassword() {
 
           {/* Sign In Link */}
           <div className="mt-6 text-center">
-            <p className="text-[14px] text-[#30352d]">
+            <p className="text-[14px] text-brand-dark-alt">
               Remember your password?{" "}
               <Link
                 href="/sign-in"
-                className="text-[#C1856A] font-semibold hover:underline"
+                className="text-brand-terracotta font-semibold hover:underline"
               >
                 Sign In
               </Link>
@@ -161,9 +161,9 @@ export default function ForgotPassword() {
 
           {/* Terms Text */}
           <div className="mt-8 text-center">
-            <p className="text-[13px] text-[#30352d]/70 leading-relaxed">
+            <p className="text-[13px] text-brand-dark-alt/70 leading-relaxed">
               Need help?{" "}
-              <Link href="/help" className="text-[#C1856A] hover:underline">
+              <Link href="/help" className="text-brand-terracotta hover:underline">
                 Contact Support
               </Link>
             </p>

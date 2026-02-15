@@ -148,14 +148,14 @@ export function DateRangePickerModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm sm:max-w-md p-4 sm:p-5">
         <DialogHeader>
-          <DialogTitle className="mb-3 text-lg font-bold text-[#30352D]">
+          <DialogTitle className="mb-3 text-lg font-bold text-brand-dark-alt">
             Choose Date Range
           </DialogTitle>
         </DialogHeader>
 
         {/* Month labels */}
         <div className="mb-2">
-          <p className="text-xs text-[#30352D]">
+          <p className="text-xs text-brand-dark-alt">
             {currentMonthName} → {nextMonthName} {year}
           </p>
         </div>
@@ -192,14 +192,14 @@ export function DateRangePickerModal({
                 aria-disabled={isPast}
                 className={`aspect-square rounded-md p-1 text-center text-xs sm:text-sm font-medium transition-colors ${
                   isSelected
-                    ? "bg-[#C1856A] text-white"
+                    ? "bg-brand-terracotta text-white"
                     : inRange
-                      ? "bg-[#C1856A]/20 text-[#30352D]"
+                      ? "bg-brand-terracotta/20 text-brand-dark-alt"
                       : isPast
                         ? "text-gray-300 cursor-not-allowed"
                         : isOtherMonth
                           ? "text-gray-400 hover:bg-gray-100"
-                          : "text-[#30352D] hover:bg-gray-100"
+                          : "text-brand-dark-alt hover:bg-gray-100"
                 }`}
               >
                 {day.date.getDate()}
@@ -213,12 +213,12 @@ export function DateRangePickerModal({
           <div className="flex items-center justify-between text-xs sm:text-sm">
             <div>
               <span className="text-gray-500">From: </span>
-              <span className="font-medium text-[#30352D]">{formatDisplayDate(startDate)}</span>
+              <span className="font-medium text-brand-dark-alt">{formatDisplayDate(startDate)}</span>
             </div>
             <span className="text-gray-400">→</span>
             <div>
               <span className="text-gray-500">To: </span>
-              <span className="font-medium text-[#30352D]">{formatDisplayDate(endDate)}</span>
+              <span className="font-medium text-brand-dark-alt">{formatDisplayDate(endDate)}</span>
             </div>
           </div>
         </div>
@@ -227,14 +227,14 @@ export function DateRangePickerModal({
         <div className="mt-3 flex gap-2">
           <button
             onClick={handleClear}
-            className="flex-1 rounded-full border border-gray-300 px-3 py-2 text-sm font-medium text-[#30352D] transition-colors hover:bg-gray-50"
+            className="flex-1 rounded-full border border-gray-300 px-3 py-2 text-sm font-medium text-brand-dark-alt transition-colors hover:bg-gray-50"
           >
             Clear
           </button>
           <button
             onClick={handleApply}
             disabled={!startDate || !endDate}
-            className="flex-1 rounded-full bg-[#C1856A] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#a67359] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded-full bg-brand-terracotta px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Apply
           </button>

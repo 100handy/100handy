@@ -19,7 +19,7 @@ export function PressHero(): React.JSX.Element {
             <h1 className="mb-8 text-[67px] font-bold leading-none text-white">
               Press
             </h1>
-            <button className="rounded-md bg-[#C1856A] px-6 py-2.5 text-[16px] font-bold text-white transition-colors hover:bg-[#C1856A]/90">
+            <button className="rounded-md bg-brand-terracotta px-6 py-2.5 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/90">
               Get the latest
             </button>
           </div>

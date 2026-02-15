@@ -125,7 +125,7 @@ const CitiesSection = () => {
                 {neighborhoods.map((neighborhood) => (
                   <li key={neighborhood}>
                     <Link
-                      href="/locations/london"
+                      href={`/locations/${neighborhood.toLowerCase().replace(/['\s]+/g, "-")}`}
                       className="text-[18px] text-brand-terracotta hover:underline transition-colors"
                     >
                       {neighborhood}
@@ -186,7 +186,7 @@ const HowItWorksSection = () => {
 
 const HelpButton = () => {
   return (
-    <button className="fixed bottom-6 left-6 bg-[#A0B194] text-white p-4 rounded-full shadow-lg hover:bg-[#8a9a7e] transition-colors flex items-center justify-center">
+    <button className="fixed bottom-6 left-6 bg-brand-sage text-white p-4 rounded-full shadow-lg hover:bg-brand-sage/85 transition-colors flex items-center justify-center">
       <HelpIcon />
     </button>
   );

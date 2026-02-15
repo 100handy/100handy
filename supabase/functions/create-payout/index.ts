@@ -56,11 +56,11 @@ serve(async (req) => {
     // Get professional's Stripe Connect account ID
     const { data: handyProfile, error: profileError } = await supabaseClient
       .from('handy_profiles')
-      .select('stripe_connect_id')
+      .select('stripe_connect_account_id')
       .eq('user_id', booking.handy_id)
       .single();
 
-    if (profileError || !handyProfile?.stripe_connect_id) {
+    if (profileError || !handyProfile?.stripe_connect_account_id) {
       return new Response(
         JSON.stringify({ error: 'Professional Stripe Connect account not found' }),
         {
@@ -95,7 +95,7 @@ serve(async (req) => {
     const transfer = await stripe.transfers.create({
       amount: professionalPayout,
       currency: paymentIntent.currency,
-      destination: handyProfile.stripe_connect_id,
+      destination: handyProfile.stripe_connect_account_id,
       transfer_group: `booking_${bookingId}`,
       metadata: {
         booking_id: bookingId,

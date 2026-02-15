@@ -41,7 +41,7 @@ export default function ProfessionalDetailPage({
   if (profileLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C1856A]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-terracotta"></div>
       </div>
     );
   }
@@ -51,7 +51,7 @@ export default function ProfessionalDetailPage({
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Professional Not Found</h1>
-        <Link href="/" className="text-[#C1856A] hover:underline">
+        <Link href="/" className="text-brand-terracotta hover:underline">
           Go back home
         </Link>
       </div>
@@ -89,7 +89,7 @@ export default function ProfessionalDetailPage({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h1 className="text-xl font-semibold text-[#30352D]">Professional Profile</h1>
+            <h1 className="text-xl font-semibold text-brand-dark-alt">Professional Profile</h1>
           </div>
         </div>
       </div>
@@ -118,10 +118,10 @@ export default function ProfessionalDetailPage({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h2 className="text-2xl font-bold text-[#30352D] flex items-center gap-2">
+                      <h2 className="text-2xl font-bold text-brand-dark-alt flex items-center gap-2">
                         {displayName}
                         {profile.verified && (
-                          <svg className="w-6 h-6 text-[#82BE56]" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         )}
@@ -131,7 +131,7 @@ export default function ProfessionalDetailPage({
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-[#30352D]">£{hourlyRate.toFixed(2)}</p>
+                      <p className="text-2xl font-bold text-brand-dark-alt">£{hourlyRate.toFixed(2)}</p>
                       <p className="text-gray-500 text-sm">/hour</p>
                     </div>
                   </div>
@@ -142,7 +142,7 @@ export default function ProfessionalDetailPage({
                       <svg className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
                         <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                       </svg>
-                      <span className="font-semibold text-[#30352D]">{rating.toFixed(1)}</span>
+                      <span className="font-semibold text-brand-dark-alt">{rating.toFixed(1)}</span>
                       <span className="text-gray-500">({totalReviews} reviews)</span>
                     </div>
                     <span className="text-gray-300">|</span>
@@ -171,7 +171,7 @@ export default function ProfessionalDetailPage({
             {/* About Section */}
             {profile.bio && (
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-[#30352D] mb-3">About Me</h3>
+                <h3 className="text-lg font-semibold text-brand-dark-alt mb-3">About Me</h3>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">{profile.bio}</p>
               </div>
             )}
@@ -179,7 +179,7 @@ export default function ProfessionalDetailPage({
             {/* Availability Section */}
             {availability && availability.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-[#30352D] mb-4">Weekly Availability</h3>
+                <h3 className="text-lg font-semibold text-brand-dark-alt mb-4">Weekly Availability</h3>
                 <div className="grid grid-cols-7 gap-2">
                   {DAY_NAMES.map((day, index) => {
                     const slot = availability.find(s => s.day_of_week === index && s.is_active);
@@ -208,26 +208,26 @@ export default function ProfessionalDetailPage({
             {/* Reviews Section */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-[#30352D]">
+                <h3 className="text-lg font-semibold text-brand-dark-alt">
                   Reviews ({totalReviews})
                 </h3>
               </div>
 
               {reviewsLoading ? (
                 <div className="py-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C1856A] mx-auto"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-terracotta mx-auto"></div>
                 </div>
               ) : reviews && reviews.length > 0 ? (
                 <div className="space-y-4">
                   {reviews.map((review) => (
                     <div key={review.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#C1856A] flex items-center justify-center text-white font-medium">
+                        <div className="w-10 h-10 rounded-full bg-brand-terracotta flex items-center justify-center text-white font-medium">
                           C
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-[#30352D]">
+                            <span className="font-medium text-brand-dark-alt">
                               Customer
                             </span>
                             <div className="flex items-center">
@@ -268,20 +268,20 @@ export default function ProfessionalDetailPage({
           <div className="hidden lg:block">
             <div className="sticky top-8">
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-[#30352D] mb-4">Book {displayName}</h3>
+                <h3 className="text-lg font-semibold text-brand-dark-alt mb-4">Book {displayName}</h3>
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Hourly rate</span>
-                    <span className="font-medium text-[#30352D]">£{hourlyRate.toFixed(2)}/hr</span>
+                    <span className="font-medium text-brand-dark-alt">£{hourlyRate.toFixed(2)}/hr</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Minimum</span>
-                    <span className="font-medium text-[#30352D]">2 hours</span>
+                    <span className="font-medium text-brand-dark-alt">2 hours</span>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="w-full bg-[#C1856A] text-white py-3 rounded-full font-medium hover:bg-[#a67359] transition-colors"
+                  className="w-full bg-brand-terracotta text-white py-3 rounded-full font-medium hover:bg-brand-terracotta/85 transition-colors"
                 >
                   Select & Continue
                 </button>
@@ -298,12 +298,12 @@ export default function ProfessionalDetailPage({
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-lg font-bold text-[#30352D]">£{hourlyRate.toFixed(2)}/hr</p>
+            <p className="text-lg font-bold text-brand-dark-alt">£{hourlyRate.toFixed(2)}/hr</p>
             <p className="text-gray-500 text-sm">2 hour minimum</p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-[#C1856A] text-white px-8 py-3 rounded-full font-medium hover:bg-[#a67359] transition-colors"
+            className="bg-brand-terracotta text-white px-8 py-3 rounded-full font-medium hover:bg-brand-terracotta/85 transition-colors"
           >
             Select & Continue
           </button>

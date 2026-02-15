@@ -18,11 +18,14 @@ export default function AllPagesPage() {
     "User Pages": [
       { path: "/account", label: "Account" },
       { path: "/my-tasks", label: "My Tasks" },
+      { path: "/bookings/example", label: "Booking Detail (dynamic)" },
     ],
     "Service Pages": [
       { path: "/services", label: "Services" },
       { path: "/all-services", label: "All Services" },
+      { path: "/services/home-repair", label: "Home Repair Service" },
       { path: "/browse-pros", label: "Browse Pros" },
+      { path: "/professionals/example", label: "Professional Profile (dynamic)" },
       { path: "/book-task", label: "Book Task" },
       { path: "/task-form", label: "Task Form" },
     ],
@@ -34,6 +37,8 @@ export default function AllPagesPage() {
       { path: "/handyman-london", label: "Handyman London" },
       { path: "/wallpapering-near-me", label: "Wallpapering Near Me" },
       { path: "/services-by-city", label: "Services By City" },
+      { path: "/locations/london", label: "London Location" },
+      { path: "/locations/london/handyman", label: "London Handyman (city+service)" },
     ],
     "Info Pages": [
       { path: "/about-us", label: "About Us" },
@@ -42,7 +47,14 @@ export default function AllPagesPage() {
       { path: "/help/trust-safety", label: "Help - Trust & Safety" },
       { path: "/press", label: "Press" },
       { path: "/for-business", label: "For Business" },
+      { path: "/for-good", label: "For Good" },
       { path: "/referral", label: "Referral" },
+      { path: "/blog", label: "Blog" },
+      { path: "/careers", label: "Careers" },
+      { path: "/partner", label: "Partner" },
+      { path: "/terms", label: "Terms & Privacy" },
+      { path: "/legal", label: "Legal" },
+      { path: "/cookie-settings", label: "Cookie Settings" },
     ],
   };
 

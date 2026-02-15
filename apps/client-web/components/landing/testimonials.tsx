@@ -53,7 +53,7 @@ export function LandingTestimonials(): React.JSX.Element {
     <section className="bg-[#FAFAF9] py-16">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-12 text-center text-[31px] font-medium text-brand-dark-alt">
-          See What Happy customers are saying about Taskrabbit
+          See What Happy customers are saying about 100 Handy
         </h2>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

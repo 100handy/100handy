@@ -52,15 +52,15 @@ export function Testimonials() {
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-[1920px] px-8">
-        <h2 className="mb-12 text-center text-[31px] font-medium text-[#30352D]">
-          See What Happy customers are saying about Taskrabbit
+        <h2 className="mb-12 text-center text-[31px] font-medium text-brand-dark-alt">
+          See What Happy customers are saying about 100 Handy
         </h2>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
               <div className="mb-4">
-                <p className="text-[21px] font-medium text-[#30352D]">
+                <p className="text-[21px] font-medium text-brand-dark-alt">
                   {testimonial.name}
                 </p>
                 <div className="mt-2">

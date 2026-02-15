@@ -9,6 +9,7 @@ export interface UserProfile {
   role: 'customer' | 'handy' | 'admin';
   rating: number;
   jobs_completed: number;
+  two_factor_enabled: boolean;
   created_at: string;
 }
 

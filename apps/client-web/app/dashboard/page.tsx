@@ -108,7 +108,7 @@ function DashboardContent() {
           <div className="max-w-3xl mx-auto px-4 sm:px-8 flex items-start gap-6">
             {/* Icon */}
             <div className="flex-shrink-0">
-              <div className="w-[160px] h-[160px] bg-[#C1856A]/20 rounded-2xl flex items-center justify-center">
+              <div className="w-[160px] h-[160px] bg-brand-terracotta/20 rounded-2xl flex items-center justify-center">
                 <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="30" cy="25" r="8" fill="#C1856A"/>
                   <path d="M20 50c0-5.5 4.5-10 10-10s10 4.5 10 10v5H20v-5z" fill="#C1856A"/>

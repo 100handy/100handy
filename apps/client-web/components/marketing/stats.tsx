@@ -17,7 +17,7 @@ export function Stats() {
           {/* Assembly Card */}
           <div className="relative h-[400px] overflow-hidden rounded-3xl">
             {/* Beige background */}
-            <div className="absolute inset-0 bg-[#F3E3D3]" />
+            <div className="absolute inset-0 bg-brand-cream" />
             
             {/* Dark green section on the right */}
             <div className="absolute right-0 top-0 h-full w-[58%] rounded-l-[50px] bg-[#3C423B]">
@@ -34,7 +34,7 @@ export function Stats() {
 
             {/* White info card */}
             <div className="absolute left-8 top-1/2 z-10 w-[280px] -translate-y-1/2 rounded-2xl bg-white p-6 shadow-xl">
-              <h3 className="mb-4 text-[37px] font-medium leading-tight text-[#30352D]">
+              <h3 className="mb-4 text-[37px] font-medium leading-tight text-brand-dark-alt">
                 Assembly
               </h3>
               <ul className="space-y-3">
@@ -42,7 +42,7 @@ export function Stats() {
                   <div className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-sm bg-green-500">
                     <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
                   </div>
-                  <span className="text-[16px] leading-snug text-[#30352D]">
+                  <span className="text-[16px] leading-snug text-brand-dark-alt">
                     Assemble or disassemble furniture items including wardrobes, beds, TV units & more.
                   </span>
                 </li>
@@ -50,7 +50,7 @@ export function Stats() {
                   <div className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-sm bg-green-500">
                     <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
                   </div>
-                  <span className="text-[16px] leading-snug text-[#30352D]">
+                  <span className="text-[16px] leading-snug text-brand-dark-alt">
                     Now Trending: Curved sofas, computer desks, and sustainable materials.
                   </span>
                 </li>
@@ -62,7 +62,7 @@ export function Stats() {
           <div className="grid grid-cols-2 gap-x-12 gap-y-8">
             {stats.map((stat) => (
               <div key={stat.label}>
-                <p className="text-[19px] font-medium text-[#30352D]">{stat.label}</p>
+                <p className="text-[19px] font-medium text-brand-dark-alt">{stat.label}</p>
                 <p className="mt-2 text-[26px] font-medium text-brand-terracotta">{stat.value}</p>
               </div>
             ))}
