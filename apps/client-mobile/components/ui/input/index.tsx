@@ -94,7 +94,7 @@ export type InputProps = ViewProps &
 const Input = React.forwardRef<React.ElementRef<typeof View>, InputProps>(
   ({ className, variant = 'outline', size = 'md', isDisabled = false, isInvalid = false, children, ...props }, ref) => {
     return (
-      <InputContext.Provider value={{ variant, size, isDisabled, isInvalid }}>
+      <InputContext.Provider value={{ variant: variant ?? undefined, size: size ?? undefined, isDisabled, isInvalid }}>
         <View
           ref={ref}
           className={cn(inputVariants({ variant, size }), className)}

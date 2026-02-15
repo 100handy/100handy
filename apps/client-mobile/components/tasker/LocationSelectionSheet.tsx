@@ -191,7 +191,7 @@ function LocationStep({
       return `${loc.city}, ${loc.country}`;
     }
     // Fallback: try to extract from streetAddress
-    const parts = loc.streetAddress.split(',').map(p => p.trim());
+    const parts = loc.streetAddress.split(',').map((p: string) => p.trim());
     if (parts.length >= 2) {
       return `${parts[parts.length - 2]}, ${parts[parts.length - 1]}`;
     }

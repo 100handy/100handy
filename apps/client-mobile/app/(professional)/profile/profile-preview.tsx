@@ -58,7 +58,7 @@ export default function ProfilePreviewScreen() {
               </Text>
               <View className="flex-col gap-2">
                 {tools.map((tool, index) => (
-                  <View className="flex-row" key={index} className="items-center gap-2">
+                  <View key={index} className="flex-row items-center gap-2">
                     <Text className="text-[#D17852] text-base">•</Text>
                     <Text
                       className="text-base text-[#333A31]"
@@ -83,7 +83,7 @@ export default function ProfilePreviewScreen() {
               </Text>
               <View className="flex-col gap-2">
                 {vehicles.map((vehicle, index) => (
-                  <View className="flex-row" key={index} className="items-center gap-2">
+                  <View key={index} className="flex-row items-center gap-2">
                     <Text className="text-[#D17852] text-base">•</Text>
                     <Text
                       className="text-base text-[#333A31]"
@@ -108,7 +108,7 @@ export default function ProfilePreviewScreen() {
               </Text>
               <View className="flex-col gap-2">
                 {quickFacts.map((fact, index) => (
-                  <View className="flex-row" key={index} className="items-center gap-2">
+                  <View key={index} className="flex-row items-center gap-2">
                     <Text className="text-[#D17852] text-base">•</Text>
                     <Text
                       className="text-base text-[#333A31]"

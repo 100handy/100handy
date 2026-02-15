@@ -41,7 +41,7 @@ export default function TaskDetailsScreen() {
             {/* Task Description Card */}
             <View className="flex-col space-y-2 bg-white p-4 rounded-xl">
               <View className="flex-row items-center">
-                <Text size="sm" className="font-semibold text-text-primary">
+                <Text className="text-sm font-semibold text-text-primary">
                   Task Description
                 </Text>
                 <Text className="text-red-500 ml-1">*</Text>
@@ -155,7 +155,7 @@ export default function TaskDetailsScreen() {
             {/* Estimated Total */}
             <View className="flex-col bg-bg-highlight p-4 rounded-xl space-y-1 border-border-highlight border-2">
               <View className="flex-row items-center justify-between w-full">
-                <Text size="md" className="font-semibold text-text-primary">
+                <Text className="text-base font-semibold text-text-primary">
                   Estimated Total
                 </Text>
                 <Text className="text-xl font-bold text-text-primary">

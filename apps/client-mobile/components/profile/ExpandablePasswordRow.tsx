@@ -41,7 +41,7 @@ export function ExpandablePasswordRow({
 
         <Pressable
           onPress={(e: { stopPropagation?: () => void }) => {
-            e.stopPropagation();
+            e.stopPropagation?.();
             onClearAndCollapse();
           }}
           hitSlop={10}

@@ -9,7 +9,7 @@ import { OtpInput, OtpInputRef } from 'react-native-otp-entry';
 
 export default function ClientVerifyEmailOtp() {
   const params = useLocalSearchParams();
-  const email = params.email as string;
+  const email = typeof params.email === 'string' ? params.email : '';
 
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);

@@ -55,7 +55,7 @@ function JobCard({ booking, onPress, showBadge }: JobCardProps) {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  const estimatedEarnings = (booking.hourly_rate_cents * booking.estimated_hours) / 100;
+  const estimatedEarnings = ((booking.hourly_rate_cents || 0) * (booking.estimated_hours || 0)) / 100;
   const customerName = booking.customer
     ? `${booking.customer.first_name || ''} ${booking.customer.last_name?.charAt(0) || ''}.`.trim()
     : 'Customer';

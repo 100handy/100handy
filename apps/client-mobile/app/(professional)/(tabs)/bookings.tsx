@@ -8,6 +8,7 @@ import {
   ModalContent,
 } from '@/components/ui/modal';
 import { Plus, Trash2 } from 'lucide-react-native';
+import { toast } from 'sonner-native';
 import { TimePickerWheel } from '@/components/availability';
 import {
   useWeeklyAvailability,
@@ -117,7 +118,7 @@ export default function BookingsTab() {
 
   const handleSave = () => {
     if (selectionEnd <= selectionStart) {
-      // Simple validation
+      toast.error('End time must be after start time');
       return;
     }
 

@@ -99,8 +99,8 @@ export default function TaskerProfileScreen() {
   const { data: profile, isLoading: profileLoading, isError: profileError } = useHandymanProfile(taskerId, categoryId);
   const { data: apiReviews, isLoading: reviewsLoading } = useHandymanReviews(taskerId, 10);
 
-  // Use API reviews if available, otherwise fallback to mock data
-  const reviews = (apiReviews && apiReviews.length > 0) ? apiReviews : taskerProfile.reviews;
+  // Use API reviews only - no mock data fallback
+  const reviews = apiReviews || [];
 
   const isLoading = profileLoading || reviewsLoading;
 
@@ -313,7 +313,11 @@ export default function TaskerProfileScreen() {
           {/* Rating Breakdown */}
           <View className="flex-col mb-5 gap-1.5">
             {[5, 4, 3, 2, 1].map((stars) => {
-              const percentage = taskerProfile.ratingBreakdown[stars as keyof typeof taskerProfile.ratingBreakdown];
+              const totalReviews = reviews.length;
+              const starCount = totalReviews > 0
+                ? reviews.filter((r: any) => Math.round(r.rating) === stars).length
+                : 0;
+              const percentage = totalReviews > 0 ? Math.round((starCount / totalReviews) * 100) : 0;
               return (
                 <View key={stars} className="flex-row items-center gap-2">
                   <Text

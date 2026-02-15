@@ -116,7 +116,7 @@ export default function TasksScreen() {
             <View className="flex-col space-y-2">
               {getCurrentTaskCards().map((taskCardProps, index) => (
                 <TaskCard
-                  key={`${activeTab}-${taskCardProps.bookingId || taskCardProps.id || index}`}
+                  key={`${activeTab}-${taskCardProps.bookingId || index}`}
                   {...taskCardProps}
                   onPress={() => handleTaskCardPress(taskCardProps.bookingId)}
                 />

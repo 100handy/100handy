@@ -16,7 +16,7 @@ END $$;
 
 -- Create recurring_booking_series table to track series metadata
 CREATE TABLE IF NOT EXISTS "public"."recurring_booking_series" (
-    "id" TEXT PRIMARY KEY DEFAULT generate_nanoid(),
+    "id" TEXT PRIMARY KEY DEFAULT generate_nanoid('recseries'),
     "customer_id" UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     "handy_id" UUID NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
     "category_id" TEXT REFERENCES categories(id) ON DELETE SET NULL,

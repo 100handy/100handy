@@ -278,7 +278,7 @@ export type ButtonProps = PressableProps &
 const Button = React.forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
   ({ className, variant = 'solid', size = 'md', action = 'primary', isDisabled = false, children, ...props }, ref) => {
     return (
-      <ButtonContext.Provider value={{ variant, size, action, isDisabled }}>
+      <ButtonContext.Provider value={{ variant: variant ?? undefined, size: size ?? undefined, action: action ?? undefined, isDisabled }}>
         <Pressable
           ref={ref}
           disabled={isDisabled}

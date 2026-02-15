@@ -144,7 +144,7 @@ export default function TasksScreen() {
           showBellIcon={true}
         />
 
-        <View className="h-px bg-border" className="h-px bg-border opacity-80" />
+        <View className="h-px bg-border opacity-80" />
 
         {/* Segmented Tabs */}
         <View className="flex-row bg-bg-primary">
@@ -153,7 +153,7 @@ export default function TasksScreen() {
           <Tab id="cancelled" label="Cancelled" active={activeTab === 'cancelled'} onPress={setActiveTab} />
         </View>
 
-        <View className="h-px bg-border" className="h-px bg-border opacity-80" />
+        <View className="h-px bg-border opacity-80" />
 
         {/* Content */}
         <ScrollView 

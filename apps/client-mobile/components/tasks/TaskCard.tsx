@@ -13,7 +13,7 @@ interface TaskCardProps {
   location: string;
   statusLabel: string;
   price: string;
-  bookingId?: number;
+  bookingId?: string;
   onPress?: () => void;
 }
 

@@ -38,7 +38,7 @@ const onboardingData = [
           Help with everyday
         </Text>
         <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          Life at you fingertips.
+          Life at your fingertips.
         </Text>
       </>
     ),
@@ -51,10 +51,10 @@ const onboardingData = [
           See reviews prices
         </Text>
         <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          of 140,00 +
+          of 140,000+
         </Text>
         <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          backround
+          background
         </Text>
         <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
           checked Taskers.

@@ -45,9 +45,10 @@ export default function VerifyDocumentUpload() {
   const handleVerifyWithStripe = useCallback(async () => {
     try {
       setIsLoading(true);
-      const result = await present();
+      await present();
 
-      if (result.status === 'FlowCompleted') {
+      // After present() resolves, check the status from the hook
+      if (status === 'FlowCompleted') {
         // Mark onboarding as completed
         await completeOnboarding();
 
@@ -55,10 +56,10 @@ export default function VerifyDocumentUpload() {
 
         // Navigate to professional dashboard
         router.replace('/(professional)/(tabs)/dashboard');
-      } else if (result.status === 'FlowCanceled') {
+      } else if (status === 'FlowCanceled') {
         // User canceled - stay on page
         setIsLoading(false);
-      } else if (result.status === 'FlowFailed') {
+      } else if (status === 'FlowFailed') {
         toast.error('Verification Failed', 'Please try again.');
         setIsLoading(false);
       }
@@ -67,7 +68,7 @@ export default function VerifyDocumentUpload() {
       toast.error('Error', 'Failed to start verification');
       setIsLoading(false);
     }
-  }, [present, toast]);
+  }, [present, status, toast]);
 
   const handleSkipForNow = async (): Promise<void> => {
     try {

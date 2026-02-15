@@ -60,9 +60,9 @@ export const MessageBubble = ({ message, showTimestamp = true }: MessageBubblePr
         )}
 
         {/* Interactive elements from metadata */}
-        {message.message_type === 'interactive' && message.metadata?.options && (
+        {message.message_type === 'interactive' && Array.isArray(message.metadata?.options) && (
           <View className="mt-2">
-            {message.metadata.options.map((option: string, index: number) => (
+            {(message.metadata.options as string[]).map((option: string, index: number) => (
               <View
                 key={index}
                 className="mt-1 p-2 bg-white border border-gray-300 rounded"

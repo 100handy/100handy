@@ -60,7 +60,7 @@ export default function ProfessionalSignUp() {
             <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
               Sign Up
             </Text>
-            <Pressable>
+            <Pressable onPress={() => router.back()}>
               <Text className="text-sm font-worksans-medium" style={{ color: '#333A31' }}>
                 Not now
               </Text>

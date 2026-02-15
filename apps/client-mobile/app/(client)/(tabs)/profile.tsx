@@ -24,6 +24,8 @@ import {
 import { useAuthStore, switchToProfessionalRole } from '@shared/supabase';
 import { useProfile } from '@shared/query';
 import { useRouter } from 'expo-router';
+import { useToast } from '@/components/ui/toast';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSecureNavigation } from '@/hooks/useSecureNavigation';
 import ReferralShareModal from '@/components/modals/ReferralShareModal';
@@ -47,6 +49,7 @@ export default function ProfileScreen() {
   const { signOut, user, isLoading: authLoading, checkAuth } = useAuthStore();
   const { data: profile, isLoading, error, refetch } = useProfile();
   const { navigateWithSecurityCheck } = useSecureNavigation();
+  const toast = useToast();
   const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
@@ -88,6 +91,7 @@ export default function ProfileScreen() {
       const ok = await switchToProfessionalRole();
       if (!ok) {
         console.error('Failed to switch to professional role');
+        toast.error('Switch failed', 'Could not switch to professional role. Please try again.');
         return;
       }
 
@@ -95,6 +99,7 @@ export default function ProfileScreen() {
       router.replace('/(professional)/(tabs)/dashboard');
     } catch (err) {
       console.error('Error switching to professional:', err);
+      toast.error('Switch failed', 'An error occurred while switching roles. Please try again.');
     } finally {
       setIsSwitchingToProfessional(false);
     }
@@ -109,10 +114,13 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleAcceptCookies = () => {
+  const handleAcceptCookies = async () => {
     setShowPrivacyNotice(false);
-    // You can add logic to save user's cookie preferences here
-    console.log('Cookies accepted');
+    try {
+      await AsyncStorage.setItem('cookie_preferences', JSON.stringify({ accepted: true, timestamp: Date.now() }));
+    } catch (error) {
+      console.error('Error saving cookie preferences:', error);
+    }
   };
 
   const handleCookiesSettings = () => {

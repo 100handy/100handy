@@ -18,7 +18,7 @@ import { MessageInput } from '../../../components/support/MessageInput';
 export default function ConversationScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const conversationId = params.conversationId as string;
+  const conversationId = typeof params.conversationId === 'string' ? params.conversationId : '';
 
   // Get current user
   const user = useAuthStore((state) => state.user);

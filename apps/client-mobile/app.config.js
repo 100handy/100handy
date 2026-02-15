@@ -22,10 +22,13 @@ module.exports = {
       supportsTablet: true,
       bundleIdentifier: 'com.oxdpr.handy',
       buildNumber: '3',
+      // TODO: Replace with actual production domain for Universal Links
       associatedDomains: ['applinks:auth.yourdomain.com'],
       infoPlist: {
         NSLocationWhenInUseUsageDescription:
           'We need your location to help you set your work area and find nearby jobs.',
+        NSCameraUsageDescription:
+          'We need camera access to take photos of your identity documents and profile pictures.',
       },
     },
     android: {
@@ -35,7 +38,7 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: 'com.oxdpr.handy',
-      permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION', 'POST_NOTIFICATIONS'],
+      permissions: ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION', 'POST_NOTIFICATIONS', 'CAMERA'],
       config: {
         googleMaps: {
           apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY',
@@ -88,6 +91,7 @@ module.exports = {
           enableGooglePay: true,
         },
       ],
+      '@stripe/stripe-identity-react-native',
     ],
     experiments: {
       typedRoutes: true,

@@ -118,8 +118,8 @@ export default function ProfessionalWelcome() {
               {/* Terms and Privacy */}
               <View className="pb-10">
                 <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
-                  By singing up, you agree to the{' '}
-                  <Text style={{ color: '#C1856A' }}>Term of service</Text>
+                  By signing up, you agree to the{' '}
+                  <Text style={{ color: '#C1856A' }}>Terms of Service</Text>
                   {'\n'}
                   and have reviewed the{' '}
                   <Text style={{ color: '#C1856A' }}>Privacy Policy.</Text>

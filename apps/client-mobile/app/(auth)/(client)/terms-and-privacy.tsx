@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { StatusBar, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
-import { Image } from 'expo-image';
 import { CheckIcon, ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -37,7 +36,7 @@ export default function TermsAndPrivacyScreen() {
           <ChevronLeft size={24} color="#333A31" />
         </Pressable>
         <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>
-          Term & Privacy
+          Terms & Privacy
         </Text>
         <View className="w-6" />
       </View>
@@ -54,13 +53,21 @@ export default function TermsAndPrivacyScreen() {
             </Text>
           </View>
 
-          {/* Illustration */}
-          <Image
-            source={{ uri: "https://www.figma.com/api/mcp/asset/56376e0d-c1bf-4c33-8d8d-52fa9cac3807" }}
-            alt="Terms and Privacy Illustration"
-            style={{ width: 180, height: 180, marginBottom: 32 }}
-            contentFit="contain"
-          />
+          {/* Illustration Placeholder */}
+          <View
+            style={{
+              width: 180,
+              height: 180,
+              marginBottom: 32,
+              backgroundColor: '#F3E3D3',
+              borderRadius: 90,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 48 }}>📋</Text>
+            <Text style={{ fontSize: 12, color: '#30352D', marginTop: 8 }}>Terms & Privacy</Text>
+          </View>
 
           {/* Checkboxes */}
           <View className="flex-col w-full mb-8">

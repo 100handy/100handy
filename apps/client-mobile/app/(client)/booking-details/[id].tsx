@@ -193,9 +193,9 @@ export default function BookingDetailScreen() {
           </View>
 
           {/* Handyman Info */}
-          {booking.handy_name && (
+          {booking.handy_id && (
             <HandymanCard
-              name={booking.handy_name}
+              name="Assigned Handyman"
               hourlyRateCents={booking.hourly_rate_cents}
               onContactPress={handleContactHandyman}
             />

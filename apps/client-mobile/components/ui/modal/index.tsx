@@ -65,7 +65,7 @@ export type ModalProps = Omit<RNModalProps, 'visible'> &
 const Modal = React.forwardRef<React.ElementRef<typeof View>, ModalProps>(
   ({ className, size = 'md', isOpen = false, onClose, children, ...props }, ref) => {
     return (
-      <ModalContext.Provider value={{ size, onClose }}>
+      <ModalContext.Provider value={{ size: size ?? undefined, onClose }}>
         <RNModal
           visible={isOpen}
           transparent

@@ -40,7 +40,7 @@ export default function EliteScreen() {
 
   // Group skills by category
   const skillsByCategory = skills.reduce((acc, skill) => {
-    const category = skill.skill?.name || 'Other';
+    const category = skill.skill?.category || 'Other';
     if (!acc[category]) {
       acc[category] = [];
     }
