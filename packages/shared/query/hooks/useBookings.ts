@@ -292,6 +292,32 @@ export function useCompleteBooking() {
   });
 }
 
+// Mutation hook for retrying failed payment processing
+export function useRetryPayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bookingId,
+      paymentIntentId,
+    }: {
+      bookingId: string;
+      paymentIntentId: string;
+    }) => {
+      const { retryPaymentProcessing } = await import('../../supabase/payments');
+      return retryPaymentProcessing(bookingId, paymentIntentId, 3);
+    },
+    onSuccess: (result, { bookingId }) => {
+      // Invalidate booking queries to refresh payment status
+      queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) });
+      queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
+    },
+    onError: (error) => {
+      console.error('Error retrying payment:', error);
+    },
+  });
+}
+
 // Utility hook for invalidating professional booking queries
 export function useInvalidateHandyBookings() {
   const queryClient = useQueryClient();

@@ -5,7 +5,7 @@ import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { LocationAutocomplete } from '@/components/location';
+import { LocationAutocomplete, type LocationResult, type AddressComponents } from '@/components/location';
 import { useLocationStore } from '@shared/supabase';
 
 export default function LocationScreen() {
@@ -15,6 +15,7 @@ export default function LocationScreen() {
   const [streetAddress, setStreetAddress] = useState('');
   const [unitNumber, setUnitNumber] = useState('');
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [addressComponents, setAddressComponents] = useState<AddressComponents | null>(null);
 
   // Load existing location on mount
   useEffect(() => {
@@ -25,27 +26,40 @@ export default function LocationScreen() {
     }
   }, [location]);
 
-  const handleSelectLocation = (locationData: any) => {
+  const handleSelectLocation = (locationData: LocationResult) => {
     setSelectedPlaceId(locationData.place_id);
-    console.log('Selected location:', locationData);
+    if (locationData.addressComponents) {
+      setAddressComponents(locationData.addressComponents);
+    }
   };
 
   const handleSave = () => {
-    // Parse address to extract city and country
-    const addressParts = streetAddress.split(',').map(part => part.trim());
-    const country = addressParts.length > 0 ? addressParts[addressParts.length - 1] : '';
-    const city = addressParts.length > 1 ? addressParts[addressParts.length - 2] : '';
+    // Use structured address components from Google Places API when available
+    let city = '';
+    let country = '';
+    let postcode = '';
+
+    if (addressComponents) {
+      city = addressComponents.city;
+      country = addressComponents.country;
+      postcode = addressComponents.postcode;
+    } else {
+      // Fallback: parse from formatted address string (less reliable)
+      const addressParts = streetAddress.split(',').map(part => part.trim());
+      country = addressParts.length > 0 ? addressParts[addressParts.length - 1] : '';
+      city = addressParts.length > 1 ? addressParts[addressParts.length - 2] : '';
+    }
 
     setLocation({
-      streetAddress,
+      streetAddress: addressComponents?.streetAddress || streetAddress,
       unitNumber,
       placeId: selectedPlaceId || undefined,
       city,
       country,
+      postalCode: postcode,
       formattedAddress: streetAddress,
     });
 
-    console.log('Location saved!');
     router.back();
   };
 

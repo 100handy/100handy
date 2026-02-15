@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, View, Text, Pressable, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, Lightbulb } from 'lucide-react-native';
-import { addUserSkill, updateUserSkillDetails } from '@shared/supabase/profile';
+import { ChevronLeft, Lightbulb, ShieldAlert } from 'lucide-react-native';
+import { addUserSkill, updateUserSkillDetails, getHandyProfile } from '@shared/supabase/profile';
+import { toast } from 'sonner-native';
 
 const MAX_CHARS = 500;
 
@@ -11,20 +12,61 @@ export default function SkillExperienceScreen() {
   const params = useLocalSearchParams<{ skillId: string; skillName: string; rate: string }>();
   const [experience, setExperience] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    getHandyProfile()
+      .then((profile) => {
+        setVerificationStatus(profile?.verification_status ?? null);
+      })
+      .catch(() => {
+        setVerificationStatus(null);
+      });
+  }, []);
+
+  const isVerified = verificationStatus === 'verified';
 
   const handleActivate = async () => {
     if (isSubmitting) return;
 
+    // Check verification status before activating
+    if (!isVerified) {
+      Alert.alert(
+        'Verification Required',
+        'Complete identity verification to start receiving jobs. Your skill will be saved but won\'t be visible to clients until you\'re verified.',
+        [
+          { text: 'Verify Now', onPress: () => router.push('/(professional)/(tabs)/dashboard') },
+          {
+            text: 'Save Anyway',
+            style: 'default',
+            onPress: () => activateSkill(),
+          },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+
+    await activateSkill();
+  };
+
+  const activateSkill = async () => {
     setIsSubmitting(true);
     try {
-      // Convert rate from dollars to cents
-      const rateCents = parseInt(params.rate) * 100;
+      // Convert rate from pounds to cents
+      const rateValue = parseInt(params.rate);
+      if (isNaN(rateValue)) {
+        console.error('Invalid rate value:', params.rate);
+        setIsSubmitting(false);
+        return;
+      }
+      const rateCents = rateValue * 100;
 
-      // Add user skill with rate
+      // Add user skill with rate (inactive if not verified)
       const userSkill = await addUserSkill({
         skill_id: params.skillId,
         hourly_rate_cents: rateCents,
-        is_active: true,
+        is_active: isVerified, // Only activate if verified
       });
 
       // Save experience description if provided
@@ -32,6 +74,10 @@ export default function SkillExperienceScreen() {
         await updateUserSkillDetails(userSkill.id, {
           experience_description: experience.trim(),
         });
+      }
+
+      if (!isVerified) {
+        toast.warning('Skill saved but inactive until identity is verified.');
       }
 
       // Navigate back to my skills screen
@@ -67,6 +113,30 @@ export default function SkillExperienceScreen() {
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="px-6 py-6">
+            {/* Verification Warning Banner */}
+            {verificationStatus !== null && !isVerified && (
+              <Pressable
+                onPress={() => router.push('/(professional)/(tabs)/dashboard')}
+                className="bg-[#FFF3CD] rounded-lg p-4 mb-6 flex-row items-center"
+              >
+                <ShieldAlert size={20} color="#856404" strokeWidth={2} />
+                <View className="flex-1 ml-3">
+                  <Text
+                    className="text-sm font-medium text-[#856404]"
+                    style={{ fontFamily: 'WorkSans_500Medium' }}
+                  >
+                    Complete identity verification to start receiving jobs
+                  </Text>
+                  <Text
+                    className="text-xs text-[#856404] mt-1"
+                    style={{ fontFamily: 'WorkSans_400Regular' }}
+                  >
+                    Tap here to verify your identity
+                  </Text>
+                </View>
+              </Pressable>
+            )}
+
             {/* Title and Description */}
             <View className="mb-8">
               <Text

@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, Modal } from 'react-native';
+import { ScrollView, View, Text, Pressable, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, ChevronDown, ChevronUp, HelpCircle, CheckCircle2, Sparkles } from 'lucide-react-native';
+import { ChevronLeft, ChevronDown, ChevronUp, HelpCircle, CheckCircle2, Sparkles, Edit3 } from 'lucide-react-native';
 
 const HOURLY_RATES = [17, 18, 19, 20, 25, 30];
 const SUGGESTED_RATE = 18;
+const MIN_RATE = 10;
+const MAX_RATE = 200;
 
 export default function SkillRateScreen() {
   const params = useLocalSearchParams<{ skillId: string; skillName: string }>();
   const [selectedRate, setSelectedRate] = useState(SUGGESTED_RATE);
   const [showRatePicker, setShowRatePicker] = useState(false);
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(0);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customRateText, setCustomRateText] = useState('');
+  const [customRateError, setCustomRateError] = useState('');
 
   const faqs = [
     {
@@ -118,7 +123,7 @@ export default function SkillRateScreen() {
                 className="text-base text-gray-900"
                 style={{ fontFamily: 'WorkSans_500Medium' }}
               >
-                ${selectedRate} per hour
+                £{selectedRate} per hour
               </Text>
               <ChevronDown size={24} color="#1F2937" />
             </Pressable>
@@ -218,7 +223,21 @@ export default function SkillRateScreen() {
               >
                 Self-Set Hourly Rate
               </Text>
-              <Pressable onPress={() => setShowRatePicker(false)}>
+              <Pressable
+                onPress={() => {
+                  if (showCustomInput) {
+                    const num = parseInt(customRateText);
+                    if (!customRateText || isNaN(num) || num < MIN_RATE || num > MAX_RATE) {
+                      setCustomRateError(`Rate must be between £${MIN_RATE} and £${MAX_RATE}`);
+                      return;
+                    }
+                    setSelectedRate(num);
+                  }
+                  setShowRatePicker(false);
+                  setShowCustomInput(false);
+                  setCustomRateError('');
+                }}
+              >
                 <Text
                   className="text-base font-semibold text-[#34D399]"
                   style={{ fontFamily: 'WorkSans_600SemiBold' }}
@@ -242,23 +261,22 @@ export default function SkillRateScreen() {
             </View>
 
             {/* Rate Options */}
-            <View className="flex-row justify-around items-center mb-8">
-              {[17, 18, 19].map((rate) => {
-                const isSuggested = rate === SUGGESTED_RATE;
-                const isSelected = rate === selectedRate;
+            <View className="flex-row flex-wrap justify-center items-center mb-4" style={{ gap: 12 }}>
+              {HOURLY_RATES.map((rate) => {
+                const isSelected = rate === selectedRate && !showCustomInput;
 
                 // Determine styling based on selection
                 let borderColor = '#A3B899'; // Default green
-                let size = 'w-28 h-28';
-                let textSize = 'text-3xl';
+                let size = 'w-20 h-20';
+                let textSize = 'text-xl';
                 let textColor = 'text-gray-400';
                 let bgColor = 'transparent';
                 let fontWeight = 'WorkSans_400Regular';
 
                 if (isSelected) {
                   borderColor = '#C1856A'; // Selected brown
-                  size = 'w-32 h-32';
-                  textSize = 'text-4xl';
+                  size = 'w-24 h-24';
+                  textSize = 'text-2xl';
                   textColor = 'text-gray-800';
                   bgColor = '#C1856A1A'; // Light brown background
                   fontWeight = 'WorkSans_500Medium';
@@ -267,7 +285,11 @@ export default function SkillRateScreen() {
                 return (
                   <Pressable
                     key={rate}
-                    onPress={() => setSelectedRate(rate)}
+                    onPress={() => {
+                      setSelectedRate(rate);
+                      setShowCustomInput(false);
+                      setCustomRateError('');
+                    }}
                     className={`flex-col items-center justify-center rounded-full ${size}`}
                     style={{
                       borderWidth: 3,
@@ -280,10 +302,10 @@ export default function SkillRateScreen() {
                       className={`font-bold ${textSize} ${textColor}`}
                       style={{ fontFamily: 'WorkSans_700Bold' }}
                     >
-                      ${rate}
+                      £{rate}
                     </Text>
                     <Text
-                      className={`text-xs tracking-widest ${textColor}`}
+                      className={`text-[10px] tracking-widest ${textColor}`}
                       style={{
                         fontFamily: fontWeight,
                       }}
@@ -294,6 +316,78 @@ export default function SkillRateScreen() {
                 );
               })}
             </View>
+
+            {/* Custom Rate Option */}
+            {!showCustomInput ? (
+              <Pressable
+                onPress={() => {
+                  setShowCustomInput(true);
+                  setCustomRateText(
+                    HOURLY_RATES.includes(selectedRate) ? '' : selectedRate.toString()
+                  );
+                }}
+                className="flex-row items-center justify-center py-3 mb-4"
+              >
+                <Edit3 size={16} color="#C1856A" strokeWidth={2} />
+                <Text
+                  className="text-sm font-medium text-[#C1856A] ml-2"
+                  style={{ fontFamily: 'WorkSans_500Medium' }}
+                >
+                  Enter custom rate
+                </Text>
+              </Pressable>
+            ) : (
+              <View className="mb-4">
+                <View className="flex-row items-center justify-center mb-2">
+                  <Text
+                    className="text-base text-gray-700 mr-2"
+                    style={{ fontFamily: 'WorkSans_500Medium' }}
+                  >
+                    £
+                  </Text>
+                  <TextInput
+                    value={customRateText}
+                    onChangeText={(text) => {
+                      // Only allow digits
+                      const cleaned = text.replace(/[^0-9]/g, '');
+                      setCustomRateText(cleaned);
+                      setCustomRateError('');
+                      const num = parseInt(cleaned);
+                      if (cleaned && !isNaN(num) && num >= MIN_RATE && num <= MAX_RATE) {
+                        setSelectedRate(num);
+                      }
+                    }}
+                    placeholder={`${MIN_RATE}-${MAX_RATE}`}
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="number-pad"
+                    autoFocus
+                    className="border-b-2 border-[#C1856A] text-center text-2xl font-bold text-gray-800 w-24 pb-1"
+                    style={{ fontFamily: 'WorkSans_700Bold' }}
+                  />
+                  <Text
+                    className="text-sm text-gray-500 ml-2"
+                    style={{ fontFamily: 'WorkSans_400Regular' }}
+                  >
+                    per hour
+                  </Text>
+                </View>
+                {customRateError ? (
+                  <Text
+                    className="text-xs text-red-500 text-center"
+                    style={{ fontFamily: 'WorkSans_400Regular' }}
+                  >
+                    {customRateError}
+                  </Text>
+                ) : (
+                  <Text
+                    className="text-xs text-gray-400 text-center"
+                    style={{ fontFamily: 'WorkSans_400Regular' }}
+                  >
+                    Enter a rate between £{MIN_RATE} and £{MAX_RATE}
+                  </Text>
+                )}
+              </View>
+            )}
 
             {/* Info Box */}
             <View className="bg-emerald-50 p-4 rounded-lg flex-row items-center">

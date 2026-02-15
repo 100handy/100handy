@@ -408,24 +408,47 @@ export async function cancelBooking(bookingId: string): Promise<boolean> {
     if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
       try {
         // Import dynamically to avoid circular dependency
-        const { cancelPaymentIntent, updateBookingPaymentStatus } = await import('./payments');
+        const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
         const released = await cancelPaymentIntent(booking.payment_intent_id);
         if (released) {
           await updateBookingPaymentStatus(bookingId, 'cancelled');
+        } else {
+          await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on cancellation. Customer hold will auto-expire in 7 days.', {
+            paymentIntentId: booking.payment_intent_id,
+          });
+          // Flag the booking so support can monitor it
+          await supabase
+            .from('bookings')
+            .update({ payment_hold_release_failed: true })
+            .eq('id', bookingId);
         }
       } catch (e) {
         console.error('Failed to release authorization hold for booking:', bookingId, e);
+        try {
+          const { logPaymentError } = await import('./payments');
+          await logPaymentError(bookingId, 'hold_release_error', String(e), {
+            paymentIntentId: booking.payment_intent_id,
+          });
+        } catch {
+          // Already logged to console above
+        }
       }
     }
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('bookings')
       .update({ status: 'cancelled' })
       .eq('id', bookingId)
-      .in('status', ['pending', 'accepted']);
+      .in('status', ['pending', 'accepted'])
+      .select();
 
     if (error) {
       console.error(`Error cancelling booking ${bookingId}:`, error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Booking ${bookingId} not cancelled - status may not be pending or accepted`);
       return false;
     }
 
@@ -641,13 +664,32 @@ export async function declineBooking(
     if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
       try {
         // Import dynamically to avoid circular dependency
-        const { cancelPaymentIntent, updateBookingPaymentStatus } = await import('./payments');
+        const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
         const released = await cancelPaymentIntent(booking.payment_intent_id);
         if (released) {
           await updateBookingPaymentStatus(bookingId, 'cancelled');
+        } else {
+          // Hold release failed - log for monitoring and flag booking
+          await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on decline. Customer hold will auto-expire in 7 days.', {
+            paymentIntentId: booking.payment_intent_id,
+          });
+          // Flag the booking so support can monitor it
+          await supabase
+            .from('bookings')
+            .update({ payment_hold_release_failed: true })
+            .eq('id', bookingId);
         }
       } catch (e) {
         console.error('Failed to release authorization hold for declined booking:', bookingId, e);
+        // Best-effort log even if the above fails
+        try {
+          const { logPaymentError } = await import('./payments');
+          await logPaymentError(bookingId, 'hold_release_error', String(e), {
+            paymentIntentId: booking.payment_intent_id,
+          });
+        } catch {
+          // Already logged to console above
+        }
       }
     }
 
@@ -727,6 +769,7 @@ export async function completeBooking(
 ): Promise<{
   success: boolean;
   paymentProcessed?: boolean;
+  payoutFailed?: boolean;
   error?: string;
 }> {
   try {
@@ -770,29 +813,43 @@ export async function completeBooking(
     if (options?.processPayment && booking.payment_intent_id) {
       try {
         // Import dynamically to avoid circular dependency
-        const { processJobCompletionPayment } = await import('./payments');
-        const paymentResult = await processJobCompletionPayment(
+        const { retryPaymentProcessing } = await import('./payments');
+        const paymentResult = await retryPaymentProcessing(
           bookingId,
-          booking.payment_intent_id
+          booking.payment_intent_id,
+          3 // 3 retry attempts with exponential backoff
         );
 
         if (!paymentResult.success) {
-          // Booking is completed but payment failed - log for manual intervention
-          console.error('Payment processing failed for completed booking:', bookingId);
+          // Booking is completed but payment failed after all retries
+          console.error('Payment processing failed after retries for booking:', bookingId);
           return {
             success: true,
             paymentProcessed: false,
+            payoutFailed: true,
+            error: paymentResult.error,
+          };
+        }
+
+        // Check if capture succeeded but payout failed
+        if (paymentResult.captureResult && !paymentResult.payoutResult) {
+          return {
+            success: true,
+            paymentProcessed: false,
+            payoutFailed: true,
             error: paymentResult.error,
           };
         }
 
         return { success: true, paymentProcessed: true };
-      } catch (paymentError: any) {
+      } catch (paymentError: unknown) {
+        const message = paymentError instanceof Error ? paymentError.message : 'Unknown payment error';
         console.error('Error processing payment:', paymentError);
         return {
           success: true, // Booking is completed
           paymentProcessed: false,
-          error: paymentError.message,
+          payoutFailed: true,
+          error: message,
         };
       }
     }

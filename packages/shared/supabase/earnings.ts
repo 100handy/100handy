@@ -111,7 +111,7 @@ export async function getProfessionalInvoices(
         status,
         payment_status,
         created_at,
-        customer:profiles!bookings_customer_id_fkey(first_name, last_name)
+        customer:profiles!bookings_customer_profile_fkey(first_name, last_name)
       `)
       .eq('handy_id', userId)
       .in('status', ['completed', 'cancelled'])

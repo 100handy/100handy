@@ -340,7 +340,7 @@ export default function MySkillsScreen() {
                                   className="text-[#C1856A] text-sm font-semibold"
                                   style={{ fontFamily: 'WorkSans_600SemiBold' }}
                                 >
-                                  ${hourlyRate}/hr
+                                  £{hourlyRate}/hr
                                 </Text>
                               </Pressable>
                             </View>

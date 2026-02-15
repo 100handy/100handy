@@ -3,6 +3,7 @@ import { FlatList, ActivityIndicator, Platform, View, Text, Pressable } from 're
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { MapPin, X } from 'lucide-react-native';
 import debounce from 'lodash/debounce';
+import { fetchPlaceDetails, type AddressComponents } from './placeDetails';
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -15,10 +16,14 @@ interface PlacePrediction {
   };
 }
 
+export interface LocationResult extends PlacePrediction {
+  addressComponents?: AddressComponents | null;
+}
+
 interface LocationAutocompleteProps {
   value: string;
   onChangeText: (text: string) => void;
-  onSelectLocation: (location: PlacePrediction) => void;
+  onSelectLocation: (location: LocationResult) => void;
   placeholder?: string;
   label?: string;
   showClearButton?: boolean;
@@ -88,11 +93,14 @@ export function LocationAutocomplete({
     debouncedSearch(text);
   };
 
-  const handleSelectPrediction = (prediction: PlacePrediction) => {
-    onSelectLocation(prediction);
+  const handleSelectPrediction = async (prediction: PlacePrediction) => {
     onChangeText(prediction.description);
     setPredictions([]);
     setShowSuggestions(false);
+
+    // Fetch structured address components from Place Details API
+    const addressComponents = await fetchPlaceDetails(prediction.place_id);
+    onSelectLocation({ ...prediction, addressComponents });
   };
 
   const handleClear = () => {

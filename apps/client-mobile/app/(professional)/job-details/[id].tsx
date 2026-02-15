@@ -34,7 +34,9 @@ import {
   useStartBooking,
   useCompleteBooking,
   useHasReviewedBooking,
+  useRetryPayment,
 } from '@shared/supabase';
+import { getBookingPaymentDetails } from '@shared/supabase/payments';
 
 function InfoRow({
   icon,
@@ -114,12 +116,53 @@ export default function JobDetailsScreen() {
   const router = useRouter();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const { data: booking, isLoading, error } = useBookingById(id || null);
+  const { data: booking, isLoading, error, refetch } = useBookingById(id || null);
   const { data: hasReviewed } = useHasReviewedBooking(id || '', 'handy');
   const acceptMutation = useAcceptBooking();
   const declineMutation = useDeclineBooking();
   const startMutation = useStartBooking();
   const completeMutation = useCompleteBooking();
+  const retryPaymentMutation = useRetryPayment();
+  const [paymentDetails, setPaymentDetails] = useState<{
+    payoutStatus: string | null;
+    paymentIntentId: string | null;
+  }>({ payoutStatus: null, paymentIntentId: null });
+
+  // Fetch payment details for completed bookings
+  React.useEffect(() => {
+    if (booking?.status === 'completed' && id) {
+      getBookingPaymentDetails(id).then((details) => {
+        if (details) {
+          setPaymentDetails({
+            payoutStatus: details.payoutStatus,
+            paymentIntentId: details.paymentIntentId,
+          });
+        }
+      });
+    }
+  }, [booking?.status, id]);
+
+  const handleRetryPayment = async () => {
+    if (!id || !paymentDetails.paymentIntentId) return;
+    setActionLoading('retry');
+    try {
+      const result = await retryPaymentMutation.mutateAsync({
+        bookingId: id,
+        paymentIntentId: paymentDetails.paymentIntentId,
+      });
+      if (result.success && result.payoutResult) {
+        toast.success('Payment processed successfully!');
+        setPaymentDetails((prev) => ({ ...prev, payoutStatus: 'transferred' }));
+        refetch();
+      } else {
+        toast.error(result.error || 'Payment retry failed. Please try again later.');
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleLeaveReview = () => {
     router.push(`/(professional)/review/${id}`);
@@ -231,13 +274,18 @@ export default function JobDetailsScreen() {
               if (result.success) {
                 if (result.paymentProcessed) {
                   toast.success('Job completed! Payment processed successfully.');
-                } else if (result.error) {
+                  router.back();
+                } else if (result.payoutFailed || result.error) {
                   toast.success('Job completed!');
-                  toast.warning(`Payment issue: ${result.error}`);
+                  toast.warning('Payment processing failed. You can retry from this screen.');
+                  setPaymentDetails((prev) => ({
+                    ...prev,
+                    payoutStatus: 'failed',
+                  }));
                 } else {
                   toast.success('Job completed!');
+                  router.back();
                 }
-                router.back();
               } else {
                 toast.error(result.error || 'Failed to complete job');
               }
@@ -291,7 +339,7 @@ export default function JobDetailsScreen() {
     );
   }
 
-  const estimatedEarnings = (booking.hourly_rate_cents * booking.estimated_hours) / 100;
+  const estimatedEarnings = ((booking.hourly_rate_cents || 0) * (booking.estimated_hours || 0)) / 100;
   const statusLabels: Record<string, { label: string; color: string }> = {
     pending: { label: 'Pending Approval', color: '#B8926A' },
     accepted: { label: 'Accepted', color: '#2E7D32' },
@@ -494,6 +542,24 @@ export default function JobDetailsScreen() {
               loading={actionLoading === 'complete'}
               icon={<Flag color="#fff" size={18} />}
             />
+          )}
+
+          {booking.status === 'completed' && paymentDetails.payoutStatus === 'failed' && (
+            <View className="mb-3">
+              <View className="bg-[#FFF3CD] px-4 py-3 rounded-xl mb-3 flex-row items-center">
+                <DollarSign color="#856404" size={18} strokeWidth={1.5} />
+                <Text className="font-worksans text-[13px] text-[#856404] ml-2 flex-1">
+                  Payment to you failed. Tap below to retry.
+                </Text>
+              </View>
+              <ActionButton
+                onPress={handleRetryPayment}
+                label="Retry Payment"
+                variant="primary"
+                loading={actionLoading === 'retry'}
+                icon={<DollarSign color="#fff" size={18} />}
+              />
+            </View>
           )}
 
           {booking.status === 'completed' && !hasReviewed && (

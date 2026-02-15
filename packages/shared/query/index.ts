@@ -41,6 +41,7 @@ export {
   useDeclineBooking,
   useStartBooking,
   useCompleteBooking,
+  useRetryPayment,
   useInvalidateHandyBookings,
 } from './hooks/useBookings';
 

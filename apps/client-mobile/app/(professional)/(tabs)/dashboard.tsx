@@ -40,17 +40,18 @@ export default function ProfessionalDashboard() {
   const { data: workArea } = useWorkArea();
   const { data: weeklyAvailability } = useWeeklyAvailability();
 
-  // Calculate completed onboarding tasks
-  const totalTasks = 5;
+  // Calculate completed onboarding tasks (6 total: verification + 5 setup tasks)
+  const totalTasks = 6;
   const completedTasks = useMemo(() => {
     let count = 0;
-    if (profile?.avatar_url) count++;                                           // 1. Profile photo
-    if (verificationStatus === 'verified') count++;                             // 2. ID verification
-    if (workArea?.coordinates && workArea.coordinates.length >= 3) count++;     // 3. Work area set
-    if (weeklyAvailability && Object.keys(weeklyAvailability).length > 0) count++; // 4. Availability set
-    if (hasActiveSkill) count++;                                                 // 5. Name your price (skill activated)
+    if (verificationStatus === 'verified') count++;                             // 1. ID verification (required first)
+    if (hasActiveSkill) count++;                                                 // 2. Name your price (skill activated)
+    if (hasDirectDeposit) count++;                                               // 3. Direct deposit
+    if (profile?.avatar_url) count++;                                           // 4. Profile photo
+    if (weeklyAvailability && Object.keys(weeklyAvailability).length > 0) count++; // 5. Availability set
+    if (workArea?.coordinates && workArea.coordinates.length >= 3) count++;     // 6. Work area set
     return count;
-  }, [profile?.avatar_url, verificationStatus, workArea, weeklyAvailability, hasActiveSkill]);
+  }, [profile?.avatar_url, verificationStatus, workArea, weeklyAvailability, hasActiveSkill, hasDirectDeposit]);
 
   const progressPercent = (completedTasks / totalTasks) * 100;
 
@@ -154,12 +155,27 @@ export default function ProfessionalDashboard() {
   const hasAvailability = weeklyAvailability && Object.keys(weeklyAvailability).length > 0;
   const hasWorkArea = workArea?.coordinates && workArea.coordinates.length >= 3;
 
+  const isAccountVerified = verificationStatus === 'verified';
+
   const onboardingTasks = [
+    {
+      icon: <ShieldCheck color={isAccountVerified ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
+      title: 'Verify your identity',
+      duration: '5 MIN',
+      completed: isAccountVerified,
+      disabled: false,
+      onPress: () => {
+        if (!isAccountVerified) {
+          handleStartVerification();
+        }
+      },
+    },
     {
       icon: <DollarSign color={hasActiveSkill ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
       title: 'Name your price',
       duration: '4 MIN PER SKILL',
       completed: hasActiveSkill,
+      disabled: !isAccountVerified,
       onPress: () => {
         router.push('/(professional)/skills/my-skills');
       },
@@ -169,6 +185,7 @@ export default function ProfessionalDashboard() {
       title: 'Set up direct deposit',
       duration: '2 MIN',
       completed: hasDirectDeposit,
+      disabled: !isAccountVerified,
       onPress: () => {
         router.push('/(professional)/profile/direct-deposit');
       },
@@ -178,6 +195,7 @@ export default function ProfessionalDashboard() {
       title: 'Upload a profile photo',
       duration: '2 MIN',
       completed: hasProfilePhoto,
+      disabled: false, // Photo upload doesn't require verification
       onPress: () => {
         router.push('/(professional)/add-profile-photo');
       },
@@ -187,6 +205,7 @@ export default function ProfessionalDashboard() {
       title: 'Set availability',
       duration: '4 MIN',
       completed: hasAvailability,
+      disabled: !isAccountVerified,
       onPress: () => {
         router.push('/(professional)/(tabs)/bookings');
       },
@@ -196,6 +215,7 @@ export default function ProfessionalDashboard() {
       title: 'Set work area',
       duration: '4 MIN',
       completed: hasWorkArea,
+      disabled: !isAccountVerified,
       onPress: () => {
         router.push('/(professional)/(tabs)/work-area');
       },
@@ -360,6 +380,7 @@ export default function ProfessionalDashboard() {
               title={task.title}
               duration={task.duration}
               completed={task.completed}
+              disabled={task.disabled}
               onPress={task.onPress}
             />
           ))}
