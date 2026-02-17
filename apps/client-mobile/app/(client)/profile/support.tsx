@@ -91,8 +91,7 @@ export default function SupportScreen() {
 
               if (success) {
                 toast.success('Success', 'Your account has been deleted');
-                // User will be signed out automatically by the deleteUserAccount function
-                // Navigation will be handled by auth state change
+                router.replace('/(auth)/(client)');
               } else {
                 throw new Error('Failed to delete account');
               }

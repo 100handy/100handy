@@ -162,8 +162,7 @@ export default function BusinessPhotosScreen() {
   };
 
   const handleLearnMore = () => {
-    // Open photo policy link
-    const policyUrl = 'https://example.com/photo-policy'; // Replace with actual URL
+    const policyUrl = 'https://100handy.com/photo-policy';
     Linking.openURL(policyUrl).catch((err) =>
       console.error('Failed to open URL:', err)
     );
@@ -220,7 +219,7 @@ export default function BusinessPhotosScreen() {
                   className="text-base font-medium text-[#D17852]"
                   style={{ fontFamily: 'WorkSans_500Medium' }}
                 >
-                  Go Skills & Rates
+                  Go to Skills & Rates
                 </Text>
               </Pressable>
 

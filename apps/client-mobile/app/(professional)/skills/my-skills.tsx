@@ -19,7 +19,7 @@ import {
   Zap,
   Hammer,
 } from 'lucide-react-native';
-import { getUserSkills, updateUserSkill, UserSkill } from '@shared/supabase/profile';
+import { getUserSkills, getHandyProfile, UserSkill } from '@shared/supabase/profile';
 
 // Category icon and color mapping
 const CATEGORY_CONFIG: Record<
@@ -115,6 +115,7 @@ export default function MySkillsScreen() {
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showBanner, setShowBanner] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
     loadSkills();
@@ -122,8 +123,12 @@ export default function MySkillsScreen() {
 
   const loadSkills = async () => {
     setIsLoading(true);
-    const userSkills = await getUserSkills();
+    const [userSkills, handyProfile] = await Promise.all([
+      getUserSkills(),
+      getHandyProfile(),
+    ]);
     setSkills(userSkills);
+    setIsVerified(handyProfile?.verification_status === 'verified');
     setIsLoading(false);
   };
 
@@ -345,24 +350,34 @@ export default function MySkillsScreen() {
                               </Pressable>
                             </View>
                           ) : (
-                            <Pressable
-                              onPress={() => handleActivateSkill(userSkill.skill_id)}
-                              className="bg-[#C1856A] rounded-lg px-4 py-2 ml-3"
-                              style={{
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 3,
-                                elevation: 2,
-                              }}
-                            >
-                              <Text
-                                className="text-white text-sm font-semibold"
-                                style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                            <View className="flex-col items-end gap-1 ml-3">
+                              <Pressable
+                                onPress={() => handleActivateSkill(userSkill.skill_id)}
+                                className="bg-[#C1856A] rounded-lg px-4 py-2"
+                                style={{
+                                  shadowColor: '#000',
+                                  shadowOffset: { width: 0, height: 2 },
+                                  shadowOpacity: 0.1,
+                                  shadowRadius: 3,
+                                  elevation: 2,
+                                }}
                               >
-                                Activate
-                              </Text>
-                            </Pressable>
+                                <Text
+                                  className="text-white text-sm font-semibold"
+                                  style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                                >
+                                  Activate
+                                </Text>
+                              </Pressable>
+                              {!isVerified && (
+                                <Text
+                                  className="text-[10px] text-gray-500"
+                                  style={{ fontFamily: 'WorkSans_400Regular' }}
+                                >
+                                  Verify profile to go live
+                                </Text>
+                              )}
+                            </View>
                           )}
                         </View>
                       );

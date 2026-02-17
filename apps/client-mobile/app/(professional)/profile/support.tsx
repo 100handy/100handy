@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
@@ -15,13 +15,11 @@ export default function SupportScreen() {
   const router = useRouter();
 
   const handleHandySupport = () => {
-    console.log('Navigate to 100 Handy Support');
-    // Navigate to support contact screen when implemented
+    Linking.openURL('mailto:support@100handy.com');
   };
 
   const handleSupportCenter = () => {
-    console.log('Visit support center');
-    // Open support center URL or navigate to support center
+    Linking.openURL('https://100handy.com/support');
   };
 
   const handleTestNotifications = async () => {

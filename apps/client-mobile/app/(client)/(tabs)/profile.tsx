@@ -22,6 +22,7 @@ import {
   Globe,
 } from 'lucide-react-native';
 import { useAuthStore, switchToProfessionalRole } from '@shared/supabase';
+import { getHandyProfile } from '@shared/supabase/profile';
 import { useProfile } from '@shared/query';
 import { useRouter } from 'expo-router';
 import { useToast } from '@/components/ui/toast';
@@ -36,11 +37,11 @@ const menuItems = [
   { icon: User, title: 'Account', route: '/profile/edit', requiresSecurity: true },
   { icon: Shield, title: 'Account Security', route: '/(client)/profile/account-security', requiresSecurity: false },
   { icon: Lock, title: 'Change Password', route: '/profile/change-password', requiresSecurity: true },
-  { icon: CreditCard, title: 'Payment', route: '/profile/payments', requiresSecurity: true },
+  { icon: CreditCard, title: 'Payment', route: '/(client)/profile/payments', requiresSecurity: true },
   { icon: Megaphone, title: 'Promos', route: '/(client)/profile/promotions', requiresSecurity: false },
   { icon: Bell, title: 'Notifications', route: '/(client)/profile/notifications', requiresSecurity: false },
-  { icon: HelpCircle, title: 'Privacy settings', route: '/profile/privacy-settings', requiresSecurity: false },
-  { icon: MessageSquare, title: 'Support', route: '/profile/support', requiresSecurity: false },
+  { icon: HelpCircle, title: 'Privacy settings', route: '/(client)/profile/privacy-settings', requiresSecurity: false },
+  { icon: MessageSquare, title: 'Support', route: '/(client)/profile/support', requiresSecurity: false },
   { icon: Info, title: 'About', route: '/profile/about', requiresSecurity: false },
 ];
 
@@ -71,12 +72,10 @@ export default function ProfileScreen() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      // Navigate directly to auth screen after successful logout
       router.replace('/(auth)/(client)');
     } catch (error) {
       console.error('Sign out error:', error);
-      // Even if signOut fails, try to navigate to auth screen
-      router.replace('/(auth)/(client)');
+      toast.error('Error', 'Failed to sign out. Please try again.');
     }
   };
 
@@ -96,7 +95,15 @@ export default function ProfileScreen() {
       }
 
       await checkAuth();
-      router.replace('/(professional)/(tabs)/dashboard');
+
+      // Check if professional onboarding is completed
+      const handyProfile = await getHandyProfile();
+      if (!handyProfile?.onboarding_completed) {
+        // First-time switch — send through professional onboarding flow
+        router.replace('/(auth)/(professional)/verify-info');
+      } else {
+        router.replace('/(professional)/(tabs)/dashboard');
+      }
     } catch (err) {
       console.error('Error switching to professional:', err);
       toast.error('Switch failed', 'An error occurred while switching roles. Please try again.');
@@ -125,7 +132,7 @@ export default function ProfileScreen() {
 
   const handleCookiesSettings = () => {
     setShowPrivacyNotice(false);
-    router.push('/profile/privacy-settings');
+    router.push('/(client)/profile/privacy-settings');
   };
 
   useEffect(() => {

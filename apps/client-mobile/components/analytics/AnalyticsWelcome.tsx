@@ -1,21 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, Pressable, Dimensions, FlatList, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, ChevronRight, Image as ImageIcon, CheckCircle2 } from 'lucide-react-native';
+import { X } from 'lucide-react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 
 // Custom icon: House/Mailbox with arrow (based on Figma design)
 function HouseMailboxIcon({ size = 90, color = "#A0B194" }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 90 90" fill="none">
-      {/* Circle background */}
-      <Circle
-        cx="45"
-        cy="45"
-        r="45"
-        fill="#3D4239"
-      />
-      {/* House shape - simplified version matching Figma Path 196 */}
+      <Circle cx="45" cy="45" r="45" fill="#3D4239" />
       <Path
         d="M45 25L30 35V55H60V35L45 25Z"
         stroke={color}
@@ -24,7 +17,6 @@ function HouseMailboxIcon({ size = 90, color = "#A0B194" }: { size?: number; col
         strokeLinejoin="round"
         fill="none"
       />
-      {/* Mailbox/Arrow detail - simplified version matching Figma Path 197 */}
       <Path
         d="M50 45L55 40M55 40L50 35M55 40L65 40"
         stroke={color}
@@ -44,18 +36,25 @@ interface AnalyticsWelcomeProps {
   onSkip?: () => void;
 }
 
-const welcomeScreens = [
+interface WelcomeScreen {
+  id: number;
+  icon?: React.ReactNode;
+  title?: string;
+  subtitle?: string;
+  body?: React.ReactNode;
+  content?: React.ReactNode;
+}
+
+const welcomeScreens: WelcomeScreen[] = [
   {
     id: 0,
     icon: <HouseMailboxIcon size={90} color="#A0B194" />,
     title: 'Welcome to your Analytics!',
     body: (
-      <>
-        <Text className="text-[#F3E3D3] text-[14px] leading-[17px] text-center px-4">
-          We've heard your feedback and made some big updates. Give a warm welcome to{' '}
-          <Text className="text-[#A0B194] font-bold">Tasker Analytics</Text>!
-        </Text>
-      </>
+      <Text className="text-[#F3E3D3] text-[14px] leading-[17px] text-center px-4">
+        We've heard your feedback and made some big updates. Give a warm welcome to{' '}
+        <Text className="text-[#A0B194] font-bold">Tasker Analytics</Text>!
+      </Text>
     ),
   },
   {
@@ -128,74 +127,26 @@ const welcomeScreens = [
       </>
     ),
   },
-  {
-    id: 3,
-    icon: <ImageIcon size={90} color="#A0B194" strokeWidth={1.5} />,
-    title: "What should I keep in mind for business photos?",
-    showCloseButton: true,
-    content: (
-      <>
-        <View className="gap-4 flex-col">
-          <View className="items-start gap-3 flex-row">
-            <CheckCircle2 size={20} color="#A0B194" strokeWidth={2} />
-            <Text className="text-[#F3E3D3] text-[14px] leading-[17px] flex-1 text-left">
-              Include well-lit photos that show off work you're proud of.
-            </Text>
-          </View>
-          <View className="items-start gap-3 flex-row">
-            <CheckCircle2 size={20} color="#A0B194" strokeWidth={2} />
-            <Text className="text-[#F3E3D3] text-[14px] leading-[17px] flex-1 text-left">
-              Make sure you have your Client's permission before taking photos inside their home.
-            </Text>
-          </View>
-          <View className="items-start gap-3 flex-row">
-            <CheckCircle2 size={20} color="#A0B194" strokeWidth={2} />
-            <Text className="text-[#F3E3D3] text-[14px] leading-[17px] flex-1 text-left">
-              Don't include any images that include other people.
-            </Text>
-          </View>
-          <View className="items-start gap-3 flex-row">
-            <CheckCircle2 size={20} color="#A0B194" strokeWidth={2} />
-            <Text className="text-[#F3E3D3] text-[14px] leading-[17px] flex-1 text-left">
-              Don't share images with personal information or inappropriate content.
-            </Text>
-          </View>
-        </View>
-        <Text className="text-[#F3E3D3] text-[14px] leading-[17px] text-center mt-6">
-          Learn more about our accepted photo policy here.
-        </Text>
-      </>
-    ),
-  },
 ];
+
+const LAST_SCREEN_INDEX = welcomeScreens.length - 1;
 
 export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcomeProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [userHasSwiped, setUserHasSwiped] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  // Auto-advance timer for first 3 screens (analytics intro)
+  // Auto-advance only the first (splash) screen after 4 seconds, stop if user swiped
   React.useEffect(() => {
-    // Only auto-advance for screens 0, 1, 2 (first 3 screens)
-    if (currentStep < 3) {
+    if (currentStep === 0 && !userHasSwiped) {
       const timer = setTimeout(() => {
-        const nextStep = currentStep + 1;
-        flatListRef.current?.scrollToIndex({ index: nextStep, animated: true });
-        setCurrentStep(nextStep);
-      }, 3000); // 3 seconds per screen
+        flatListRef.current?.scrollToIndex({ index: 1, animated: true });
+        setCurrentStep(1);
+      }, 4000);
 
       return () => clearTimeout(timer);
     }
-  }, [currentStep]);
-
-  const handleNext = () => {
-    if (currentStep < welcomeScreens.length - 1) {
-      const nextStep = currentStep + 1;
-      flatListRef.current?.scrollToIndex({ index: nextStep, animated: true });
-      setCurrentStep(nextStep);
-    } else {
-      onComplete();
-    }
-  };
+  }, [currentStep, userHasSwiped]);
 
   const handleGotIt = () => {
     onComplete();
@@ -204,6 +155,9 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / SCREEN_WIDTH);
+    if (index !== currentStep) {
+      setUserHasSwiped(true);
+    }
     setCurrentStep(index);
   };
 
@@ -215,63 +169,58 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
     }
   };
 
-  const renderItem = ({ item }: { item: typeof welcomeScreens[0] }) => (
-    <View style={{ width: SCREEN_WIDTH }}>
-      <SafeAreaView className="flex-1" edges={['top']}>
-        <View className="flex-1 bg-[#4A5347]">
-          {/* Close/Skip button - only show if explicitly set to true */}
-          {item.showCloseButton === true && (
+  const renderItem = ({ item }: { item: WelcomeScreen }) => {
+    const isFirstScreen = item.id === 0;
+    const isLastScreen = item.id === LAST_SCREEN_INDEX;
+
+    return (
+      <View style={{ width: SCREEN_WIDTH }}>
+        <SafeAreaView className="flex-1" edges={['top']}>
+          <View className="flex-1 bg-[#4A5347]">
+            {/* Skip button - always visible */}
             <View className="items-center justify-end pt-4 pr-6 flex-row">
-              <Pressable onPress={handleSkip}>
+              <Pressable onPress={handleSkip} hitSlop={12}>
                 <X size={24} color="white" />
               </Pressable>
             </View>
-          )}
 
-          <View className="flex-1 justify-between px-6 pb-8 flex-col">
-            {/* Main Content */}
-            <View className="flex-1 justify-center flex-col">
-              {/* Icon (for first and fourth screens) */}
-              {item.icon && (
-                <View className="items-center mb-6 flex-col">
-                  {item.id === 0 ? (
-                    // First screen icon has built-in circular background
-                    item.icon
-                  ) : item.id === 3 ? (
-                    // Fourth screen icon needs circular background wrapper
-                    <View className="w-[90px] h-[90px] rounded-full bg-[#3D4239] items-center justify-center">
-                      {item.icon}
-                    </View>
-                  ) : null}
-                </View>
-              )}
+            <View className="flex-1 justify-between px-6 pb-8 flex-col">
+              {/* Main Content */}
+              <View className={`flex-1 flex-col ${isFirstScreen ? 'justify-center items-center' : 'pt-4'}`}>
+                {/* Icon (first screen only) */}
+                {item.icon && (
+                  <View className="items-center mb-6 flex-col">
+                    {item.icon}
+                  </View>
+                )}
 
-              {/* Title */}
-              {item.title && (
-                <Text className="text-white text-[18px] font-bold text-center mb-6">
-                  {item.title}
-                </Text>
-              )}
+                {/* Title */}
+                {item.title && (
+                  <Text className="text-white text-[18px] font-bold text-center mb-4">
+                    {item.title}
+                  </Text>
+                )}
 
-              {/* Subtitle */}
-              {item.subtitle && (
-                <Text className="text-white text-xl font-bold text-center mb-6">
-                  {item.subtitle}
-                </Text>
-              )}
+                {/* Subtitle */}
+                {item.subtitle && (
+                  <Text className="text-white text-xl font-bold text-center mb-6">
+                    {item.subtitle}
+                  </Text>
+                )}
 
-              {/* Body/Content */}
-              <View className="flex-1 flex-col">
-                {item.body || item.content}
+                {/* Body/Content */}
+                {(item.body || item.content) && (
+                  <View className="flex-col">
+                    {item.body || item.content}
+                  </View>
+                )}
               </View>
-            </View>
 
-            {/* Navigation Dots and Button */}
-            <View className="items-center gap-6 mt-8 flex-col">
-              {/* Only show navigation dots for first 3 screens */}
-              {currentStep < 3 && (
+              {/* Navigation Dots + Button */}
+              <View className="items-center gap-6 mt-8 flex-col">
+                {/* Navigation dots */}
                 <View className="gap-2 flex-row">
-                  {[0, 1, 2].map((index) => (
+                  {welcomeScreens.map((_, index) => (
                     <View
                       key={index}
                       className={`w-2 h-2 rounded-full ${
@@ -280,25 +229,25 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
                     />
                   ))}
                 </View>
-              )}
 
-              {/* Only show "Got it" button on the last screen */}
-              {currentStep === 3 && (
-                <Pressable
-                  onPress={handleGotIt}
-                  className="bg-[#B8926A] rounded-full px-8 py-4"
-                >
-                  <Text className="text-white text-lg font-bold">
-                    Got it
-                  </Text>
-                </Pressable>
-              )}
+                {/* "Got it" button on last screen */}
+                {isLastScreen && (
+                  <Pressable
+                    onPress={handleGotIt}
+                    className="bg-[#B8926A] rounded-full px-8 py-4"
+                  >
+                    <Text className="text-white text-lg font-bold">
+                      Got it
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
             </View>
           </View>
-        </View>
-      </SafeAreaView>
-    </View>
-  );
+        </SafeAreaView>
+      </View>
+    );
+  };
 
   return (
     <View className="flex-1">
@@ -321,4 +270,3 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
     </View>
   );
 }
-

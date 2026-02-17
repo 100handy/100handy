@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, FlatList } from 'react-native';
+import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Download, ChevronDown, Info, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { toast } from 'sonner-native';
+import { useToast } from '@/components/ui/toast';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   getProfessionalEarnings,
@@ -33,7 +33,9 @@ function formatDate(dateString: string): string {
 export default function EarningsScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'invoices' | 'payouts'>('invoices');
+  const [refreshing, setRefreshing] = useState(false);
 
   // Date selection
   const now = new Date();
@@ -78,6 +80,12 @@ export default function EarningsScreen() {
     }, [loadData])
   );
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
   const handleSelectMonth = (year: number, month: number) => {
     setSelectedYear(year);
     setSelectedMonth(month);
@@ -100,7 +108,7 @@ export default function EarningsScreen() {
                 Earnings
               </Text>
             </View>
-            <Pressable onPress={() => toast.info('Export coming soon')}>
+            <Pressable onPress={() => toast.info('Coming soon', 'Export will be available in a future update')}>
               <Download size={24} color="#30352d" />
             </Pressable>
           </View>
@@ -111,7 +119,13 @@ export default function EarningsScreen() {
             <ActivityIndicator size="large" color="#C1856A" />
           </View>
         ) : (
-          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <ScrollView
+            className="flex-1"
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D17852" />
+            }
+          >
             {/* Month Selector */}
             <View className="px-5 pt-4">
               <Pressable

@@ -56,7 +56,7 @@ export default function PaymentsScreen() {
 
             // Success - card was saved
             Alert.alert('Success', 'Payment method added successfully!', [
-                { text: 'OK', onPress: () => router.push('/profile/payment-methods') }
+                { text: 'OK', onPress: () => router.push('/(client)/profile/payment-methods') }
             ]);
         } catch (error) {
             console.error('Wallet payment error:', error);
@@ -103,7 +103,7 @@ export default function PaymentsScreen() {
                     {/* Credit Card Option */}
                     <Pressable
                         onPress={() => {
-                            router.push('/profile/payment-methods');
+                            router.push('/(client)/profile/payment-methods');
                         }}
                         className="border-b border-gray-200"
                     >

@@ -7,7 +7,7 @@ import { useProfessionalProfileStore } from '@shared/supabase';
 import { useToast } from '@/components/ui/toast';
 
 const QUICK_FACTS_LIST = [
-  'I have a pet allergies',
+  'I have pet allergies',
   'I speak multiple languages',
   'I require a 2 hour minimum',
   'None of these apply',

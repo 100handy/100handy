@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from 'expo-router';
 
 // Import lucide-react-native icons
 import {
@@ -419,7 +419,7 @@ export default function AnalyticsScreen() {
                   className="text-[#30352D] text-2xl font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
-                  0%
+                  {analytics?.earningsPercentile || 0}%
                 </Text>
 
                 {/* Percentile Slider */}
@@ -458,12 +458,12 @@ export default function AnalyticsScreen() {
                   </View>
                   <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <View className="flex-row">
-                      <View className="h-full rounded-full bg-[#D1FAE5]" style={{ width: '0%' }} />
-                      <View className="h-full bg-[#16A34A]" style={{ width: '0%' }} />
+                      <View className="h-full rounded-full bg-[#D1FAE5]" style={{ width: `${Math.min(analytics?.earningsPercentile || 0, 80)}%` }} />
+                      <View className="h-full bg-[#16A34A]" style={{ width: `${Math.max((analytics?.earningsPercentile || 0) - 80, 0)}%` }} />
                     </View>
                   </View>
                   {/* Dot indicator */}
-                  <View className="relative" style={{ marginTop: -8, marginLeft: '0%' }}>
+                  <View className="relative" style={{ marginTop: -8, marginLeft: `${Math.min(analytics?.earningsPercentile || 0, 95)}%` }}>
                     <View
                       className="w-4 h-4 rounded-full bg-[#30352D]"
                       style={{
@@ -535,15 +535,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
-                      </Text>
-                    </View>
-                    <View className="flex-row items-center justify-end">
-                      <Text
-                        className="text-[#333A31] text-[10px]"
-                        style={{ fontFamily: 'WorkSans_400Regular' }}
-                      >
-                        - -
+                        {analytics?.averageSearchPosition ?? '- -'}
                       </Text>
                     </View>
                     <Text
@@ -570,7 +562,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
+                        {analytics?.searchAppearances || '- -'}
                       </Text>
                     </View>
                   </View>
@@ -591,7 +583,7 @@ export default function AnalyticsScreen() {
                         className="text-[#30352D] text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
-                        - -
+                        {analytics?.opportunityPercentile || 0}%
                       </Text>
                     </View>
                     <Text
@@ -729,7 +721,7 @@ export default function AnalyticsScreen() {
                   className="text-[#30352D] text-2xl font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
-                  0%
+                  {analytics?.opportunityPercentile || 0}%
                 </Text>
 
                 {/* Percentile Slider */}
@@ -768,12 +760,12 @@ export default function AnalyticsScreen() {
                   </View>
                   <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <View className="flex-row">
-                      <View className="h-full rounded-full bg-[#D1FAE5]" style={{ width: '0%' }} />
-                      <View className="h-full bg-[#16A34A]" style={{ width: '0%' }} />
+                      <View className="h-full rounded-full bg-[#D1FAE5]" style={{ width: `${Math.min(analytics?.opportunityPercentile || 0, 80)}%` }} />
+                      <View className="h-full bg-[#16A34A]" style={{ width: `${Math.max((analytics?.opportunityPercentile || 0) - 80, 0)}%` }} />
                     </View>
                   </View>
                   {/* Dot indicator */}
-                  <View className="relative" style={{ marginTop: -8, marginLeft: '0%' }}>
+                  <View className="relative" style={{ marginTop: -8, marginLeft: `${Math.min(analytics?.opportunityPercentile || 0, 95)}%` }}>
                     <View
                       className="w-4 h-4 rounded-full bg-[#30352D]"
                       style={{
@@ -1017,7 +1009,7 @@ export default function AnalyticsScreen() {
                   className="text-[#30352D] text-2xl font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
-                  0%
+                  {analytics?.taskPercentile || 0}%
                 </Text>
 
                 {/* Percentile Slider */}
@@ -1056,12 +1048,12 @@ export default function AnalyticsScreen() {
                   </View>
                   <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <View className="flex-row">
-                      <View className="h-full rounded-full bg-[#D1FAE5]" style={{ width: '0%' }} />
-                      <View className="h-full bg-[#16A34A]" style={{ width: '0%' }} />
+                      <View className="h-full rounded-full bg-[#D1FAE5]" style={{ width: `${Math.min(analytics?.taskPercentile || 0, 80)}%` }} />
+                      <View className="h-full bg-[#16A34A]" style={{ width: `${Math.max((analytics?.taskPercentile || 0) - 80, 0)}%` }} />
                     </View>
                   </View>
                   {/* Dot indicator */}
-                  <View className="relative" style={{ marginTop: -8, marginLeft: '0%' }}>
+                  <View className="relative" style={{ marginTop: -8, marginLeft: `${Math.min(analytics?.taskPercentile || 0, 95)}%` }}>
                     <View
                       className="w-4 h-4 rounded-full bg-[#30352D]"
                       style={{

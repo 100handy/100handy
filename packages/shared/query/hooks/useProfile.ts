@@ -31,7 +31,7 @@ export function useProfile(options?: { enabled?: boolean }) {
     queryKey: profileKeys.detail(),
     queryFn: getUserProfile,
     enabled: options?.enabled ?? true,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }

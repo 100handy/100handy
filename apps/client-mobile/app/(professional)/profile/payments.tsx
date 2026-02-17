@@ -13,7 +13,7 @@ export default function PaymentsScreen() {
   const router = useRouter();
 
   const handleDirectDeposit = () => {
-    router.push('/profile/direct-deposit');
+    router.push('/(professional)/profile/direct-deposit');
   };
 
   const paymentItems: PaymentItem[] = [

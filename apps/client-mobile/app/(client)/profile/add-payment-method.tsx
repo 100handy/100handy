@@ -141,23 +141,25 @@ export default function AddPaymentMethodScreen() {
             </View>
           </View>
 
-          {/* Test Card Info (for development) */}
-          <View className="bg-[#FEF3C7] rounded-xl p-4">
-            <View className="flex-col gap-2">
-              <Text
-                className="text-sm font-semibold text-[#92400E]"
-                style={{ fontFamily: 'WorkSans_600SemiBold' }}
-              >
-                Test Card
-              </Text>
-              <Text
-                className="text-xs text-[#92400E] leading-5"
-                style={{ fontFamily: 'WorkSans_400Regular' }}
-              >
-                For testing: Use card number 4242 4242 4242 4242 with any future expiry date and any 3-digit CVC.
-              </Text>
+          {/* Test Card Info (for development only) */}
+          {__DEV__ && (
+            <View className="bg-[#FEF3C7] rounded-xl p-4">
+              <View className="flex-col gap-2">
+                <Text
+                  className="text-sm font-semibold text-[#92400E]"
+                  style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                >
+                  Test Card
+                </Text>
+                <Text
+                  className="text-xs text-[#92400E] leading-5"
+                  style={{ fontFamily: 'WorkSans_400Regular' }}
+                >
+                  For testing: Use card number 4242 4242 4242 4242 with any future expiry date and any 3-digit CVC.
+                </Text>
+              </View>
             </View>
-          </View>
+          )}
         </View>
       </ScrollView>
 

@@ -16,7 +16,7 @@ export default function TaskerProfileScreen() {
         <Text className="text-xl font-bold text-[#30352D]" style={{ fontFamily: 'WorkSans_700Bold' }}>
           Tasker Profile
         </Text>
-        <Pressable onPress={() => router.push('/profile/profile-preview')}>
+        <Pressable onPress={() => router.push('/(professional)/profile/profile-preview')}>
           <Eye size={24} color="#C1856A" strokeWidth={2} />
         </Pressable>
       </View>
@@ -35,25 +35,25 @@ export default function TaskerProfileScreen() {
 
           {/* Menu Items */}
           <View className="flex-col gap-0">
-            <MenuItem 
-              label="Tools" 
-              onPress={() => router.push('/profile/tools-screen')} 
+            <MenuItem
+              label="Tools"
+              onPress={() => router.push('/(professional)/profile/tools-screen')}
             />
-            <MenuItem 
-              label="Vehicles" 
-              onPress={() => {router.push('/profile/vehicles-screen')}} 
+            <MenuItem
+              label="Vehicles"
+              onPress={() => {router.push('/(professional)/profile/vehicles-screen')}}
             />
-            <MenuItem 
-              label="Quick facts" 
-              onPress={() => router.push('/profile/quick-facts')} 
+            <MenuItem
+              label="Quick facts"
+              onPress={() => router.push('/(professional)/profile/quick-facts')}
             />
-            <MenuItem 
-              label="About me" 
-              onPress={() => {router.push('/profile/about-me')}} 
+            <MenuItem
+              label="About me"
+              onPress={() => {router.push('/(professional)/profile/about-me')}}
             />
-            <MenuItem 
-              label="Business photos" 
-              onPress={() => {router.push('/profile/business-photo')}} 
+            <MenuItem
+              label="Business photos"
+              onPress={() => {router.push('/(professional)/profile/business-photo')}}
               isLast
             />
           </View>

@@ -33,7 +33,7 @@ export default function AccountDetailScreen() {
   }, []);
 
   const handleEdit = () => {
-    router.push('/profile/account-detail-edit');
+    router.push('/(professional)/profile/account-detail-edit');
   };
 
   if (isLoading) {

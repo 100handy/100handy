@@ -65,7 +65,7 @@ const isOverlapping = (start1: number, end1: number, start2: number, end2: numbe
 };
 
 export default function BookingsTab() {
-  const [selectedDay, setSelectedDay] = useState(0);
+  const [selectedDay, setSelectedDay] = useState(new Date().getDay());
   const [showAddModal, setShowAddModal] = useState(false);
   const [startHour, setStartHour] = useState('18');
   const [startMinute, setStartMinute] = useState('15');
@@ -118,7 +118,13 @@ export default function BookingsTab() {
 
   const handleSave = () => {
     if (selectionEnd <= selectionStart) {
-      toast.error('End time must be after start time');
+      toast.error('End time must be after start time. Overnight slots are not supported.');
+      return;
+    }
+
+    // Minimum 30-minute slot
+    if (selectionEnd - selectionStart < 30) {
+      toast.error('Availability must be at least 30 minutes');
       return;
     }
 
@@ -175,8 +181,12 @@ export default function BookingsTab() {
     saveDayMutation(
       { dayIndex: selectedDay, slots: slotsForDB },
       {
+        onSuccess: () => {
+          toast.success(isMerge ? 'Availability merged' : 'Availability added');
+        },
         onError: (error) => {
           console.error('Failed to save availability:', error);
+          toast.error('Failed to save. Please try again.');
           // Rollback to previous state on error
           setAvailability((prev) => ({
             ...prev,
@@ -212,6 +222,9 @@ export default function BookingsTab() {
     saveDayMutation(
       { dayIndex: selectedDay, slots: slotsForDB },
       {
+        onSuccess: () => {
+          toast.success('Slot removed');
+        },
         onSettled: () => {
           // Clear loading state when done (success or error)
           setDeletingSlots(prev => {
@@ -222,6 +235,7 @@ export default function BookingsTab() {
         },
         onError: (error) => {
           console.error('Failed to remove slot:', error);
+          toast.error('Failed to remove slot');
           // Rollback to previous state on error
           setAvailability((prev) => ({
             ...prev,

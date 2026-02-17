@@ -22,10 +22,16 @@ export default function ClosingMessageScreen() {
     loadTemplates();
   }, []);
 
+  // Update message when chatTemplates load (fixes race condition)
+  useEffect(() => {
+    if (chatTemplates[templateType]) {
+      setMessage(chatTemplates[templateType]);
+    }
+  }, [chatTemplates, templateType]);
+
   const loadTemplates = async () => {
     setIsLoading(true);
     await loadChatTemplates();
-    setMessage(chatTemplates[templateType]);
     setIsLoading(false);
   };
 

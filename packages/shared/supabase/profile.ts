@@ -34,7 +34,7 @@ export interface UpdateProfileData {
   last_name?: string;
   phone?: string;
   postcode?: string;
-  avatar_url?: string;
+  avatar_url?: string | null;
   referral_code?: string;
 }
 
@@ -204,10 +204,10 @@ export async function updateUserAvatar(imageUri: string): Promise<string | null>
     const arrayBuffer = decode(base64);
 
     const fileExt = imageUri.split('.').pop() || 'jpg';
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`;
 
-    // Upload image to Supabase storage
+    // Upload image to Supabase storage (scoped to user directory)
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(filePath, arrayBuffer, {
@@ -246,9 +246,16 @@ export async function deleteUserAvatar(): Promise<boolean> {
       return true; // No avatar to delete
     }
 
-    // Extract file name from URL (bucket is already scoped via .from('avatars'))
+    // Extract file path from URL
+    // New format: avatars/{userId}/{filename} (user-scoped)
+    // Old format: avatars/{userId}-{filename} (flat)
     const url = new URL(profile.avatar_url);
-    const filePath = url.pathname.split('/').pop() || '';
+    const segments = url.pathname.split('/');
+    const bucketIdx = segments.indexOf('avatars');
+    // Everything after "avatars/" is the storage path
+    const filePath = bucketIdx >= 0 && bucketIdx < segments.length - 1
+      ? segments.slice(bucketIdx + 1).join('/')
+      : segments[segments.length - 1] || '';
 
     // Delete from storage
     const { error: deleteError } = await supabase.storage
@@ -260,7 +267,7 @@ export async function deleteUserAvatar(): Promise<boolean> {
     }
 
     // Update profile to remove image URL
-    await updateUserProfile({ avatar_url: undefined });
+    await updateUserProfile({ avatar_url: null });
 
     return true;
   } catch (error) {
@@ -609,6 +616,9 @@ export async function switchToProfessionalRole(): Promise<boolean> {
       return false;
     }
 
+    // Save previous role for rollback
+    const previousRole = user.user_metadata?.role || 'customer';
+
     // Ensure handy profile exists first (so onboarding screens can load safely)
     const handyProfile = await ensureHandyProfile();
     if (!handyProfile) {
@@ -616,7 +626,7 @@ export async function switchToProfessionalRole(): Promise<boolean> {
       return false;
     }
 
-    // Update profiles table role
+    // Step 1: Update profiles table role
     const { error: profileError } = await supabase
       .from('profiles')
       .update({ role: 'handy' })
@@ -627,13 +637,18 @@ export async function switchToProfessionalRole(): Promise<boolean> {
       return false;
     }
 
-    // Update auth user metadata role (used by client routing)
+    // Step 2: Update auth user metadata role (used by client routing)
     const { error: metadataError } = await supabase.auth.updateUser({
       data: { role: 'handy' },
     });
 
     if (metadataError) {
       console.error('Error updating auth user metadata role:', metadataError);
+      // Rollback profiles table to previous role
+      await supabase
+        .from('profiles')
+        .update({ role: previousRole })
+        .eq('user_id', user.id);
       return false;
     }
 
@@ -660,7 +675,10 @@ export async function switchToCustomerRole(): Promise<boolean> {
       return false;
     }
 
-    // Update profiles table role
+    // Save previous role for rollback
+    const previousRole = user.user_metadata?.role || 'handy';
+
+    // Step 1: Update profiles table role
     const { error: profileError } = await supabase
       .from('profiles')
       .update({ role: 'customer' })
@@ -671,13 +689,18 @@ export async function switchToCustomerRole(): Promise<boolean> {
       return false;
     }
 
-    // Update auth user metadata role (used by client routing)
+    // Step 2: Update auth user metadata role (used by client routing)
     const { error: metadataError } = await supabase.auth.updateUser({
       data: { role: 'customer' },
     });
 
     if (metadataError) {
       console.error('Error updating auth user metadata role:', metadataError);
+      // Rollback profiles table to previous role
+      await supabase
+        .from('profiles')
+        .update({ role: previousRole })
+        .eq('user_id', user.id);
       return false;
     }
 

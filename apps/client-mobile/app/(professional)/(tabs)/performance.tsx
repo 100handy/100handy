@@ -1,8 +1,16 @@
-import React, { useMemo } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight, Star, BarChart3 } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import {
+  getProfessionalEarnings,
+  getEliteProgress,
+  useAuthStore,
+  type EarningsSummary,
+  type EliteProgress,
+} from '@shared/supabase';
+import { getUserSkills } from '@shared/supabase/profile';
 
 interface PerformanceCardProps {
   title: string;
@@ -29,8 +37,17 @@ function PerformanceCard({ title, children, onPress }: PerformanceCardProps) {
   );
 }
 
-export default function ProfessionalEarnings() {
+function formatCurrency(cents: number): string {
+  return `\u00A3${(cents / 100).toFixed(2)}`;
+}
+
+export default function PerformanceScreen() {
   const router = useRouter();
+  const { user } = useAuthStore();
+  const [refreshing, setRefreshing] = useState(false);
+  const [earnings, setEarnings] = useState<EarningsSummary | null>(null);
+  const [activeSkillsCount, setActiveSkillsCount] = useState(0);
+  const [eliteProgress, setEliteProgress] = useState<EliteProgress | null>(null);
 
   const { currentMonthLabel, currentMonthYear } = useMemo(() => {
     const now = new Date();
@@ -38,6 +55,48 @@ export default function ProfessionalEarnings() {
     const monthYear = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
     return { currentMonthLabel: monthLabel, currentMonthYear: monthYear };
   }, []);
+
+  const loadData = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const now = new Date();
+      const [earningsData, skills, elite] = await Promise.all([
+        getProfessionalEarnings(user.id, now.getFullYear(), now.getMonth() + 1),
+        getUserSkills(),
+        getEliteProgress(user.id),
+      ]);
+
+      setEarnings(earningsData);
+      setActiveSkillsCount(skills.filter(s => s.is_active && s.hourly_rate_cents > 0).length);
+      setEliteProgress(elite);
+    } catch (error) {
+      console.error('Error loading performance data:', error);
+    }
+  }, [user?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
+  // Calculate elite milestones
+  const eliteMilestones = useMemo(() => {
+    if (!eliteProgress) return { met: 0, total: 4, percent: 0 };
+    let met = 0;
+    if (eliteProgress.monthlyCompletedTasks >= 10) met++;
+    if (eliteProgress.lifetimeCompletedTasks >= 200) met++;
+    if (eliteProgress.categoryProgress.some(c => c.completedTasks >= 50)) met++;
+    // 4th milestone (top 35% performance) requires tracking — count as not met for now
+    return { met, total: 4, percent: Math.round((met / 4) * 100) };
+  }, [eliteProgress]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
@@ -48,7 +107,13 @@ export default function ProfessionalEarnings() {
         </Text>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D17852" />
+        }
+      >
         <View className="flex-col py-4">
           {/* Earnings Card */}
           <PerformanceCard
@@ -61,11 +126,11 @@ export default function ProfessionalEarnings() {
                   {currentMonthLabel} Total
                 </Text>
                 <Text className="font-worksans-bold text-[24px] text-[#30352D]">
-                  £0
+                  {formatCurrency(earnings?.totalEarned || 0)}
                 </Text>
               </View>
               <Text className="font-worksans text-[14px] text-[#6B6B6B]">
-                Task count
+                {earnings?.taskCount || 0} {(earnings?.taskCount || 0) === 1 ? 'task' : 'tasks'} completed
               </Text>
             </View>
           </PerformanceCard>
@@ -82,19 +147,22 @@ export default function ProfessionalEarnings() {
                 </Text>
               </View>
               <Text className="font-worksans text-[12px] text-[#6B6B6B]">
-                (no review yet)
+                (no reviews yet)
               </Text>
               <View className="flex-row gap-2 mt-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star key={star} color="#E5E5E5" size={20} strokeWidth={2} fill="#E5E5E5" />
                 ))}
               </View>
+              <Text className="font-worksans-medium text-[11px] text-[#B8926A] mt-1">
+                Reviews will appear here after completing jobs
+              </Text>
             </View>
           </PerformanceCard>
 
           {/* Analytics Card */}
-          <PerformanceCard 
-            title="Analytics" 
+          <PerformanceCard
+            title="Analytics"
             onPress={() => router.push('/(professional)/profile/analytics')}
           >
             <View className="flex-col gap-1">
@@ -105,7 +173,7 @@ export default function ProfessionalEarnings() {
                 </Text>
               </View>
               <Text className="font-worksans text-[12px] text-[#6B6B6B] mt-1">
-                Search position, appearances, and performance metrics
+                Earnings, tasks, and opportunity metrics
               </Text>
             </View>
           </PerformanceCard>
@@ -121,12 +189,14 @@ export default function ProfessionalEarnings() {
                   Activated skills:
                 </Text>
                 <Text className="font-worksans-bold text-[20px] text-[#30352D]">
-                  0
+                  {activeSkillsCount}
                 </Text>
               </View>
-              <Text className="font-worksans text-[13px] text-[#6B6B6B] mt-1">
-                Activate at least one skill to be hirable.
-              </Text>
+              {activeSkillsCount === 0 && (
+                <Text className="font-worksans text-[13px] text-[#6B6B6B] mt-1">
+                  Activate at least one skill to be hirable.
+                </Text>
+              )}
             </View>
           </PerformanceCard>
 
@@ -161,7 +231,7 @@ export default function ProfessionalEarnings() {
                       <View
                         className="h-full rounded-full"
                         style={{
-                          width: '0%',
+                          width: `${eliteMilestones.percent}%`,
                           backgroundColor: '#1F3A2C',
                         }}
                       />
@@ -170,10 +240,10 @@ export default function ProfessionalEarnings() {
 
                   <View className="flex-row items-center justify-between">
                     <Text className="font-worksans text-[12px] text-[#1F3A2C]">
-                      0 / 4 milestones met
+                      {eliteMilestones.met} / {eliteMilestones.total} milestones met
                     </Text>
                     <Text className="font-worksans-bold text-[12px] text-[#1F3A2C]">
-                      0%
+                      {eliteMilestones.percent}%
                     </Text>
                   </View>
                 </View>

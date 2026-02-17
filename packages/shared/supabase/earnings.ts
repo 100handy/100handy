@@ -108,6 +108,7 @@ export async function getProfessionalInvoices(
         scheduled_date,
         hourly_rate_cents,
         estimated_hours,
+        discount_amount_cents,
         status,
         payment_status,
         created_at,
@@ -136,7 +137,7 @@ export async function getProfessionalInvoices(
           ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer'
           : 'Customer',
         scheduledDate: booking.scheduled_date,
-        amount: booking.hourly_rate_cents * (booking.estimated_hours || 1),
+        amount: (booking.hourly_rate_cents * (booking.estimated_hours || 1)) - (booking.discount_amount_cents || 0),
         hours: booking.estimated_hours || 1,
         status: booking.status === 'cancelled'
           ? 'cancelled'
@@ -172,6 +173,7 @@ export async function getProfessionalPayouts(
         id,
         hourly_rate_cents,
         estimated_hours,
+        discount_amount_cents,
         payment_status,
         scheduled_date,
         created_at
@@ -192,7 +194,7 @@ export async function getProfessionalPayouts(
     // When Stripe Connect is implemented, this will query actual payout records
     return (bookings || []).map((booking) => ({
       id: `payout_${booking.id}`,
-      amount: booking.hourly_rate_cents * (booking.estimated_hours || 1),
+      amount: (booking.hourly_rate_cents * (booking.estimated_hours || 1)) - (booking.discount_amount_cents || 0),
       status: 'paid' as const,
       paidAt: booking.scheduled_date,
       createdAt: booking.created_at,

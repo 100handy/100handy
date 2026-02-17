@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { ScrollView, Image, View, Text, Pressable, Alert } from 'react-native';
+import { ScrollView, Image, View, Text, Pressable, Alert, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import {
@@ -35,6 +35,7 @@ export default function ProfessionalDashboard() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [hasActiveSkill, setHasActiveSkill] = useState(false);
   const [hasDirectDeposit, setHasDirectDeposit] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch work area and availability for progress calculation
   const { data: workArea } = useWorkArea();
@@ -79,14 +80,25 @@ export default function ProfessionalDashboard() {
     }
   }, [user, fetchProfile, fetchOnboardingProgress]);
 
-  // Refresh progress when screen comes into focus (e.g., after returning from skills)
+  // Refresh progress + verification status when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       if (user) {
+        fetchVerificationStatus();
         fetchOnboardingProgress();
       }
     }, [user, fetchOnboardingProgress])
   );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      fetchProfile(),
+      fetchVerificationStatus(),
+      fetchOnboardingProgress(),
+    ]);
+    setRefreshing(false);
+  };
 
   const fetchVerificationStatus = async () => {
     try {
@@ -129,6 +141,15 @@ export default function ProfessionalDashboard() {
   const { present, loading: stripeLoading } = useStripeIdentity(fetchOptions);
 
   const handleStartVerification = useCallback(async () => {
+    // Don't start a new verification if already submitted or verified
+    if (verificationStatus === 'submitted') {
+      Alert.alert('Verification In Progress', 'Your identity verification is already being reviewed. Please wait.');
+      return;
+    }
+    if (verificationStatus === 'verified') {
+      return;
+    }
+
     try {
       setIsVerifying(true);
       const result = await present() as { status: string } | undefined;
@@ -148,7 +169,7 @@ export default function ProfessionalDashboard() {
     } finally {
       setIsVerifying(false);
     }
-  }, [present]);
+  }, [present, verificationStatus]);
 
   // Check completion status for each task
   const hasProfilePhoto = !!profile?.avatar_url;
@@ -157,11 +178,13 @@ export default function ProfessionalDashboard() {
 
   const isAccountVerified = verificationStatus === 'verified';
 
+  const isVerificationSubmitted = verificationStatus === 'submitted';
+
   const onboardingTasks = [
     {
-      icon: <ShieldCheck color={isAccountVerified ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
+      icon: <ShieldCheck color={isAccountVerified ? "#6B7B6B" : isVerificationSubmitted ? "#856404" : "#D17852"} size={28} strokeWidth={1.5} />,
       title: 'Verify your identity',
-      duration: '5 MIN',
+      duration: isVerificationSubmitted ? 'Under review' : '5 MIN',
       completed: isAccountVerified,
       disabled: false,
       onPress: () => {
@@ -359,6 +382,9 @@ export default function ProfessionalDashboard() {
       <ScrollView
         className="flex-1 bg-white"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D17852" />
+        }
       >
         <View className="flex-col px-5 pt-5 pb-3">
           <Text className="font-worksans-bold text-[18px] text-[#30352D] mb-2.5">

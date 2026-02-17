@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Calendar, FileText, Check } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -28,8 +28,12 @@ export default function ExportTransactionsScreen() {
   const [showFileTypeSheet, setShowFileTypeSheet] = useState(false);
 
   const handleSendEmail = () => {
-    // TODO: Implement email export functionality
-    console.log('Exporting transactions:', { selectedYear, selectedFileType });
+    if (!selectedYear || !selectedFileType) return;
+    Alert.alert(
+      'Coming Soon',
+      'Transaction export will be available in a future update.',
+      [{ text: 'OK' }]
+    );
   };
 
   const handleYearSelect = (year: string) => {

@@ -146,17 +146,19 @@ export default function CreditCardScreen() {
   };
 
   const handleSave = () => {
-    // Basic validation
     if (!formData.cardholderName || !formData.cardNumber || !formData.expiryDate || !formData.cvv) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
-    
-    // Here you would typically save the card details securely
-    console.log('Saving card details:', formData);
-    Alert.alert('Success', 'Card details saved successfully', [
-      { text: 'OK', onPress: () => router.back() }
-    ]);
+
+    // Redirect to the Stripe-integrated payment methods screen
+    Alert.alert(
+      'Use Payment Methods',
+      'For secure card storage, please use the Payment Methods screen which is integrated with Stripe.',
+      [
+        { text: 'OK', onPress: () => router.replace('/(client)/profile/payment-methods') }
+      ]
+    );
   };
 
   const supportedCards = ['visa', 'mastercard', 'amex', 'discover', 'jcb'];

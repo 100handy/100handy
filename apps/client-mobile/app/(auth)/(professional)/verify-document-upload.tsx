@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ScrollView, View, Text, Pressable, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -6,12 +6,28 @@ import { ChevronLeft, ShieldCheck, Camera, FileText } from 'lucide-react-native'
 import { router } from 'expo-router';
 import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
 import { supabase } from '@shared/supabase';
-import { completeOnboarding } from '@shared/supabase/profile';
+import { completeOnboarding, getHandyProfile } from '@shared/supabase/profile';
 import { useToast } from '@/components/ui/toast';
 
 export default function VerifyDocumentUpload() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
+
+  // Auto-skip if verification was already submitted/verified
+  useEffect(() => {
+    const checkExistingVerification = async () => {
+      try {
+        const handyProfile = await getHandyProfile();
+        if (handyProfile?.verification_status === 'submitted' || handyProfile?.verification_status === 'verified') {
+          await completeOnboarding();
+          router.replace('/(professional)/(tabs)/dashboard');
+        }
+      } catch (error) {
+        console.error('Error checking verification status:', error);
+      }
+    };
+    checkExistingVerification();
+  }, []);
 
   const fetchOptions = useCallback(async () => {
     try {
@@ -45,30 +61,24 @@ export default function VerifyDocumentUpload() {
   const handleVerifyWithStripe = useCallback(async () => {
     try {
       setIsLoading(true);
-      await present();
+      const result = await present() as { status: string } | undefined;
 
-      // After present() resolves, check the status from the hook
-      if (status === 'FlowCompleted') {
-        // Mark onboarding as completed
+      if (result?.status === 'FlowCompleted') {
         await completeOnboarding();
-
         toast.success('Verification Submitted', 'Your identity verification has been submitted for review.');
-
-        // Navigate to professional dashboard
         router.replace('/(professional)/(tabs)/dashboard');
-      } else if (status === 'FlowCanceled') {
+      } else if (result?.status === 'FlowCanceled') {
         // User canceled - stay on page
-        setIsLoading(false);
-      } else if (status === 'FlowFailed') {
+      } else if (result?.status === 'FlowFailed') {
         toast.error('Verification Failed', 'Please try again.');
-        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error in verification:', error);
       toast.error('Error', 'Failed to start verification');
+    } finally {
       setIsLoading(false);
     }
-  }, [present, status, toast]);
+  }, [present, toast]);
 
   const handleSkipForNow = async (): Promise<void> => {
     try {

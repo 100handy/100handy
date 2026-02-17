@@ -29,7 +29,7 @@ export async function getProfessionalAnalytics(userId: string): Promise<Analytic
     // Fetch completed bookings in the past 30 days
     const { data: completedBookings, error: completedError } = await supabase
       .from('bookings')
-      .select('id, hourly_rate_cents, estimated_hours')
+      .select('id, hourly_rate_cents, estimated_hours, discount_amount_cents')
       .eq('handy_id', userId)
       .eq('status', 'completed')
       .gte('scheduled_date', startDate);
@@ -42,7 +42,7 @@ export async function getProfessionalAnalytics(userId: string): Promise<Analytic
     // Fetch pending/accepted/in_progress bookings (anticipated)
     const { data: pendingBookings, error: pendingError } = await supabase
       .from('bookings')
-      .select('id, hourly_rate_cents, estimated_hours')
+      .select('id, hourly_rate_cents, estimated_hours, discount_amount_cents')
       .eq('handy_id', userId)
       .in('status', ['pending', 'accepted', 'in_progress'])
       .gte('scheduled_date', startDate);
@@ -57,7 +57,9 @@ export async function getProfessionalAnalytics(userId: string): Promise<Analytic
     const completedTasks = completedBookings?.length || 0;
 
     for (const booking of completedBookings || []) {
-      totalEarnings += booking.hourly_rate_cents * (booking.estimated_hours || 1);
+      const gross = booking.hourly_rate_cents * (booking.estimated_hours || 1);
+      const discount = booking.discount_amount_cents || 0;
+      totalEarnings += gross - discount;
     }
 
     // Calculate anticipated (pending) earnings and task count
@@ -65,13 +67,15 @@ export async function getProfessionalAnalytics(userId: string): Promise<Analytic
     const anticipatedTasks = pendingBookings?.length || 0;
 
     for (const booking of pendingBookings || []) {
-      anticipatedEarnings += booking.hourly_rate_cents * (booking.estimated_hours || 1);
+      const gross = booking.hourly_rate_cents * (booking.estimated_hours || 1);
+      const discount = booking.discount_amount_cents || 0;
+      anticipatedEarnings += gross - discount;
     }
 
     // Fetch all professionals' completed tasks for percentile calculation
     const { data: allProfessionals, error: profError } = await supabase
       .from('bookings')
-      .select('handy_id')
+      .select('handy_id, hourly_rate_cents, estimated_hours, discount_amount_cents')
       .eq('status', 'completed')
       .gte('scheduled_date', startDate)
       .not('handy_id', 'is', null);
@@ -85,21 +89,27 @@ export async function getProfessionalAnalytics(userId: string): Promise<Analytic
     let taskPercentile = 0;
 
     if (allProfessionals && allProfessionals.length > 0) {
-      // Count tasks per professional
+      // Count tasks and earnings per professional
       const taskCounts: Record<string, number> = {};
+      const earningsMap: Record<string, number> = {};
       for (const booking of allProfessionals) {
         if (booking.handy_id) {
           taskCounts[booking.handy_id] = (taskCounts[booking.handy_id] || 0) + 1;
+          const gross = booking.hourly_rate_cents * (booking.estimated_hours || 1);
+          const discount = booking.discount_amount_cents || 0;
+          earningsMap[booking.handy_id] = (earningsMap[booking.handy_id] || 0) + (gross - discount);
         }
       }
 
-      // Calculate percentile based on task count
+      // Calculate task percentile
       const allCounts = Object.values(taskCounts).sort((a, b) => a - b);
-      const userPosition = allCounts.filter(count => count < completedTasks).length;
-      taskPercentile = allCounts.length > 0 ? Math.round((userPosition / allCounts.length) * 100) : 0;
+      const userTaskPosition = allCounts.filter(count => count < completedTasks).length;
+      taskPercentile = allCounts.length > 0 ? Math.round((userTaskPosition / allCounts.length) * 100) : 0;
 
-      // Use task percentile as a proxy for earnings percentile (similar behavior)
-      earningsPercentile = taskPercentile;
+      // Calculate earnings percentile from actual earnings
+      const allEarnings = Object.values(earningsMap).sort((a, b) => a - b);
+      const userEarningsPosition = allEarnings.filter(e => e < totalEarnings).length;
+      earningsPercentile = allEarnings.length > 0 ? Math.round((userEarningsPosition / allEarnings.length) * 100) : 0;
     }
 
     return {
@@ -243,6 +253,68 @@ export async function getTaskStats(userId: string): Promise<{
     };
   } catch (error) {
     console.error('Error in getTaskStats:', error);
+    throw error;
+  }
+}
+
+/**
+ * Elite progress data for a professional
+ */
+export interface EliteProgress {
+  monthlyCompletedTasks: number;
+  lifetimeCompletedTasks: number;
+  categoryProgress: {
+    category: string;
+    completedTasks: number;
+  }[];
+}
+
+/**
+ * Get elite status progress for a professional
+ */
+export async function getEliteProgress(userId: string): Promise<EliteProgress> {
+  try {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+
+    // Fetch all completed bookings with category info
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select('id, scheduled_date, category_id, categories:category_id(name)')
+      .eq('handy_id', userId)
+      .eq('status', 'completed');
+
+    if (error) throw error;
+
+    let lifetimeCompletedTasks = 0;
+    let monthlyCompletedTasks = 0;
+    const categoryCounts: Record<string, number> = {};
+
+    for (const booking of bookings || []) {
+      lifetimeCompletedTasks++;
+
+      if (booking.scheduled_date >= monthStart) {
+        monthlyCompletedTasks++;
+      }
+
+      // Extract category name from join (Supabase returns array for joins)
+      const categoryArr = booking.categories as unknown as { name: string }[] | null;
+      const category = categoryArr && categoryArr.length > 0 ? categoryArr[0].name : 'Other';
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    }
+
+    const categoryProgress = Object.entries(categoryCounts).map(([category, count]) => ({
+      category,
+      completedTasks: count,
+    }));
+
+    return {
+      monthlyCompletedTasks,
+      lifetimeCompletedTasks,
+      categoryProgress,
+    };
+  } catch (error) {
+    console.error('Error in getEliteProgress:', error);
     throw error;
   }
 }

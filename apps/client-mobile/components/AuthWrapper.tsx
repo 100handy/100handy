@@ -131,14 +131,27 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       }
 
       // Verification complete - route to appropriate home
-      // Note: Professionals should land on the dashboard immediately and complete onboarding/verification there.
       if (isVerified) {
         const isProfessional = userRole === 'handy';
+
+        // Allow professionals to stay on onboarding screens (verify-info, verify-document-upload)
+        const isOnProfessionalOnboarding = segmentStrings.includes('verify-info') || segmentStrings.includes('verify-document-upload');
+        if (isProfessional && isOnProfessionalOnboarding) {
+          return; // Don't redirect — let them complete onboarding
+        }
 
         // If on auth screens or index, redirect to appropriate home
         if (inAuthGroup || isOnIndex) {
           if (isProfessional) {
-            router.replace('/(professional)/(tabs)/dashboard');
+            // Wait until we know the onboarding status before redirecting
+            if (professionalOnboardingComplete === null) {
+              return; // Still checking — don't redirect yet
+            }
+            if (professionalOnboardingComplete === false) {
+              router.replace('/(auth)/(professional)/verify-info');
+            } else {
+              router.replace('/(professional)/(tabs)/dashboard');
+            }
           } else {
             // Client - check onboarding
             if (!hasCompletedOnboarding) {

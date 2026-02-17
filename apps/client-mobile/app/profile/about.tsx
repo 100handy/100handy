@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 
@@ -32,18 +32,15 @@ export default function AboutScreen() {
   const router = useRouter();
 
   const handleLegalNotices = () => {
-    // Navigate to legal notices screen or open modal
-    console.log('Legal Notices pressed');
+    Linking.openURL('https://100handy.com/legal');
   };
 
   const handleTermsAndConditions = () => {
-    // Navigate to terms and conditions screen or open modal
-    console.log('Terms & Conditions pressed');
+    Linking.openURL('https://100handy.com/terms');
   };
 
   const handlePrivacyPolicy = () => {
-    // Navigate to privacy policy screen or open modal
-    console.log('Privacy Policy pressed');
+    Linking.openURL('https://100handy.com/privacy');
   };
 
   return (

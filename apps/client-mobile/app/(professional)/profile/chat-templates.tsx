@@ -80,11 +80,11 @@ export default function ChatTemplatesScreen() {
   const defaultTemplates: TemplateItem[] = [
     {
       title: 'Closing messages',
-      onPress: () => router.push('/profile/closing-message?type=default')
+      onPress: () => router.push('/(professional)/profile/closing-message?type=default')
     },
     {
       title: 'Ongoing closing message',
-      onPress: () => router.push('/profile/closing-message?type=ongoing')
+      onPress: () => router.push('/(professional)/profile/closing-message?type=ongoing')
     },
   ];
 

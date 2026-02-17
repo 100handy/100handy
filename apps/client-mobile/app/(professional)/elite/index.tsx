@@ -1,30 +1,47 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { ChevronLeft, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react-native';
 import { getUserSkills, UserSkill } from '@shared/supabase/profile';
+import { getEliteProgress, useAuthStore, type EliteProgress } from '@shared/supabase';
 
 type TabType = 'progress' | 'about';
 
 export default function EliteScreen() {
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>('progress');
   const [skills, setSkills] = useState<UserSkill[]>([]);
+  const [eliteProgress, setEliteProgress] = useState<EliteProgress | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const currentMonthYear = useMemo(() => {
     return new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
   }, []);
 
-  useEffect(() => {
-    loadSkills();
-  }, []);
+  const loadData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const [userSkills, elite] = await Promise.all([
+        getUserSkills(),
+        user?.id ? getEliteProgress(user.id) : Promise.resolve(null),
+      ]);
+      const activeSkills = userSkills.filter(s => s.is_active && s.hourly_rate_cents > 0);
+      setSkills(activeSkills);
+      setEliteProgress(elite);
+    } catch (error) {
+      console.error('Error loading elite data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.id]);
 
-  const loadSkills = async () => {
-    const userSkills = await getUserSkills();
-    const activeSkills = userSkills.filter(s => s.is_active && s.hourly_rate_cents > 0);
-    setSkills(activeSkills);
-  };
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   const toggleCategory = (category: string) => {
     setExpandedCategories(prev => {
@@ -47,6 +64,32 @@ export default function EliteScreen() {
     acc[category].push(skill);
     return acc;
   }, {} as Record<string, UserSkill[]>);
+
+  // Calculate milestones
+  const milestones = useMemo(() => {
+    if (!eliteProgress) return { met: 0, total: 4, percent: 0 };
+    let met = 0;
+    if (eliteProgress.monthlyCompletedTasks >= 10) met++;
+    if (eliteProgress.lifetimeCompletedTasks >= 200) met++;
+    if (eliteProgress.categoryProgress.some(c => c.completedTasks >= 50)) met++;
+    // 4th milestone (top 35% performance) requires tracking
+    return { met, total: 4, percent: Math.round((met / 4) * 100) };
+  }, [eliteProgress]);
+
+  // Get completed tasks for a category from elite progress
+  const getCategoryCompletedTasks = (categoryName: string): number => {
+    if (!eliteProgress) return 0;
+    const match = eliteProgress.categoryProgress.find(c => c.category === categoryName);
+    return match?.completedTasks || 0;
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#C1856A" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -132,7 +175,7 @@ export default function EliteScreen() {
                   <View
                     className="h-full rounded-full"
                     style={{
-                      width: '0%',
+                      width: `${milestones.percent}%`,
                       backgroundColor: '#16A34A',
                     }}
                   />
@@ -144,13 +187,13 @@ export default function EliteScreen() {
                   className="text-sm text-gray-700"
                   style={{ fontFamily: 'WorkSans_400Regular' }}
                 >
-                  0 / 4 milestones met
+                  {milestones.met} / {milestones.total} milestones met
                 </Text>
                 <Text
                   className="text-sm font-semibold text-gray-900"
                   style={{ fontFamily: 'WorkSans_600SemiBold' }}
                 >
-                  0%
+                  {milestones.percent}%
                 </Text>
               </View>
             </View>
@@ -185,13 +228,13 @@ export default function EliteScreen() {
                   className="text-base text-gray-900 mb-3"
                   style={{ fontFamily: 'WorkSans_500Medium' }}
                 >
-                  0 / 10 Monthly tasks
+                  {eliteProgress?.monthlyCompletedTasks || 0} / 10 Monthly tasks
                 </Text>
                 <View className="h-2 bg-gray-300 rounded-full overflow-hidden">
                   <View
                     className="h-full rounded-full"
                     style={{
-                      width: '0%',
+                      width: `${Math.min(((eliteProgress?.monthlyCompletedTasks || 0) / 10) * 100, 100)}%`,
                       backgroundColor: '#C1856A',
                     }}
                   />
@@ -219,13 +262,13 @@ export default function EliteScreen() {
                   className="text-base text-gray-900 mb-3"
                   style={{ fontFamily: 'WorkSans_500Medium' }}
                 >
-                  0 / 200 Lifetime tasks
+                  {eliteProgress?.lifetimeCompletedTasks || 0} / 200 Lifetime tasks
                 </Text>
                 <View className="h-2 bg-gray-300 rounded-full overflow-hidden">
                   <View
                     className="h-full rounded-full"
                     style={{
-                      width: '0%',
+                      width: `${Math.min(((eliteProgress?.lifetimeCompletedTasks || 0) / 200) * 100, 100)}%`,
                       backgroundColor: '#C1856A',
                     }}
                   />
@@ -252,6 +295,8 @@ export default function EliteScreen() {
               <View className="gap-4 mt-2">
                 {Object.entries(skillsByCategory).map(([category, categorySkills]) => {
                   const isExpanded = expandedCategories.has(category);
+                  const completedInCategory = getCategoryCompletedTasks(category);
+                  const categoryPercent = Math.min((completedInCategory / 50) * 100, 100);
 
                   return (
                     <View key={category} className="gap-3">
@@ -269,13 +314,13 @@ export default function EliteScreen() {
                           className="text-base text-gray-900 mb-3"
                           style={{ fontFamily: 'WorkSans_500Medium' }}
                         >
-                          0 / 50 {category}
+                          {completedInCategory} / 50 {category}
                         </Text>
                         <View className="h-2 bg-gray-300 rounded-full overflow-hidden">
                           <View
                             className="h-full rounded-full"
                             style={{
-                              width: '0%',
+                              width: `${categoryPercent}%`,
                               backgroundColor: '#C1856A',
                             }}
                           />
@@ -321,11 +366,17 @@ export default function EliteScreen() {
                             <View
                               className="h-full rounded-full"
                               style={{
-                                width: '65%',
+                                width: '0%',
                                 backgroundColor: '#16A34A',
                               }}
                             />
                           </View>
+                          <Text
+                            className="text-xs text-gray-500 mt-2"
+                            style={{ fontFamily: 'WorkSans_400Regular' }}
+                          >
+                            Performance ranking data coming soon
+                          </Text>
                         </View>
 
                         {/* Expanded Content */}

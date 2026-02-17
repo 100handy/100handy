@@ -42,31 +42,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       set({ isLoading: true });
-      
-      // Get initial session
-      const { data: { session }, error } = await getSession();
-      
-      if (error) {
-        console.error('Error getting session:', error);
-        set({ user: null, session: null, isAuthenticated: false, isEmailVerified: false, isPhoneVerified: false, userRole: null, isLoading: false });
-        return;
-      }
 
-      const user = session?.user;
-      const metadata = user?.user_metadata;
-
-      set({
-        user: user || null,
-        session,
-        isAuthenticated: !!user,
-        isEmailVerified: !!user?.email_confirmed_at,
-        isPhoneVerified: !!user?.phone_confirmed_at,
-        hasCompletedOnboarding: metadata?.onboarding_completed || false,
-        userRole: metadata?.role || null,
-        isLoading: false
-      });
-
-      // Listen for auth changes and store the subscription
+      // Set up auth listener FIRST to avoid missing events between getSession and listener setup
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         console.log('Auth state changed:', event, session?.user?.phone || session?.user?.email);
 
@@ -87,6 +64,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Store subscription for cleanup
       set({ authSubscription: subscription });
+
+      // Then hydrate with current session as fallback
+      const { data: { session }, error } = await getSession();
+
+      if (error) {
+        console.error('Error getting session:', error);
+        set({ user: null, session: null, isAuthenticated: false, isEmailVerified: false, isPhoneVerified: false, userRole: null, isLoading: false });
+        return;
+      }
+
+      const user = session?.user;
+      const metadata = user?.user_metadata;
+
+      set({
+        user: user || null,
+        session,
+        isAuthenticated: !!user,
+        isEmailVerified: !!user?.email_confirmed_at,
+        isPhoneVerified: !!user?.phone_confirmed_at,
+        hasCompletedOnboarding: metadata?.onboarding_completed || false,
+        userRole: metadata?.role || null,
+        isLoading: false
+      });
     } catch (error) {
       console.error('Error initializing auth:', error);
       set({ user: null, session: null, isAuthenticated: false, isLoading: false });

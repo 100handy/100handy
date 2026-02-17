@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   User,
   FileText,
+  BarChart3,
   Calendar,
   MessageSquare,
   Megaphone,
@@ -23,6 +24,7 @@ import { switchToCustomerRole, useAuthStore } from '@shared/supabase';
 import { useProfileStore } from '@shared/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
+import { useToast } from '@/components/ui/toast';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -36,6 +38,7 @@ export default function ProfessionalProfileScreen() {
   const router = useRouter();
   const { signOut, user, checkAuth } = useAuthStore();
   const { profile, fetchProfile, uploadAvatar } = useProfileStore();
+  const toast = useToast();
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [isSwitchingToClient, setIsSwitchingToClient] = useState(false);
 
@@ -56,6 +59,7 @@ export default function ProfessionalProfileScreen() {
       const ok = await switchToCustomerRole();
       if (!ok) {
         console.error('Failed to switch to customer role');
+        toast.error('Switch failed', 'Could not switch to client mode. Please try again.');
         return;
       }
 
@@ -63,6 +67,7 @@ export default function ProfessionalProfileScreen() {
       router.replace('/(client)/(tabs)/home');
     } catch (err) {
       console.error('Error switching to customer:', err);
+      toast.error('Switch failed', 'An error occurred while switching roles. Please try again.');
     } finally {
       setIsSwitchingToClient(false);
     }
@@ -130,22 +135,27 @@ export default function ProfessionalProfileScreen() {
     {
       icon: <User color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Account detail',
-      onPress: () => router.push('/profile/account-detail'),
+      onPress: () => router.push('/(professional)/profile/account-detail'),
     },
     {
       icon: <FileText color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Tasker profile',
-      onPress: () => router.push('/profile/tasker-profile'),
+      onPress: () => router.push('/(professional)/profile/tasker-profile'),
+    },
+    {
+      icon: <BarChart3 color="#B8926A" size={24} strokeWidth={1.5} />,
+      label: 'Performance',
+      onPress: () => router.push('/(professional)/(tabs)/performance'),
     },
     {
       icon: <Calendar color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Sync calendar',
-      onPress: () => router.push('/profile/calendar-settings'),
+      onPress: () => router.push('/(professional)/profile/calendar-settings'),
     },
     {
       icon: <MessageSquare color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Chat templates',
-      onPress: () => router.push('/profile/chat-templates'),
+      onPress: () => router.push('/(professional)/profile/chat-templates'),
     },
     {
       icon: <Megaphone color="#B8926A" size={24} strokeWidth={1.5} />,
@@ -155,7 +165,7 @@ export default function ProfessionalProfileScreen() {
     {
       icon: <CreditCard color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Payments',
-      onPress: () => router.push('/profile/payments'),
+      onPress: () => router.push('/(professional)/profile/payments'),
     },
     {
       icon: <Bell color="#B8926A" size={24} strokeWidth={1.5} />,
@@ -165,7 +175,7 @@ export default function ProfessionalProfileScreen() {
     {
       icon: <HelpCircle color="#B8926A" size={24} strokeWidth={1.5} />,
       label: 'Support',
-      onPress: () => router.push('/profile/support'),
+      onPress: () => router.push('/(professional)/profile/support'),
     },
     {
       icon: <Shield color="#B8926A" size={24} strokeWidth={1.5} />,

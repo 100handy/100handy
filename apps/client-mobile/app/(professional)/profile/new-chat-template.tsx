@@ -20,7 +20,9 @@ export default function NewChatTemplateScreen() {
         setIsSaving(true);
         try {
             // Use title as the template_type (prefixed with 'custom_' to distinguish from default/ongoing)
-            const templateType = `custom_${title.trim().toLowerCase().replace(/\s+/g, '_')}`;
+            // Sanitize: only allow alphanumeric and spaces (converted to underscores)
+            const sanitized = title.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_');
+            const templateType = `custom_${sanitized}`;
 
             const result = await saveChatTemplate({
                 template_type: templateType,

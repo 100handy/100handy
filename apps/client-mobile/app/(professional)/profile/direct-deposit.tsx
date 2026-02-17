@@ -24,7 +24,41 @@ export default function DirectDepositScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    loadAccountStatus();
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        setAccountState('loading');
+        setErrorMessage(null);
+        const status = await getConnectAccountStatus();
+
+        if (cancelled) return;
+
+        if (!status) {
+          setErrorMessage('Unable to load account information');
+          setAccountState('error');
+          return;
+        }
+
+        setAccountStatus(status);
+
+        if (!status.hasAccount) {
+          setAccountState('not_started');
+        } else if (status.payoutsEnabled) {
+          setAccountState('active');
+        } else {
+          setAccountState('pending');
+        }
+      } catch (error: any) {
+        if (cancelled) return;
+        console.error('Error loading account status:', error);
+        setErrorMessage(error?.message || 'Unable to load account information');
+        setAccountState('error');
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   const loadAccountStatus = async () => {

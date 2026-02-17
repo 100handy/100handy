@@ -95,7 +95,7 @@ export default function ProfessionalAccountSecurityScreen() {
       router.push({
         pathname: '/(professional)/profile/verify-2fa-otp',
         params: {
-          email: user.email,
+          email: user.email || '',
         },
       });
     } catch (err) {

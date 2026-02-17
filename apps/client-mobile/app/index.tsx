@@ -122,12 +122,11 @@ export default function Index() {
           const handyProfile = await getHandyProfile();
           const onboardingComplete = handyProfile?.onboarding_completed || false;
 
-          // if (!onboardingComplete) {
-          //   router.replace('/(auth)/(professional)/verify-info');
-          // } else {
-          //   router.replace('/(professional)/(tabs)/dashboard');
-          // }
-          router.replace('/(professional)/(tabs)/dashboard');
+          if (!onboardingComplete) {
+            router.replace('/(auth)/(professional)/verify-info');
+          } else {
+            router.replace('/(professional)/(tabs)/dashboard');
+          }
         } catch (error) {
           console.error('Error checking professional onboarding:', error);
           // If error, still send to dashboard (onboarding/verification is completed there)

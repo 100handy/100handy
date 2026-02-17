@@ -23,14 +23,25 @@ export default function ProfessionalSignIn() {
       // Update auth state
       const isAuthenticated = await checkAuth();
       if (isAuthenticated) {
-        // Navigate directly to professional dashboard
-        router.replace('/(professional)/(tabs)/dashboard');
+        // Check if user has the professional role
+        const { userRole } = useAuthStore.getState();
+        if (userRole === 'handy') {
+          router.replace('/(professional)/(tabs)/dashboard');
+        } else if (userRole === 'customer') {
+          // Client user logging in through professional flow — redirect to client home
+          toast.info('Client account', 'This account is registered as a client. Redirecting to your home screen.');
+          router.replace('/(client)/(tabs)/home');
+        } else {
+          // No role set — default to professional flow (new users choosing professional)
+          router.replace('/(professional)/(tabs)/dashboard');
+        }
       } else {
         throw new Error('Authentication check failed');
       }
     } catch (error) {
       console.error('Sign in error:', error);
       toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');
+    } finally {
       setIsLoading(false);
     }
   };
