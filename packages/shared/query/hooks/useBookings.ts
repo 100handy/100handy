@@ -105,7 +105,7 @@ export function useInvalidateBookings() {
   const queryClient = useQueryClient();
 
   return {
-    invalidateUserBookings: (userId: string) => {
+    invalidateUserBookings: (_userId?: string) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
     },
     invalidateBooking: (bookingId: string) => {

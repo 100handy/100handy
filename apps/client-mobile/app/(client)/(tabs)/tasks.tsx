@@ -47,10 +47,13 @@ export default function TasksScreen() {
     }
   };
 
-  // Transform bookings to TaskCard props
-  const getCurrentTaskCards = () => {
+  // Transform bookings to TaskCard props with cancelled status info
+  const getCurrentTaskCardsWithStatus = () => {
     const bookings = getCurrentBookings();
-    return bookings.map(booking => bookingToTaskCardProps(booking));
+    return bookings.map(booking => ({
+      props: bookingToTaskCardProps(booking),
+      isCancelled: booking.status === 'cancelled',
+    }));
   };
 
   const handleTaskCardPress = (bookingId?: string | number) => {
@@ -114,12 +117,16 @@ export default function TasksScreen() {
             <EmptyState />
           ) : (
             <View className="flex-col space-y-2">
-              {getCurrentTaskCards().map((taskCardProps, index) => (
-                <TaskCard
+              {getCurrentTaskCardsWithStatus().map(({ props: taskCardProps, isCancelled }, index) => (
+                <View
                   key={`${activeTab}-${taskCardProps.bookingId || index}`}
-                  {...taskCardProps}
-                  onPress={() => handleTaskCardPress(taskCardProps.bookingId)}
-                />
+                  style={isCancelled ? { opacity: 0.6 } : undefined}
+                >
+                  <TaskCard
+                    {...taskCardProps}
+                    onPress={() => handleTaskCardPress(taskCardProps.bookingId)}
+                  />
+                </View>
               ))}
 
               {/* Helper text when there are tasks */}

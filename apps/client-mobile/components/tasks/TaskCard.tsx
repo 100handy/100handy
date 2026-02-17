@@ -8,8 +8,8 @@ interface TaskCardProps {
   title: string;
   dateTime: string;
   taskerName: string;
-  taskerRating: number;
-  taskerReviews: number;
+  taskerRating?: number;
+  taskerReviews?: number;
   location: string;
   statusLabel: string;
   price: string;
@@ -54,10 +54,14 @@ export function TaskCard({
           <Text className="text-sm font-work-sans text-text-primary">
             {taskerName}
           </Text>
-          <StarIcon size={12} color="#333A31" fill="#333A31" />
-          <Text className="text-sm font-work-sans text-text-primary">
-            {taskerRating.toFixed(1)} ({taskerReviews} reviews)
-          </Text>
+          {taskerRating != null && taskerReviews != null && (
+            <>
+              <StarIcon size={12} color="#333A31" fill="#333A31" />
+              <Text className="text-sm font-work-sans text-text-primary">
+                {taskerRating.toFixed(1)} ({taskerReviews} reviews)
+              </Text>
+            </>
+          )}
         </View>
 
         {/* Location */}

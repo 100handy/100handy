@@ -14,15 +14,31 @@ import Logo100Top from '@/assets/images/logo-100-top.svg';
 export default function ClientSignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
-  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const { checkAuth } = useAuthStore();
 
   const handleSignIn = async (data: SignInFormData): Promise<void> => {
     setIsLoading(true);
     try {
-      await signIn(data.email, data.password);
-      // Update auth state and navigate to root so index.tsx handles onboarding/verification/routing
+      const signInData = await signIn(data.email, data.password);
       await checkAuth();
-      router.replace('/');
+
+      // Route directly based on sign-in response data (avoids race condition with root index)
+      const user = signInData.user;
+      const metadata = user?.user_metadata;
+      const role = metadata?.role;
+      const emailVerified = !!user?.email_confirmed_at;
+
+      if (!emailVerified) {
+        router.replace({
+          pathname: '/(auth)/verify-email',
+          params: { email: user?.email || '' },
+        });
+      } else if (role === 'handy') {
+        router.replace('/(professional)/(tabs)/dashboard');
+      } else {
+        // Default to client home (customer role or unknown)
+        router.replace('/(client)/(tabs)/home');
+      }
     } catch (error) {
       console.error('Sign in error:', error);
       toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');

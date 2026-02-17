@@ -298,28 +298,39 @@ export async function retryPaymentProcessing(
 }> {
   let lastError = '';
 
+  // Check current payment status to skip capture if already done
+  const paymentDetails = await getBookingPaymentDetails(bookingId);
+  const alreadyCaptured = paymentDetails?.paymentStatus === 'captured';
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      // Step 1: Capture the payment (idempotent - safe to retry)
-      const captureResult = await capturePayment(paymentIntentId);
-      if (!captureResult || !captureResult.success) {
-        lastError = 'Failed to capture payment';
-        if (attempt < maxRetries) {
-          await sleep(1000 * Math.pow(2, attempt - 1)); // 1s, 2s, 4s
-          continue;
-        }
-        // Final attempt failed - mark payment as failed
-        await updateBookingPaymentStatus(bookingId, 'failed');
-        await updateBookingPayoutStatus(bookingId, 'failed');
-        await logPaymentError(bookingId, 'capture_failed', lastError, {
-          paymentIntentId,
-          attempts: attempt,
-        });
-        return { success: false, error: lastError };
-      }
+      let captureResult: CaptureResult | null = null;
 
-      // Update payment status to captured
-      await updateBookingPaymentStatus(bookingId, 'captured');
+      if (alreadyCaptured) {
+        // Payment already captured — skip directly to payout
+        captureResult = { success: true, paymentIntentId, status: 'captured', amount: 0, amountCaptured: 0 };
+      } else {
+        // Step 1: Capture the payment (idempotent - safe to retry)
+        captureResult = await capturePayment(paymentIntentId);
+        if (!captureResult || !captureResult.success) {
+          lastError = 'Failed to capture payment';
+          if (attempt < maxRetries) {
+            await sleep(1000 * Math.pow(2, attempt - 1)); // 1s, 2s, 4s
+            continue;
+          }
+          // Final attempt failed - mark payment as failed
+          await updateBookingPaymentStatus(bookingId, 'failed');
+          await updateBookingPayoutStatus(bookingId, 'failed');
+          await logPaymentError(bookingId, 'capture_failed', lastError, {
+            paymentIntentId,
+            attempts: attempt,
+          });
+          return { success: false, error: lastError };
+        }
+
+        // Update payment status to captured
+        await updateBookingPaymentStatus(bookingId, 'captured');
+      }
 
       // Step 2: Create payout to professional
       const payoutResult = await createPayout(bookingId, paymentIntentId);

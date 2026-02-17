@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScrollView,
   View,
@@ -7,6 +7,7 @@ import {
   Alert,
   Linking,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -35,6 +36,8 @@ import {
   useCompleteBooking,
   useHasReviewedBooking,
   useRetryPayment,
+  useConversationByBooking,
+  supabase,
 } from '@shared/supabase';
 import { getBookingPaymentDetails } from '@shared/supabase/payments';
 
@@ -127,9 +130,33 @@ export default function JobDetailsScreen() {
     payoutStatus: string | null;
     paymentIntentId: string | null;
   }>({ payoutStatus: null, paymentIntentId: null });
+  const [customerProfile, setCustomerProfile] = useState<{
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+    phone: string | null;
+  } | null>(null);
+
+  // Fetch customer profile for display
+  useEffect(() => {
+    if (!booking?.customer_id) return;
+    supabase
+      .from('profiles')
+      .select('first_name, last_name, avatar_url, phone')
+      .eq('user_id', booking.customer_id)
+      .single()
+      .then(({ data }) => {
+        if (data) setCustomerProfile(data);
+      });
+  }, [booking?.customer_id]);
+
+  // Get conversation for messaging
+  const { data: conversation, isLoading: conversationLoading } = useConversationByBooking(
+    (booking?.status === 'accepted' || booking?.status === 'in_progress') ? (id || '') : ''
+  );
 
   // Fetch payment details for completed bookings
-  React.useEffect(() => {
+  useEffect(() => {
     if (booking?.status === 'completed' && id) {
       getBookingPaymentDetails(id).then((details) => {
         if (details) {
@@ -304,7 +331,10 @@ export default function JobDetailsScreen() {
     if (!booking?.address) return;
     const address = `${booking.address.street}, ${booking.address.postcode}`;
     const encodedAddress = encodeURIComponent(address);
-    Linking.openURL(`https://maps.apple.com/?q=${encodedAddress}`);
+    const url = Platform.OS === 'ios'
+      ? `maps://maps.apple.com/?q=${encodedAddress}`
+      : `https://maps.google.com/?q=${encodedAddress}`;
+    Linking.openURL(url);
   };
 
   if (isLoading) {
@@ -457,15 +487,21 @@ export default function JobDetailsScreen() {
           <View className="flex-row items-center">
             <View className="w-12 h-12 rounded-full bg-[#F5F5F5] items-center justify-center">
               <Text className="font-worksans-bold text-[18px] text-[#6B6B6B]">
-                C
+                {customerProfile?.first_name
+                  ? customerProfile.first_name.charAt(0).toUpperCase()
+                  : 'C'}
               </Text>
             </View>
             <View className="flex-1 ml-3">
               <Text className="font-worksans-medium text-[15px] text-[#30352D]">
-                Customer
+                {customerProfile?.first_name
+                  ? `${customerProfile.first_name}${customerProfile.last_name ? ` ${customerProfile.last_name.charAt(0)}.` : ''}`
+                  : 'Customer'}
               </Text>
               <Text className="font-worksans text-[13px] text-[#6B6B6B]">
-                Contact available after accepting
+                {booking.status === 'pending'
+                  ? 'Contact available after accepting'
+                  : 'Client'}
               </Text>
             </View>
           </View>
@@ -476,8 +512,15 @@ export default function JobDetailsScreen() {
               <Pressable
                 className="flex-1 flex-row items-center justify-center py-3 bg-[#F5F5F5] rounded-xl"
                 onPress={() => {
-                  // TODO: Navigate to chat
-                  toast.info('Chat feature coming soon');
+                  if (conversationLoading) {
+                    toast.info('Loading conversation...');
+                    return;
+                  }
+                  if (conversation?.id) {
+                    router.push(`/(professional)/chat/${conversation.id}`);
+                  } else {
+                    toast.error('Could not open conversation');
+                  }
                 }}
               >
                 <MessageCircle color="#30352D" size={18} strokeWidth={1.5} />
@@ -488,8 +531,11 @@ export default function JobDetailsScreen() {
               <Pressable
                 className="flex-1 flex-row items-center justify-center py-3 bg-[#F5F5F5] rounded-xl"
                 onPress={() => {
-                  // TODO: Phone call
-                  toast.info('Phone feature coming soon');
+                  if (customerProfile?.phone) {
+                    Linking.openURL(`tel:${customerProfile.phone}`);
+                  } else {
+                    toast.info('Phone number not available');
+                  }
                 }}
               >
                 <Phone color="#30352D" size={18} strokeWidth={1.5} />

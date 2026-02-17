@@ -79,8 +79,7 @@
           "merchantIdentifier": "merchant.com.yourco.handy",
           "enableGooglePay": true
         }
-      ],
-      "@stripe/stripe-identity-react-native"
+      ]
     ],
     "experiments": {
       "typedRoutes": true

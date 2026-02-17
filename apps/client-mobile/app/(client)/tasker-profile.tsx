@@ -11,71 +11,20 @@ import {
 } from '@/components/tasker';
 import { useHandymanProfile, useHandymanReviews } from '@shared/supabase';
 
-// Mock data - in production would come from API
-const taskerProfile = {
-  id: '1',
-  name: 'Mike W.',
-  avatarUrl: 'https://i.pravatar.cc/150?u=mike',
-  rating: 5.0,
-  reviewCount: 124,
-  pricePerHour: 70.27,
-  taskCount: 124,
-  taskType: 'tv mounting tasks',
-  isSuperTasker: true,
-  skillDescription: 'I have 8 years of experience. I come with all the right rawlplugs, fixings and tools and not forgetting my trust…',
-  portfolioImages: [
-    'https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400',
-    'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400',
-    'https://images.unsplash.com/photo-1586210579191-33b45e38fa8c?w=400',
-    'https://images.unsplash.com/photo-1593359863503-7cb5e9d2c9e0?w=400',
-    'https://images.unsplash.com/photo-1571690965027-ed0e83c3e444?w=400',
-  ],
-  ratingBreakdown: {
-    5: 99,
-    4: 0,
-    3: 1,
-    2: 0,
-    1: 0,
-  },
-  reviews: [
-    {
-      id: '1',
-      reviewerName: 'Adam A.',
-      reviewerAvatar: 'https://i.pravatar.cc/150?u=adam',
-      rating: 5.0,
-      date: 'Mon 17 Sep',
-      taskType: 'TV mounting',
-      comment: 'Excellent work and super nice and friendly tasker! We would never have managed without him and his detail!',
-    },
-    {
-      id: '2',
-      reviewerName: 'Jake W.',
-      reviewerAvatar: 'https://i.pravatar.cc/150?u=jake',
-      rating: 5.0,
-      date: 'Mon 17 Sep',
-      taskType: 'TV mounting',
-      comment: 'Amazing job! Friendly, efficient, and really skilled. Made the whole process stress-free for us.',
-    },
-    {
-      id: '3',
-      reviewerName: 'Lia M.',
-      reviewerAvatar: 'https://i.pravatar.cc/150?u=lia',
-      rating: 5.0,
-      date: 'Mon 17 Sep',
-      taskType: 'TV mounting',
-      comment: 'Super reliable and polite tasker. Went above and beyond to make sure the job was perfect.',
-    },
-    {
-      id: '4',
-      reviewerName: 'Tom Q.',
-      reviewerAvatar: 'https://i.pravatar.cc/150?u=tom',
-      rating: 5.0,
-      date: 'Mon 17 Sep',
-      taskType: 'TV mounting',
-      comment: 'Fast, friendly, and high-quality work. Couldn\'t have asked for a better experience.',
-    },
-  ],
-};
+interface ReviewProfile {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+}
+
+interface HandymanReview {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  customer_id: string;
+  profiles: ReviewProfile | null;
+}
 
 export default function TaskerProfileScreen() {
   const router = useRouter();
@@ -315,7 +264,7 @@ export default function TaskerProfileScreen() {
             {[5, 4, 3, 2, 1].map((stars) => {
               const totalReviews = reviews.length;
               const starCount = totalReviews > 0
-                ? reviews.filter((r: any) => Math.round(r.rating) === stars).length
+                ? reviews.filter((r: HandymanReview) => Math.round(r.rating) === stars).length
                 : 0;
               const percentage = totalReviews > 0 ? Math.round((starCount / totalReviews) * 100) : 0;
               return (
@@ -352,7 +301,7 @@ export default function TaskerProfileScreen() {
           {/* Reviews List */}
           <View className="flex-col">
             {reviews && reviews.length > 0 ? (
-              reviews.map((review: any, index: number) => {
+              reviews.map((review: HandymanReview, index: number) => {
                 const reviewerName = review.profiles
                   ? `${review.profiles.first_name} ${review.profiles.last_name?.charAt(0) || ''}.`
                   : 'Customer';

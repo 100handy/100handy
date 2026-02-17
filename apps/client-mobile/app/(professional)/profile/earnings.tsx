@@ -3,6 +3,7 @@ import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, FlatList }
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Download, ChevronDown, Info, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { toast } from 'sonner-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   getProfessionalEarnings,
@@ -99,7 +100,7 @@ export default function EarningsScreen() {
                 Earnings
               </Text>
             </View>
-            <Pressable onPress={() => router.push('/profile/export-transactions')}>
+            <Pressable onPress={() => toast.info('Export coming soon')}>
               <Download size={24} color="#30352d" />
             </Pressable>
           </View>

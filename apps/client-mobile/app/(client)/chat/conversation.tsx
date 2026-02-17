@@ -71,7 +71,7 @@ export default function ConversationScreen() {
     };
   }, [conversationId, user?.id]);
 
-  const handleSendMessage = async (message: string, attachment?: any) => {
+  const handleSendMessage = async (message: string, attachment?: { uri?: string; name?: string }) => {
     if (!conversationId || !message.trim()) return;
 
     try {

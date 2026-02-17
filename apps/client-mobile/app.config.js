@@ -91,7 +91,6 @@ module.exports = {
           enableGooglePay: true,
         },
       ],
-      '@stripe/stripe-identity-react-native',
     ],
     experiments: {
       typedRoutes: true,

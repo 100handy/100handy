@@ -113,6 +113,8 @@ export async function createRecurringBookings(
     const scheduledDates = generateRecurringDates(input.scheduled_date, input.frequency, occurrences);
 
     // Step 3: Create individual bookings for each occurrence
+    // KNOWN LIMITATION: Occurrences 2-N currently have no payment authorization.
+    // Payment collection for subsequent occurrences needs to be implemented.
     for (let i = 0; i < scheduledDates.length; i++) {
       const bookingInput: CreateBookingInput = {
         customer_id: input.customer_id,

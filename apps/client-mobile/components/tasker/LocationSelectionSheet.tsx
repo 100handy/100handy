@@ -11,7 +11,7 @@ import {
   type Location,
 } from '@shared/supabase';
 import { useRouter } from 'expo-router';
-import { LocationAutocomplete } from '@/components/location';
+import { LocationAutocomplete, type LocationResult } from '@/components/location';
 import * as ExpoLocation from 'expo-location';
 
 interface LocationSelectionSheetProps {
@@ -113,6 +113,14 @@ function LocationStep({
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [selectedLatitude, setSelectedLatitude] = useState<number | undefined>();
   const [selectedLongitude, setSelectedLongitude] = useState<number | undefined>();
+  const [selectedAddressComponents, setSelectedAddressComponents] = useState<{
+    streetAddress: string;
+    city: string;
+    postcode: string;
+    country: string;
+    latitude?: number;
+    longitude?: number;
+  } | null>(null);
 
   // Fetch current GPS location on mount
   useEffect(() => {
@@ -166,12 +174,12 @@ function LocationStep({
     fetchCurrentLocation();
   }, []);
 
-  const handleSelectLocation = (locationData: any) => {
+  const handleSelectLocation = (locationData: LocationResult) => {
     setSelectedPlaceId(locationData.place_id);
-    // Extract coordinates if available from the locationData
-    if (locationData.geometry?.location) {
-      setSelectedLatitude(locationData.geometry.location.lat);
-      setSelectedLongitude(locationData.geometry.location.lng);
+    if (locationData.addressComponents) {
+      setSelectedAddressComponents(locationData.addressComponents);
+      setSelectedLatitude(locationData.addressComponents.latitude);
+      setSelectedLongitude(locationData.addressComponents.longitude);
     }
   };
 
@@ -182,6 +190,7 @@ function LocationStep({
     setSelectedPlaceId(savedLocation.placeId || null);
     setSelectedLatitude(savedLocation.latitude);
     setSelectedLongitude(savedLocation.longitude);
+    setSelectedAddressComponents(null);
   };
 
   // Format location as "City, Country"
@@ -200,17 +209,26 @@ function LocationStep({
 
   const handleContinue = () => {
     if (streetAddress.trim()) {
-      // Parse address to extract city and country
-      const addressParts = streetAddress.split(',').map(part => part.trim());
-      const country = addressParts.length > 0 ? addressParts[addressParts.length - 1] : '';
-      const city = addressParts.length > 1 ? addressParts[addressParts.length - 2] : '';
+      // Prefer structured address components when available (more reliable)
+      const city = selectedAddressComponents?.city || (() => {
+        const addressParts = streetAddress.split(',').map((part) => part.trim());
+        return addressParts.length > 1 ? addressParts[addressParts.length - 2] : '';
+      })();
+
+      const country = selectedAddressComponents?.country || (() => {
+        const addressParts = streetAddress.split(',').map((part) => part.trim());
+        return addressParts.length > 0 ? addressParts[addressParts.length - 1] : '';
+      })();
+
+      const postalCode = selectedAddressComponents?.postcode;
 
       setLocation({
-        streetAddress: streetAddress.trim(),
+        streetAddress: (selectedAddressComponents?.streetAddress || streetAddress).trim(),
         unitNumber: unitNumber.trim() || undefined,
         placeId: selectedPlaceId || undefined,
         city,
         country,
+        postalCode: postalCode || undefined,
         formattedAddress: streetAddress.trim(),
         latitude: selectedLatitude,
         longitude: selectedLongitude,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScrollView,
   View,
@@ -6,6 +6,7 @@ import {
   Pressable,
   TextInput,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -30,6 +31,17 @@ export default function ProfessionalReviewScreen() {
     'handy'
   );
   const createReview = useCreateProfessionalReview();
+
+  // Guard: only allow review for completed bookings
+  useEffect(() => {
+    if (!loadingBooking && booking && booking.status !== 'completed') {
+      Alert.alert(
+        'Cannot Review',
+        'You can only review completed bookings.',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+    }
+  }, [loadingBooking, booking?.status]);
 
   const handleSubmit = async () => {
     if (rating === 0) {

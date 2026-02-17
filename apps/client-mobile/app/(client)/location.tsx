@@ -16,6 +16,8 @@ export default function LocationScreen() {
   const [unitNumber, setUnitNumber] = useState('');
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [addressComponents, setAddressComponents] = useState<AddressComponents | null>(null);
+  const [selectedLatitude, setSelectedLatitude] = useState<number | undefined>();
+  const [selectedLongitude, setSelectedLongitude] = useState<number | undefined>();
 
   // Load existing location on mount
   useEffect(() => {
@@ -23,6 +25,8 @@ export default function LocationScreen() {
       setStreetAddress(location.streetAddress || '');
       setUnitNumber(location.unitNumber || '');
       setSelectedPlaceId(location.placeId || null);
+      setSelectedLatitude(location.latitude);
+      setSelectedLongitude(location.longitude);
     }
   }, [location]);
 
@@ -30,6 +34,8 @@ export default function LocationScreen() {
     setSelectedPlaceId(locationData.place_id);
     if (locationData.addressComponents) {
       setAddressComponents(locationData.addressComponents);
+      setSelectedLatitude(locationData.addressComponents.latitude);
+      setSelectedLongitude(locationData.addressComponents.longitude);
     }
   };
 
@@ -58,6 +64,8 @@ export default function LocationScreen() {
       country,
       postalCode: postcode,
       formattedAddress: streetAddress,
+      latitude: selectedLatitude,
+      longitude: selectedLongitude,
     });
 
     router.back();

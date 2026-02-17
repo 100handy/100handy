@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler, TextInput } from 'react-native';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
+import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -70,9 +70,8 @@ export default function ConfirmBookingScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loadingPayment, setLoadingPayment] = useState(true);
-  const [promoCode, setPromoCode] = useState('');
-  const [showPromoInput, setShowPromoInput] = useState(false);
   const [selectedFrequency, setSelectedFrequency] = useState<BookingFrequency>('once');
+  const isSubmittingRef = useRef(false);
   const toast = useToast();
   const { confirmPayment } = useConfirmPayment();
 
@@ -203,6 +202,9 @@ export default function ConfirmBookingScreen() {
   };
 
   const handleCreateBooking = async () => {
+    // Debounce/mutex guard to prevent double-submission
+    if (isSubmittingRef.current) return;
+
     // Check if profile and location are loaded
     if (!profile) {
       Alert.alert('Error', 'Tasker profile not loaded');
@@ -211,6 +213,16 @@ export default function ConfirmBookingScreen() {
 
     if (!location?.streetAddress) {
       Alert.alert('Error', 'Location information missing');
+      return;
+    }
+
+    // Validate that selected date+time is not in the past (with 5-min grace)
+    const selectedDateTime = new Date(`${selectedDate}T${selectedTime}:00`);
+    if (!isNaN(selectedDateTime.getTime()) && selectedDateTime.getTime() < Date.now() - 5 * 60 * 1000) {
+      Alert.alert(
+        'Invalid Date/Time',
+        'The selected date and time has already passed. Please choose a future time.'
+      );
       return;
     }
 
@@ -240,6 +252,7 @@ export default function ConfirmBookingScreen() {
     }
 
     let authorizedPaymentIntentId: string | null = null;
+    isSubmittingRef.current = true;
 
     try {
       setIsSubmitting(true);
@@ -268,7 +281,7 @@ export default function ConfirmBookingScreen() {
       // 2. Check availability for the selected date/time
       const availability = await getAvailabilityByUserId(profile.user_id);
       if (availability && availability.length > 0) {
-        const selectedDateObj = new Date(selectedDate);
+        const selectedDateObj = new Date(selectedDate + 'T00:00:00');
         const dayOfWeek = selectedDateObj.getDay(); // 0 = Sunday, 6 = Saturday
         const daySlots = availability.filter((slot) => slot.day_of_week === dayOfWeek);
 
@@ -400,13 +413,15 @@ export default function ConfirmBookingScreen() {
         estimated_hours: estimatedHours,
         form_responses: formResponses,
         payment_intent_id: authorizedPaymentIntentId,
-        frequency: selectedFrequency,
       };
 
       // Create recurring bookings if frequency is not 'once', otherwise create single booking
       let newBookingId: string;
       if (selectedFrequency !== 'once') {
-        const result = await createRecurringBookings(bookingInput);
+        const result = await createRecurringBookings({
+          ...bookingInput,
+          frequency: selectedFrequency,
+        });
         newBookingId = result.bookings[0]?.id || '';
         if (result.totalSavings > 0) {
           toast.success(
@@ -434,7 +449,7 @@ export default function ConfirmBookingScreen() {
           bookingId: newBookingId,
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating booking:', error);
       // If payment was authorized but booking creation failed, release the hold.
       if (authorizedPaymentIntentId) {
@@ -448,14 +463,15 @@ export default function ConfirmBookingScreen() {
           return;
         }
       }
-      Alert.alert('Error', error.message || 'Failed to create booking. Please try again.');
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create booking. Please try again.');
     } finally {
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString + 'T00:00:00');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
@@ -489,7 +505,7 @@ export default function ConfirmBookingScreen() {
         <View className="flex-col px-5 py-6 gap-6">
           {/* Tasker Info */}
           <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
-            <Text className="text-base font-semibold text-[#30352D] mb-4">
+            <Text className="text-base font-semibold text-brand-dark-alt mb-4">
               Your Tasker
             </Text>
             <View className="flex-row items-center gap-3">
@@ -498,7 +514,7 @@ export default function ConfirmBookingScreen() {
                 className="w-16 h-16 rounded-full bg-gray-100"
               />
               <View className="flex-col flex-1">
-                <Text className="text-lg font-semibold text-[#30352D]">
+                <Text className="text-lg font-semibold text-brand-dark-alt">
                   {profile?.display_name || 'Tasker'}
                 </Text>
                 {profile?.verified && (
@@ -510,7 +526,7 @@ export default function ConfirmBookingScreen() {
                   </View>
                 )}
               </View>
-              <Text className="text-lg font-bold" style={{ color: '#C1856A' }}>
+              <Text className="text-lg font-bold text-brand-terracotta">
                 £{hourlyRate.toFixed(2)}/hr
               </Text>
             </View>
@@ -519,7 +535,7 @@ export default function ConfirmBookingScreen() {
           {/* Task Details */}
           <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-base font-semibold text-[#30352D]">
+              <Text className="text-base font-semibold text-brand-dark-alt">
                 Task Details
               </Text>
               <Pressable onPress={() => router.push({
@@ -543,7 +559,7 @@ export default function ConfirmBookingScreen() {
                 <Text className="text-xs font-medium text-gray-600 mb-1">
                   Service
                 </Text>
-                <Text className="text-sm text-[#30352D]">
+                <Text className="text-sm text-brand-dark-alt">
                   {categoryName}
                 </Text>
               </View>
@@ -555,7 +571,7 @@ export default function ConfirmBookingScreen() {
                 </Text>
                 <View className="flex-row items-start gap-2">
                   <MapPin size={14} color="#6B7280" className="mt-0.5" />
-                  <Text className="flex-1 text-sm text-[#30352D]">
+                  <Text className="flex-1 text-sm text-brand-dark-alt">
                     {location?.streetAddress}
                     {location?.unitNumber ? `, ${location.unitNumber}` : ''}
                   </Text>
@@ -570,7 +586,7 @@ export default function ConfirmBookingScreen() {
                   </Text>
                   <View className="flex-row items-center gap-2">
                     <Calendar size={14} color="#6B7280" />
-                    <Text className="text-sm text-[#30352D]">
+                    <Text className="text-sm text-brand-dark-alt">
                       {formatDate(selectedDate)}
                     </Text>
                   </View>
@@ -582,7 +598,7 @@ export default function ConfirmBookingScreen() {
                   </Text>
                   <View className="flex-row items-center gap-2">
                     <Clock size={14} color="#6B7280" />
-                    <Text className="text-sm text-[#30352D]">
+                    <Text className="text-sm text-brand-dark-alt">
                       {selectedTime}
                     </Text>
                   </View>
@@ -619,7 +635,7 @@ export default function ConfirmBookingScreen() {
                     <Text className="text-xs font-medium text-gray-600 mb-1">
                       {label}
                     </Text>
-                    <Text className="text-sm text-[#30352D] capitalize">
+                    <Text className="text-sm text-brand-dark-alt capitalize">
                       {displayValue}
                     </Text>
                   </View>
@@ -640,7 +656,7 @@ export default function ConfirmBookingScreen() {
             onPress={() => router.push('/(client)/profile/payment-methods')}
             className="flex-row items-center justify-between py-4 border-b border-gray-200"
           >
-            <Text className="text-lg font-semibold text-[#30352D]">
+            <Text className="text-lg font-semibold text-brand-dark-alt">
               Payment
             </Text>
             <View className="flex-row items-center gap-2">
@@ -648,7 +664,7 @@ export default function ConfirmBookingScreen() {
                 <ActivityIndicator size="small" color="#C1856A" />
               ) : paymentMethods.length > 0 ? (
                 <>
-                  <Text className="text-base text-[#30352D] capitalize">
+                  <Text className="text-base text-brand-dark-alt capitalize">
                     {(paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0]).card.brand} ••••{' '}
                     {(paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0]).card.last4}
                   </Text>
@@ -656,7 +672,7 @@ export default function ConfirmBookingScreen() {
                 </>
               ) : (
                 <>
-                  <Text className="text-base" style={{ color: '#C1856A' }}>
+                  <Text className="text-base text-brand-terracotta">
                     Add payment
                   </Text>
                   <ChevronRight size={20} color="#C1856A" />
@@ -665,43 +681,9 @@ export default function ConfirmBookingScreen() {
             </View>
           </Pressable>
 
-          {/* Promo Code */}
-          <View className="flex-row items-center justify-between py-4 border-b border-gray-200">
-            <Text className="text-lg font-semibold text-[#30352D]">
-              Promos
-            </Text>
-            {showPromoInput ? (
-              <TextInput
-                value={promoCode}
-                onChangeText={setPromoCode}
-                placeholder="Add code"
-                placeholderTextColor="#9CA3AF"
-                autoFocus
-                maxLength={6}
-                autoCapitalize="characters"
-                onBlur={() => {
-                  if (!promoCode) setShowPromoInput(false);
-                }}
-                className="text-base text-[#30352D] text-right min-w-[120px] py-1 px-2 border border-gray-300 rounded-lg"
-                style={{ fontFamily: 'WorkSans_400Regular' }}
-              />
-            ) : promoCode ? (
-              <Pressable onPress={() => setShowPromoInput(true)}>
-                <Text className="text-base text-[#30352D]">{promoCode}</Text>
-              </Pressable>
-            ) : (
-              <Pressable onPress={() => setShowPromoInput(true)} className="flex-row items-center gap-2">
-                <Text className="text-base" style={{ color: '#C1856A' }}>
-                  Add code
-                </Text>
-                <ChevronRight size={20} color="#C1856A" />
-              </Pressable>
-            )}
-          </View>
-
           {/* Hourly Rate */}
           <View className="flex-row items-center justify-between py-4">
-            <Text className="text-lg font-semibold text-[#30352D]">
+            <Text className="text-lg font-semibold text-brand-dark-alt">
               Hourly Rate
             </Text>
             <View className="flex-row items-center gap-2">
@@ -736,7 +718,7 @@ export default function ConfirmBookingScreen() {
 
             <Text className="text-sm text-gray-600 leading-5 mb-4">
               Pricing is inclusive of a{' '}
-              <Text style={{ color: '#C1856A' }}>£7.46/hr Trust and Support fee</Text>, as well as VAT, which is billed on 100Handy's fees.
+              <Text className="text-brand-terracotta">£7.46/hr Trust and Support fee</Text>, as well as VAT, which is billed on 100Handy's fees.
             </Text>
 
             <Text className="text-sm text-gray-600 leading-5">
@@ -749,7 +731,7 @@ export default function ConfirmBookingScreen() {
             style={{ backgroundColor: '#FFF4ED' }}
           >
             <CreditCard size={20} color="#C1856A" className="mr-3" />
-            <Text className="flex-1 text-sm" style={{ color: '#C1856A' }}>
+            <Text className="flex-1 text-sm text-brand-terracotta">
               You won't be billed until your task is complete.
             </Text>
           </View>

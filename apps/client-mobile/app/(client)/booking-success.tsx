@@ -23,7 +23,7 @@ export default function BookingSuccessScreen() {
   } = useConversationByBooking(bookingId);
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString + 'T00:00:00');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;

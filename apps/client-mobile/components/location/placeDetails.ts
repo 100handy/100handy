@@ -10,6 +10,8 @@ export interface AddressComponents {
   county: string;
   postcode: string;
   country: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface AddressComponent {
@@ -22,6 +24,12 @@ interface PlaceDetailsResponse {
   result: {
     address_components: AddressComponent[];
     formatted_address: string;
+    geometry?: {
+      location?: {
+        lat?: number;
+        lng?: number;
+      };
+    };
   };
   status: string;
 }
@@ -39,7 +47,7 @@ export async function fetchPlaceDetails(placeId: string): Promise<AddressCompone
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(
         placeId
-      )}&key=${GOOGLE_MAPS_API_KEY}&fields=address_components,formatted_address`
+      )}&key=${GOOGLE_MAPS_API_KEY}&fields=address_components,formatted_address,geometry`
     );
 
     const data: PlaceDetailsResponse = await response.json();
@@ -49,7 +57,15 @@ export async function fetchPlaceDetails(placeId: string): Promise<AddressCompone
       return null;
     }
 
-    return parseAddressComponents(data.result.address_components, data.result.formatted_address);
+    const parsed = parseAddressComponents(data.result.address_components, data.result.formatted_address);
+    const lat = data.result.geometry?.location?.lat;
+    const lng = data.result.geometry?.location?.lng;
+
+    return {
+      ...parsed,
+      latitude: typeof lat === 'number' ? lat : undefined,
+      longitude: typeof lng === 'number' ? lng : undefined,
+    };
   } catch (error) {
     console.error('Error fetching place details:', error);
     return null;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScrollView,
   View,
@@ -6,6 +6,7 @@ import {
   Pressable,
   TextInput,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -30,6 +31,17 @@ export default function ClientReviewScreen() {
     'customer'
   );
   const createReview = useCreateCustomerReview();
+
+  // Validate booking status - only allow reviews for completed bookings
+  useEffect(() => {
+    if (booking && booking.status !== 'completed') {
+      Alert.alert(
+        'Cannot Review',
+        'Reviews can only be submitted for completed bookings.',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+    }
+  }, [booking, router]);
 
   const handleSubmit = async () => {
     if (rating === 0) {

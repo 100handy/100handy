@@ -110,6 +110,7 @@ Common variables:
 ```
 supabase/
 ├── config.toml              # Supabase configuration
+├── migrations/              # Database schema migrations
 ├── functions/
 │   ├── _shared/
 │   │   └── cors.ts          # Shared CORS headers
@@ -117,7 +118,11 @@ supabase/
 │   │   └── index.ts         # Simple example function
 │   └── api-example/
 │       └── index.ts         # Advanced example with auth
-├── seed.sql                 # Database seed data
+├── seed.sql                 # Seed entrypoint for supabase db reset
+├── seeds/
+│   └── seed-all-categories.sql  # Seed script for categories/forms
+├── scripts/
+│   └── *.sql                # Manual SQL scripts (diagnostics/fixes)
 └── README.md               # This file
 ```
 

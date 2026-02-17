@@ -54,7 +54,7 @@ export function getCategoryIconTone(categoryName: string): 'sage' | 'orange' | '
 
 // Format date and time for display
 export function formatDateTime(date: string, time: string): string {
-  const bookingDate = new Date(date);
+  const bookingDate = new Date(date + 'T00:00:00');
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -106,19 +106,18 @@ export function bookingToTaskCardProps(booking: BookingWithRelations) {
   const hourlyRate = booking.hourly_rate_cents / 100;
   const price = `£${hourlyRate.toFixed(2)} /hr`;
   
-  // TODO: Fetch tasker info from handy_id when profile relation is added
-  const taskerName = booking.handy_id ? 'Tasker' : 'Unassigned';
-  const taskerRating = 5.0;
-  const taskerReviews = 0;
-  
+  // Use real name from handy_profile join
+  const hp = booking.handy_profile;
+  const taskerName = hp
+    ? `${hp.first_name ?? ''} ${hp.last_name?.[0] ?? ''}`.trim() || 'Tasker'
+    : booking.handy_id ? 'Tasker' : 'Unassigned';
+
   return {
     icon,
     iconTone,
     title: booking.task_title,
     dateTime,
     taskerName,
-    taskerRating,
-    taskerReviews,
     location,
     statusLabel,
     price,

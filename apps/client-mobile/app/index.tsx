@@ -50,10 +50,10 @@ export default function Index() {
 
       // Priority 2: User is not authenticated - check if they've seen onboarding before
       const hasSeenOnboarding = await AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING);
-      
+
       if (hasSeenOnboarding === 'true') {
-        // Returning user but not authenticated - redirect to login
-        router.replace('/(auth)/(client)');
+        // Returning user but not authenticated - redirect to sign-in
+        router.replace('/(auth)/(client)/sign-in');
         setIsChecking(false);
       } else {
         // First time user - show welcome flow
@@ -66,7 +66,8 @@ export default function Index() {
       if (isAuthenticated && user) {
         await routeAuthenticatedUser();
       } else {
-        router.replace('/(auth)/(client)');
+        // Default to sign-in for errors (safer than showing welcome screen)
+        router.replace('/(auth)/(client)/sign-in');
         setIsChecking(false);
       }
     }
@@ -145,12 +146,13 @@ export default function Index() {
           }
         }
       } else {
-        // Unknown role - redirect to role selection
-        router.replace('/(auth)/(client)');
+        // Unknown role - default to client home
+        router.replace('/(client)/(tabs)/home');
       }
     } catch (error) {
       console.error('Error routing authenticated user:', error);
-      router.replace('/(auth)/(client)');
+      // Default to client home on error (user is authenticated)
+      router.replace('/(client)/(tabs)/home');
     } finally {
       setIsChecking(false);
     }

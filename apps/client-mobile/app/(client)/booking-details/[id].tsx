@@ -5,6 +5,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ChevronLeft, Calendar, Clock, MapPin, AlertCircle } from 'lucide-react-native';
 import { useBookingById } from '@shared/query/hooks/useBookings';
 import { useAuthStore } from '@shared/store/auth';
+import { useConversationByBooking } from '@shared/supabase';
 import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';
 import { HandymanCard } from '@/components/booking/HandymanCard';
 import { PricingBreakdown } from '@/components/booking/PricingBreakdown';
@@ -23,6 +24,8 @@ export default function BookingDetailScreen() {
     isError,
     error,
   } = useBookingById(id || null);
+
+  const { data: conversation } = useConversationByBooking(id || '');
 
   const formatDate = (dateStr: string | undefined) => {
     if (!dateStr) return 'Not scheduled';
@@ -49,8 +52,14 @@ export default function BookingDetailScreen() {
   };
 
   const handleContactHandyman = () => {
-    // Navigate to messages tab
-    router.push('/(client)/(tabs)/messages');
+    if (conversation?.id) {
+      router.push({
+        pathname: '/(client)/chat/conversation',
+        params: { conversationId: conversation.id },
+      });
+    } else {
+      router.push('/(client)/(tabs)/messages');
+    }
   };
 
   // Loading state
@@ -195,7 +204,12 @@ export default function BookingDetailScreen() {
           {/* Handyman Info */}
           {booking.handy_id && (
             <HandymanCard
-              name="Assigned Handyman"
+              name={
+                booking.handy_profile
+                  ? `${booking.handy_profile.first_name ?? ''} ${booking.handy_profile.last_name ?? ''}`.trim() || 'Assigned Handyman'
+                  : 'Assigned Handyman'
+              }
+              avatar={booking.handy_profile?.avatar_url}
               hourlyRateCents={booking.hourly_rate_cents}
               onContactPress={handleContactHandyman}
             />
@@ -262,7 +276,7 @@ export default function BookingDetailScreen() {
           />
 
           {/* Cancel Button */}
-          {booking.status === 'pending' && (
+          {(booking.status === 'pending' || booking.status === 'accepted') && (
             <Button
               onPress={() => setShowCancelModal(true)}
               variant="outline"

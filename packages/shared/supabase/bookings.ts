@@ -111,11 +111,18 @@ export interface Address {
   created_at: string;
 }
 
-// Profile interface removed since we're not joining with profiles table
+// Handy profile joined via bookings_handy_id_fkey
+interface HandyProfile {
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+}
 
 export type BookingWithRelations = Booking & {
   category: Category | null;
   address: Address | null;
+  handy_profile: HandyProfile | null;
 };
 
 export type BookingStatus = 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
@@ -134,7 +141,8 @@ export async function getBookings(options: GetBookingsOptions = {}): Promise<Boo
       .select(`
         *,
         category:categories(*),
-        address:addresses(*)
+        address:addresses(*),
+        handy_profile:profiles!bookings_handy_profile_fkey(user_id, first_name, last_name, avatar_url)
       `)
       .order('scheduled_date', { ascending: false })
       .order('scheduled_time', { ascending: true });
@@ -206,7 +214,8 @@ export async function getBookingById(bookingId: string): Promise<BookingWithRela
       .select(`
         *,
         category:categories(*),
-        address:addresses(*)
+        address:addresses(*),
+        handy_profile:profiles!bookings_handy_profile_fkey(user_id, first_name, last_name, avatar_url)
       `)
       .eq('id', bookingId)
       .single();
@@ -401,9 +410,16 @@ export async function cancelBooking(bookingId: string): Promise<boolean> {
     // Taskrabbit-style: cancel booking before completion should release the hold.
     const { data: booking } = await supabase
       .from('bookings')
-      .select('payment_intent_id, payment_status')
+      .select('payment_intent_id, payment_status, status')
       .eq('id', bookingId)
       .single();
+
+    // Do not release the payment hold for in-progress bookings — the hold
+    // is needed for capture on completion.
+    if (booking?.status === 'in_progress') {
+      console.warn(`Booking ${bookingId} is in_progress — skipping payment hold release`);
+      return false;
+    }
 
     if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
       try {
@@ -620,14 +636,20 @@ export async function getCompletedBookingsForHandy(
  */
 export async function acceptBooking(bookingId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('bookings')
       .update({ status: 'accepted' })
       .eq('id', bookingId)
-      .eq('status', 'pending'); // Only accept if currently pending
+      .eq('status', 'pending') // Only accept if currently pending
+      .select();
 
     if (error) {
       console.error(`Error accepting booking ${bookingId}:`, error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Booking ${bookingId} not accepted - status may not be pending`);
       return false;
     }
 
@@ -701,14 +723,20 @@ export async function declineBooking(
       updateData.decline_reason = reason;
     }
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('bookings')
       .update(updateData)
       .eq('id', bookingId)
-      .eq('status', 'pending'); // Only decline if currently pending
+      .eq('status', 'pending') // Only decline if currently pending
+      .select();
 
     if (error) {
       console.error(`Error declining booking ${bookingId}:`, error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Booking ${bookingId} not declined - status may not be pending`);
       return false;
     }
 
@@ -731,17 +759,23 @@ export async function declineBooking(
  */
 export async function startBooking(bookingId: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('bookings')
       .update({
         status: 'in_progress',
         started_at: new Date().toISOString(),
       })
       .eq('id', bookingId)
-      .eq('status', 'accepted'); // Only start if currently accepted
+      .eq('status', 'accepted') // Only start if currently accepted
+      .select();
 
     if (error) {
       console.error(`Error starting booking ${bookingId}:`, error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Booking ${bookingId} not started - status may not be accepted`);
       return false;
     }
 

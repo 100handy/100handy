@@ -96,8 +96,8 @@ export function ServicesHomeScreen() {
   const getLocationDisplay = () => {
     if (!location || !location.streetAddress) {
       return {
-        line1: '16 Leicester Square, London',
-        line2: 'WC2H 7LE, UK'
+        line1: 'Set your location',
+        line2: ''
       };
     }
 
