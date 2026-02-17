@@ -1,0 +1,30 @@
+<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <rect stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x="38" y="119.08" width="78.6" height="6.95"/>
+  <rect stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x="38" y="33.84" width="78.6" height="6.95"/>
+  <g>
+    <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="46.54" y1="39.54" x2="47.03" y2="120.36"/>
+    <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="44.96" y1="41.05" x2="109.59" y2="40.85"/>
+    <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="45.6" y1="66.89" x2="108.46" y2="66.72"/>
+    <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="77.97" y1="39.49" x2="77.9" y2="120.33"/>
+    <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="108.09" y1="39.34" x2="108.02" y2="120.29"/>
+    <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="45.63" y1="93.08" x2="108.48" y2="92.91"/>
+    <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="45.39" y1="118.89" x2="109.65" y2="119.04"/>
+  </g>
+  <circle stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="2.5px" cx="93.49" cy="53.3" r="2.46"/>
+  <circle stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="2.5px" cx="93.49" cy="106.66" r="2.46"/>
+  <circle stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="2.5px" cx="62.18" cy="80.43" r="2.46"/>
+  <circle stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="2.5px" cx="62.18" cy="106.66" r="2.46"/>
+  <circle stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="2.5px" cx="62.18" cy="53.3" r="2.46"/>
+  <path stroke="currentColor" fill="none" stroke-width="2px" stroke-miterlimit="10" d="M109.35,74.2c2.02,2.49-1.52,6.24-3.41,7.77s-6.94,2.03-8.96-.46-.7-4.96,1.19-6.49c1.89-1.53,9.16-3.31,11.18-.82Z"/>
+  <g>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M107.41,81.45l14.06,38.13c1.19,2.69.23,5.65-1.78,6.39h0c-2.01.74-4.67-.92-5.5-3.7l-14.06-38.13"/>
+    <line stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" x1="103.38" y1="75.63" x2="103.38" y2="75.63"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M95.59,85.13c.19.55.01,1.11-.41,1.26l-3.65,1.29c-.42.15-.91-.18-1.11-.73l-2.98-8.43c-.19-.55-.01-1.11.41-1.26l3.65-1.29c.42-.15.91.18,1.11.73"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M99.36,83.63c-.41-1.07-1.96-1.14-2.74-.7-.92.52-1.15,1.97-.97,2.29"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M92.61,76.69c.11.3,1.44.77,2.35.44.76-.27,1.65-1.36,1.54-1.71"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M96.46,75.46c-.03-.13-.06-.31.03-.49.07-.15.2-.27.36-.33,1.94-.62,3.87-1.24,5.81-1.87,1.95-.63,4.39-.32,7.01-.31"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M112.89,77.8c-.72.06-2.93.95-3.29,1.1-.3.13-.87.51-1.53,1.77-.11.22-.34.72-.86.95-.2.09-1.42.51-1.49.54l-5.58,1.79c-.33.12-.7-.06-.81-.39"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M106.22,72.39c1.94-.02,5.28-.11,9.09,1.4,2.41.95,4.22,2.22,5.45,3.24.26.22.47.5.58.82.09.27.18.64-.09.8,0,0-.27.25-.39.3-.93.44-2.04.2-2.97-.22-1.3-.58-2.76-1.22-4.18-1.08s-2.97.83-4.24,1.3"/>
+  </g>
+  <path fill="none" d="M106.86,82.79l-5.5,1.82,13.76,37.3c.58,2.54,2.93,3.67,4.29,3.12,1.18-.48,2.01-2.38,1.37-4.39-4.44-12.06-9.47-25.79-13.92-37.85Z"/>
+</svg>

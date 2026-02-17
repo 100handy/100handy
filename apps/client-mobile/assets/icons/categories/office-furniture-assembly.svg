@@ -1,0 +1,29 @@
+<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M85.9,64.99c0,13.17-3.81,16.99-14.67,16.99s-14.49-3.82-14.49-16.99,3.67-23.54,14.53-23.54,14.63,10.37,14.63,23.54Z"/>
+  <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" x="51.51" y="82.27" width="39.62" height="10.31" rx="4.55" ry="4.55"/>
+  <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" x="69.45" y="92.67" width="3.79" height="21.04"/>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M79.77,41.26h-16.92c-3.22,0-5.83-2.61-5.83-5.83h0c0-3.22,2.61-5.83,5.83-3.46h16.92c3.22-2.37,5.83.24,5.83,3.46h0c0,3.22-2.61,5.83-5.83,5.83Z"/>
+  <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" x="50.01" y="68.06" width="1.45" height="16.41" rx=".64" ry=".64"/>
+  <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" x="47.89" y="65.97" width="4.46" height="1.97" rx=".7" ry=".7"/>
+  <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" x="91.03" y="68.06" width="1.45" height="16.41" rx=".64" ry=".64" transform="translate(183.51 152.52) rotate(-180)"/>
+  <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" x="90.1" y="65.97" width="4.46" height="1.97" rx=".49" ry=".49" transform="translate(184.66 133.91) rotate(-180)"/>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M57.56,124.15c.09-3.02,1.88-7.03,4.44-8.49,3.13-1.79,7.67-1.99,8-1.91"/>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M85.53,124.15c-.09-3.02-1.88-7.03-4.44-8.49-3.13-1.79-7.67-1.99-8-1.91"/>
+  <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" x1="71.62" y1="113.73" x2="71.62" y2="124.15"/>
+  <circle fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" cx="57.48" cy="125.92" r="1.78"/>
+  <circle fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" cx="71.59" cy="125.92" r="1.78"/>
+  <circle fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" cx="85.43" cy="125.92" r="1.78"/>
+  <polygon fill="none" points="102.65 69.59 90.49 95.05 80.07 60.11 88.46 58.1 102.65 69.59"/>
+  <g>
+    <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M93.63,69.84l13.12,50.98c.96,3.73-.44,7.31-3.13,8h0c-2.69.69-5.65-1.77-6.6-5.5l-13.12-50.98"/>
+    <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" x1="89.2" y1="61.81" x2="89.2" y2="61.81"/>
+    <g>
+      <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M77.91,73.01c.18.73-.13,1.44-.69,1.57l-4.88,1.18c-.56.14-1.15-.35-1.33-1.08l-2.73-11.26c-.18-.73.13-1.44.69-1.57l4.88-1.18c.56-.14,1.15.35,1.33,1.08"/>
+      <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M82.96,71.59c-.39-1.43-2.37-1.73-3.44-1.26-1.25.55-1.74,2.39-1.55,2.82"/>
+      <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M75.18,61.76c.1.4,1.75,1.18,2.96.88,1.02-.25,2.3-1.54,2.21-2"/>
+      <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M80.3,60.68c-.03-.17-.03-.41.1-.62.11-.18.29-.32.51-.37,2.58-.55,5.15-1.09,7.73-1.64,2.6-.55,5.7.17,9.08.52"/>
+      <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M101.16,65.84c-.94-.01-3.9.84-4.39.99-.41.13-1.19.54-2.21,2.08-.17.26-.53.88-1.23,1.11-.26.09-1.89.47-1.99.5l-7.42,1.58c-.44.11-.89-.16-1-.61"/>
+      <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="2px" d="M93.28,58c2.5.23,6.82.55,11.53,2.99,2.98,1.55,5.14,3.41,6.6,4.89.31.31.54.7.64,1.13.09.37.15.84-.21,1.01,0,0-.38.28-.54.34-1.25.44-2.65,0-3.8-.67-1.6-.92-3.4-1.94-5.24-1.94s-3.94.67-5.63,1.11"/>
+    </g>
+  </g>
+</svg>

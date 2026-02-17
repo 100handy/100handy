@@ -1,0 +1,27 @@
+<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <rect stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x="37.41" y="113.29" width="69.52" height="12.36" rx="1.7" ry="1.7"/>
+  <rect stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x="37.41" y="34.36" width="69.52" height="6.15" rx=".64" ry=".64"/>
+  <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="37.44" y1="40.19" x2="37.41" y2="115.01"/>
+  <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="84.23" y1="57.58" x2="106.07" y2="57.59"/>
+  <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="83.28" y1="41.52" x2="83.22" y2="113.02"/>
+  <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="106.91" y1="39.55" x2="106.93" y2="114.79"/>
+  <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="83.48" y1="70.81" x2="106.44" y2="70.71"/>
+  <circle stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="2.5px" cx="94.72" cy="103.18" r="2.18"/>
+  <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="38.29" y1="95.04" x2="106.88" y2="95.02"/>
+  <line stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x1="38.2" y1="51.28" x2="82.73" y2="51.43"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M68.34,54.98c1.58,0,2.87-1.38,2.87-3.07s-1.28-3.07-2.87-3.07c-.78,0-1.43.28-1.89.76-.04.04-.94,1-.75,2.08.01.06.07.27.03.14"/>
+  <line stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" x1="68.35" y1="53.98" x2="68.38" y2="57.73"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M68.43,57.59l-9.83,2.69,9.83-2.69Z"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M68.47,57.66c3.33.78,6.66,1.59,9.99,2.44.01,0,.22.06.11.03"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M58.6,60.28c-.21.06-.7.2-.63.17"/>
+  <path stroke="currentColor" fill="none" stroke-width="2px" stroke-miterlimit="10" d="M114.6,70.39c-2.06,2.89-14.2,10.56-14.74,8.38-.91-3.68-5.7,4.11-8.05,2.52-1.31-.89-2.73-4.57-2.31-6.65s3.01-2.96,3.38-1.78c.39,1.26,5.29.46,10.04-2.43,5.38-3.28,12.71-1.48,11.68-.04Z"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M108.01,77.34l14.06,38.13c1.19,2.69.23,5.65-1.78,6.39h0c-2.01.74-4.67-.92-5.5-3.7l-14.06-38.13"/>
+  <line stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" x1="103.98" y1="71.52" x2="103.98" y2="71.52"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M96.19,81.01c.19.55.01,1.11-.41,1.26l-3.65,1.29c-.42.15-.91-.18-1.11-.73l-2.98-8.43c-.19-.55-.01-1.11.41-1.26l3.65-1.29c.42-.15.91.18,1.11.73"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M99.95,79.52c-.41-1.07-1.96-1.14-2.74-.7-.92.52-1.15,1.97-.97,2.29"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M93.2,72.58c.11.3,1.44.77,2.35.44.76-.27,1.65-1.36,1.54-1.71"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M97.06,71.35c-.03-.13-.06-.31.03-.49.07-.15.2-.27.36-.33,1.94-.62,3.87-1.24,5.81-1.87,1.95-.63,4.39-.32,7.01-.31"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M113.48,73.68c-.72.06-2.93.95-3.29,1.1-.3.13-.87.51-1.53,1.77-.11.22-.34.72-.86.95-.2.09-1.42.51-1.49.54l-5.58,1.79c-.33.12-.7-.06-.81-.39"/>
+  <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M106.81,68.28c1.94-.02,5.28-.11,9.09,1.4,2.41.95,4.22,2.22,5.45,3.24.26.22.47.5.58.82.09.27.18.64-.09.8,0,0-.27.25-.39.3-.93.44-2.04.2-2.97-.22-1.3-.58-2.76-1.22-4.18-1.08s-2.97.83-4.24,1.3"/>
+  <path fill="none" d="M107.46,78.67l-5.5,1.82,13.76,37.3c.58,2.54,2.93,3.67,4.29,3.12,1.18-.48,2.01-2.38,1.37-4.39-4.44-12.06-9.47-25.79-13.92-37.85Z"/>
+</svg>

@@ -47,9 +47,13 @@ export default function ProfessionalSignIn() {
             <View>
               {/* Header */}
               <View className="flex-row items-center justify-between px-5 pt-2 pb-4">
-                <Pressable onPress={() => router.back()}>
-                  <ChevronLeft size={24} color="#333A31" />
-                </Pressable>
+                {router.canGoBack() ? (
+                  <Pressable onPress={() => router.back()}>
+                    <ChevronLeft size={24} color="#333A31" />
+                  </Pressable>
+                ) : (
+                  <View className="w-6" />
+                )}
                 <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
                   Log in
                 </Text>
@@ -67,6 +71,14 @@ export default function ProfessionalSignIn() {
                 isLoading={isLoading}
                 userRole="professional"
               />
+
+              {/* Sign Up Link */}
+              <Pressable className="mt-2" onPress={() => router.push('/(auth)/(professional)/sign-up')}>
+                <Text className="text-center text-[14px] font-worksans-medium" style={{ color: '#30352D' }}>
+                  Don't have an account?{' '}
+                  <Text style={{ color: '#C1856A' }}>Sign up</Text>
+                </Text>
+              </Pressable>
             </View>
             <AuthFooter />
           </View>

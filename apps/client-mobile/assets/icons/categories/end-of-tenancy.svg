@@ -1,0 +1,50 @@
+<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <g>
+    <g>
+      <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" x="64.73" y="38.08" width="53.51" height="74.56"/>
+      <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="62.47" y="36.55" width="52.01" height="72.31"/>
+      <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="76.45" y="34.78" width="24.06" height="3.67" rx="1.83" ry="1.83"/>
+      <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="85.83" y="31.41" width="5.29" height="3.27" rx="1.38" ry="1.38"/>
+    </g>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="67.1" y="45.05" width="40.3" height=".64" rx=".32" ry=".32"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="68.06" y="82.16" width="37.82" height=".21" rx=".06" ry=".06"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="68.06" y="86.89" width="5.42" height=".17" rx=".09" ry=".09"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="79.13" y="86.79" width="10.66" height=".37" rx=".19" ry=".19"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="95.44" y="86.79" width="13.74" height=".37" rx=".19" ry=".19"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="68.06" y="95.99" width="39.03" height=".18" rx=".09" ry=".09"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="68.06" y="100.18" width="21.43" height=".35" rx=".09" ry=".09"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" x="69.67" y="60.97" width="16.73" height="14.15"/>
+    <g>
+      <line stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" x1="87.18" y1="61" x2="68.88" y2="60.92"/>
+      <polyline stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" points="68.68 60.99 78.11 52.71 87.39 61.08"/>
+    </g>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="95.15" y="56.29" width="10.66" height=".37" rx=".19" ry=".19"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="95.15" y="60.77" width="13.24" height=".38" rx=".19" ry=".19"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="95.39" y="69.83" width="10.66" height=".37" rx=".19" ry=".19"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="95.39" y="74.31" width="13.24" height=".38" rx=".19" ry=".19"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="101.69" y="103.65" width="5.42" height=".17" rx=".09" ry=".09"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="68.05" y="91.6" width="22.82" height=".37" rx=".19" ry=".19"/>
+    <rect stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="95.43" y="91.65" width="9.6" height=".17" rx=".09" ry=".09"/>
+  </g>
+  <g>
+    <rect fill="none" x="45.65" y="88.81" width="38.53" height="37.57"/>
+    <g>
+      <g>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M45.3,91.6c0-2.01,1.63-3.63,3.63-3.63h32.92c2.01,0,3.63,1.63,3.63,3.63v33.17c0,2.01-1.63,3.63-3.63,3.63"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M45.31,91.32l-.11,11.41c0,.08.02.41,0,.26"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M82.17,128.39l-18.33.1c-.07,0-.61,0-.22,0"/>
+      </g>
+      <g>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M46.38,115.49c0,.52-.08-3.39,0-6.98.01-.69-1.06-2.43-2.41-2.28-1.23.13-1.63.8-2,1.81-.07.19-.1.39-.11.6l-.11,10.99s-.01.24,0,.15"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M46.47,115.42l10.25-10.26c.08-.07.18-.16.32-.25.68-.43,1.84-.8,2.73-.23.14.09.93.73.95,1.66.02.71-.51,1.37-.61,1.53"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M62.59,105.38l-9.76,9.78s-.23.22-.08.08"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M65.56,108.18l-9.22,9.57s-.14.13-.06.05"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M67.34,112.97l-9.43,9.51s-.25.23-.1.09"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M67.54,119.02l-9.52,9.45s-.21.21-.08.08"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M62.42,105.52c.68-.43,1.76-.86,2.65-.28.14.09.93.73.95,1.66.02.71-.54,1.35-.64,1.51"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M63.78,110.02c.68-.43,2.04-.94,2.93-.36.14.09,1.03.68,1.05,1.61.02.71-.09,1.43-.57,1.85"/>
+        <path stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" fill="none" d="M64.48,115.88c.68-.43,1.75-.49,2.64.08.14.09.81.67.83,1.6.02.71-.48,1.52-.58,1.68"/>
+      </g>
+    </g>
+  </g>
+</svg>

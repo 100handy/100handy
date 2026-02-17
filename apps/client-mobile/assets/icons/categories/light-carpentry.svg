@@ -1,0 +1,20 @@
+<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <g>
+    <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M104.86,107.15l4.41,15.59c.12.41-.29.69-.63.44l-13.22-9.52-43.37-62.91c-2.09-3.04-1.68-6.96.93-8.75h0c2.61-1.8,6.42-.79,8.51,2.24l43.37,62.91Z"/>
+    <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="55.15" y1="53.54" x2="62.88" y2="48.21"/>
+    <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="94.07" y1="110.76" x2="102.79" y2="104.76"/>
+    <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="106.03" y1="121.28" x2="108.73" y2="119.44"/>
+  </g>
+  <g>
+    <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="72.66" y="32.14" width="18.72" height="95.72" rx="1.63" ry="1.63" transform="translate(31.22 -22.7) rotate(19.39)"/>
+    <g>
+      <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="85.08" y1="43.1" x2="91.41" y2="45.44"/>
+      <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="80.33" y1="56.59" x2="86.65" y2="58.94"/>
+      <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="75.58" y1="70.09" x2="81.9" y2="72.43"/>
+      <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="70.83" y1="83.59" x2="77.15" y2="85.93"/>
+      <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="66.08" y1="97.09" x2="72.4" y2="99.43"/>
+      <line fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x1="61.33" y1="110.58" x2="67.65" y2="112.93"/>
+    </g>
+  </g>
+  <polygon fill="none" points="90.99 89.67 87.12 99.01 70.02 74.19 74.96 66.41 90.99 89.67"/>
+</svg>

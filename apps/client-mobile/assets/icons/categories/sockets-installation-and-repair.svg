@@ -1,0 +1,22 @@
+<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <g>
+    <rect stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x="42.63" y="35.28" width="74.75" height="79.54" rx="5.69" ry="5.69"/>
+    <circle stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" cx="80" cy="75.63" r="23.94"/>
+    <g>
+      <rect stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x="70.81" y="63.22" width="4.82" height="9.32"/>
+      <rect stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x="84.37" y="63.22" width="4.82" height="9.32"/>
+    </g>
+    <rect stroke-miterlimit="10" fill="none" stroke="currentColor" stroke-width="3px" x="77.59" y="82.28" width="4.82" height="9.32" transform="translate(166.94 6.94) rotate(90)"/>
+  </g>
+  <g>
+    <polygon fill="none" stroke="currentColor" stroke-width="2px" stroke-miterlimit="10" points="97.49 79.36 91.06 82.45 91.25 84.01 98.64 81.47 97.49 79.36"/>
+    <polygon fill="none" stroke="currentColor" stroke-width="2px" stroke-miterlimit="10" points="103.6 79.13 99.17 79.73 95.58 71.67 101.43 73.16 103.6 79.13"/>
+    <polygon fill="none" stroke="currentColor" stroke-width="2px" stroke-miterlimit="10" points="86.29 86.67 90.09 84.55 86.84 74.9 83.52 79.8 86.29 86.67"/>
+    <path fill="none" stroke="currentColor" stroke-width="2px" stroke-miterlimit="10" d="M111.46,121.3c-2.68,1.15-8.07-9.71-11.92-18.67-3.85-8.95-6.37-16.72-3.69-17.88,2.68-1.15,5.54,6.36,9.39,15.32,3.85,8.95,8.9,20.07,6.23,21.22Z"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M112.52,124.39h0c-2.18.92-4.7-.11-5.62-2.29l-12.57-29.88c-.49-1.17-.43-2.42.07-3.49.43-.93,1.2-1.7,2.22-2.13h0c1.01-.42,2.09-.43,3.04-.11,1.12.38,2.08,1.22,2.57,2.4l12.57,29.88c.92,2.18-.11,4.7-2.29,5.62Z"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M93.98,91.34c-3.54-.17-8.2-1.42-10.33-6.36s.49-11.06,4.52-12.69"/>
+    <polyline stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" points="93.5 70.82 97.04 79.22 91.05 81.74 87.51 73.33"/>
+    <path stroke-width="2px" stroke-miterlimit="10" fill="none" stroke="currentColor" d="M101.86,88.04c2.36-2.65,4.39-7.47,2.68-11.83-2.05-5.2-8.24-7.38-12.23-5.63"/>
+    <path fill="none" stroke="currentColor" stroke-width="2px" stroke-miterlimit="10" d="M102.97,79.78c.74,1.77-2.24,7.91-5.26,9.18-3.02,1.27-9.49-.39-10.24-2.16s4.95-1.64,7.97-2.91,6.78-5.88,7.52-4.11Z"/>
+  </g>
+</svg>

@@ -1,0 +1,20 @@
+<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M37.33,120.43c-.03-25.33-.22-10.39-.13-35.84,0-1.01-.12-7.35.89-10.91.4-1.42,2.21-3.62,4-4.63,3.57-2.02,8.68-1.79,13.15-1.87,4.23-.08,7.33,0,11.7.08"/>
+  <g>
+    <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M28.56,120.43c.04-24.65-.82-16.22-.18-43.04.14-5.93,4.34-13.62,10.99-16.37,1.59-.66,3.48-1.52,11.65-1.63,6.28-.08,12.98.17,16.34.21"/>
+    <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="66.24" y="59.59" width="3.32" height="7.67" rx=".62" ry=".62"/>
+    <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="69.76" y="63.31" width="4.46" height=".09" rx=".04" ry=".04"/>
+  </g>
+  <g>
+    <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M131.44,120.43c-.04-24.65.82-16.22.18-43.04-.14-5.93-4.34-13.62-10.99-16.37-1.59-.66-3.48-1.52-11.65-1.63-6.28-.08-12.98.17-16.34.21"/>
+    <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M122.67,120.43c.03-25.33.22-10.39.13-35.84,0-1.01.12-7.35-.89-10.91-.4-1.42-2.21-3.62-4-4.63-3.57-2.02-8.68-1.79-13.15-1.87-4.23-.08-7.33,0-11.7.08"/>
+    <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="90.91" y="59.57" width="3.32" height="7.67" rx=".62" ry=".62"/>
+    <rect fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" x="86.28" y="63.42" width="4.46" height=".09" rx=".04" ry=".04"/>
+  </g>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M80.99,77.06c0-.34,0,.11,0,.16l.04,9.62s0,.21,0,.11"/>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M80.85,39.69c0-.34,0,.11,0,.16l.04,9.62s0,.21,0,.11"/>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M72.78,75.58c.16-.3-.05.1-.08.14l-4.7,8.39s-.1.18-.05.09"/>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M95.32,43c.16-.3-.05.1-.08.14l-4.7,8.39s-.1.18-.05.09"/>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M89.48,75.5c-.14-.31.04.1.07.15l3.93,8.78s.08.19.04.1"/>
+  <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3px" d="M67.27,42.8c-.14-.31.04.1.07.15l3.93,8.78s.08.19.04.1"/>
+</svg>
