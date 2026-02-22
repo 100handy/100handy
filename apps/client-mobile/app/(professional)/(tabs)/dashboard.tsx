@@ -92,12 +92,17 @@ export default function ProfessionalDashboard() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([
-      fetchProfile(),
-      fetchVerificationStatus(),
-      fetchOnboardingProgress(),
-    ]);
-    setRefreshing(false);
+    try {
+      await Promise.all([
+        fetchProfile(),
+        fetchVerificationStatus(),
+        fetchOnboardingProgress(),
+      ]);
+    } catch (error) {
+      console.error('Error refreshing dashboard:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const fetchVerificationStatus = async () => {

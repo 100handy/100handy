@@ -24,6 +24,7 @@ import {
 import { useAuthStore, switchToProfessionalRole } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { useProfile } from '@shared/query';
+import { queryClient } from '@shared/query/queryClient';
 import { useRouter } from 'expo-router';
 import { useToast } from '@/components/ui/toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -65,8 +66,13 @@ export default function ProfileScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -95,6 +101,8 @@ export default function ProfileScreen() {
       }
 
       await checkAuth();
+      // Invalidate all queries after role switch to avoid stale data
+      queryClient.invalidateQueries();
 
       // Check if professional onboarding is completed
       const handyProfile = await getHandyProfile();
@@ -184,6 +192,12 @@ export default function ProfileScreen() {
           <Text className="text-red-500 text-center mb-4">
             {error instanceof Error ? error.message : 'Failed to load profile'}
           </Text>
+          <Pressable
+            onPress={() => refetch()}
+            className="bg-[#D17852] px-6 py-2.5 rounded-full"
+          >
+            <Text className="text-white font-medium">Retry</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -207,9 +221,11 @@ export default function ProfileScreen() {
             {/* Profile Info */}
             <View className="flex-row items-start mb-6">
               <Image
-                source={{ uri: profile?.avatar_url || 'https://i.pravatar.cc/150?u=default' }}
+                source={{ uri: profile?.avatar_url || undefined }}
+                placeholder={require('@/assets/images/icon.png')}
                 alt="User Avatar"
                 className="w-[72px] h-[72px] rounded-full"
+                transition={200}
               />
               <View className="flex-col ml-4 flex-1">
                 <Text className="text-white text-[32px] font-black leading-tight mb-1">

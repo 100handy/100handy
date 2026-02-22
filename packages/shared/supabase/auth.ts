@@ -224,8 +224,9 @@ function getRedirectUrl() {
   const isReactNative = typeof window !== 'undefined' && typeof window.document === 'undefined';
   
   if (isReactNative) {
-    // Mobile: use deep link scheme defined in app.json
-    return 'handy://auth/callback';
+    // Mobile: use deep link scheme from env or fall back to app.json scheme
+    const scheme = process.env.EXPO_PUBLIC_APP_SCHEME || 'handy';
+    return `${scheme}://auth/callback`;
   }
   
   // Web: use environment variable for production, fallback to current origin for development
