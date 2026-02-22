@@ -156,19 +156,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // Clear all stores to prevent data leaking between users
-      const { useProfileStore } = await import('./profile');
-      const { useBookingsStore } = await import('./bookings');
-      const { useProfessionalProfileStore } = await import('./professional-profile');
-      const { useLocationStore } = await import('./location');
-      const { useSupportStore } = await import('./support');
-      const { useTaskFormStore } = await import('./taskForm');
+      try {
+        const { useProfileStore } = await import('./profile');
+        const { useBookingsStore } = await import('./bookings');
+        const { useProfessionalProfileStore } = await import('./professional-profile');
+        const { useLocationStore } = await import('./location');
+        const { useSupportStore } = await import('./support');
+        const { useTaskFormStore } = await import('./taskForm');
+        const { usePendingBookingStore } = await import('./pending-booking');
 
-      useProfileStore.getState().reset();
-      useBookingsStore.getState().reset();
-      useProfessionalProfileStore.getState().clearProfile();
-      useLocationStore.getState().clearLocation();
-      useSupportStore.getState().reset();
-      useTaskFormStore.getState().reset();
+        useProfileStore.getState().reset();
+        useBookingsStore.getState().reset();
+        useProfessionalProfileStore.getState().clearProfile();
+        useLocationStore.getState().clearLocation();
+        useSupportStore.getState().reset();
+        useTaskFormStore.getState().reset();
+        usePendingBookingStore.getState().clearPendingBooking();
+      } catch (storeError) {
+        console.error('Error clearing stores on sign-out:', storeError);
+      }
 
       // Clear React Query cache
       queryClient.clear();

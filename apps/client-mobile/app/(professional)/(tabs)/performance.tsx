@@ -123,7 +123,7 @@ export default function PerformanceScreen() {
           </Text>
           <Pressable
             onPress={loadData}
-            className="bg-[#D17852] px-6 py-2.5 rounded-full"
+            className="bg-brand-terracotta px-6 py-2.5 rounded-full"
           >
             <Text className="text-white font-medium">Retry</Text>
           </Pressable>
@@ -145,7 +145,7 @@ export default function PerformanceScreen() {
         className="flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D17852" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#C1856A" />
         }
       >
         <View className="flex-col py-4">

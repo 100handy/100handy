@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Loader } from '@/components/ui/loader';
 import { View, Text, Pressable } from 'react-native';
@@ -15,22 +15,39 @@ import { supabase } from '@shared/supabase/supabaseClient';
  * Supabase automatically handles the session via the onAuthStateChange listener
  * in the auth store, so we just need to redirect the user appropriately.
  */
+
+const POLL_INTERVAL_MS = 300;
+const POLL_TIMEOUT_MS = 8000;
+
 export default function AuthCallback() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const type = params.type as string;
   const [error, setError] = useState<string | null>(null);
 
-  const processCallback = async () => {
+  const processCallback = useCallback(async () => {
     try {
-      // Wait for Supabase to process the deep link and update the session
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Poll for a valid session instead of using a fixed delay
+      const start = Date.now();
+      let session = null;
 
-      // Verify we have a valid session after processing
-      const { error: sessionError } = await supabase.auth.getSession();
+      while (Date.now() - start < POLL_TIMEOUT_MS) {
+        const { data, error: sessionError } = await supabase.auth.getSession();
 
-      if (sessionError) {
-        throw new Error(sessionError.message);
+        if (sessionError) {
+          throw new Error(sessionError.message);
+        }
+
+        if (data.session) {
+          session = data.session;
+          break;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+      }
+
+      if (!session) {
+        throw new Error('Session not available after authentication. Please try again.');
       }
 
       if (type === 'recovery') {
@@ -42,11 +59,11 @@ export default function AuthCallback() {
       console.error('Auth callback error:', err);
       setError(err instanceof Error ? err.message : 'Failed to complete sign in');
     }
-  };
+  }, [type, router]);
 
   useEffect(() => {
     processCallback();
-  }, []);
+  }, [processCallback]);
 
   const handleRetry = () => {
     setError(null);
@@ -56,15 +73,15 @@ export default function AuthCallback() {
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="text-lg font-medium text-[#333A31] mb-2 text-center">
+        <Text className="text-lg font-medium text-brand-dark mb-2 text-center">
           Something went wrong
         </Text>
-        <Text className="text-sm text-[#666666] text-center mb-6">
+        <Text className="text-sm text-gray-500 text-center mb-6">
           {error}
         </Text>
         <Pressable
           onPress={handleRetry}
-          className="bg-[#D17852] px-8 py-3 rounded-full mb-3"
+          className="bg-brand-terracotta px-8 py-3 rounded-full mb-3"
         >
           <Text className="text-white font-medium">Try Again</Text>
         </Pressable>
@@ -72,7 +89,7 @@ export default function AuthCallback() {
           onPress={() => router.replace('/(auth)/(client)')}
           className="px-8 py-3"
         >
-          <Text className="text-[#D17852] font-medium">Go to Sign In</Text>
+          <Text className="text-brand-terracotta font-medium">Go to Sign In</Text>
         </Pressable>
       </View>
     );

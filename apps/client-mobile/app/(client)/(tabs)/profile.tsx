@@ -157,7 +157,7 @@ export default function ProfileScreen() {
           </Text>
         </View>
         <View className="flex-1 items-center justify-center py-12">
-          <User size={64} color="#D17852" />
+          <User size={64} color="#C1856A" />
           <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
             Please sign in
           </Text>
@@ -166,7 +166,7 @@ export default function ProfileScreen() {
           </Text>
           <Pressable
             onPress={() => router.push('/(auth)/(client)')}
-            className="bg-[#D17852] px-8 py-3 rounded-full"
+            className="bg-brand-terracotta px-8 py-3 rounded-full"
           >
             <Text className="text-white font-medium">Sign In</Text>
           </Pressable>
@@ -194,7 +194,7 @@ export default function ProfileScreen() {
           </Text>
           <Pressable
             onPress={() => refetch()}
-            className="bg-[#D17852] px-6 py-2.5 rounded-full"
+            className="bg-brand-terracotta px-6 py-2.5 rounded-full"
           >
             <Text className="text-white font-medium">Retry</Text>
           </Pressable>
