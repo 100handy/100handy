@@ -190,7 +190,7 @@ export default function SelectTaskerScreen() {
       return {
         id: handyman.user_id,
         name: handyman.display_name || 'Handyman',
-        avatarUrl: handyman.avatar_url || `https://i.pravatar.cc/150?u=${handyman.user_id}`,
+        avatarUrl: handyman.avatar_url || '',
         rating: handyman.rating,
         reviewCount: handyman.review_count || 0,
         pricePerHour: handyman.hourly_rate_cents / 100,

@@ -43,7 +43,7 @@ export default function ConversationScreen() {
   const otherUserName = otherUser
     ? `${otherUser.first_name || ''} ${otherUser.last_name || ''}`.trim() || 'User'
     : 'User';
-  const otherUserAvatar = otherUser?.avatar_url || `https://i.pravatar.cc/150?u=${otherUser?.user_id}`;
+  const otherUserAvatar = otherUser?.avatar_url ?? undefined;
 
   // Mark messages as read when screen loads
   useEffect(() => {
@@ -114,7 +114,7 @@ export default function ConversationScreen() {
           {/* User Info */}
           <View className="flex-1 flex-row items-center">
             <Image
-              source={{ uri: otherUserAvatar }}
+              source={otherUserAvatar ? { uri: otherUserAvatar } : require('@/assets/images/icon.png')}
               className="w-10 h-10 rounded-full bg-gray-100"
             />
             <View className="flex-1 ml-3">

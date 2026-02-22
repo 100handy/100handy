@@ -32,7 +32,7 @@ export const ConversationItem = ({ conversation, onPress }: ConversationItemProp
     : 'User';
 
   // Get avatar
-  const avatarUrl = otherUser?.avatar_url || `https://i.pravatar.cc/150?u=${otherUser?.user_id}`;
+  const avatarUrl = otherUser?.avatar_url ?? undefined;
 
   return (
     <Pressable
@@ -42,7 +42,7 @@ export const ConversationItem = ({ conversation, onPress }: ConversationItemProp
       {/* Avatar */}
       <View className="relative">
         <Image
-          source={{ uri: avatarUrl }}
+          source={avatarUrl ? { uri: avatarUrl } : require('@/assets/images/icon.png')}
           className="w-14 h-14 rounded-full bg-gray-100"
         />
         {unreadCount > 0 && (

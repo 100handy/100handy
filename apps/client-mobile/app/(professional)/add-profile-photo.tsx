@@ -95,19 +95,19 @@ export default function AddProfilePhotoScreen() {
           <View className="flex-row justify-center gap-4">
             <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
               <Image
-                source={{ uri: 'https://i.pravatar.cc/150?img=33' }}
+                source={require('@/assets/images/icon.png')}
                 style={{ width: 96, height: 96 }}
               />
             </View>
             <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
               <Image
-                source={{ uri: 'https://i.pravatar.cc/150?img=47' }}
+                source={require('@/assets/images/icon.png')}
                 style={{ width: 96, height: 96 }}
               />
             </View>
             <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
               <Image
-                source={{ uri: 'https://i.pravatar.cc/150?img=29' }}
+                source={require('@/assets/images/icon.png')}
                 style={{ width: 96, height: 96 }}
               />
             </View>

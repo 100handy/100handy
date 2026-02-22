@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, MessageCircle, Calendar } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -72,7 +73,8 @@ export default function BookingSuccessScreen() {
           {/* Tasker Info */}
           <View className="flex-row items-center mb-4 pb-4 border-b border-gray-200">
             <Image
-              source={{ uri: taskerAvatar || 'https://i.pravatar.cc/150' }}
+              source={taskerAvatar ? { uri: taskerAvatar } : undefined}
+              placeholder={require('@/assets/images/icon.png')}
               className="w-12 h-12 rounded-full bg-gray-100 mr-3"
             />
             <View className="flex-col flex-1">

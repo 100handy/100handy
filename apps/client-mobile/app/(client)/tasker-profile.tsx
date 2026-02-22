@@ -150,7 +150,7 @@ export default function TaskerProfileScreen() {
           <View className="flex-row items-start mb-3">
             {/* Avatar */}
             <Image
-              source={{ uri: profile.avatar_url || `https://i.pravatar.cc/150?u=${profile.user_id}` }}
+              source={profile.avatar_url ? { uri: profile.avatar_url } : require('@/assets/images/icon.png')}
               className="w-[72px] h-[72px] rounded-full bg-gray-100 mr-3"
             />
 
@@ -319,7 +319,7 @@ export default function TaskerProfileScreen() {
                         <View className="flex-row flex-1 items-start gap-2.5">
                           {/* Reviewer Avatar */}
                           <Image
-                            source={{ uri: `https://i.pravatar.cc/150?u=${review.id}` }}
+                            source={require('@/assets/images/icon.png')}
                             className="w-12 h-12 rounded-full bg-gray-100"
                           />
 

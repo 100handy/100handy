@@ -70,7 +70,7 @@ export function getPastTaskersFromBookings(bookings: BookingWithRelations[]): Ta
       id: handyId,
       name: 'Tasker', // Placeholder - should be from profile
       specialty: categoryName,
-      avatarUrl: 'https://i.pravatar.cc/150?u=' + handyId,
+      avatarUrl: '',
       rating: 5.0, // Placeholder - should be from profile
       reviewCount: 0, // Placeholder - should be from profile
       location,
@@ -103,7 +103,7 @@ export function handymanProfileToTasker(
     id: handyman.user_id,
     name,
     specialty: specialty || 'General Services',
-    avatarUrl: handyman.avatar_url || `https://i.pravatar.cc/150?u=${handyman.user_id}`,
+    avatarUrl: handyman.avatar_url || '',
     rating: handyman.rating || 0,
     reviewCount: handyman.review_count || handyman.jobs_completed || 0,
     location,

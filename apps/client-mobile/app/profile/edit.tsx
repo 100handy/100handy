@@ -124,7 +124,7 @@ export default function EditProfile() {
           <View className="flex-col items-center space-y-4">
             <View className="relative">
               <Image
-                source={{ uri: formData.avatar_url || 'https://i.pravatar.cc/150?u=default' }}
+                source={formData.avatar_url ? { uri: formData.avatar_url } : require('@/assets/images/icon.png')}
                 alt="Profile Picture"
                 className="w-24 h-24 rounded-full"
               />

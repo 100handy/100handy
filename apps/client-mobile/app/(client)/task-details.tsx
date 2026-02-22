@@ -74,7 +74,7 @@ export default function TaskDetailsScreen() {
           {/* Tasker Info Section */}
           <View className="flex-row items-start mb-6">
             <Image
-              source={{ uri: profile?.avatar_url || `https://i.pravatar.cc/150?u=${taskerId}` }}
+              source={profile?.avatar_url ? { uri: profile.avatar_url } : require('@/assets/images/icon.png')}
               className="w-16 h-16 rounded-full bg-gray-100 mr-3"
             />
             <View className="flex-col flex-1">
