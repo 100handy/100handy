@@ -197,7 +197,7 @@ export default function DirectDepositScreen() {
       case 'loading':
         return (
           <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#B8926A" />
+            <ActivityIndicator size="large" color="#B29D88" />
             <Text className="font-worksans text-gray-600 mt-4">Loading...</Text>
           </View>
         );
@@ -212,7 +212,7 @@ export default function DirectDepositScreen() {
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
-                tintColor="#B8926A"
+                tintColor="#B29D88"
               />
             }
           >
@@ -273,7 +273,7 @@ export default function DirectDepositScreen() {
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
-                tintColor="#B8926A"
+                tintColor="#B29D88"
               />
             }
           >
@@ -331,7 +331,7 @@ export default function DirectDepositScreen() {
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
-                tintColor="#B8926A"
+                tintColor="#B29D88"
               />
             }
           >

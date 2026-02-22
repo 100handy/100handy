@@ -48,7 +48,7 @@ export default function AddProfilePhotoModal({
             <Pressable onPress={onClose} className="mr-4">
               <ChevronLeft size={24} color="#000" />
             </Pressable>
-            <Text className="text-lg font-semibold text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
+            <Text className="text-lg font-semibold text-brand-dark" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
               Add profile photo
             </Text>
           </View>
@@ -56,7 +56,7 @@ export default function AddProfilePhotoModal({
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
             <View className="px-5 py-8 gap-6 flex-col">
               {/* Title */}
-              <Text className="text-xl font-semibold text-center text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
+              <Text className="text-xl font-semibold text-center text-brand-dark" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
                 Show off your best self!
               </Text>
 
@@ -84,7 +84,7 @@ export default function AddProfilePhotoModal({
 
               {/* Tips */}
               <View className="gap-4 flex-col">
-                <Text className="text-center text-sm text-[#333A31]" style={{ fontFamily: 'WorkSans_400Regular' }}>
+                <Text className="text-center text-sm text-brand-dark" style={{ fontFamily: 'WorkSans_400Regular' }}>
                   A great photo increases your chances of being hired. Some tips:
                 </Text>
 
@@ -104,9 +104,9 @@ export default function AddProfilePhotoModal({
               {/* Add Photo Button */}
               <Pressable
                 onPress={handleAddPhoto}
-                className="mx-5 mt-4 py-4 rounded-full border-2 border-[#D17852] items-center"
+                className="mx-5 mt-4 py-4 rounded-full border-2 border-brand-terracotta items-center"
               >
-                <Text className="text-base font-medium text-[#D17852]" style={{ fontFamily: 'WorkSans_500Medium' }}>
+                <Text className="text-base font-medium text-brand-terracotta" style={{ fontFamily: 'WorkSans_500Medium' }}>
                   Add Photo
                 </Text>
               </Pressable>
@@ -117,7 +117,7 @@ export default function AddProfilePhotoModal({
           {showOptions && (
             <View className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg">
               <View className="px-6 py-8 gap-6 flex-col">
-                <Text className="text-xl font-semibold text-[#333A31]" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
+                <Text className="text-xl font-semibold text-brand-dark" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
                   Select a Photo
                 </Text>
 
@@ -125,7 +125,7 @@ export default function AddProfilePhotoModal({
                   {/* Library Button */}
                   <Pressable
                     onPress={() => handleSelectOption('library')}
-                    className="flex-1 py-4 bg-[#D17852] rounded-full items-center"
+                    className="flex-1 py-4 bg-brand-terracotta rounded-full items-center"
                   >
                     <Text className="text-base font-medium text-white" style={{ fontFamily: 'WorkSans_500Medium' }}>
                       Library
@@ -135,9 +135,9 @@ export default function AddProfilePhotoModal({
                   {/* Take a photo Button */}
                   <Pressable
                     onPress={() => handleSelectOption('camera')}
-                    className="flex-1 py-4 rounded-full border-2 border-[#D17852] items-center"
+                    className="flex-1 py-4 rounded-full border-2 border-brand-terracotta items-center"
                   >
-                    <Text className="text-base font-medium text-[#D17852]" style={{ fontFamily: 'WorkSans_500Medium' }}>
+                    <Text className="text-base font-medium text-brand-terracotta" style={{ fontFamily: 'WorkSans_500Medium' }}>
                       Take a photo
                     </Text>
                   </Pressable>

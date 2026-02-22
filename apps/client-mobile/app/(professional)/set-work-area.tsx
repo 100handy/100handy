@@ -156,7 +156,7 @@ export default function SetWorkAreaScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#047857" />
-          <Text className="text-[#30352D] text-lg mt-4">Loading...</Text>
+          <Text className="text-brand-dark-alt text-lg mt-4">Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -165,7 +165,7 @@ export default function SetWorkAreaScreen() {
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      <SafeAreaView edges={['top']} className={`z-10 ${isReviewing ? 'bg-[#E8F5E9]' : 'bg-transparent'}`}>
+      <SafeAreaView edges={['top']} className={`z-10 ${isReviewing ? 'bg-green-50' : 'bg-transparent'}`}>
         <View className="px-6 py-4 flex-row items-center justify-between">
           {!isReviewing ? (
             <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full bg-white shadow-sm">
@@ -176,7 +176,7 @@ export default function SetWorkAreaScreen() {
           )}
 
           {isReviewing && (
-            <Text className="text-[#30352D] text-lg font-worksans-medium">Reviewing work area</Text>
+            <Text className="text-brand-dark-alt text-lg font-worksans-medium">Reviewing work area</Text>
           )}
 
           <View className="w-10" />
@@ -239,7 +239,7 @@ export default function SetWorkAreaScreen() {
           <View className="flex-row justify-end mb-6">
             {isDrawingMode ? (
               <View className="bg-white rounded-full shadow-lg px-6 py-3 flex-row items-center gap-2">
-                <Text className="text-[#30352D] font-worksans-medium">Draw on map</Text>
+                <Text className="text-brand-dark-alt font-worksans-medium">Draw on map</Text>
               </View>
             ) : (
               <Pressable
@@ -247,7 +247,7 @@ export default function SetWorkAreaScreen() {
                 className="bg-white rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2"
               >
                 <Hand size={20} color="#047857" />
-                <Text className="text-[#047857] font-worksans-bold text-base">Draw area</Text>
+                <Text className="text-emerald-700 font-worksans-bold text-base">Draw area</Text>
               </Pressable>
             )}
           </View>
@@ -261,14 +261,14 @@ export default function SetWorkAreaScreen() {
               className="bg-white rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2"
             >
               <X size={20} color="#047857" />
-              <Text className="text-[#047857] font-worksans-bold text-base">Clear</Text>
+              <Text className="text-emerald-700 font-worksans-bold text-base">Clear</Text>
             </Pressable>
           </View>
         )}
 
         {/* Save Button */}
         <Button
-          className={`rounded-full shadow-sm h-[56px] ${isReviewing && !isSaving ? 'bg-[#047857]' : 'bg-gray-300'}`}
+          className={`rounded-full shadow-sm h-[56px] ${isReviewing && !isSaving ? 'bg-emerald-700' : 'bg-gray-300'}`}
           onPress={handleSave}
           isDisabled={!isReviewing || isSaving}
         >

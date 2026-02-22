@@ -160,8 +160,8 @@ export default function ProfessionalAccountSecurityScreen() {
               {/* Email Display */}
               <View className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <View className="flex-row items-center gap-3">
-                  <View className="w-12 h-12 bg-[#B8926A]/10 rounded-full items-center justify-center">
-                    <Mail size={24} color="#B8926A" />
+                  <View className="w-12 h-12 bg-brand-taupe/10 rounded-full items-center justify-center">
+                    <Mail size={24} color="#B29D88" />
                   </View>
                   <View className="flex-col flex-1">
                     <Text className="text-sm font-worksans text-gray-500 mb-1">Verification codes sent to</Text>
@@ -215,8 +215,8 @@ export default function ProfessionalAccountSecurityScreen() {
               {/* Email Display */}
               <View className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <View className="flex-row items-center gap-3">
-                  <View className="w-12 h-12 bg-[#B8926A]/10 rounded-full items-center justify-center">
-                    <Mail size={24} color="#B8926A" />
+                  <View className="w-12 h-12 bg-brand-taupe/10 rounded-full items-center justify-center">
+                    <Mail size={24} color="#B29D88" />
                   </View>
                   <View className="flex-col flex-1">
                     <Text className="text-sm font-worksans text-gray-500 mb-1">Verification code will be sent to</Text>
@@ -236,7 +236,7 @@ export default function ProfessionalAccountSecurityScreen() {
 
               {/* Send Code Button */}
               <Pressable
-                className={`rounded-full py-4 items-center ${isLoading ? 'bg-gray-300' : 'bg-[#B8926A]'}`}
+                className={`rounded-full py-4 items-center ${isLoading ? 'bg-gray-300' : 'bg-brand-taupe'}`}
                 onPress={handleSendCode}
                 disabled={isLoading}
               >

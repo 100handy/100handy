@@ -11,8 +11,8 @@ export default function ProfessionalTabLayout() {
           borderTopWidth: 1,
           borderTopColor: '#e5e5e5',
         },
-        tabBarActiveTintColor: '#D17852',
-        tabBarInactiveTintColor: '#B8926A',
+        tabBarActiveTintColor: '#C1856A',
+        tabBarInactiveTintColor: '#B29D88',
       }}
     >
       <Tabs.Screen

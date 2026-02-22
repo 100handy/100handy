@@ -71,19 +71,19 @@ const welcomeScreens: WelcomeScreen[] = [
         </Text>
         <View className="gap-3 flex-col">
           <View className="items-start gap-3 flex-row">
-            <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
+            <Text className="text-brand-taupe text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Show your business's potential.
             </Text>
           </View>
           <View className="items-start gap-3 flex-row">
-            <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
+            <Text className="text-brand-taupe text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Give you a snapshot of how you stack up against other Taskers.
             </Text>
           </View>
           <View className="items-start gap-3 flex-row">
-            <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
+            <Text className="text-brand-taupe text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Allow you insight into your performance and give tips on helping you achieve your goals.
             </Text>
@@ -106,19 +106,19 @@ const welcomeScreens: WelcomeScreen[] = [
         </Text>
         <View className="gap-3 flex-col">
           <View className="items-start gap-3 flex-row">
-            <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
+            <Text className="text-brand-taupe text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Learn how to level up
             </Text>
           </View>
           <View className="items-start gap-3 flex-row">
-            <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
+            <Text className="text-brand-taupe text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               See where you place among your peers
             </Text>
           </View>
           <View className="items-start gap-3 flex-row">
-            <Text className="text-[#B8926A] text-lg mt-0.5">•</Text>
+            <Text className="text-brand-taupe text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
               Keep a better pulse on your business
             </Text>
@@ -224,7 +224,7 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
                     <View
                       key={index}
                       className={`w-2 h-2 rounded-full ${
-                        index === currentStep ? 'bg-[#B8926A]' : 'bg-white opacity-30'
+                        index === currentStep ? 'bg-brand-taupe' : 'bg-white opacity-30'
                       }`}
                     />
                   ))}
@@ -234,7 +234,7 @@ export default function AnalyticsWelcome({ onComplete, onSkip }: AnalyticsWelcom
                 {isLastScreen && (
                   <Pressable
                     onPress={handleGotIt}
-                    className="bg-[#B8926A] rounded-full px-8 py-4"
+                    className="bg-brand-taupe rounded-full px-8 py-4"
                   >
                     <Text className="text-white text-lg font-bold">
                       Got it

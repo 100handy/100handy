@@ -187,7 +187,7 @@ export default function ProfessionalDashboard() {
 
   const onboardingTasks = [
     {
-      icon: <ShieldCheck color={isAccountVerified ? "#6B7B6B" : isVerificationSubmitted ? "#856404" : "#D17852"} size={28} strokeWidth={1.5} />,
+      icon: <ShieldCheck color={isAccountVerified ? "#6B7B6B" : isVerificationSubmitted ? "#856404" : "#C1856A"} size={28} strokeWidth={1.5} />,
       title: 'Verify your identity',
       duration: isVerificationSubmitted ? 'Under review' : '5 MIN',
       completed: isAccountVerified,
@@ -199,7 +199,7 @@ export default function ProfessionalDashboard() {
       },
     },
     {
-      icon: <DollarSign color={hasActiveSkill ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
+      icon: <DollarSign color={hasActiveSkill ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
       title: 'Name your price',
       duration: '4 MIN PER SKILL',
       completed: hasActiveSkill,
@@ -209,7 +209,7 @@ export default function ProfessionalDashboard() {
       },
     },
     {
-      icon: <Landmark color={hasDirectDeposit ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
+      icon: <Landmark color={hasDirectDeposit ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
       title: 'Set up direct deposit',
       duration: '2 MIN',
       completed: hasDirectDeposit,
@@ -219,7 +219,7 @@ export default function ProfessionalDashboard() {
       },
     },
     {
-      icon: <Smile color={hasProfilePhoto ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
+      icon: <Smile color={hasProfilePhoto ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
       title: 'Upload a profile photo',
       duration: '2 MIN',
       completed: hasProfilePhoto,
@@ -229,7 +229,7 @@ export default function ProfessionalDashboard() {
       },
     },
     {
-      icon: <Calendar color={hasAvailability ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
+      icon: <Calendar color={hasAvailability ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
       title: 'Set availability',
       duration: '4 MIN',
       completed: hasAvailability,
@@ -239,7 +239,7 @@ export default function ProfessionalDashboard() {
       },
     },
     {
-      icon: <MapPin color={hasWorkArea ? "#6B7B6B" : "#D17852"} size={28} strokeWidth={1.5} />,
+      icon: <MapPin color={hasWorkArea ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
       title: 'Set work area',
       duration: '4 MIN',
       completed: hasWorkArea,
@@ -327,10 +327,10 @@ export default function ProfessionalDashboard() {
           <View className="flex-row items-start space-x-3 flex-1">
             <AlertTriangle color="#30352D" size={26} strokeWidth={2} />
             <View className="flex-col flex-1 ml-3">
-              <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-1">
+              <Text className="font-worksans-bold text-[16px] text-brand-dark-alt mb-1">
                 Your account isn't live yet!
               </Text>
-              <Text className="font-worksans text-[11px] text-[#333a31] leading-[15px]">
+              <Text className="font-worksans text-[11px] text-brand-dark leading-[15px]">
                 {isVerifying || stripeLoading
                   ? 'Starting verification...'
                   : 'Tap here to verify your identity and activate your account.'}
@@ -360,7 +360,7 @@ export default function ProfessionalDashboard() {
                     style={{ width: 62, height: 62 }}
                   />
                 ) : (
-                  <View className="w-full h-full items-center justify-center bg-[#D17852]/30">
+                  <View className="w-full h-full items-center justify-center bg-brand-terracotta/30">
                     <Text className="font-worksans-bold text-2xl text-white">
                       {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'}
                     </Text>
@@ -388,16 +388,16 @@ export default function ProfessionalDashboard() {
         className="flex-1 bg-white"
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D17852" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#C1856A" />
         }
       >
         <View className="flex-col px-5 pt-5 pb-3">
-          <Text className="font-worksans-bold text-[18px] text-[#30352D] mb-2.5">
+          <Text className="font-worksans-bold text-[18px] text-brand-dark-alt mb-2.5">
             Onboarding progress ({completedTasks}/{totalTasks})
           </Text>
           <View className="h-[3px] bg-[#E5E5E5] rounded-full overflow-hidden">
             <View
-              className="h-full bg-[#E67A3D]"
+              className="h-full bg-orange-500"
               style={{ width: `${progressPercent}%` }}
             />
           </View>

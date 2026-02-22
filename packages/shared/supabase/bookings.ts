@@ -634,12 +634,13 @@ export async function getCompletedBookingsForHandy(
  * Accept a pending booking request
  * Changes status from 'pending' to 'accepted'
  */
-export async function acceptBooking(bookingId: string): Promise<boolean> {
+export async function acceptBooking(bookingId: string, handyId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from('bookings')
       .update({ status: 'accepted' })
       .eq('id', bookingId)
+      .eq('handy_id', handyId)
       .eq('status', 'pending') // Only accept if currently pending
       .select();
 
@@ -673,6 +674,7 @@ export async function acceptBooking(bookingId: string): Promise<boolean> {
  */
 export async function declineBooking(
   bookingId: string,
+  handyId: string,
   reason?: string
 ): Promise<boolean> {
   try {
@@ -681,6 +683,7 @@ export async function declineBooking(
       .from('bookings')
       .select('payment_intent_id, payment_status')
       .eq('id', bookingId)
+      .eq('handy_id', handyId)
       .single();
 
     if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
@@ -727,6 +730,7 @@ export async function declineBooking(
       .from('bookings')
       .update(updateData)
       .eq('id', bookingId)
+      .eq('handy_id', handyId)
       .eq('status', 'pending') // Only decline if currently pending
       .select();
 
@@ -757,7 +761,7 @@ export async function declineBooking(
  * Start a job (mark as in progress)
  * Changes status from 'accepted' to 'in_progress'
  */
-export async function startBooking(bookingId: string): Promise<boolean> {
+export async function startBooking(bookingId: string, handyId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from('bookings')
@@ -766,6 +770,7 @@ export async function startBooking(bookingId: string): Promise<boolean> {
         started_at: new Date().toISOString(),
       })
       .eq('id', bookingId)
+      .eq('handy_id', handyId)
       .eq('status', 'accepted') // Only start if currently accepted
       .select();
 
@@ -799,6 +804,7 @@ export async function startBooking(bookingId: string): Promise<boolean> {
  */
 export async function completeBooking(
   bookingId: string,
+  handyId: string,
   options?: { processPayment?: boolean }
 ): Promise<{
   success: boolean;
@@ -812,6 +818,7 @@ export async function completeBooking(
       .from('bookings')
       .select('id, payment_intent_id, payment_status, status')
       .eq('id', bookingId)
+      .eq('handy_id', handyId)
       .single();
 
     if (fetchError || !booking) {
@@ -830,6 +837,7 @@ export async function completeBooking(
         completed_at: new Date().toISOString(),
       })
       .eq('id', bookingId)
+      .eq('handy_id', handyId)
       .eq('status', 'in_progress');
 
     if (updateError) {

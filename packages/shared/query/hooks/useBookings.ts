@@ -217,8 +217,9 @@ export function useAcceptBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (bookingId: string) => acceptBooking(bookingId),
-    onSuccess: (success, bookingId) => {
+    mutationFn: ({ bookingId, handyId }: { bookingId: string; handyId: string }) =>
+      acceptBooking(bookingId, handyId),
+    onSuccess: (success, { bookingId }) => {
       if (success) {
         // Invalidate all booking lists to refresh data
         queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
@@ -236,8 +237,8 @@ export function useDeclineBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ bookingId, reason }: { bookingId: string; reason?: string }) =>
-      declineBooking(bookingId, reason),
+    mutationFn: ({ bookingId, handyId, reason }: { bookingId: string; handyId: string; reason?: string }) =>
+      declineBooking(bookingId, handyId, reason),
     onSuccess: (success, { bookingId }) => {
       if (success) {
         queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
@@ -255,8 +256,9 @@ export function useStartBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (bookingId: string) => startBooking(bookingId),
-    onSuccess: (success, bookingId) => {
+    mutationFn: ({ bookingId, handyId }: { bookingId: string; handyId: string }) =>
+      startBooking(bookingId, handyId),
+    onSuccess: (success, { bookingId }) => {
       if (success) {
         queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
         queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) });
@@ -275,11 +277,13 @@ export function useCompleteBooking() {
   return useMutation({
     mutationFn: ({
       bookingId,
+      handyId,
       processPayment = true,
     }: {
       bookingId: string;
+      handyId: string;
       processPayment?: boolean;
-    }) => completeBooking(bookingId, { processPayment }),
+    }) => completeBooking(bookingId, handyId, { processPayment }),
     onSuccess: (result, { bookingId }) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });

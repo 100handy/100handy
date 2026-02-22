@@ -39,7 +39,7 @@ export default function AccountDetailScreen() {
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#D17852" />
+        <ActivityIndicator size="large" color="#C1856A" />
       </SafeAreaView>
     );
   }
@@ -63,7 +63,7 @@ export default function AccountDetailScreen() {
           Account detail
         </Text>
         <Pressable className="w-10 items-end" onPress={handleEdit}>
-          <Edit3 color="#B8926A" size={24} strokeWidth={1.5} />
+          <Edit3 color="#B29D88" size={24} strokeWidth={1.5} />
         </Pressable>
       </View>
 
@@ -81,8 +81,8 @@ export default function AccountDetailScreen() {
                 style={{ width: 120, height: 120 }}
               />
             ) : (
-              <View className="w-full h-full items-center justify-center bg-[#D17852]/20">
-                <Text className="font-worksans-bold text-4xl text-[#D17852]">
+              <View className="w-full h-full items-center justify-center bg-brand-terracotta/20">
+                <Text className="font-worksans-bold text-4xl text-brand-terracotta">
                   {profile?.first_name?.[0] || '?'}
                 </Text>
               </View>

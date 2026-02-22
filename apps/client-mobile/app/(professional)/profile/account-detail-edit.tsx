@@ -173,7 +173,7 @@ export default function AccountDetailEditScreen() {
             onPress={handleSave}
             disabled={isSaving}
           >
-            <Text className={`font-worksans-semibold text-base ${isSaving ? 'text-gray-400' : 'text-[#B8926A]'}`}>
+            <Text className={`font-worksans-semibold text-base ${isSaving ? 'text-gray-400' : 'text-brand-taupe'}`}>
               {isSaving ? 'Saving...' : 'Save'}
             </Text>
           </Pressable>
@@ -202,8 +202,8 @@ export default function AccountDetailEditScreen() {
                   </Pressable>
                 </>
               ) : (
-                <View className="w-full h-full items-center justify-center bg-[#D17852]/20">
-                  <Text className="font-worksans-bold text-4xl text-[#D17852]">
+                <View className="w-full h-full items-center justify-center bg-brand-terracotta/20">
+                  <Text className="font-worksans-bold text-4xl text-brand-terracotta">
                     {formData.first_name?.[0] || '?'}
                   </Text>
                 </View>
@@ -214,8 +214,8 @@ export default function AccountDetailEditScreen() {
               onPress={showPhotoOptions}
               className="flex-row items-center gap-2"
             >
-              <Camera size={20} color="#B8926A" />
-              <Text className="font-worksans-semibold text-base text-[#B8926A]">
+              <Camera size={20} color="#B29D88" />
+              <Text className="font-worksans-semibold text-base text-brand-taupe">
                 {selectedImage ? 'Change Photo' : 'Add Photo'}
               </Text>
             </Pressable>

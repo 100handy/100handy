@@ -37,6 +37,7 @@ import {
   useHasReviewedBooking,
   useRetryPayment,
   useConversationByBooking,
+  useAuthStore,
   supabase,
 } from '@shared/supabase';
 import { getBookingPaymentDetails } from '@shared/supabase/payments';
@@ -57,7 +58,7 @@ function InfoRow({
         <Text className="font-worksans text-[12px] text-[#6B6B6B] mb-1">
           {label}
         </Text>
-        <Text className="font-worksans-medium text-[15px] text-[#30352D]">
+        <Text className="font-worksans-medium text-[15px] text-brand-dark-alt">
           {value}
         </Text>
       </View>
@@ -81,14 +82,14 @@ function ActionButton({
   icon?: React.ReactNode;
 }) {
   const bgColor = {
-    primary: 'bg-[#B8926A]',
-    secondary: 'bg-white border border-[#B8926A]',
+    primary: 'bg-brand-taupe',
+    secondary: 'bg-white border border-brand-taupe',
     danger: 'bg-white border border-[#D32F2F]',
   }[variant];
 
   const textColor = {
     primary: 'text-white',
-    secondary: 'text-[#B8926A]',
+    secondary: 'text-brand-taupe',
     danger: 'text-[#D32F2F]',
   }[variant];
 
@@ -101,7 +102,7 @@ function ActionButton({
       }`}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : '#B8926A'} />
+        <ActivityIndicator color={variant === 'primary' ? '#fff' : '#B29D88'} />
       ) : (
         <>
           {icon && <View className="mr-2">{icon}</View>}
@@ -117,6 +118,7 @@ function ActionButton({
 export default function JobDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuthStore();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const { data: booking, isLoading, error, refetch } = useBookingById(id || null);
@@ -214,10 +216,10 @@ export default function JobDetailsScreen() {
   };
 
   const handleAccept = async () => {
-    if (!id) return;
+    if (!id || !user?.id) return;
     setActionLoading('accept');
     try {
-      const success = await acceptMutation.mutateAsync(id);
+      const success = await acceptMutation.mutateAsync({ bookingId: id, handyId: user.id });
       if (success) {
         toast.success('Job accepted!');
         router.back();
@@ -241,11 +243,12 @@ export default function JobDetailsScreen() {
           text: 'Decline',
           style: 'destructive',
           onPress: async () => {
-            if (!id) return;
+            if (!id || !user?.id) return;
             setActionLoading('decline');
             try {
               const success = await declineMutation.mutateAsync({
                 bookingId: id,
+                handyId: user.id,
                 reason: 'Declined by professional',
               });
               if (success) {
@@ -266,10 +269,10 @@ export default function JobDetailsScreen() {
   };
 
   const handleStart = async () => {
-    if (!id) return;
+    if (!id || !user?.id) return;
     setActionLoading('start');
     try {
-      const success = await startMutation.mutateAsync(id);
+      const success = await startMutation.mutateAsync({ bookingId: id, handyId: user.id });
       if (success) {
         toast.success('Job started!');
       } else {
@@ -291,11 +294,12 @@ export default function JobDetailsScreen() {
         {
           text: 'Complete',
           onPress: async () => {
-            if (!id) return;
+            if (!id || !user?.id) return;
             setActionLoading('complete');
             try {
               const result = await completeMutation.mutateAsync({
                 bookingId: id,
+                handyId: user.id,
                 processPayment: true,
               });
               if (result.success) {
@@ -340,7 +344,7 @@ export default function JobDetailsScreen() {
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-[#F5F5F5] items-center justify-center">
-        <ActivityIndicator size="large" color="#B8926A" />
+        <ActivityIndicator size="large" color="#B29D88" />
         <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-4">
           Loading job details...
         </Text>
@@ -358,7 +362,7 @@ export default function JobDetailsScreen() {
         </View>
         <View className="flex-1 items-center justify-center px-8">
           <XCircle color="#D32F2F" size={48} strokeWidth={1.5} />
-          <Text className="font-worksans-bold text-[18px] text-[#30352D] mt-4 text-center">
+          <Text className="font-worksans-bold text-[18px] text-brand-dark-alt mt-4 text-center">
             Job not found
           </Text>
           <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-2 text-center">
@@ -371,7 +375,7 @@ export default function JobDetailsScreen() {
 
   const estimatedEarnings = ((booking.hourly_rate_cents || 0) * (booking.estimated_hours || 0)) / 100;
   const statusLabels: Record<string, { label: string; color: string }> = {
-    pending: { label: 'Pending Approval', color: '#B8926A' },
+    pending: { label: 'Pending Approval', color: '#B29D88' },
     accepted: { label: 'Accepted', color: '#2E7D32' },
     in_progress: { label: 'In Progress', color: '#1565C0' },
     completed: { label: 'Completed', color: '#6B6B6B' },
@@ -387,7 +391,7 @@ export default function JobDetailsScreen() {
         <Pressable onPress={() => router.back()} className="p-2 -ml-2">
           <ArrowLeft color="#30352D" size={24} />
         </Pressable>
-        <Text className="font-worksans-bold text-[18px] text-[#30352D] ml-2 flex-1">
+        <Text className="font-worksans-bold text-[18px] text-brand-dark-alt ml-2 flex-1">
           Job Details
         </Text>
         {/* Status Badge */}
@@ -407,7 +411,7 @@ export default function JobDetailsScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Task Info Card */}
         <View className="bg-white mx-4 mt-4 p-4 rounded-2xl">
-          <Text className="font-worksans-bold text-[20px] text-[#30352D] mb-1">
+          <Text className="font-worksans-bold text-[20px] text-brand-dark-alt mb-1">
             {booking.task_title}
           </Text>
           {booking.category && (
@@ -419,25 +423,25 @@ export default function JobDetailsScreen() {
 
         {/* Details Card */}
         <View className="bg-white mx-4 mt-3 p-4 rounded-2xl">
-          <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-2">
+          <Text className="font-worksans-bold text-[16px] text-brand-dark-alt mb-2">
             Job Details
           </Text>
 
           <InfoRow
-            icon={<Calendar color="#B8926A" size={18} strokeWidth={1.5} />}
+            icon={<Calendar color="#B29D88" size={18} strokeWidth={1.5} />}
             label="Date"
             value={formatDate(booking.scheduled_date)}
           />
 
           <InfoRow
-            icon={<Clock color="#B8926A" size={18} strokeWidth={1.5} />}
+            icon={<Clock color="#B29D88" size={18} strokeWidth={1.5} />}
             label="Time"
             value={formatTime(booking.scheduled_time)}
           />
 
           <Pressable onPress={handleOpenMaps}>
             <InfoRow
-              icon={<MapPin color="#B8926A" size={18} strokeWidth={1.5} />}
+              icon={<MapPin color="#B29D88" size={18} strokeWidth={1.5} />}
               label="Location"
               value={
                 booking.address
@@ -452,7 +456,7 @@ export default function JobDetailsScreen() {
           </Pressable>
 
           <InfoRow
-            icon={<DollarSign color="#B8926A" size={18} strokeWidth={1.5} />}
+            icon={<DollarSign color="#B29D88" size={18} strokeWidth={1.5} />}
             label="Estimated Earnings"
             value={`£${estimatedEarnings.toFixed(2)} (${booking.estimated_hours}h at £${(
               booking.hourly_rate_cents / 100
@@ -464,12 +468,12 @@ export default function JobDetailsScreen() {
         {booking.task_details && (
           <View className="bg-white mx-4 mt-3 p-4 rounded-2xl">
             <View className="flex-row items-center mb-3">
-              <FileText color="#B8926A" size={18} strokeWidth={1.5} />
-              <Text className="font-worksans-bold text-[16px] text-[#30352D] ml-2">
+              <FileText color="#B29D88" size={18} strokeWidth={1.5} />
+              <Text className="font-worksans-bold text-[16px] text-brand-dark-alt ml-2">
                 Task Description
               </Text>
             </View>
-            <Text className="font-worksans text-[14px] text-[#30352D] leading-5">
+            <Text className="font-worksans text-[14px] text-brand-dark-alt leading-5">
               {booking.task_details}
             </Text>
           </View>
@@ -478,8 +482,8 @@ export default function JobDetailsScreen() {
         {/* Customer Card */}
         <View className="bg-white mx-4 mt-3 mb-6 p-4 rounded-2xl">
           <View className="flex-row items-center mb-3">
-            <User color="#B8926A" size={18} strokeWidth={1.5} />
-            <Text className="font-worksans-bold text-[16px] text-[#30352D] ml-2">
+            <User color="#B29D88" size={18} strokeWidth={1.5} />
+            <Text className="font-worksans-bold text-[16px] text-brand-dark-alt ml-2">
               Customer
             </Text>
           </View>
@@ -493,7 +497,7 @@ export default function JobDetailsScreen() {
               </Text>
             </View>
             <View className="flex-1 ml-3">
-              <Text className="font-worksans-medium text-[15px] text-[#30352D]">
+              <Text className="font-worksans-medium text-[15px] text-brand-dark-alt">
                 {customerProfile?.first_name
                   ? `${customerProfile.first_name}${customerProfile.last_name ? ` ${customerProfile.last_name.charAt(0)}.` : ''}`
                   : 'Customer'}
@@ -524,7 +528,7 @@ export default function JobDetailsScreen() {
                 }}
               >
                 <MessageCircle color="#30352D" size={18} strokeWidth={1.5} />
-                <Text className="font-worksans-medium text-[14px] text-[#30352D] ml-2">
+                <Text className="font-worksans-medium text-[14px] text-brand-dark-alt ml-2">
                   Message
                 </Text>
               </Pressable>
@@ -539,7 +543,7 @@ export default function JobDetailsScreen() {
                 }}
               >
                 <Phone color="#30352D" size={18} strokeWidth={1.5} />
-                <Text className="font-worksans-medium text-[14px] text-[#30352D] ml-2">
+                <Text className="font-worksans-medium text-[14px] text-brand-dark-alt ml-2">
                   Call
                 </Text>
               </Pressable>
@@ -613,13 +617,13 @@ export default function JobDetailsScreen() {
               onPress={handleLeaveReview}
               label="Rate Client"
               variant="secondary"
-              icon={<Star color="#B8926A" size={18} />}
+              icon={<Star color="#B29D88" size={18} />}
             />
           )}
 
           {booking.status === 'completed' && hasReviewed && (
             <View className="flex-row items-center justify-center py-2">
-              <Star color="#B8926A" size={18} fill="#B8926A" />
+              <Star color="#B29D88" size={18} fill="#B29D88" />
               <Text className="font-worksans text-[14px] text-[#6B6B6B] ml-2">
                 You've rated this client
               </Text>

@@ -152,7 +152,7 @@ export default function WorkAreaTab() {
       <SafeAreaView className="flex-1 bg-white" edges={['top']}>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#4A5347" />
-          <Text className="text-[#30352D] text-lg mt-4 font-worksans">Loading...</Text>
+          <Text className="text-brand-dark-alt text-lg mt-4 font-worksans">Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -161,9 +161,9 @@ export default function WorkAreaTab() {
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      <SafeAreaView edges={['top']} className={`z-10 ${isReviewing ? 'bg-[#E8F5E9]' : 'bg-white'}`}>
+      <SafeAreaView edges={['top']} className={`z-10 ${isReviewing ? 'bg-green-50' : 'bg-white'}`}>
         <View className="px-6 py-4 flex-row items-center justify-center">
-          <Text className="text-[#30352D] text-lg font-worksans-bold">
+          <Text className="text-brand-dark-alt text-lg font-worksans-bold">
             {isReviewing ? 'Reviewing work area' : 'Set Work Area'}
           </Text>
         </View>
@@ -210,7 +210,7 @@ export default function WorkAreaTab() {
           <View className="flex-row justify-end mb-4">
             {isDrawingMode ? (
               <View className="bg-white rounded-full shadow-lg px-6 py-3 flex-row items-center gap-2">
-                <Text className="text-[#30352D] font-worksans-medium">Draw on map</Text>
+                <Text className="text-brand-dark-alt font-worksans-medium">Draw on map</Text>
               </View>
             ) : (
               <Pressable

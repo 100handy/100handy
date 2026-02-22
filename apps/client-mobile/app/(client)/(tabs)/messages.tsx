@@ -16,11 +16,11 @@ export default function MessagesScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
-          <Text className="text-2xl font-bold text-[#30352D]">Messages</Text>
+          <Text className="text-2xl font-bold text-brand-dark-alt">Messages</Text>
         </View>
         <View className="flex-1 items-center justify-center py-12">
-          <MessageCircle size={64} color="#D17852" />
-          <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
+          <MessageCircle size={64} color="#C1856A" />
+          <Text className="text-lg font-medium text-brand-dark mt-4 mb-2">
             Please sign in
           </Text>
           <Text className="text-sm text-[#666666] text-center px-8 mb-6">
@@ -28,7 +28,7 @@ export default function MessagesScreen() {
           </Text>
           <Pressable
             onPress={() => router.push('/(auth)/(client)')}
-            className="bg-[#D17852] px-8 py-3 rounded-full"
+            className="bg-brand-terracotta px-8 py-3 rounded-full"
           >
             <Text className="text-white font-medium">Sign In</Text>
           </Pressable>
@@ -60,7 +60,7 @@ export default function MessagesScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center px-6">
           <MessageCircle size={64} color="#999999" />
-          <Text className="text-lg font-semibold text-[#30352D] mt-4 text-center">
+          <Text className="text-lg font-semibold text-brand-dark-alt mt-4 text-center">
             Unable to load messages
           </Text>
           <Text className="text-sm text-gray-600 mt-2 text-center">
@@ -83,7 +83,7 @@ export default function MessagesScreen() {
   const renderEmpty = () => (
     <View className="flex-1 items-center justify-center px-6 py-12">
       <MessageCircle size={80} color="#CCCCCC" />
-      <Text className="text-xl font-semibold text-[#30352D] mt-6 text-center">
+      <Text className="text-xl font-semibold text-brand-dark-alt mt-6 text-center">
         No messages yet
       </Text>
       <Text className="text-base text-gray-600 mt-2 text-center">
@@ -96,7 +96,7 @@ export default function MessagesScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="px-5 pt-4 pb-4 bg-white border-b border-gray-200">
-        <Text className="text-2xl font-bold text-[#30352D]">Messages</Text>
+        <Text className="text-2xl font-bold text-brand-dark-alt">Messages</Text>
       </View>
 
       {/* Conversations List */}

@@ -171,7 +171,7 @@ export default function BusinessPhotosScreen() {
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#D17852" />
+        <ActivityIndicator size="large" color="#C1856A" />
       </SafeAreaView>
     );
   }
@@ -184,7 +184,7 @@ export default function BusinessPhotosScreen() {
           <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text
-          className="flex-1 text-center text-lg font-semibold text-[#333A31] pr-6"
+          className="flex-1 text-center text-lg font-semibold text-brand-dark pr-6"
           style={{ fontFamily: 'WorkSans_600SemiBold' }}
         >
           Business Photos
@@ -198,7 +198,7 @@ export default function BusinessPhotosScreen() {
             <View className="flex-col gap-4 items-center py-8">
               {/* Title */}
               <Text
-                className="text-lg font-semibold text-[#333A31] text-center"
+                className="text-lg font-semibold text-brand-dark text-center"
                 style={{ fontFamily: 'WorkSans_600SemiBold' }}
               >
                 You have no skills added
@@ -216,7 +216,7 @@ export default function BusinessPhotosScreen() {
               {/* Go to Skills & Rates Link */}
               <Pressable onPress={handleGoToSkillsRates} className="mt-2">
                 <Text
-                  className="text-base font-medium text-[#D17852]"
+                  className="text-base font-medium text-brand-terracotta"
                   style={{ fontFamily: 'WorkSans_500Medium' }}
                 >
                   Go to Skills & Rates
@@ -234,7 +234,7 @@ export default function BusinessPhotosScreen() {
                   </Text>
                   <Pressable onPress={handleLearnMore}>
                     <Text
-                      className="text-sm text-[#D17852]"
+                      className="text-sm text-brand-terracotta"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       here
@@ -270,7 +270,7 @@ export default function BusinessPhotosScreen() {
                   <View key={userSkill.id} className="flex-col gap-3">
                     {/* Skill Name */}
                     <Text
-                      className="text-base font-semibold text-[#333A31]"
+                      className="text-base font-semibold text-brand-dark"
                       style={{ fontFamily: 'WorkSans_600SemiBold' }}
                     >
                       {userSkill.skill?.name}
@@ -299,15 +299,15 @@ export default function BusinessPhotosScreen() {
 
                     {/* Photo Upload Button */}
                     <Pressable
-                      className="border-2 border-dashed border-[#D17852] rounded-lg p-8 items-center justify-center bg-[#FFF8F5]"
+                      className="border-2 border-dashed border-brand-terracotta rounded-lg p-8 items-center justify-center bg-orange-50"
                       onPress={() => openPhotoModal(userSkill.id)}
                       disabled={isUploading}
                     >
                       {isUploading && selectedSkillId === userSkill.id ? (
                         <View className="flex-row items-center gap-2">
-                          <ActivityIndicator size="small" color="#D17852" />
+                          <ActivityIndicator size="small" color="#C1856A" />
                           <Text
-                            className="text-sm font-medium text-[#D17852]"
+                            className="text-sm font-medium text-brand-terracotta"
                             style={{ fontFamily: 'WorkSans_500Medium' }}
                           >
                             Uploading...
@@ -315,9 +315,9 @@ export default function BusinessPhotosScreen() {
                         </View>
                       ) : (
                         <View className="flex-row items-center gap-2">
-                          <Camera size={18} color="#D17852" />
+                          <Camera size={18} color="#C1856A" />
                           <Text
-                            className="text-sm font-medium text-[#D17852]"
+                            className="text-sm font-medium text-brand-terracotta"
                             style={{ fontFamily: 'WorkSans_500Medium' }}
                           >
                             + Add Photos
@@ -340,7 +340,7 @@ export default function BusinessPhotosScreen() {
                   </Text>
                   <Pressable onPress={handleLearnMore}>
                     <Text
-                      className="text-sm text-[#D17852]"
+                      className="text-sm text-brand-terracotta"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       here
@@ -368,7 +368,7 @@ export default function BusinessPhotosScreen() {
         <ModalBackdrop />
         <ModalContent className="bg-white rounded-2xl p-6">
           <Text
-            className="text-lg font-semibold text-[#333A31] text-center mb-6"
+            className="text-lg font-semibold text-brand-dark text-center mb-6"
             style={{ fontFamily: 'WorkSans_600SemiBold' }}
           >
             Add Photo
@@ -378,7 +378,7 @@ export default function BusinessPhotosScreen() {
             {/* Choose from Library */}
             <Pressable
               onPress={pickImage}
-              className="py-4 bg-[#D17852] rounded-full items-center"
+              className="py-4 bg-brand-terracotta rounded-full items-center"
             >
               <Text
                 className="text-base font-medium text-white"
@@ -391,10 +391,10 @@ export default function BusinessPhotosScreen() {
             {/* Take Photo */}
             <Pressable
               onPress={takePhoto}
-              className="py-4 border-2 border-[#D17852] rounded-full items-center"
+              className="py-4 border-2 border-brand-terracotta rounded-full items-center"
             >
               <Text
-                className="text-base font-medium text-[#D17852]"
+                className="text-base font-medium text-brand-terracotta"
                 style={{ fontFamily: 'WorkSans_500Medium' }}
               >
                 Take a Photo

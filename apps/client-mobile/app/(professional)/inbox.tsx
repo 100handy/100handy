@@ -78,7 +78,7 @@ export default function InboxScreen() {
   // Empty State
   const renderEmpty = () => (
     <View className="flex-1 items-center justify-center py-32 px-6">
-      <View className="w-20 h-20 rounded-full bg-[#B8926A] items-center justify-center mb-4">
+      <View className="w-20 h-20 rounded-full bg-brand-taupe items-center justify-center mb-4">
         <Mail color="white" size={36} strokeWidth={1.5} />
       </View>
       <Text className="font-worksans-semibold text-[16px] text-[#30352D] text-center">

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, Image, Alert, View, Text, Pressable } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ScrollView, Image, Alert, View, Text, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   User,
@@ -42,12 +42,24 @@ export default function ProfessionalProfileScreen() {
   const toast = useToast();
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [isSwitchingToClient, setIsSwitchingToClient] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user, fetchProfile]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchProfile();
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchProfile]);
 
   const handleSwitchToClient = async (): Promise<void> => {
     if (!user?.id) {
@@ -136,73 +148,73 @@ export default function ProfessionalProfileScreen() {
 
   const menuItems: MenuItem[] = [
     {
-      icon: <User color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <User color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Account detail',
       onPress: () => router.push('/(professional)/profile/account-detail'),
     },
     {
-      icon: <FileText color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <FileText color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Tasker profile',
       onPress: () => router.push('/(professional)/profile/tasker-profile'),
     },
     {
-      icon: <BarChart3 color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <BarChart3 color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Performance',
       onPress: () => router.push('/(professional)/(tabs)/performance'),
     },
     {
-      icon: <Calendar color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <Calendar color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Sync calendar',
       onPress: () => router.push('/(professional)/profile/calendar-settings'),
     },
     {
-      icon: <MessageSquare color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <MessageSquare color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Chat templates',
       onPress: () => router.push('/(professional)/profile/chat-templates'),
     },
     {
-      icon: <Megaphone color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <Megaphone color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Promote yourself',
       onPress: () => router.push('/(professional)/profile/promote-yourself'),
     },
     {
-      icon: <CreditCard color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <CreditCard color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Payments',
       onPress: () => router.push('/(professional)/profile/payments'),
     },
     {
-      icon: <Bell color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <Bell color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Notifications',
       onPress: () => router.push('/(professional)/profile/notifications'),
     },
     {
-      icon: <HelpCircle color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <HelpCircle color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Support',
       onPress: () => router.push('/(professional)/profile/support'),
     },
     {
-      icon: <Shield color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <Shield color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Account security',
       onPress: () => router.push('/(professional)/profile/account-security'),
     },
     {
-      icon: <Info color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <Info color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'About',
       onPress: () => router.push('/profile/about'),
     },
     {
-      icon: <Lock color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <Lock color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Password',
       onPress: () => router.push('/profile/change-password'),
     },
     {
-      icon: <Globe color="#B8926A" size={24} strokeWidth={1.5} />,
+      icon: <Globe color="#B29D88" size={24} strokeWidth={1.5} />,
       label: 'Go 100Handy',
       isDisabled: isSwitchingToClient,
       onPress: handleSwitchToClient,
     },
     {
-      icon: <LogOut color="#D17852" size={24} strokeWidth={1.5} />,
+      icon: <LogOut color="#C1856A" size={24} strokeWidth={1.5} />,
       label: 'Log out',
       isLogout: true,
       onPress: handleSignOut,
@@ -218,7 +230,13 @@ export default function ProfessionalProfileScreen() {
         </Text>
       </View>
 
-      <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1 bg-white"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#C1856A" />
+        }
+      >
         {/* Profile Photo Section */}
         <View className="flex-col px-6 py-8 items-center gap-4 border-b border-gray-100">
           <View className="w-[100px] h-[100px] rounded-full overflow-hidden bg-gray-300 relative">
@@ -229,8 +247,8 @@ export default function ProfessionalProfileScreen() {
                 style={{ width: 100, height: 100 }}
               />
             ) : (
-              <View className="w-full h-full items-center justify-center bg-[#D17852]/20">
-                <Text className="font-worksans-bold text-3xl text-[#D17852]">
+              <View className="w-full h-full items-center justify-center bg-brand-terracotta/20">
+                <Text className="font-worksans-bold text-3xl text-brand-terracotta">
                   {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'}
                 </Text>
               </View>
@@ -254,8 +272,8 @@ export default function ProfessionalProfileScreen() {
             onPress={() => setShowPhotoModal(true)}
             className="flex-row items-center gap-2 px-4 py-2"
           >
-            <Camera size={18} color="#B8926A" />
-            <Text className="font-worksans-semibold text-sm text-[#B8926A]">
+            <Camera size={18} color="#B29D88" />
+            <Text className="font-worksans-semibold text-sm text-brand-taupe">
               {profile?.avatar_url ? 'Change Photo' : 'Add Photo'}
             </Text>
           </Pressable>

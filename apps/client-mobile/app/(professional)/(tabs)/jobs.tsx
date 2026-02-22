@@ -69,7 +69,7 @@ const JobCard = React.memo(function JobCard({ booking, onPress, showBadge }: Job
       {showBadge && (
         <View
           className={`self-start px-2 py-1 rounded-full mb-2 ${
-            showBadge === 'new' ? 'bg-[#B8926A]' : 'bg-[#2E7D32]'
+            showBadge === 'new' ? 'bg-brand-taupe' : 'bg-[#2E7D32]'
           }`}
         >
           <Text className="font-worksans-medium text-[10px] text-white uppercase">
@@ -79,7 +79,7 @@ const JobCard = React.memo(function JobCard({ booking, onPress, showBadge }: Job
       )}
 
       {/* Task Title & Category */}
-      <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-1">
+      <Text className="font-worksans-bold text-[16px] text-brand-dark-alt mb-1">
         {booking.task_title}
       </Text>
       {booking.category && (
@@ -90,8 +90,8 @@ const JobCard = React.memo(function JobCard({ booking, onPress, showBadge }: Job
 
       {/* Date & Time */}
       <View className="flex-row items-center mb-2">
-        <Calendar color="#B8926A" size={16} strokeWidth={1.5} />
-        <Text className="font-worksans text-[14px] text-[#30352D] ml-2">
+        <Calendar color="#B29D88" size={16} strokeWidth={1.5} />
+        <Text className="font-worksans text-[14px] text-brand-dark-alt ml-2">
           {formatDate(booking.scheduled_date)} at {formatTime(booking.scheduled_time)}
         </Text>
       </View>
@@ -99,7 +99,7 @@ const JobCard = React.memo(function JobCard({ booking, onPress, showBadge }: Job
       {/* Location */}
       {booking.address && (
         <View className="flex-row items-center mb-2">
-          <MapPin color="#B8926A" size={16} strokeWidth={1.5} />
+          <MapPin color="#B29D88" size={16} strokeWidth={1.5} />
           <Text
             className="font-worksans text-[14px] text-[#6B6B6B] ml-2 flex-1"
             numberOfLines={1}
@@ -120,18 +120,18 @@ const JobCard = React.memo(function JobCard({ booking, onPress, showBadge }: Job
               {customerName.charAt(0).toUpperCase()}
             </Text>
           </View>
-          <Text className="font-worksans text-[13px] text-[#30352D]">
+          <Text className="font-worksans text-[13px] text-brand-dark-alt">
             {customerName}
           </Text>
         </View>
         <View className="flex-row items-center">
-          <Text className="font-worksans-bold text-[16px] text-[#30352D] mr-2">
+          <Text className="font-worksans-bold text-[16px] text-brand-dark-alt mr-2">
             £{estimatedEarnings.toFixed(0)}
           </Text>
           <Text className="font-worksans text-[12px] text-[#6B6B6B] mr-2">
             est.
           </Text>
-          <ChevronRight color="#B8926A" size={20} strokeWidth={2} />
+          <ChevronRight color="#B29D88" size={20} strokeWidth={2} />
         </View>
       </View>
     </Pressable>
@@ -141,17 +141,17 @@ const JobCard = React.memo(function JobCard({ booking, onPress, showBadge }: Job
 function EmptyState({ type }: { type: TabType }) {
   const content = {
     pending: {
-      icon: <AlertCircle color="#B8926A" size={48} strokeWidth={1.5} />,
+      icon: <AlertCircle color="#B29D88" size={48} strokeWidth={1.5} />,
       title: 'No pending requests',
       subtitle: 'When clients book you, their requests will appear here',
     },
     upcoming: {
-      icon: <Calendar color="#B8926A" size={48} strokeWidth={1.5} />,
+      icon: <Calendar color="#B29D88" size={48} strokeWidth={1.5} />,
       title: 'No upcoming jobs',
       subtitle: 'Accept requests to see your scheduled jobs here',
     },
     past: {
-      icon: <CheckCircle2 color="#B8926A" size={48} strokeWidth={1.5} />,
+      icon: <CheckCircle2 color="#B29D88" size={48} strokeWidth={1.5} />,
       title: 'No completed jobs yet',
       subtitle: 'Your completed jobs will appear here',
     },
@@ -162,7 +162,7 @@ function EmptyState({ type }: { type: TabType }) {
   return (
     <View className="flex-1 items-center justify-center py-16 px-8">
       {icon}
-      <Text className="font-worksans-bold text-[18px] text-[#30352D] mt-4 text-center">
+      <Text className="font-worksans-bold text-[18px] text-brand-dark-alt mt-4 text-center">
         {title}
       </Text>
       <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-2 text-center">
@@ -254,7 +254,7 @@ export default function ProfessionalJobs() {
       <View className="bg-white px-5 py-4 border-b border-[#F0F0F0]">
         <View className="flex-row items-center justify-center">
           <Briefcase color="#30352D" size={22} strokeWidth={2} />
-          <Text className="font-worksans-bold text-[20px] text-[#30352D] ml-2">
+          <Text className="font-worksans-bold text-[20px] text-brand-dark-alt ml-2">
             Jobs
           </Text>
         </View>
@@ -267,7 +267,7 @@ export default function ProfessionalJobs() {
             key={tab.key}
             onPress={() => setActiveTab(tab.key)}
             className={`flex-1 py-3 items-center rounded-lg mx-1 ${
-              activeTab === tab.key ? 'bg-[#B8926A]' : 'bg-[#F5F5F5]'
+              activeTab === tab.key ? 'bg-brand-taupe' : 'bg-[#F5F5F5]'
             }`}
           >
             <View className="flex-row items-center">
@@ -281,12 +281,12 @@ export default function ProfessionalJobs() {
               {tab.count !== undefined && (
                 <View
                   className={`ml-2 px-2 py-0.5 rounded-full ${
-                    activeTab === tab.key ? 'bg-white' : 'bg-[#D17852]'
+                    activeTab === tab.key ? 'bg-white' : 'bg-brand-terracotta'
                   }`}
                 >
                   <Text
                     className={`font-worksans-bold text-[11px] ${
-                      activeTab === tab.key ? 'text-[#B8926A]' : 'text-white'
+                      activeTab === tab.key ? 'text-brand-taupe' : 'text-white'
                     }`}
                   >
                     {tab.count}
@@ -314,7 +314,7 @@ export default function ProfessionalJobs() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="#B8926A"
+              tintColor="#B29D88"
             />
           }
         />
@@ -330,7 +330,7 @@ export default function ProfessionalJobs() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="#B8926A"
+              tintColor="#B29D88"
             />
           }
         />

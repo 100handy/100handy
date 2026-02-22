@@ -45,7 +45,7 @@ export default function AboutMeScreen() {
             <ChevronLeft size={24} color="#000" />
           </Pressable>
           <Text 
-            className="flex-1 text-center text-lg font-semibold text-[#333A31] pr-6" 
+            className="flex-1 text-center text-lg font-semibold text-brand-dark pr-6" 
             style={{ fontFamily: 'WorkSans_600SemiBold' }}
           >
             About Me
@@ -61,7 +61,7 @@ export default function AboutMeScreen() {
             {/* Section Title */}
             <View className="flex-col gap-2">
               <Text 
-                className="text-xl font-bold text-[#333A31]" 
+                className="text-xl font-bold text-brand-dark" 
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 Why do you task?
@@ -88,7 +88,7 @@ export default function AboutMeScreen() {
                 numberOfLines={8}
                 maxLength={MAX_CHARACTERS}
                 placeholderTextColor="#999999"
-                className="min-h-[200px] border border-[#E5E5E5] rounded-lg p-4 text-base text-[#333A31]"
+                className="min-h-[200px] border border-[#E5E5E5] rounded-lg p-4 text-base text-brand-dark"
                 style={{
                   fontFamily: 'WorkSans_400Regular',
                   textAlignVertical: 'top',
@@ -112,7 +112,7 @@ export default function AboutMeScreen() {
         <View className="flex-col px-5 pb-8 pt-4">
           <Pressable
             onPress={handleSave}
-            className="bg-[#D17852] rounded-full py-4 items-center active:opacity-90"
+            className="bg-brand-terracotta rounded-full py-4 items-center active:opacity-90"
           >
             <Text 
               className="text-white text-base font-semibold" 

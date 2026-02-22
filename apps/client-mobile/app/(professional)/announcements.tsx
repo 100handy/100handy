@@ -14,7 +14,7 @@ export default function AnnouncementsScreen() {
         <Pressable onPress={() => router.back()}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
-        <Text className="font-worksans-bold text-[18px] text-[#30352D]">
+        <Text className="font-worksans-bold text-[18px] text-brand-dark-alt">
           Announcements
         </Text>
         <View className="w-7" />
@@ -23,10 +23,10 @@ export default function AnnouncementsScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Empty State */}
         <View className="flex-col items-center justify-center py-32 px-6">
-          <View className="w-20 h-20 rounded-full bg-[#B8926A] items-center justify-center mb-4">
+          <View className="w-20 h-20 rounded-full bg-brand-taupe items-center justify-center mb-4">
             <Megaphone color="white" size={36} strokeWidth={1.5} />
           </View>
-          <Text className="font-worksans-semibold text-[16px] text-[#30352D]">
+          <Text className="font-worksans-semibold text-[16px] text-brand-dark-alt">
             No new announcements
           </Text>
         </View>

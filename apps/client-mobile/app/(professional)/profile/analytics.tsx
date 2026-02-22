@@ -115,7 +115,7 @@ export default function AnalyticsScreen() {
 
             {/* Title */}
             <Text
-              className="text-[#30352D] text-lg font-bold"
+              className="text-brand-dark-alt text-lg font-bold"
               style={{ fontFamily: 'WorkSans_700Bold' }}
             >
               Analytics
@@ -150,7 +150,7 @@ export default function AnalyticsScreen() {
                 />
               </View>
               <Text
-                className="text-[#30352D] text-xs font-bold text-center"
+                className="text-brand-dark-alt text-xs font-bold text-center"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 Opportunity
@@ -176,7 +176,7 @@ export default function AnalyticsScreen() {
                 />
               </View>
               <Text
-                className="text-[#30352D] text-xs font-bold text-center"
+                className="text-brand-dark-alt text-xs font-bold text-center"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 Earnings
@@ -202,7 +202,7 @@ export default function AnalyticsScreen() {
                 />
               </View>
               <Text
-                className="text-[#30352D] text-xs font-bold text-center"
+                className="text-brand-dark-alt text-xs font-bold text-center"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 Tasks
@@ -217,7 +217,7 @@ export default function AnalyticsScreen() {
               {/* Overview Header */}
               <View className="flex-row items-center justify-between mb-4">
                 <Text
-                  className="text-[#30352D] text-lg font-bold"
+                  className="text-brand-dark-alt text-lg font-bold"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Overview
@@ -225,7 +225,7 @@ export default function AnalyticsScreen() {
                 <View className="flex-row items-center gap-1">
                   <Calendar size={16} color="#333A31" />
                   <Text
-                    className="text-[#333A31] text-[10px] font-medium"
+                    className="text-brand-dark text-[10px] font-medium"
                     style={{ fontFamily: 'WorkSans_500Medium' }}
                   >
                     PAST 30 DAYS
@@ -240,13 +240,13 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         Total Earnings
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {formatCurrency(analytics?.totalEarnings || 0)}
@@ -261,13 +261,13 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         Anticipated Earnings
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {formatCurrency(analytics?.anticipatedEarnings || 0)}
@@ -282,20 +282,20 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         You earned more than
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {analytics?.earningsPercentile || 0}%
                       </Text>
                     </View>
                     <Text
-                      className="text-[#333A31] text-[10px] text-right"
+                      className="text-brand-dark text-[10px] text-right"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       of Taskers
@@ -306,7 +306,7 @@ export default function AnalyticsScreen() {
 
               {/* More Details Section */}
               <Text
-                className="text-[#30352D] text-lg font-bold mb-4"
+                className="text-brand-dark-alt text-lg font-bold mb-4"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 More Details
@@ -315,7 +315,7 @@ export default function AnalyticsScreen() {
               {/* Total Earnings Detail Card */}
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <Text
-                  className="text-[#30352D] text-base font-bold mb-4"
+                  className="text-brand-dark-alt text-base font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Total Earnings
@@ -324,7 +324,7 @@ export default function AnalyticsScreen() {
                 {/* Gray info box */}
                 <View className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
                   <Text
-                    className="text-[#333A31] text-sm mb-3"
+                    className="text-brand-dark text-sm mb-3"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     Earnings from the past 30 days:
@@ -340,13 +340,13 @@ export default function AnalyticsScreen() {
                 {/* How can I earn more */}
                 <View className="flex-col gap-2">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     How can I earn more?
                   </Text>
                   <Text
-                    className="text-[#30352D] text-sm leading-5"
+                    className="text-brand-dark-alt text-sm leading-5"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     The best way to earn more is to be seen by as many clients as possible! You can do
@@ -359,7 +359,7 @@ export default function AnalyticsScreen() {
               {/* Anticipated Earnings Card */}
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <Text
-                  className="text-[#30352D] text-base font-bold mb-4"
+                  className="text-brand-dark-alt text-base font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Anticipated Earnings
@@ -368,7 +368,7 @@ export default function AnalyticsScreen() {
                 {/* Gray info box */}
                 <View className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
                   <Text
-                    className="text-[#333A31] text-sm mb-3"
+                    className="text-brand-dark text-sm mb-3"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     We anticipated you could have earned:
@@ -384,13 +384,13 @@ export default function AnalyticsScreen() {
                 {/* How was this calculated */}
                 <View className="flex-col gap-2">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     How was this calculated?
                   </Text>
                   <Text
-                    className="text-[#30352D] text-sm leading-5"
+                    className="text-brand-dark-alt text-sm leading-5"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     We calculate this number based on your Availability, current performance, and the
@@ -403,20 +403,20 @@ export default function AnalyticsScreen() {
               {/* Earnings Percentile Card */}
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <Text
-                  className="text-[#30352D] text-base font-bold mb-4"
+                  className="text-brand-dark-alt text-base font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Earnings Percentile
                 </Text>
 
                 <Text
-                  className="text-[#30352D] text-sm mb-2"
+                  className="text-brand-dark-alt text-sm mb-2"
                   style={{ fontFamily: 'WorkSans_600SemiBold' }}
                 >
                   You earned more than:
                 </Text>
                 <Text
-                  className="text-[#30352D] text-2xl font-bold mb-4"
+                  className="text-brand-dark-alt text-2xl font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   {analytics?.earningsPercentile || 0}%
@@ -465,7 +465,7 @@ export default function AnalyticsScreen() {
                   {/* Dot indicator */}
                   <View className="relative" style={{ marginTop: -8, marginLeft: `${Math.min(analytics?.earningsPercentile || 0, 95)}%` }}>
                     <View
-                      className="w-4 h-4 rounded-full bg-[#30352D]"
+                      className="w-4 h-4 rounded-full bg-brand-dark-alt"
                       style={{
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 2 },
@@ -480,13 +480,13 @@ export default function AnalyticsScreen() {
                 {/* What does this number show me */}
                 <View className="flex-col gap-2">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     What does this number show me?
                   </Text>
                   <Text
-                    className="text-[#30352D] text-sm leading-5"
+                    className="text-brand-dark-alt text-sm leading-5"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     This is a snapshot of the competition! Your Earnings Comparison shows how much you've
@@ -503,7 +503,7 @@ export default function AnalyticsScreen() {
             <View className="px-6">
               <View className="flex-row items-center justify-between mb-4">
                 <Text
-                  className="text-[#30352D] text-lg font-bold"
+                  className="text-brand-dark-alt text-lg font-bold"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Overview
@@ -511,7 +511,7 @@ export default function AnalyticsScreen() {
                 <View className="flex-row items-center gap-1">
                   <Calendar size={16} color="#333A31" />
                   <Text
-                    className="text-[#333A31] text-[10px] font-medium"
+                    className="text-brand-dark text-[10px] font-medium"
                     style={{ fontFamily: 'WorkSans_500Medium' }}
                   >
                     PAST 30 DAYS
@@ -526,20 +526,20 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         Average Search Position
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {analytics?.averageSearchPosition ?? '- -'}
                       </Text>
                     </View>
                     <Text
-                      className="text-[#333A31] text-[10px] text-right mt-1"
+                      className="text-brand-dark text-[10px] text-right mt-1"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       Taskers in a search
@@ -553,13 +553,13 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         Search Result Appearances
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {analytics?.searchAppearances || '- -'}
@@ -574,20 +574,20 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         You've shown more than
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {analytics?.opportunityPercentile || 0}%
                       </Text>
                     </View>
                     <Text
-                      className="text-[#333A31] text-[10px] text-right"
+                      className="text-brand-dark text-[10px] text-right"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       of Taskers
@@ -598,7 +598,7 @@ export default function AnalyticsScreen() {
 
               {/* More Details Section */}
               <Text
-                className="text-[#30352D] text-lg font-bold mb-4"
+                className="text-brand-dark-alt text-lg font-bold mb-4"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 More Details
@@ -608,7 +608,7 @@ export default function AnalyticsScreen() {
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <View className="flex-col gap-4">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     Average Search Position
@@ -617,7 +617,7 @@ export default function AnalyticsScreen() {
                   {/* Gray info box */}
                   <View className="bg-[#F5F5F5] rounded-lg p-4">
                     <Text
-                      className="text-[#333A31] text-[10px] mb-3"
+                      className="text-brand-dark text-[10px] mb-3"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       During an average search, you appeared:
@@ -630,7 +630,7 @@ export default function AnalyticsScreen() {
                         - -
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         - -
@@ -641,13 +641,13 @@ export default function AnalyticsScreen() {
                   {/* How can I place higher */}
                   <View className="flex-col gap-2">
                     <Text
-                      className="text-[#30352D] text-base font-bold"
+                      className="text-brand-dark-alt text-base font-bold"
                       style={{ fontFamily: 'WorkSans_700Bold' }}
                     >
                       How can I place higher in search results?
                     </Text>
                     <Text
-                      className="text-[#30352D] text-sm leading-5"
+                      className="text-brand-dark-alt text-sm leading-5"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       There's always room to grow as a Tasker! The more tasks you complete with high ratings,
@@ -661,7 +661,7 @@ export default function AnalyticsScreen() {
               {/* Search Result Appearances Card */}
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <Text
-                  className="text-[#30352D] text-base font-bold mb-4"
+                  className="text-brand-dark-alt text-base font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Search Result Appearances
@@ -670,7 +670,7 @@ export default function AnalyticsScreen() {
                 {/* Gray info box */}
                 <View className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
                   <Text
-                    className="text-[#333A31] text-sm mb-3"
+                    className="text-brand-dark text-sm mb-3"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     Client search appearances:
@@ -686,13 +686,13 @@ export default function AnalyticsScreen() {
                 {/* What are search result appearances */}
                 <View className="flex-col gap-2">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     What are search result appearances?
                   </Text>
                   <Text
-                    className="text-[#30352D] text-sm leading-5"
+                    className="text-brand-dark-alt text-sm leading-5"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     This number shows how many times you've appeared in client search results in the past 30
@@ -705,20 +705,20 @@ export default function AnalyticsScreen() {
               {/* Opportunity Percentile Card */}
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <Text
-                  className="text-[#30352D] text-base font-bold mb-4"
+                  className="text-brand-dark-alt text-base font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Opportunity Percentile
                 </Text>
 
                 <Text
-                  className="text-[#30352D] text-sm mb-2"
+                  className="text-brand-dark-alt text-sm mb-2"
                   style={{ fontFamily: 'WorkSans_600SemiBold' }}
                 >
                   You were shown more than:
                 </Text>
                 <Text
-                  className="text-[#30352D] text-2xl font-bold mb-4"
+                  className="text-brand-dark-alt text-2xl font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   {analytics?.opportunityPercentile || 0}%
@@ -767,7 +767,7 @@ export default function AnalyticsScreen() {
                   {/* Dot indicator */}
                   <View className="relative" style={{ marginTop: -8, marginLeft: `${Math.min(analytics?.opportunityPercentile || 0, 95)}%` }}>
                     <View
-                      className="w-4 h-4 rounded-full bg-[#30352D]"
+                      className="w-4 h-4 rounded-full bg-brand-dark-alt"
                       style={{
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 2 },
@@ -782,13 +782,13 @@ export default function AnalyticsScreen() {
                 {/* What does this number show me */}
                 <View className="flex-col gap-2">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     What does this number show me?
                   </Text>
                   <Text
-                    className="text-[#30352D] text-sm leading-5"
+                    className="text-brand-dark-alt text-sm leading-5"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     This number shows how often you appear in client search results vs. other Taskers in your
@@ -807,7 +807,7 @@ export default function AnalyticsScreen() {
               {/* Overview Header */}
               <View className="flex-row items-center justify-between mb-4">
                 <Text
-                  className="text-[#30352D] text-lg font-bold"
+                  className="text-brand-dark-alt text-lg font-bold"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Overview
@@ -815,7 +815,7 @@ export default function AnalyticsScreen() {
                 <View className="flex-row items-center gap-1">
                   <Calendar size={16} color="#333A31" />
                   <Text
-                    className="text-[#333A31] text-[10px] font-medium"
+                    className="text-brand-dark text-[10px] font-medium"
                     style={{ fontFamily: 'WorkSans_500Medium' }}
                   >
                     PAST 30 DAYS
@@ -830,13 +830,13 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         Completed Tasks
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {analytics?.completedTasks || 0}
@@ -851,13 +851,13 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         Anticipated Tasks
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {analytics?.anticipatedTasks || 0}
@@ -872,20 +872,20 @@ export default function AnalyticsScreen() {
                   <View className="flex-col">
                     <View className="flex-row items-center justify-between mb-2">
                       <Text
-                        className="text-[#30352D] text-base font-bold"
+                        className="text-brand-dark-alt text-base font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         You completed more tasks than
                       </Text>
                       <Text
-                        className="text-[#30352D] text-lg font-bold"
+                        className="text-brand-dark-alt text-lg font-bold"
                         style={{ fontFamily: 'WorkSans_700Bold' }}
                       >
                         {analytics?.taskPercentile || 0}%
                       </Text>
                     </View>
                     <Text
-                      className="text-[#333A31] text-[10px] text-right"
+                      className="text-brand-dark text-[10px] text-right"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       of Taskers
@@ -896,7 +896,7 @@ export default function AnalyticsScreen() {
 
               {/* More Details Section */}
               <Text
-                className="text-[#30352D] text-lg font-bold mb-4"
+                className="text-brand-dark-alt text-lg font-bold mb-4"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
                 More Details
@@ -905,7 +905,7 @@ export default function AnalyticsScreen() {
               {/* Completed Tasks Detail Card */}
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <Text
-                  className="text-[#30352D] text-base font-bold mb-4"
+                  className="text-brand-dark-alt text-base font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Completed Tasks
@@ -914,7 +914,7 @@ export default function AnalyticsScreen() {
                 {/* Gray info box */}
                 <View className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
                   <Text
-                    className="text-[#333A31] text-sm mb-3"
+                    className="text-brand-dark text-sm mb-3"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     Number of completed tasks:
@@ -930,13 +930,13 @@ export default function AnalyticsScreen() {
                 {/* Why does my task count matter */}
                 <View className="flex-col gap-2">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     Why does my task count matter?
                   </Text>
                   <Text
-                    className="text-[#30352D] text-sm leading-5"
+                    className="text-brand-dark-alt text-sm leading-5"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     This is the total number of tasks you've completed and invoiced for. How many tasks
@@ -949,7 +949,7 @@ export default function AnalyticsScreen() {
               {/* Anticipated Tasks Card */}
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <Text
-                  className="text-[#30352D] text-base font-bold mb-4"
+                  className="text-brand-dark-alt text-base font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Anticipated Tasks
@@ -958,7 +958,7 @@ export default function AnalyticsScreen() {
                 {/* Gray info box */}
                 <View className="bg-[#F5F5F5] rounded-lg p-4 mb-4">
                   <Text
-                    className="text-[#333A31] text-sm mb-3"
+                    className="text-brand-dark text-sm mb-3"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     We anticipated you could have done:
@@ -974,13 +974,13 @@ export default function AnalyticsScreen() {
                 {/* How was this calculated */}
                 <View className="flex-col gap-2">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     How was this calculated?
                   </Text>
                   <Text
-                    className="text-[#30352D] text-sm leading-5"
+                    className="text-brand-dark-alt text-sm leading-5"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     We calculate this number based on your Availability, current performance, and the
@@ -993,20 +993,20 @@ export default function AnalyticsScreen() {
               {/* Task Percentile Card */}
               <View className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <Text
-                  className="text-[#30352D] text-base font-bold mb-4"
+                  className="text-brand-dark-alt text-base font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   Task Percentile
                 </Text>
 
                 <Text
-                  className="text-[#30352D] text-sm mb-2"
+                  className="text-brand-dark-alt text-sm mb-2"
                   style={{ fontFamily: 'WorkSans_600SemiBold' }}
                 >
                   You completed more tasks than:
                 </Text>
                 <Text
-                  className="text-[#30352D] text-2xl font-bold mb-4"
+                  className="text-brand-dark-alt text-2xl font-bold mb-4"
                   style={{ fontFamily: 'WorkSans_700Bold' }}
                 >
                   {analytics?.taskPercentile || 0}%
@@ -1055,7 +1055,7 @@ export default function AnalyticsScreen() {
                   {/* Dot indicator */}
                   <View className="relative" style={{ marginTop: -8, marginLeft: `${Math.min(analytics?.taskPercentile || 0, 95)}%` }}>
                     <View
-                      className="w-4 h-4 rounded-full bg-[#30352D]"
+                      className="w-4 h-4 rounded-full bg-brand-dark-alt"
                       style={{
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 2 },
@@ -1070,13 +1070,13 @@ export default function AnalyticsScreen() {
                 {/* What does this number show me */}
                 <View className="flex-col gap-2">
                   <Text
-                    className="text-[#30352D] text-base font-bold"
+                    className="text-brand-dark-alt text-base font-bold"
                     style={{ fontFamily: 'WorkSans_700Bold' }}
                   >
                     What does this number show me?
                   </Text>
                   <Text
-                    className="text-[#30352D] text-sm leading-5"
+                    className="text-brand-dark-alt text-sm leading-5"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
                     This is a snapshot of the competition! This number shows how many tasks you've

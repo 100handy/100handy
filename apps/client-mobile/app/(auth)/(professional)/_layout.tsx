@@ -8,12 +8,6 @@ export default function ProfessionalAuthLayout() {
       <Stack.Screen name="sign-up" />
       <Stack.Screen name="verify-info" />
       <Stack.Screen name="verify-document-upload" />
-      {/* Legacy verification screens - can be removed later */}
-      <Stack.Screen name="verify-getting-started" />
-      <Stack.Screen name="verify-country-selection" />
-      <Stack.Screen name="verify-document-type" />
-      <Stack.Screen name="verify-final-summary" />
-      <Stack.Screen name="verify-otp" />
       <Stack.Screen name="verify-email-otp" />
     </Stack>
   );

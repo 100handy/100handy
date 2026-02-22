@@ -20,7 +20,7 @@ export default function ProfilePreviewScreen() {
           <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text
-          className="flex-1 text-center text-lg font-semibold text-[#333A31] pr-6"
+          className="flex-1 text-center text-lg font-semibold text-brand-dark pr-6"
           style={{ fontFamily: 'WorkSans_600SemiBold' }}
         >
           Profile Preview
@@ -33,7 +33,7 @@ export default function ProfilePreviewScreen() {
           {aboutMe && (
             <View className="flex-col gap-2">
               <Text
-                className="text-lg font-semibold text-[#333A31]"
+                className="text-lg font-semibold text-brand-dark"
                 style={{ fontFamily: 'WorkSans_600SemiBold' }}
               >
                 About Me
@@ -51,7 +51,7 @@ export default function ProfilePreviewScreen() {
           {tools.length > 0 && (
             <View className="flex-col gap-2">
               <Text
-                className="text-lg font-semibold text-[#333A31]"
+                className="text-lg font-semibold text-brand-dark"
                 style={{ fontFamily: 'WorkSans_600SemiBold' }}
               >
                 Tools I Have
@@ -59,9 +59,9 @@ export default function ProfilePreviewScreen() {
               <View className="flex-col gap-2">
                 {tools.map((tool, index) => (
                   <View key={index} className="flex-row items-center gap-2">
-                    <Text className="text-[#D17852] text-base">•</Text>
+                    <Text className="text-brand-terracotta text-base">•</Text>
                     <Text
-                      className="text-base text-[#333A31]"
+                      className="text-base text-brand-dark"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       {tool}
@@ -76,7 +76,7 @@ export default function ProfilePreviewScreen() {
           {vehicles.length > 0 && (
             <View className="flex-col gap-2">
               <Text
-                className="text-lg font-semibold text-[#333A31]"
+                className="text-lg font-semibold text-brand-dark"
                 style={{ fontFamily: 'WorkSans_600SemiBold' }}
               >
                 My Vehicles
@@ -84,9 +84,9 @@ export default function ProfilePreviewScreen() {
               <View className="flex-col gap-2">
                 {vehicles.map((vehicle, index) => (
                   <View key={index} className="flex-row items-center gap-2">
-                    <Text className="text-[#D17852] text-base">•</Text>
+                    <Text className="text-brand-terracotta text-base">•</Text>
                     <Text
-                      className="text-base text-[#333A31]"
+                      className="text-base text-brand-dark"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       {vehicle}
@@ -101,7 +101,7 @@ export default function ProfilePreviewScreen() {
           {quickFacts.length > 0 && (
             <View className="flex-col gap-2">
               <Text
-                className="text-lg font-semibold text-[#333A31]"
+                className="text-lg font-semibold text-brand-dark"
                 style={{ fontFamily: 'WorkSans_600SemiBold' }}
               >
                 Quick Facts
@@ -109,9 +109,9 @@ export default function ProfilePreviewScreen() {
               <View className="flex-col gap-2">
                 {quickFacts.map((fact, index) => (
                   <View key={index} className="flex-row items-center gap-2">
-                    <Text className="text-[#D17852] text-base">•</Text>
+                    <Text className="text-brand-terracotta text-base">•</Text>
                     <Text
-                      className="text-base text-[#333A31]"
+                      className="text-base text-brand-dark"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
                       {fact}
@@ -125,7 +125,7 @@ export default function ProfilePreviewScreen() {
           {/* Calendar Settings Section */}
           <View className="flex-col gap-2">
             <Text
-              className="text-lg font-semibold text-[#333A31]"
+              className="text-lg font-semibold text-brand-dark"
               style={{ fontFamily: 'WorkSans_600SemiBold' }}
             >
               Calendar Settings
@@ -142,7 +142,7 @@ export default function ProfilePreviewScreen() {
           {!aboutMe && tools.length === 0 && vehicles.length === 0 && quickFacts.length === 0 && (
             <View className="flex-col items-center py-12 gap-4">
               <Text
-                className="text-lg font-semibold text-[#333A31] text-center"
+                className="text-lg font-semibold text-brand-dark text-center"
                 style={{ fontFamily: 'WorkSans_600SemiBold' }}
               >
                 No profile information yet
@@ -155,7 +155,7 @@ export default function ProfilePreviewScreen() {
               </Text>
               <Pressable
                 onPress={() => router.back()}
-                className="mt-4 bg-[#D17852] rounded-full px-6 py-3"
+                className="mt-4 bg-brand-terracotta rounded-full px-6 py-3"
               >
                 <Text
                   className="text-white text-base font-semibold"

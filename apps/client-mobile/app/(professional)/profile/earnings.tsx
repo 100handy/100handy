@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Download, ChevronDown, Info, X } from 'lucide-react-native';
@@ -123,13 +123,13 @@ export default function EarningsScreen() {
             className="flex-1"
             showsVerticalScrollIndicator={false}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D17852" />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#C1856A" />
             }
           >
             {/* Month Selector */}
             <View className="px-5 pt-4">
               <Pressable
-                className="bg-[#B8926A] rounded-lg px-4 py-3 self-start"
+                className="bg-brand-taupe rounded-lg px-4 py-3 self-start"
                 onPress={() => setShowMonthPicker(true)}
               >
                 <View className="flex-row items-center gap-2">

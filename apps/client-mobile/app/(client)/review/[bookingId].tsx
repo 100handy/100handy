@@ -79,7 +79,7 @@ export default function ClientReviewScreen() {
   if (loadingBooking || loadingReview) {
     return (
       <SafeAreaView className="flex-1 bg-[#F5F5F5] items-center justify-center">
-        <ActivityIndicator size="large" color="#B8926A" />
+        <ActivityIndicator size="large" color="#B29D88" />
       </SafeAreaView>
     );
   }
@@ -110,7 +110,7 @@ export default function ClientReviewScreen() {
           </Pressable>
         </View>
         <View className="flex-1 items-center justify-center px-8">
-          <Star color="#B8926A" size={48} fill="#B8926A" />
+          <Star color="#B29D88" size={48} fill="#B29D88" />
           <Text className="font-worksans-bold text-[18px] text-[#30352D] mt-4">
             Already reviewed
           </Text>
@@ -159,9 +159,9 @@ export default function ClientReviewScreen() {
             {[1, 2, 3, 4, 5].map((star) => (
               <Pressable key={star} onPress={() => setRating(star)}>
                 <Star
-                  color="#B8926A"
+                  color="#B29D88"
                   size={40}
-                  fill={star <= rating ? '#B8926A' : 'transparent'}
+                  fill={star <= rating ? '#B29D88' : 'transparent'}
                   strokeWidth={1.5}
                 />
               </Pressable>
@@ -211,7 +211,7 @@ export default function ClientReviewScreen() {
           onPress={handleSubmit}
           disabled={isSubmitting || rating === 0}
           className={`py-4 rounded-xl items-center ${
-            rating > 0 ? 'bg-[#B8926A]' : 'bg-[#E5E5E5]'
+            rating > 0 ? 'bg-brand-taupe' : 'bg-[#E5E5E5]'
           }`}
         >
           {isSubmitting ? (

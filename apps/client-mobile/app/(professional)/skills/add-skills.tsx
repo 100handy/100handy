@@ -95,7 +95,7 @@ export default function AddSkillsScreen() {
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#D17852" />
+        <ActivityIndicator size="large" color="#C1856A" />
       </SafeAreaView>
     );
   }

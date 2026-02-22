@@ -78,7 +78,7 @@ export default function VehiclesScreen() {
         <Pressable onPress={() => router.back()}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
-        <Text className="flex-1 text-center text-lg font-semibold text-[#333A31] pr-6" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
+        <Text className="flex-1 text-center text-lg font-semibold text-brand-dark pr-6" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
           Vehicles
         </Text>
       </View>
@@ -87,7 +87,7 @@ export default function VehiclesScreen() {
         <View className="flex-col px-5 py-6 gap-6">
           {/* Info Section */}
           <View className="flex-col gap-2">
-            <Text className="text-xl font-bold text-[#333A31]" style={{ fontFamily: 'WorkSans_700Bold' }}>
+            <Text className="text-xl font-bold text-brand-dark" style={{ fontFamily: 'WorkSans_700Bold' }}>
               How do you get around?
             </Text>
           </View>
@@ -115,7 +115,7 @@ export default function VehiclesScreen() {
       <View className="flex-col px-5 pb-8 pt-4">
         <Pressable
           onPress={handleSave}
-          className="bg-[#D17852] rounded-full py-4 items-center"
+          className="bg-brand-terracotta rounded-full py-4 items-center"
         >
           <Text className="text-white text-base font-semibold" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
             Save
@@ -136,11 +136,11 @@ function SelectableVehicleItem({ vehicle, isSelected, onPress }: SelectableVehic
   return (
     <Pressable
       onPress={onPress}
-      className={`rounded-lg px-4 py-3.5 ${isSelected ? 'bg-[#D17852]/10 border border-[#D17852]' : 'bg-[#F5F5F5]'}`}
+      className={`rounded-lg px-4 py-3.5 ${isSelected ? 'bg-brand-terracotta/10 border border-brand-terracotta' : 'bg-[#F5F5F5]'}`}
     >
       <View className="flex-col gap-1">
         <Text 
-          className="text-base font-medium text-[#333A31]"
+          className="text-base font-medium text-brand-dark"
           style={{ fontFamily: 'WorkSans_500Medium' }}
         >
           {vehicle.name}

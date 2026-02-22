@@ -137,7 +137,7 @@ export default function Verify2FAScreen({ email }: Verify2FAScreenProps) {
                     <View className="mt-8 px-2">
                         <OtpInput
                             numberOfDigits={6}
-                            focusColor="#B8926A"
+                            focusColor="#B29D88"
                             focusStickBlinkingDuration={500}
                             onFilled={(text) => handleVerify(text)}
                             textInputProps={{
@@ -160,14 +160,14 @@ export default function Verify2FAScreen({ email }: Verify2FAScreenProps) {
                                     fontFamily: 'WorkSans-Bold',
                                 },
                                 focusStickStyle: {
-                                    backgroundColor: '#B8926A',
+                                    backgroundColor: '#B29D88',
                                 },
                                 focusedPinCodeContainerStyle: {
-                                    borderColor: '#B8926A',
+                                    borderColor: '#B29D88',
                                     backgroundColor: '#FFF5F0',
                                 },
                                 filledPinCodeContainerStyle: {
-                                    borderColor: '#B8926A',
+                                    borderColor: '#B29D88',
                                     backgroundColor: '#FFF5F0',
                                 },
                             }}
@@ -189,7 +189,7 @@ export default function Verify2FAScreen({ email }: Verify2FAScreenProps) {
                             </Text>
                         ) : (
                             <Pressable onPress={handleResendCode} disabled={isLoading}>
-                                <Text className="text-[#B8926A] text-center text-base font-worksans-semibold">
+                                <Text className="text-brand-taupe text-center text-base font-worksans-semibold">
                                     Didn't receive a code? Tap to resend
                                 </Text>
                             </Pressable>
@@ -200,10 +200,10 @@ export default function Verify2FAScreen({ email }: Verify2FAScreenProps) {
 
                     {/* Verifying Status */}
                     {isLoading ? (
-                        <View className="bg-[#B8926A]/10 rounded-xl py-4 items-center">
+                        <View className="bg-brand-taupe/10 rounded-xl py-4 items-center">
                             <View className="flex-row items-center gap-3">
-                                <ActivityIndicator size="small" color="#B8926A" />
-                                <Text className="text-[#B8926A] text-base font-worksans-semibold">
+                                <ActivityIndicator size="small" color="#B29D88" />
+                                <Text className="text-brand-taupe text-base font-worksans-semibold">
                                     Verifying your code...
                                 </Text>
                             </View>

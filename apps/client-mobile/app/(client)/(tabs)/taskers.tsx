@@ -148,8 +148,8 @@ const TaskersScreen = () => {
         >
           {!user?.id ? (
             <View className="flex-col items-center justify-center py-12 px-8">
-              <Users size={64} color="#D17852" />
-              <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
+              <Users size={64} color="#C1856A" />
+              <Text className="text-lg font-medium text-brand-dark mt-4 mb-2">
                 Please sign in
               </Text>
               <Text className="text-sm text-[#666666] text-center mb-6">
@@ -157,7 +157,7 @@ const TaskersScreen = () => {
               </Text>
               <Pressable
                 onPress={() => router.push('/(auth)/(client)')}
-                className="bg-[#D17852] px-8 py-3 rounded-full"
+                className="bg-brand-terracotta px-8 py-3 rounded-full"
               >
                 <Text className="text-white font-medium">Sign In</Text>
               </Pressable>

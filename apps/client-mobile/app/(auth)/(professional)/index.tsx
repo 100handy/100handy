@@ -1,12 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Image, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
 export default function ProfessionalWelcome() {
-  const [selectedCountry, setSelectedCountry] = useState('GB');
   const params = useLocalSearchParams();
   const ref = useMemo(() => {
     const value = params.ref;
@@ -15,7 +13,7 @@ export default function ProfessionalWelcome() {
   }, [params.ref]);
 
   return (
-    <View className="flex-1" style={{ backgroundColor: '#3E433D' }}>
+    <View className="flex-1 bg-brand-dark">
       <SafeAreaView className="flex-1">
         <ScrollView 
           className="flex-1"
@@ -24,20 +22,19 @@ export default function ProfessionalWelcome() {
         >
           <View className="flex-col flex-1">
           {/* Dark Top Section */}
-          <View className="flex-col pb-10" style={{ backgroundColor: '#3E433D' }}>
-            {/* Country Selector */}
+          <View className="flex-col pb-10 bg-brand-dark">
+            {/* Country Label */}
             <View className="items-center pt-4 pb-12">
-              <Pressable className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
-                <Image 
+              <View className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
+                <Image
                   source={require('@/assets/images/uk-flag.png')}
                   className="w-7 h-4 mr-2"
                   resizeMode="contain"
                 />
-                <Text className="text-white font-worksans-medium text-[15px] mr-1">
-                  {selectedCountry}
+                <Text className="text-white font-worksans-medium text-[15px]">
+                  United Kingdom
                 </Text>
-                <ChevronDown size={16} color="white" />
-              </Pressable>
+              </View>
             </View>
 
             {/* Logo Container */}
@@ -45,10 +42,10 @@ export default function ProfessionalWelcome() {
               <View className="bg-white rounded-[32px] shadow-lg overflow-hidden" style={{ width: 175, height: 175 }}>
                 {/* 100 HANDY Text */}
                 <View className="flex-col items-center pt-6 pb-3">
-                  <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider" style={{ color: '#30352D' }}>
+                  <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider text-brand-dark-alt">
                     100
                   </Text>
-                  <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider" style={{ color: '#30352D' }}>
+                  <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider text-brand-dark-alt">
                     HANDY
                   </Text>
                 </View>
@@ -76,17 +73,16 @@ export default function ProfessionalWelcome() {
           </View>
 
           {/* Light Bottom Section */}
-          <View className="flex-col flex-1" style={{ backgroundColor: '#FFFFFF' }}>
+          <View className="flex-col flex-1 bg-white">
             {/* Welcome Text */}
-            <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8" style={{ color: '#30352D' }}>
+            <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8 text-brand-dark-alt">
               Welcome to 100 Handy Task
             </Text>
 
             {/* Create Account Button */}
             <View className="px-5">
               <Button
-                className="rounded-full shadow-md mb-4"
-                style={{ backgroundColor: '#C1856A' }}
+                className="rounded-full shadow-md mb-4 bg-brand-terracotta"
                 onPress={() =>
                   router.push({
                     pathname: '/(auth)/(professional)/sign-up',
@@ -101,8 +97,7 @@ export default function ProfessionalWelcome() {
 
               {/* Sign In Button */}
               <Pressable 
-                className="rounded-full py-4 border-2 mb-10"
-                style={{ borderColor: '#C1856A', backgroundColor: 'transparent' }}
+                className="rounded-full py-4 border-2 mb-10 border-brand-terracotta bg-transparent"
                 onPress={() =>
                   router.push({
                     pathname: '/(auth)/(professional)/sign-in',
@@ -110,21 +105,21 @@ export default function ProfessionalWelcome() {
                   } as any)
                 }
               >
-                <Text className="text-center text-[18px] font-worksans-bold" style={{ color: '#C1856A' }}>
+                <Text className="text-center text-[18px] font-worksans-bold text-brand-terracotta">
                   Sign in
                 </Text>
               </Pressable>
 
               {/* Terms and Privacy */}
               <View className="pb-10">
-                <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
+                <Text className="text-center text-[15px] font-worksans-medium leading-[22px] text-brand-dark-alt">
                   By signing up, you agree to the{' '}
-                  <Text style={{ color: '#C1856A' }}>Terms of Service</Text>
+                  <Text className="text-brand-terracotta">Terms of Service</Text>
                   {'\n'}
                   and have reviewed the{' '}
-                  <Text style={{ color: '#C1856A' }}>Privacy Policy.</Text>
+                  <Text className="text-brand-terracotta">Privacy Policy.</Text>
                   {'\n'}
-                  Manage <Text style={{ color: '#C1856A' }}>privacy settings</Text>
+                  Manage <Text className="text-brand-terracotta">privacy settings</Text>
                 </Text>
               </View>
             </View>

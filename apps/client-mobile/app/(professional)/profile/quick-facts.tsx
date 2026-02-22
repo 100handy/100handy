@@ -62,7 +62,7 @@ export default function QuickFactsScreen() {
         <Pressable onPress={() => router.back()}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
-        <Text className="flex-1 text-center text-lg font-semibold text-[#333A31] pr-6" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
+        <Text className="flex-1 text-center text-lg font-semibold text-brand-dark pr-6" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
           Quick Facts
         </Text>
       </View>
@@ -71,7 +71,7 @@ export default function QuickFactsScreen() {
         <View className="flex-col px-5 py-6 gap-6">
           {/* Info Section */}
           <View className="flex-col gap-2">
-            <Text className="text-xl font-bold text-[#333A31]" style={{ fontFamily: 'WorkSans_700Bold' }}>
+            <Text className="text-xl font-bold text-brand-dark" style={{ fontFamily: 'WorkSans_700Bold' }}>
               What's important to know about you?
             </Text>
           </View>
@@ -99,7 +99,7 @@ export default function QuickFactsScreen() {
       <View className="flex-col px-5 pb-8 pt-4">
         <Pressable
           onPress={handleSave}
-          className="bg-[#D17852] rounded-full py-4 items-center"
+          className="bg-brand-terracotta rounded-full py-4 items-center"
         >
           <Text className="text-white text-base font-semibold" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
             Save
@@ -120,10 +120,10 @@ function SelectableItem({ label, isSelected, onPress }: SelectableItemProps) {
   return (
     <Pressable
       onPress={onPress}
-      className={`rounded-lg px-4 py-3.5 ${isSelected ? 'bg-[#D17852]/10 border border-[#D17852]' : 'bg-[#F5F5F5]'}`}
+      className={`rounded-lg px-4 py-3.5 ${isSelected ? 'bg-brand-terracotta/10 border border-brand-terracotta' : 'bg-[#F5F5F5]'}`}
     >
       <Text 
-        className={`text-base ${isSelected ? 'text-[#333A31]' : 'text-[#333A31]'}`}
+        className={`text-base ${isSelected ? 'text-brand-dark' : 'text-brand-dark'}`}
         style={{ fontFamily: 'WorkSans_400Regular' }}
       >
         {label}

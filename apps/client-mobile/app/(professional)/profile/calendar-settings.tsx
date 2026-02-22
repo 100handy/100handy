@@ -32,7 +32,7 @@ export default function CalendarSettingsScreen() {
           <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text 
-          className="flex-1 text-center text-lg font-semibold text-[#333A31] pr-6" 
+          className="flex-1 text-center text-lg font-semibold text-brand-dark pr-6" 
           style={{ fontFamily: 'WorkSans_600SemiBold' }}
         >
           Calendar Settings
@@ -44,7 +44,7 @@ export default function CalendarSettingsScreen() {
           {/* Sync Calendars Setting */}
           <View className="flex-row items-center justify-between py-4 border-b border-[#E5E5E5]">
             <Text 
-              className="text-base text-[#333A31]" 
+              className="text-base text-brand-dark" 
               style={{ fontFamily: 'WorkSans_400Regular' }}
             >
               Sync calendars
@@ -54,7 +54,7 @@ export default function CalendarSettingsScreen() {
               onValueChange={handleToggle}
               trackColor={{ 
                 false: '#E5E5E5', 
-                true: '#D17852' 
+                true: '#C1856A'
               }}
               thumbColor="#FFFFFF"
               ios_backgroundColor="#E5E5E5"

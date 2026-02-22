@@ -59,7 +59,7 @@ export default function ClosingMessageScreen() {
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#D17852" />
+        <ActivityIndicator size="large" color="#C1856A" />
       </SafeAreaView>
     );
   }
@@ -109,7 +109,7 @@ export default function ClosingMessageScreen() {
       {/* Fixed Bottom Button */}
       <View className="px-5 pb-6 pt-4 bg-white">
         <Pressable
-          className={`rounded-full py-4 items-center ${isSaving ? 'bg-gray-400' : 'bg-[#D17852]'}`}
+          className={`rounded-full py-4 items-center ${isSaving ? 'bg-gray-400' : 'bg-brand-terracotta'}`}
           onPress={handleSave}
           disabled={isSaving}
           style={{

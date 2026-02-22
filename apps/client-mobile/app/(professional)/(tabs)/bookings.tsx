@@ -259,7 +259,7 @@ export default function BookingsTab() {
       <SafeAreaView className="flex-1 bg-white" edges={['top']}>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#047857" />
-          <Text className="text-[#30352D] text-lg mt-4 font-worksans">Loading availability...</Text>
+          <Text className="text-brand-dark-alt text-lg mt-4 font-worksans">Loading availability...</Text>
         </View>
       </SafeAreaView>
     );
@@ -270,7 +270,7 @@ export default function BookingsTab() {
       {/* Header */}
       <SafeAreaView edges={['top']} className="bg-white z-10">
         <View className="px-6 py-4 flex-row items-center justify-center">
-          <Text className="text-[#30352D] text-lg font-worksans-bold">
+          <Text className="text-brand-dark-alt text-lg font-worksans-bold">
             Set Availability
           </Text>
         </View>
@@ -282,7 +282,7 @@ export default function BookingsTab() {
           <Pressable
             key={day.short}
             onPress={() => setSelectedDay(index)}
-            className={`flex-1 items-center py-3 rounded-lg ${selectedDay === index ? 'bg-[#047857]' : 'bg-transparent'
+            className={`flex-1 items-center py-3 rounded-lg ${selectedDay === index ? 'bg-emerald-700' : 'bg-transparent'
               }`}
           >
             <Text
@@ -292,7 +292,7 @@ export default function BookingsTab() {
               {day.short}
             </Text>
             <Text
-              className={`font-worksans-semibold text-[14px] ${selectedDay === index ? 'text-white' : 'text-[#30352D]'
+              className={`font-worksans-semibold text-[14px] ${selectedDay === index ? 'text-white' : 'text-brand-dark-alt'
                 }`}
             >
               {day.date}
@@ -395,7 +395,7 @@ export default function BookingsTab() {
                 }}
                 className="rounded-lg justify-center items-center"
               >
-                <Text className="text-[#047857] font-worksans-bold">
+                <Text className="text-emerald-700 font-worksans-bold">
                   {isMerge ? 'Merging...' : 'New Slot'}
                 </Text>
               </View>
@@ -407,7 +407,7 @@ export default function BookingsTab() {
       {/* Floating Add Button - positioned above tab bar */}
       <Pressable
         onPress={handleOpenModal}
-        className="absolute bottom-[100px] right-6 w-[56px] h-[56px] bg-[#047857] rounded-full items-center justify-center shadow-lg"
+        className="absolute bottom-[100px] right-6 w-[56px] h-[56px] bg-emerald-700 rounded-full items-center justify-center shadow-lg"
       >
         <Plus color="white" size={28} strokeWidth={2} />
       </Pressable>
@@ -420,21 +420,21 @@ export default function BookingsTab() {
             {/* Modal Header */}
             <View className="flex-col items-center mb-6">
               <View className="w-12 h-1 bg-[#E5E5E5] rounded-full mb-4" />
-              <Text className="font-worksans-bold text-[20px] text-[#30352D]">
+              <Text className="font-worksans-bold text-[20px] text-brand-dark-alt">
                 Add Availability
               </Text>
             </View>
 
             {/* Time Display */}
             <View className="flex-row items-center justify-center gap-3 mb-6">
-              <View className="px-6 py-3 rounded-lg bg-[#F5E6DC]">
-                <Text className="font-worksans-semibold text-[20px] text-[#30352D]">
+              <View className="px-6 py-3 rounded-lg bg-brand-cream">
+                <Text className="font-worksans-semibold text-[20px] text-brand-dark-alt">
                   {startHour}:{startMinute}
                 </Text>
               </View>
               <Text className="font-worksans text-[16px] text-[#6B6B6B]">to</Text>
               <View className="px-6 py-3 rounded-lg bg-[#F5F5F5]">
-                <Text className="font-worksans-semibold text-[20px] text-[#30352D]">
+                <Text className="font-worksans-semibold text-[20px] text-brand-dark-alt">
                   {endHour}:{endMinute}
                 </Text>
               </View>
@@ -479,7 +479,7 @@ export default function BookingsTab() {
             <View className="flex-col gap-4">
               <Button
                 onPress={handleSave}
-                className={`rounded-full ${isMerge ? 'bg-[#047857]' : 'bg-[#D17852]'}`}
+                className={`rounded-full ${isMerge ? 'bg-emerald-700' : 'bg-brand-terracotta'}`}
               >
                 <ButtonText className="font-worksans-semibold text-white text-[16px]">
                   {isMerge ? 'Merge availability' : 'Add Availability'}
@@ -490,7 +490,7 @@ export default function BookingsTab() {
                 onPress={() => setShowAddModal(false)}
                 className="items-center py-3"
               >
-                <Text className="font-worksans-semibold text-[16px] text-[#D17852]">
+                <Text className="font-worksans-semibold text-[16px] text-brand-terracotta">
                   Discard
                 </Text>
               </Pressable>

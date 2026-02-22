@@ -26,7 +26,7 @@ function PerformanceCard({ title, children, onPress }: PerformanceCardProps) {
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-col flex-1">
-          <Text className="font-worksans-bold text-[18px] text-[#30352D] mb-2">
+          <Text className="font-worksans-bold text-[18px] text-brand-dark-alt mb-2">
             {title}
           </Text>
           {children}
@@ -110,12 +110,12 @@ export default function PerformanceScreen() {
     return (
       <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
         <View className="bg-white px-5 py-4 border-b border-[#F0F0F0]">
-          <Text className="font-worksans-bold text-[20px] text-[#30352D] text-center">
+          <Text className="font-worksans-bold text-[20px] text-brand-dark-alt text-center">
             Performance
           </Text>
         </View>
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="font-worksans text-[16px] text-[#30352D] text-center mb-2">
+          <Text className="font-worksans text-[16px] text-brand-dark-alt text-center mb-2">
             Failed to load performance data
           </Text>
           <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center mb-4">
@@ -136,7 +136,7 @@ export default function PerformanceScreen() {
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
       {/* Header */}
       <View className="bg-white px-5 py-4 border-b border-[#F0F0F0]">
-        <Text className="font-worksans-bold text-[20px] text-[#30352D] text-center">
+        <Text className="font-worksans-bold text-[20px] text-brand-dark-alt text-center">
           Performance
         </Text>
       </View>
@@ -159,7 +159,7 @@ export default function PerformanceScreen() {
                 <Text className="font-worksans text-[14px] text-[#6B6B6B]">
                   {currentMonthLabel} Total
                 </Text>
-                <Text className="font-worksans-bold text-[24px] text-[#30352D]">
+                <Text className="font-worksans-bold text-[24px] text-brand-dark-alt">
                   {formatCurrency(earnings?.totalEarned || 0)}
                 </Text>
               </View>
@@ -173,7 +173,7 @@ export default function PerformanceScreen() {
           <PerformanceCard title="Reviews">
             <View className="flex-col gap-2">
               <View className="flex-row items-baseline gap-2">
-                <Text className="font-worksans-bold text-[32px] text-[#30352D]">
+                <Text className="font-worksans-bold text-[32px] text-brand-dark-alt">
                   --
                 </Text>
                 <Text className="font-worksans text-[18px] text-[#6B6B6B]">
@@ -188,7 +188,7 @@ export default function PerformanceScreen() {
                   <Star key={star} color="#E5E5E5" size={20} strokeWidth={2} fill="#E5E5E5" />
                 ))}
               </View>
-              <Text className="font-worksans-medium text-[11px] text-[#B8926A] mt-1">
+              <Text className="font-worksans-medium text-[11px] text-brand-taupe mt-1">
                 Reviews will appear here after completing jobs
               </Text>
             </View>
@@ -201,7 +201,7 @@ export default function PerformanceScreen() {
           >
             <View className="flex-col gap-1">
               <View className="flex-row items-center gap-2">
-                <BarChart3 color="#B8926A" size={20} strokeWidth={1.5} />
+                <BarChart3 color="#B29D88" size={20} strokeWidth={1.5} />
                 <Text className="font-worksans text-[14px] text-[#6B6B6B]">
                   View detailed analytics
                 </Text>
@@ -222,7 +222,7 @@ export default function PerformanceScreen() {
                 <Text className="font-worksans text-[14px] text-[#6B6B6B]">
                   Activated skills:
                 </Text>
-                <Text className="font-worksans-bold text-[20px] text-[#30352D]">
+                <Text className="font-worksans-bold text-[20px] text-brand-dark-alt">
                   {activeSkillsCount}
                 </Text>
               </View>
@@ -237,7 +237,7 @@ export default function PerformanceScreen() {
           {/* Elite Status Section */}
           <View className="bg-white mx-4 mb-6">
             <View className="flex-col gap-1 mb-3">
-              <Text className="font-worksans-bold text-[18px] text-[#30352D]">
+              <Text className="font-worksans-bold text-[18px] text-brand-dark-alt">
                 Elite status
               </Text>
               <Text className="font-worksans text-[13px] text-[#6B6B6B]">
