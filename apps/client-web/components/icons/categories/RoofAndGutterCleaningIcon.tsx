@@ -1,0 +1,17 @@
+import type { SVGProps } from "react";
+
+export function RoofAndGutterCleaningIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M51.45,69.03h-1.44c-5.43,0-9.83-4.4-9.83-9.83v-10.65c0-.99.8-1.79,1.79-1.79h17.53c.99,0,1.79.8,2.16,1.82v10.65c-.38,5.39-4.78,9.79-10.21,9.79Z"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M52.38,68.99l56.11.02c6.27,0,11.34-5.11,11.34-11.41v-9.24c0-.88-.71-1.6-1.59-1.6h-58.74"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M95.77,89.71v22.11c0,.79-.64,1.42-1.42,1.42h-6.45c-.79,0-1.42-.64-1.42-1.42v-22.11"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="96.14" y1="88.87" x2="109.58" y2="78.39"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M109.58,70.11l.06,7.8c0,.11-.03.71-.01.33"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="86.9" y1="84.36" x2="100.28" y2="74.21"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M100.36,70.05l-.02,3.66c0,.11-.03.71-.01.33"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M86.47,90.27v-5.22c0-.11,0-.71,0-.33"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M95.78,94.69v-5.22c0-.11,0-.71,0-.33"/>
+    </svg>
+  );
+}

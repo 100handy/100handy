@@ -1,0 +1,40 @@
+import type { SVGProps } from "react";
+
+export function OfficeCleaningIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="30.75" y="76.12" width="98.5" height="7.67" rx="2.49" ry="2.49"/>
+  <g>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M100.6,84.42h12.91v25.22h-2.03c-6.01,0-10.88-4.88-10.88-10.88v-14.34h0Z"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M57.12,84.42h2.03v25.22h-12.91v-14.34c0-6.01,4.88-10.88,10.88-10.88Z" transform="translate(105.37 194.06) rotate(-180)"/>
+  </g>
+  <g>
+    <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="56.38" y="67.13" width="13.21" height="5.69" rx="1.29" ry="1.29"/>
+    <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="41.89" y="38.76" width="40.43" height="28.24" rx=".8" ry=".8"/>
+  </g>
+  <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="105.5" y="57.18" width="5.34" height="15.64" rx=".2" ry=".2"/>
+  <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="114.25" y="57.18" width="3.65" height="15.64" rx=".07" ry=".07"/>
+  <g>
+    <rect fill="none" x="38.42" y="81.46" width="38.53" height="37.57"/>
+    <g>
+      <g>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M38.07,84.25c0-2.01,1.63-3.63,3.63-3.63h32.92c2.01,0,3.63,1.63,3.63,3.63v33.17c0,2.01-1.63,3.63-3.63,3.63"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M38.08,83.97l-.11,11.41c0,.08.02.41,0,.26"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M74.94,121.04l-18.33.1c-.07,0-.61,0-.22,0"/>
+      </g>
+      <g>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M39.15,108.14c0,.52-.08-3.39,0-6.98.01-.69-1.06-2.43-2.41-2.28-1.23.13-1.63.8-2,1.81-.07.19-.1.39-.11.6l-.11,10.99s-.01.24,0,.15"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M39.24,108.07l10.25-10.26c.08-.07.18-.16.32-.25.68-.43,1.84-.8,2.73-.23.14.09.93.73.95,1.66.02.71-.51,1.37-.61,1.53"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M55.36,98.03l-9.76,9.78s-.23.22-.08.08"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M58.33,100.83l-9.22,9.57s-.14.13-.06.05"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M60.11,105.62l-9.43,9.51s-.25.23-.1.09"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M60.31,111.67l-9.52,9.45s-.21.21-.08.08"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M55.19,98.17c.68-.43,1.76-.86,2.65-.28.14.09.93.73.95,1.66.02.71-.54,1.35-.64,1.51"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M56.55,102.67c.68-.43,2.04-.94,2.93-.36.14.09,1.03.68,1.05,1.61.02.71-.09,1.43-.57,1.85"/>
+        <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M57.25,108.53c.68-.43,1.75-.49,2.64.08.14.09.81.67.83,1.6.02.71-.48,1.52-.58,1.68"/>
+      </g>
+    </g>
+  </g>
+    </svg>
+  );
+}

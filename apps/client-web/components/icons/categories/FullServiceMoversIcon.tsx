@@ -1,0 +1,31 @@
+import type { SVGProps } from "react";
+
+export function FullServiceMoversIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <g>
+    <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="57.73" y="56.98" width="51.01" height="40.35" rx="4.43" ry="4.43" transform="translate(-.23 .25) rotate(-.17)"/>
+    <path strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" d="M138.49,93.22c0,.45-.15,1.29-.79,1.93-.62.62-1.44.77-1.93.81l-22.25.07c-1.51,0-2.74-1.22-2.74-2.72l-.08-26.66c0-1.51,1.22-2.74,2.72-2.74l13.39-.04c.27,0,.52.14.67.37.9,1.42,1.68,2.55,2.22,3.32,3.29,4.65,4.65,6.95,7.82,10.96.29.55.45.87.47,1.23.26,4.04.43,6.85.5,13.48Z"/>
+    <ellipse strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" cx="75.92" cy="95.93" rx="7" ry="6.94" transform="translate(-.28 .23) rotate(-.17)"/>
+    <ellipse strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" cx="123.29" cy="96.15" rx="7" ry="6.94" transform="translate(-.28 .37) rotate(-.17)"/>
+    <path strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" d="M117.46,78.45l-.03-9.41c0-.08,0-.45,0-.23"/>
+    <path strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" d="M129.82,78.34c.11,0-.06,0-.09,0l-12.16.03s-.18,0-.09,0"/>
+  </g>
+  <g>
+    <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="78.05" y="63.32" width="22.71" height="21.64"/>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="89.43" y1="63.25" x2="89.43" y2="68.49"/>
+    <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="88.31" y1="68.01" x2="90.17" y2="69.54"/>
+    <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="89.07" y1="67.66" x2="90.47" y2="69.56"/>
+    <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="89.84" y1="67.68" x2="92.38" y2="70.22"/>
+  </g>
+  <g>
+    <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="32.58" y="82.86" width="13.26" height="12.63" transform="translate(-26.59 17.34) rotate(-18.75)"/>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="37.18" y1="83.15" x2="38.16" y2="86.05"/>
+    <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="37.46" y1="85.99" x2="38.77" y2="86.49"/>
+    <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="37.81" y1="85.66" x2="38.94" y2="86.44"/>
+    <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="38.24" y1="85.52" x2="40.12" y2="86.45"/>
+  </g>
+  <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="20.6" y="95.92" width="37.9" height="1.45" rx=".72" ry=".72" transform="translate(-28.29 17.25) rotate(-18.26)"/>
+    </svg>
+  );
+}

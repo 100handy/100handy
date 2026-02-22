@@ -1,0 +1,19 @@
+import type { SVGProps } from "react";
+
+export function LeafRakingAndRemovalIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M92.51,30.34h0c1.71,0,3.1,1.39,3.1,3.1v47.65h-6.2v-47.65c0-1.71,1.39-3.1,3.1-3.1Z" transform="translate(25.82 -29.22) rotate(20.8)"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M71.21,89.57l-19.41,21.37c-.1.11-.4.41-.31.32"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M86.4,80.34l8.5,40.2c.04.21.15.8.12.63"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M80.86,78.7l-33.75,24.14c-.18.12-.69.44-.54.36"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M73.85,91.49l-14.82,25.79c-.08.13-.33.49-.25.39"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M84.76,94.05l1.85,30.17c0,.16,0,.6,0,.47"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M78.25,93.03l-11.19,28.96c-.07.15-.31.7-.2.44"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M81.78,95.26l-5.83,29.66c-.04.15-.17.71-.11.46"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M69.76,87.83c1.78,1.46,4.62,3.43,8.52,4.87,4.02,1.49,7.57,1.81,9.91,1.84"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M53.88,98.19c4.13,2.35,9.76,8.07,18.11,11.2,8.63,3.24,16.69,2.58,21.38,3.51"/>
+  <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M74.38,83.05c1.26,1.26,3.29,2.92,6.19,3.98,2.99,1.09,5.71,1.11,7.52.94"/>
+    </svg>
+  );
+}

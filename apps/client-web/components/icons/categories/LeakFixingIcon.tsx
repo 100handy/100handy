@@ -1,0 +1,24 @@
+import type { SVGProps } from "react";
+
+export function LeakFixingIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <path strokeMiterlimit="10" stroke="currentColor" strokeWidth="3px" fill="none" d="M129.16,80.19c0,.87-.71,1.58-1.58,1.58H32.42c-.87,0-1.58-.71-1.58-1.58v-24.86c0-.87.71-1.58,1.58-1.58h95.16c.87,0,1.58.71,1.58,1.58v24.86Z"/>
+  <rect fill="none" strokeMiterlimit="10" stroke="currentColor" strokeWidth="3px" x="38.46" y="49.64" width="18.12" height="36.25" rx="4.22" ry="4.22"/>
+  <rect fill="none" strokeMiterlimit="10" stroke="currentColor" strokeWidth="3px" x="103.41" y="49.64" width="18.12" height="36.25" rx="4.22" ry="4.22"/>
+  <path fill="none" strokeMiterlimit="10" stroke="currentColor" strokeWidth="3px" d="M84.28,83.4l1.49-11.94c.02-.2-.22-.31-.35-.15l-10.15,11.95"/>
+  <polygon fill="none" points="86.64 84.68 74.68 84.05 74.68 83.22 85.83 83.24 86.64 84.68"/>
+  <path strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" fill="none" d="M77.23,87.73c-.47.95-.83,1.76-1.21,2.44s-1.51,2.57-1.68,3.63c-.19,1.15.28,2.66,1.71,3.06,1.03.29,2.26-.05,2.94-.88.59-.72.71-1.56.71-2.15,0-.77-.29-1.41-1.37-3.78-.4-.88-.77-1.66-1.09-2.33Z"/>
+  <path strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" fill="none" d="M83.33,94.75c-.28.56-.49,1.04-.71,1.44s-.89,1.52-1,2.14c-.11.68.17,1.57,1.01,1.81.61.17,1.33-.03,1.74-.52.35-.42.42-.92.42-1.27,0-.46-.17-.84-.81-2.23-.24-.52-.45-.98-.64-1.37Z"/>
+  <polygon fill="none" strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" points="110.34 69.24 104.51 72.04 104.68 73.46 111.38 71.15 110.34 69.24"/>
+  <polygon fill="none" strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" points="115.89 69.03 111.86 69.57 108.61 62.26 113.91 63.62 115.89 69.03"/>
+  <polygon fill="none" strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" points="100.19 75.86 103.63 73.95 100.68 65.19 97.68 69.64 100.19 75.86"/>
+  <path fill="none" strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" d="M123.01,107.26c-2.43,1.04-7.32-8.8-10.8-16.92-3.49-8.12-5.78-15.16-3.35-16.21,2.43-1.04,5.02,5.77,8.51,13.89,3.49,8.12,8.07,18.2,5.64,19.24Z"/>
+  <path strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" fill="none" d="M123.97,110.06h0c-1.98.83-4.26-.1-5.09-2.08l-11.4-27.09c-.44-1.06-.39-2.2.06-3.16.39-.84,1.09-1.55,2.01-1.93h0c.91-.38,1.89-.39,2.76-.1,1.02.35,1.88,1.11,2.33,2.17l11.4,27.09c.83,1.98-.1,4.26-2.08,5.09Z"/>
+  <path strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" fill="none" d="M107.16,80.1c-3.21-.15-7.44-1.28-9.36-5.76-2-4.65.44-10.02,4.1-11.5"/>
+  <polyline strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" fill="none" points="106.73 61.49 109.93 69.11 104.5 71.39 101.3 63.78"/>
+  <path strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" fill="none" d="M114.31,77.11c2.14-2.4,3.98-6.78,2.43-10.72-1.85-4.71-7.47-6.69-11.09-5.11"/>
+  <path fill="none" strokeMiterlimit="10" stroke="currentColor" strokeWidth="2px" d="M115.32,69.61c.68,1.6-2.03,7.17-4.76,8.32s-8.6-.35-9.28-1.96,4.49-1.49,7.22-2.64,6.15-5.33,6.82-3.73Z"/>
+    </svg>
+  );
+}

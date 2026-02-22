@@ -1,0 +1,31 @@
+import type { SVGProps } from "react";
+
+export function CurtainsAndBlindsIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <g>
+    <rect fill="none" x="34.25" y="34.47" width="91.5" height="7.83"/>
+    <path d="M124.25,35.97v4.83H35.75v-4.83h88.5M127.25,32.97H32.75v10.83h94.5v-10.83h0Z"/>
+  </g>
+  <g>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="45.7" y1="43.19" x2="45.7" y2="116.2"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="114.3" y1="43.19" x2="114.3" y2="116.2"/>
+  </g>
+  <g>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="47.45" x2="127.3" y2="47.45"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="55.7" x2="127.3" y2="55.7"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="63.94" x2="127.3" y2="63.94"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="72.18" x2="127.3" y2="72.18"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="80.42" x2="127.3" y2="80.42"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="88.67" x2="127.3" y2="88.67"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="96.91" x2="127.3" y2="96.91"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="105.15" x2="127.3" y2="105.15"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="32.7" y1="113.4" x2="127.3" y2="113.4"/>
+  </g>
+  <g>
+    <rect fill="none" x="34.25" y="117.7" width="91.5" height="7.83"/>
+    <path d="M124.25,119.2v4.83H35.75v-4.83h88.5M127.25,116.2H32.75v10.83h94.5v-10.83h0Z"/>
+  </g>
+    </svg>
+  );
+}

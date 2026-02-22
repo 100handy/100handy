@@ -1,0 +1,37 @@
+import type { SVGProps } from "react";
+
+export function WindowAndBlindsRepairIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <g>
+    <rect fill="none" x="34.25" y="34.47" width="91.5" height="7.83" rx=".46" ry=".46"/>
+    <path d="M124.25,35.97v4.83H35.75v-4.83h88.5M125.29,32.97H34.71c-1.08,0-1.96.88-1.96,1.96v6.92c0,1.08.88,1.96,1.96,1.96h90.59c1.08,0,1.96-.88,1.96-1.96v-6.92c0-1.08-.88-1.96-1.96-1.96h0Z"/>
+  </g>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="45.7" y1="43.19" x2="45.7" y2="116.2"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="114.3" y1="43.19" x2="114.3" y2="116.2"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="32.7" y1="47.45" x2="127.3" y2="47.45"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="32.7" y1="55.7" x2="127.3" y2="55.7"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="32.7" y1="63.94" x2="127.3" y2="63.94"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="32.7" y1="72.18" x2="127.3" y2="72.18"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="32.7" y1="80.42" x2="127.3" y2="72.18"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="32.7" y1="88.67" x2="127.09" y2="75.06"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="32.7" y1="96.91" x2="126.62" y2="82.89"/>
+  <g>
+    <path fill="none" d="M34.69,117.7h90.62c.24,0,.44.2.44.44v6.95c0,.24-.2.44-.44.44H34.69c-.24,0-.44-.2-.44-.44v-6.95c0-.24.2-.44.44-.44Z"/>
+    <path d="M124.25,119.2v4.83H35.75v-4.83h88.5M125.31,116.2H34.69c-1.07,0-1.94.87-1.94,1.94v6.95c0,1.07.87,1.94,1.94,1.94h90.61c1.07,0,1.94-.87,1.94-1.94v-6.95c0-1.07-.87-1.94-1.94-1.94h0Z"/>
+  </g>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="60.63" y1="43.01" x2="60.63" y2="68.18"/>
+  <g>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M131.85,135.91h0c-2.03,1.65-5.01,1.33-6.65-.7l-22.51-27.76c-.88-1.08-1.2-2.44-1-3.71.17-1.12.75-2.17,1.69-2.94h0c.94-.76,2.07-1.1,3.19-1.05,1.3.06,2.58.65,3.46,1.75l22.51,27.76c1.65,2.03,1.33,5.01-.7,6.65Z"/>
+    <g>
+      <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M102.05,106.64c-3.8.91-9.12,1.03-12.89-3.55s-3.06-11.45.71-14.42"/>
+      <polyline strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" points="95.22 85.05 101.55 92.86 95.99 97.37 89.66 89.56"/>
+      <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M109.38,100.72c1.68-3.53,2.35-9.27-.81-13.35-3.77-4.87-10.33-5.44-14.02-2.37"/>
+    </g>
+    <ellipse fill="none" strokeWidth="2px" strokeMiterlimit="10" stroke="currentColor" cx="102.96" cy="100.34" rx="6" ry="3.41" transform="translate(-40.21 87.24) rotate(-39.03)"/>
+  </g>
+  <polygon fill="none" strokeMiterlimit="10" stroke="currentColor" points="129 127.27 120.67 127.22 110.66 114.89 111.39 105.53 129 127.27"/>
+  <path fill="none" strokeMiterlimit="10" stroke="currentColor" d="M107.74,88.71c-2.25.2-4.85.44-7.1.63l-3.17-3.89c1.87-.18,3.17-.33,5.04-.51.6.07,2.04.85,3.11,1.61.89.63,1.81,1.58,2.11,2.15Z"/>
+    </svg>
+  );
+}

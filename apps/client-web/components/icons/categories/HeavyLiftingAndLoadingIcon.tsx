@@ -1,0 +1,32 @@
+import type { SVGProps } from "react";
+
+export function HeavyLiftingAndLoadingIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <path strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" d="M43.18,52.83l-2.38.15c-1,.06-1.86-.58-1.93-1.43l-.85-9.95c-.07-.85.68-1.6,1.67-1.66l2.38-.15c1-.06,1.86.58,1.93,1.43l.85,9.95c.07.85-.68,1.6-1.67,1.66Z"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="50.92" y1="105.83" x2="42.12" y2="53"/>
+  <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="59.24" y="97.94" width="68.27" height="13.09" rx="1.82" ry="1.82"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="60.42" y1="104.49" x2="126" y2="104.21"/>
+  <ellipse strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" cx="116.81" cy="112.74" rx="6.15" ry="5.75"/>
+  <ellipse strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" cx="56.09" cy="112.13" rx="8.02" ry="8.09"/>
+  <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="61.52" y="67.19" width="30.55" height="29.11"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="76.83" y1="67.09" x2="76.83" y2="74.13"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="75.32" y1="73.49" x2="77.83" y2="75.55"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="76.35" y1="73.03" x2="78.23" y2="75.57"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="77.37" y1="73.04" x2="80.79" y2="76.46"/>
+  <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="98.99" y="48.64" width="22.71" height="21.64"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="110.36" y1="48.57" x2="110.37" y2="53.8"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="109.25" y1="53.32" x2="111.11" y2="54.86"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="110.01" y1="52.98" x2="111.41" y2="54.87"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="110.77" y1="52.99" x2="113.31" y2="55.53"/>
+  <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="96.21" y="70.83" width="27.86" height="25.93"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="110.16" y1="70.74" x2="110.16" y2="77.01"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="108.79" y1="76.44" x2="111.07" y2="78.28"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="109.73" y1="76.03" x2="111.44" y2="78.3"/>
+  <line stroke="currentColor" strokeMiterlimit="10" fill="none" x1="110.66" y1="76.04" x2="113.78" y2="79.09"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="76.67" y1="105.06" x2="76.67" y2="110.86"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="94.15" y1="105.2" x2="94.3" y2="111.9"/>
+  <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="109.57" y1="104.91" x2="109.49" y2="111.31"/>
+    </svg>
+  );
+}

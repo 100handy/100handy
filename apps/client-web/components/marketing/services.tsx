@@ -140,15 +140,19 @@ export function Services() {
           {loading ? (
             <div className="text-gray-500 text-sm">Loading services...</div>
           ) : displaySubCategories.length > 0 ? (
-            displaySubCategories.map((subCategory) => (
-              <button
-                key={subCategory.id}
-                onClick={() => handleSubCategoryClick(subCategory)}
-                className="rounded-full border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
-              >
-                {subCategory.name}
-              </button>
-            ))
+            displaySubCategories.map((subCategory) => {
+              const SubIcon = getCategoryIcon(subCategory.name);
+              return (
+                <button
+                  key={subCategory.id}
+                  onClick={() => handleSubCategoryClick(subCategory)}
+                  className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+                >
+                  <SubIcon className="h-5 w-5 shrink-0" />
+                  {subCategory.name}
+                </button>
+              );
+            })
           ) : usingFallbackMainCategories && activeCategory === "Assembly" ? (
             // Fallback static subcategories for Assembly
             ["Furniture Assembly", "Garden Assembly", "Office Furniture", "Bed Assembly", "Wardrobe Assembly", "Crib Assembly"].map(

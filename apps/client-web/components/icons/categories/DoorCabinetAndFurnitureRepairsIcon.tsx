@@ -1,0 +1,29 @@
+import type { SVGProps } from "react";
+
+export function DoorCabinetAndFurnitureRepairsIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <g>
+    <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="29.73" y="92.39" width="100.55" height="9.96" rx="2.49" ry="2.49"/>
+    <g>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M98.3,102.55h18.7v25.74h-7.82c-6.01,0-10.88-4.88-10.88-10.88v-14.86h0Z"/>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M53.88,102.55h7.82v25.74h-18.7v-14.86c0-6.01,4.88-10.88,10.88-10.88Z" transform="translate(104.7 230.84) rotate(-180)"/>
+    </g>
+  </g>
+  <g>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M74.98,45.55l40.65,29.25c2.97,2.14,4.13,5.61,2.59,7.75h0c-1.54,2.14-5.2,2.15-8.17.01l-40.65-29.25"/>
+    <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="66.85" y1="42.38" x2="66.85" y2="42.38"/>
+    <g>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M65.44,57.45c.58.43.78,1.13.46,1.57l-2.84,3.84c-.33.44-1.06.45-1.63.02l-8.86-6.56c-.58-.43-.78-1.13-.46-1.57l2.84-3.84c.33-.44,1.06-.45,1.63-.02"/>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M68.25,53.33c-1.16-.81-2.79.18-3.28,1.18-.58,1.16.19,2.8.59,3.01"/>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M56.58,50.89c.32.24,2-.2,2.7-1.16.59-.8.74-2.53.39-2.8"/>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M59.66,46.98c-.12-.11-.27-.28-.31-.52-.03-.2.02-.41.15-.58,1.55-1.97,3.1-3.94,4.65-5.91,1.56-1.99,4.27-3.35,6.95-5.15"/>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M78.05,38.04c-.69.56-2.34,2.99-2.6,3.4-.22.34-.54,1.12-.35,2.87.03.3.15.97-.22,1.56-.14.22-1.09,1.5-1.15,1.58l-4.46,5.68c-.26.35-.75.42-1.1.16"/>
+      <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M67.51,37.12c1.96-1.36,5.32-3.75,10.25-4.84,3.12-.69,5.84-.64,7.8-.45.42.04.82.18,1.15.43.29.22.63.52.46.87,0,0-.1.44-.19.58-.64,1.09-1.94,1.61-3.18,1.82-1.73.3-3.67.65-5.01,1.77s-2.47,2.89-3.43,4.24"/>
+    </g>
+  </g>
+  <rect strokeWidth="2px" fill="none" stroke="currentColor" strokeMiterlimit="10" x="48.08" y="78.3" width="11.22" height="1.05" rx=".53" ry=".53"/>
+  <rect strokeWidth="2px" fill="none" stroke="currentColor" strokeMiterlimit="10" x="53.36" y="78.75" width=".65" height="11.4"/>
+    </svg>
+  );
+}

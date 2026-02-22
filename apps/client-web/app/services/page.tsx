@@ -51,12 +51,14 @@ function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
               const href = route
                 ? `/services/${route.category}/${route.service}`
                 : `/services/${categorySlug}/${slugify(subcategory.name)}`;
+              const SubIcon = getCategoryIcon(subcategory.name);
               return (
                 <li key={subcategory.id}>
                   <Link
                     href={href}
-                    className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 hover:underline transition-colors"
+                    className="flex items-center gap-2 text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 hover:underline transition-colors"
                   >
+                    <SubIcon className="h-4 w-4 shrink-0" />
                     {subcategory.name}
                   </Link>
                 </li>

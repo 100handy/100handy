@@ -1,0 +1,24 @@
+import type { SVGProps } from "react";
+
+export function CleanIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <g>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M47.18,50.12c0-3.59,2.91-6.51,6.51-6.51h58.97c3.59,0,6.51,2.91,6.51,6.51v59.41c0,3.59-2.91,6.51-6.51,6.51"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M47.2,49.62l-.21,20.44c0,.15.03.73.01.47"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M113.23,116.03l-32.83.17c-.13,0-1.09,0-.39,0"/>
+  </g>
+  <g>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M49.13,92.91c0,.93-.14-6.07,0-12.5.03-1.23-1.9-4.35-4.31-4.09-2.2.24-2.91,1.43-3.57,3.24-.13.34-.19.7-.19,1.07l-.2,19.68c0,.09-.02.43-.01.27"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M49.28,92.78l18.37-18.38c.14-.13.33-.29.58-.45,1.21-.78,3.29-1.44,4.89-.41.26.16,1.67,1.31,1.71,2.97.03,1.27-.91,2.46-1.09,2.75"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M78.16,74.8l-17.48,17.51c-.05.05-.4.4-.15.15"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M83.48,79.82l-16.51,17.14s-.25.24-.1.09"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M86.67,88.4l-16.9,17.04c-.06.05-.44.41-.17.16"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M87.03,99.23l-17.06,16.94s-.37.37-.14.14"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M77.85,75.05c1.21-.78,3.16-1.53,4.75-.5.26.16,1.67,1.31,1.71,2.97.03,1.27-.97,2.42-1.15,2.71"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M80.29,83.12c1.21-.78,3.66-1.68,5.25-.65.26.16,1.85,1.22,1.89,2.88.03,1.27-.17,2.56-1.03,3.32"/>
+    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M81.55,93.61c1.21-.78,3.13-.88,4.73.15.26.16,1.44,1.2,1.48,2.86.03,1.27-.86,2.72-1.04,3.01"/>
+  </g>
+    </svg>
+  );
+}

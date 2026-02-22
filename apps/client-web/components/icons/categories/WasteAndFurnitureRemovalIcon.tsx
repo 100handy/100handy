@@ -1,0 +1,23 @@
+import type { SVGProps } from "react";
+
+export function WasteAndFurnitureRemovalIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="45.24" y="113.29" width="69.52" height="12.36" rx="1.7" ry="1.7"/>
+  <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="45.24" y="34.36" width="69.52" height="6.15" rx=".64" ry=".64"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="45.27" y1="40.19" x2="45.24" y2="115.01"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="92.06" y1="57.58" x2="102.92" y2="74.82"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="91.11" y1="41.52" x2="91.05" y2="113.02"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="114.73" y1="39.55" x2="114.75" y2="114.79"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="91.31" y1="70.81" x2="114.19" y2="78.74"/>
+  <circle strokeWidth="2.5px" fill="none" stroke="currentColor" strokeMiterlimit="10" cx="107.84" cy="106.3" r="2.18"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="46.12" y1="95.04" x2="114.71" y2="95.02"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="45.83" y1="58.23" x2="90.56" y2="51.43"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="47.03" y1="112.61" x2="59.78" y2="102.61"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="61.63" y1="83.68" x2="59.16" y2="103.71"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="61.53" y1="82.92" x2="70.39" y2="104.94"/>
+  <line fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x1="45.35" y1="122.21" x2="70.8" y2="103.19"/>
+  <polygon fill="none" points="68.13 103.29 46.74 119.37 46.72 114.73 60.66 103.79 62.44 89.14 68.13 103.29"/>
+    </svg>
+  );
+}

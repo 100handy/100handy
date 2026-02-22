@@ -1,0 +1,42 @@
+import type { SVGProps } from "react";
+
+export function FurnitureAssemblyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
+      <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="33.82" y="115.84" width="78.6" height="6.95"/>
+  <rect strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x="33.82" y="30.6" width="78.6" height="6.95"/>
+  <g>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="42.37" y1="36.3" x2="42.85" y2="117.12"/>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="40.78" y1="37.8" x2="105.42" y2="37.6"/>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="41.42" y1="63.65" x2="104.28" y2="63.47"/>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="73.79" y1="36.25" x2="73.72" y2="117.08"/>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="103.91" y1="36.1" x2="103.84" y2="117.05"/>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="41.45" y1="89.84" x2="104.31" y2="89.67"/>
+    <line strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="3px" x1="41.21" y1="115.64" x2="105.47" y2="115.8"/>
+  </g>
+  <circle strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="2.5px" cx="89.31" cy="50.05" r="2.46"/>
+  <circle strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="2.5px" cx="89.31" cy="77.18" r="2.46"/>
+  <circle strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="2.5px" cx="89.31" cy="103.42" r="2.46"/>
+  <circle strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="2.5px" cx="58" cy="77.18" r="2.46"/>
+  <circle strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="2.5px" cx="58" cy="103.42" r="2.46"/>
+  <circle strokeMiterlimit="10" fill="none" stroke="currentColor" strokeWidth="2.5px" cx="58" cy="50.05" r="2.46"/>
+  <ellipse fill="none" strokeMiterlimit="10" stroke="currentColor" cx="102.95" cy="106.54" rx="22.75" ry="22.86"/>
+  <g>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M116.89,124.97h0c-1.37,1.11-3.37.9-4.48-.47l-15.16-18.7c-.59-.73-.81-1.64-.67-2.5.12-.75.5-1.46,1.14-1.98h0c.63-.51,1.4-.74,2.15-.71.88.04,1.74.44,2.33,1.18l15.16,18.7c1.11,1.37.9,3.37-.47,4.48Z"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M96.82,105.25c-2.56.61-6.14.69-8.68-2.39s-2.03-8.5.51-10.5"/>
+    <polyline strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" points="92.22 90.72 96.49 95.98 92.74 99.01 88.48 93.76"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M101.76,101.27c1.13-2.38,1.58-6.24-.54-8.99-2.54-3.28-7.69-3.48-10.18-1.41"/>
+    <path fill="none" strokeWidth="2px" strokeMiterlimit="10" stroke="currentColor" d="M100.07,97.35c.9,1.11.1,3.25-1.79,4.79s-4.15,1.87-5.05.76,1.28-1.91,3.17-3.44,2.77-3.21,3.67-2.1Z"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M118.44,101.97l-21.71,21.57c-1.47,1.66-3.8,1.93-4.93.78h0c-1.14-1.15-.83-3.49.81-4.93l21.71-21.57"/>
+    <line strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" x1="121.16" y1="97.39" x2="121.16" y2="97.39"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M112.22,95.03c-.32.3-.76.36-.99.12l-2.03-2.1c-.23-.24-.16-.68.15-.99l4.84-4.68c.32-.3.76-.36.99-.12l2.03,2.1c.23.24.16.68-.15.99"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M114.42,97.14c.61-.62.17-1.7-.38-2.1-.64-.47-1.71-.17-1.87.05"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M117.06,90.35c-.17.17-.08,1.22.43,1.74.43.44,1.45.7,1.65.52"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M119.11,92.6c.08-.06.2-.14.34-.13.12,0,.24.05.34.15,1.03,1.13,2.06,2.26,3.1,3.39,1.04,1.14,1.59,2.91,2.41,4.7"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M122.65,104.58c-.27-.48-1.57-1.71-1.79-1.91-.18-.17-.62-.44-1.69-.5-.18,0-.6,0-.92-.29-.12-.11-.79-.81-.83-.85l-2.97-3.26c-.18-.19-.18-.49.01-.68"/>
+    <path strokeWidth="2px" strokeMiterlimit="10" fill="none" stroke="currentColor" d="M124.27,98.32c.62,1.32,1.73,3.58,1.89,6.66.1,1.95-.2,3.58-.51,4.75-.07.25-.19.48-.38.65-.16.15-.38.33-.57.19,0,0-.25-.11-.33-.17-.59-.5-.78-1.33-.78-2.1,0-1.07-.03-2.28-.57-3.2s-1.5-1.78-2.21-2.49"/>
+    <polygon fill="none" points="104.32 106 101.01 108.83 106.45 115.55 109.61 112.52 104.32 106"/>
+  </g>
+    </svg>
+  );
+}
