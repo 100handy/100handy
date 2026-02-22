@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import {
   MapPin,
@@ -18,7 +18,7 @@ interface SubcategoryCardProps {
   onPress: () => void;
 }
 
-function SubcategoryCard({ category, index, onPress }: SubcategoryCardProps) {
+const SubcategoryCard = React.memo(function SubcategoryCard({ category, index, onPress }: SubcategoryCardProps) {
   const Icon = getCategoryIcon(category.name);
   // Alternating colors matching original design
   const bgColor = index % 2 === 0 ? '#30352d' : '#BFA28D';
@@ -44,7 +44,7 @@ function SubcategoryCard({ category, index, onPress }: SubcategoryCardProps) {
       </Text>
     </Pressable>
   );
-}
+});
 
 // Section component for horizontal category row
 interface CategorySectionProps {
@@ -53,7 +53,7 @@ interface CategorySectionProps {
   onSelectCategory: (id: string, name: string) => void;
 }
 
-function CategorySection({ title, subcategories, onSelectCategory }: CategorySectionProps) {
+const CategorySection = React.memo(function CategorySection({ title, subcategories, onSelectCategory }: CategorySectionProps) {
   if (subcategories.length === 0) return null;
 
   return (
@@ -83,7 +83,7 @@ function CategorySection({ title, subcategories, onSelectCategory }: CategorySec
       </ScrollView>
     </View>
   );
-}
+});
 
 export function ServicesHomeScreen() {
   const router = useRouter();
@@ -120,7 +120,18 @@ export function ServicesHomeScreen() {
 
   const locationDisplay = getLocationDisplay();
 
-  const handleServicePress = (categoryId: string, categoryName: string) => {
+  const chipRows = useMemo(() => {
+    if (!groupedCategories || groupedCategories.length === 0) return [];
+    const allSubcategories = groupedCategories.flatMap(group => group.subcategories);
+    const chipsPerRow = 3;
+    const rows: Category[][] = [];
+    for (let i = 0; i < Math.min(allSubcategories.length, 15); i += chipsPerRow) {
+      rows.push(allSubcategories.slice(i, i + chipsPerRow));
+    }
+    return rows;
+  }, [groupedCategories]);
+
+  const handleServicePress = useCallback((categoryId: string, categoryName: string) => {
     if (!categoryId || !categoryName) {
       // If no category info, navigate to search instead
       router.push('/(client)/search-services');
@@ -128,7 +139,7 @@ export function ServicesHomeScreen() {
     }
     setSelectedCategory({ id: categoryId, name: categoryName });
     setShowBookingSheet(true);
-  };
+  }, [router]);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -182,45 +193,37 @@ export function ServicesHomeScreen() {
             </TouchableOpacity>
 
             {/* Quick-Select Chips - Multiple horizontal scrollable rows */}
-            {groupedCategories && groupedCategories.length > 0 && (() => {
-              const allSubcategories = groupedCategories.flatMap(group => group.subcategories);
-              const chipsPerRow = 3;
-              const rows: Category[][] = [];
-              for (let i = 0; i < Math.min(allSubcategories.length, 15); i += chipsPerRow) {
-                rows.push(allSubcategories.slice(i, i + chipsPerRow));
-              }
-              return (
-                <View className="mt-4" style={{ gap: 10 }}>
-                  {rows.map((row, rowIndex) => (
-                    <ScrollView
-                      key={rowIndex}
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={{ gap: 8 }}
-                    >
-                      {row.map((subcategory) => (
-                        <Pressable
-                          key={subcategory.id}
-                          onPress={() => handleServicePress(subcategory.id, subcategory.name)}
-                          style={{
-                            paddingHorizontal: 16,
-                            paddingVertical: 10,
-                            borderRadius: 20,
-                            borderWidth: 1,
-                            borderColor: '#6b7280',
-                            backgroundColor: 'transparent',
-                          }}
-                        >
-                          <Text style={{ color: '#f3e3d3', fontSize: 14, fontWeight: '500' }}>
-                            {subcategory.name}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </ScrollView>
-                  ))}
-                </View>
-              );
-            })()}
+            {chipRows.length > 0 && (
+              <View className="mt-4" style={{ gap: 10 }}>
+                {chipRows.map((row, rowIndex) => (
+                  <ScrollView
+                    key={rowIndex}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 8 }}
+                  >
+                    {row.map((subcategory) => (
+                      <Pressable
+                        key={subcategory.id}
+                        onPress={() => handleServicePress(subcategory.id, subcategory.name)}
+                        style={{
+                          paddingHorizontal: 16,
+                          paddingVertical: 10,
+                          borderRadius: 20,
+                          borderWidth: 1,
+                          borderColor: '#6b7280',
+                          backgroundColor: 'transparent',
+                        }}
+                      >
+                        <Text style={{ color: '#f3e3d3', fontSize: 14, fontWeight: '500' }}>
+                          {subcategory.name}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                ))}
+              </View>
+            )}
           </View>
 
           {/* Section Title */}

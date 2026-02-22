@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { Loader } from '@/components/ui/loader';
+
+const AUTH_TIMEOUT_MS = 10_000; // 10 second timeout for auth checks
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -24,73 +26,73 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   const [professionalOnboardingComplete, setProfessionalOnboardingComplete] = useState<boolean | null>(null);
   const [isIdentityVerified, setIsIdentityVerified] = useState<boolean | null>(null);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // Initialize auth state when component mounts
     initialize();
 
-    // Cleanup subscription when component unmounts
+    // Safety timeout: if auth checks don't resolve, stop loading
+    timeoutRef.current = setTimeout(() => {
+      setHasTimedOut(true);
+    }, AUTH_TIMEOUT_MS);
+
+    // Cleanup subscription and timeout when component unmounts
     return () => {
       cleanup();
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [initialize, cleanup]);
 
-  // Check professional onboarding status from database
+  // Clear timeout once loading completes
   useEffect(() => {
-    const checkProfessionalOnboarding = async () => {
-      if (isAuthenticated && userRole === 'handy' && !isLoading) {
-        setIsCheckingOnboarding(true);
-        try {
-          const handyProfile = await getHandyProfile();
-          setProfessionalOnboardingComplete(handyProfile?.onboarding_completed || false);
-        } catch (error) {
-          console.error('Error checking professional onboarding:', error);
-          setProfessionalOnboardingComplete(false);
-        } finally {
-          setIsCheckingOnboarding(false);
-        }
-      } else if (userRole !== 'handy') {
-        setProfessionalOnboardingComplete(null);
-      }
-    };
+    if (!isLoading && timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, [isLoading]);
 
-    checkProfessionalOnboarding();
-
-  }, [isAuthenticated, userRole, isLoading]);
-
-  // Check identity verification status (professionals only)
+  // Check professional onboarding and identity verification in a single effect
   useEffect(() => {
     let isMounted = true;
 
-    const checkIdentityVerification = async () => {
-      if (isAuthenticated && !isLoading) {
-        if (userRole === 'handy') {
-          // For professionals: check handy_profiles.verification_status
-          try {
-            const handyProfile = await getHandyProfile();
-            if (isMounted) {
-              const isVerified = handyProfile?.verification_status === 'verified';
-              setIsIdentityVerified(isVerified);
-            }
-          } catch (error) {
-            console.error('Error checking identity verification:', error);
-            if (isMounted) {
-              // Assume verified on error to avoid blocking legitimate users on transient failures
-              setIsIdentityVerified(true);
-            }
-          }
-        } else {
-          // For customers: skip identity verification check (removed from client flow)
+    const checkProfessionalStatus = async () => {
+      if (!isAuthenticated || isLoading) {
+        if (!isAuthenticated && isMounted) {
+          setProfessionalOnboardingComplete(null);
+          setIsIdentityVerified(null);
+        }
+        return;
+      }
+
+      if (userRole === 'handy') {
+        setIsCheckingOnboarding(true);
+        try {
+          const handyProfile = await getHandyProfile();
           if (isMounted) {
+            setProfessionalOnboardingComplete(handyProfile?.onboarding_completed || false);
+            setIsIdentityVerified(handyProfile?.verification_status === 'verified');
+          }
+        } catch (error) {
+          console.error('Error checking professional status:', error);
+          if (isMounted) {
+            setProfessionalOnboardingComplete(false);
+            // Assume verified on error to avoid blocking legitimate users on transient failures
             setIsIdentityVerified(true);
           }
+        } finally {
+          if (isMounted) setIsCheckingOnboarding(false);
         }
-      } else if (!isAuthenticated && isMounted) {
-        setIsIdentityVerified(null);
+      } else {
+        if (isMounted) {
+          setProfessionalOnboardingComplete(null);
+          setIsIdentityVerified(true);
+        }
       }
     };
 
-    checkIdentityVerification();
+    checkProfessionalStatus();
 
     return () => {
       isMounted = false;
@@ -183,7 +185,8 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     }
   }, [isAuthenticated, isEmailVerified, hasCompletedOnboarding, professionalOnboardingComplete, isIdentityVerified, userRole, user, isLoading, isCheckingOnboarding, segments, router]);
 
-  if (isLoading || (isAuthenticated && userRole === 'handy' && isCheckingOnboarding) || (isAuthenticated && isIdentityVerified === null)) {
+  const stillLoading = !hasTimedOut && (isLoading || (isAuthenticated && userRole === 'handy' && isCheckingOnboarding) || (isAuthenticated && isIdentityVerified === null));
+  if (stillLoading) {
     return <Loader />;
   }
 

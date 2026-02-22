@@ -45,6 +45,7 @@ export default function PerformanceScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [earnings, setEarnings] = useState<EarningsSummary | null>(null);
   const [activeSkillsCount, setActiveSkillsCount] = useState(0);
   const [eliteProgress, setEliteProgress] = useState<EliteProgress | null>(null);
@@ -60,6 +61,7 @@ export default function PerformanceScreen() {
     if (!user?.id) return;
 
     try {
+      setLoadError(null);
       const now = new Date();
       const [earningsData, skills, elite] = await Promise.all([
         getProfessionalEarnings(user.id, now.getFullYear(), now.getMonth() + 1),
@@ -72,6 +74,7 @@ export default function PerformanceScreen() {
       setEliteProgress(elite);
     } catch (error) {
       console.error('Error loading performance data:', error);
+      setLoadError(error instanceof Error ? error.message : 'Failed to load performance data');
     }
   }, [user?.id]);
 
@@ -83,8 +86,13 @@ export default function PerformanceScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
+    try {
+      await loadData();
+    } catch (error) {
+      console.error('Error refreshing performance data:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Calculate elite milestones
@@ -97,6 +105,32 @@ export default function PerformanceScreen() {
     // 4th milestone (top 35% performance) requires tracking — count as not met for now
     return { met, total: 4, percent: Math.round((met / 4) * 100) };
   }, [eliteProgress]);
+
+  if (loadError) {
+    return (
+      <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
+        <View className="bg-white px-5 py-4 border-b border-[#F0F0F0]">
+          <Text className="font-worksans-bold text-[20px] text-[#30352D] text-center">
+            Performance
+          </Text>
+        </View>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="font-worksans text-[16px] text-[#30352D] text-center mb-2">
+            Failed to load performance data
+          </Text>
+          <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center mb-4">
+            {loadError}
+          </Text>
+          <Pressable
+            onPress={loadData}
+            className="bg-[#D17852] px-6 py-2.5 rounded-full"
+          >
+            <Text className="text-white font-medium">Retry</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>

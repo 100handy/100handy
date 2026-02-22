@@ -22,6 +22,7 @@ import {
 import { useRouter } from 'expo-router';
 import { switchToCustomerRole, useAuthStore } from '@shared/supabase';
 import { useProfileStore } from '@shared/supabase';
+import { queryClient } from '@shared/query/queryClient';
 import * as ImagePicker from 'expo-image-picker';
 import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
 import { useToast } from '@/components/ui/toast';
@@ -64,6 +65,8 @@ export default function ProfessionalProfileScreen() {
       }
 
       await checkAuth();
+      // Invalidate all queries after role switch to avoid stale data
+      queryClient.invalidateQueries();
       router.replace('/(client)/(tabs)/home');
     } catch (err) {
       console.error('Error switching to customer:', err);

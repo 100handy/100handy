@@ -40,9 +40,10 @@ export const ConversationMessageList = ({
   useEffect(() => {
     if (messages.length > 0 && flatListRef.current) {
       // Small delay to ensure render is complete
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
+      return () => clearTimeout(timeout);
     }
   }, [messages.length]);
 
@@ -115,10 +116,6 @@ export const ConversationMessageList = ({
         ) : undefined
       }
       ListEmptyComponent={!loading ? renderEmpty : null}
-      onContentSizeChange={() => {
-        // Auto-scroll to bottom when content size changes
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }}
     />
   );
 };

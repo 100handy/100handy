@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { User, Session } from '@supabase/supabase-js';
 import { getSession } from '../supabase/auth';
 import { supabase } from '../supabase';
+import { queryClient } from '../query/queryClient';
 
 interface AuthState {
   user: User | null;
@@ -132,13 +133,45 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     try {
       set({ isLoading: true });
+
+      // Remove push token before signing out (requires auth context)
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('device_push_tokens')
+            .delete()
+            .eq('user_id', user.id);
+        }
+      } catch (tokenError) {
+        console.error('Error removing push token on logout:', tokenError);
+      }
+
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         console.error('Error signing out:', error);
         set({ isLoading: false });
         throw error;
       }
+
+      // Clear all stores to prevent data leaking between users
+      const { useProfileStore } = await import('./profile');
+      const { useBookingsStore } = await import('./bookings');
+      const { useProfessionalProfileStore } = await import('./professional-profile');
+      const { useLocationStore } = await import('./location');
+      const { useSupportStore } = await import('./support');
+      const { useTaskFormStore } = await import('./taskForm');
+
+      useProfileStore.getState().reset();
+      useBookingsStore.getState().reset();
+      useProfessionalProfileStore.getState().clearProfile();
+      useLocationStore.getState().clearLocation();
+      useSupportStore.getState().reset();
+      useTaskFormStore.getState().reset();
+
+      // Clear React Query cache
+      queryClient.clear();
 
       set({
         user: null,

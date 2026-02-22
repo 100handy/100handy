@@ -275,7 +275,7 @@ export interface EliteProgress {
 export async function getEliteProgress(userId: string): Promise<EliteProgress> {
   try {
     const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]!;
 
     // Fetch all completed bookings with category info
     const { data: bookings, error } = await supabase
@@ -299,7 +299,7 @@ export async function getEliteProgress(userId: string): Promise<EliteProgress> {
 
       // Extract category name from join (Supabase returns array for joins)
       const categoryArr = booking.categories as unknown as { name: string }[] | null;
-      const category = categoryArr && categoryArr.length > 0 ? categoryArr[0].name : 'Other';
+      const category = categoryArr && categoryArr.length > 0 ? categoryArr[0]!.name : 'Other';
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     }
 

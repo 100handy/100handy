@@ -61,6 +61,7 @@ export default function RootLayout() {
           response.notification.request.content.data
         );
         if (route) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           router.push(route as any);
         }
       }

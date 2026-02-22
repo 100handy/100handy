@@ -109,9 +109,15 @@ export default function TasksScreen() {
               <Text className="text-lg font-work-sans font-medium text-text-secondary mb-2">
                 Error loading tasks
               </Text>
-              <Text className="text-sm font-work-sans text-text-tertiary text-center px-8">
+              <Text className="text-sm font-work-sans text-text-tertiary text-center px-8 mb-4">
                 {error?.message || 'Something went wrong. Please try again.'}
               </Text>
+              <Pressable
+                onPress={() => refetch()}
+                className="bg-[#D17852] px-6 py-2.5 rounded-full"
+              >
+                <Text className="text-white font-medium">Retry</Text>
+              </Pressable>
             </View>
           ) : getCurrentBookings().length === 0 ? (
             <EmptyState />

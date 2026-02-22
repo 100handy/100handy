@@ -72,8 +72,6 @@ export default function TotalIncome() {
     },
   ]
 
-  const isLoading = metricsLoading || monthlyLoading || categoryLoading
-
   return (
     <div className="flex-1 flex flex-col">
       <Header title={`Total Income: Overview${metrics ? ` for ${metrics.activeHandyCount} Handys` : ''}`} />
@@ -208,7 +206,7 @@ export default function TotalIncome() {
                       cy="50%"
                       labelLine={false}
                       label={(entry) =>
-                        `${entry.name} ${Math.round((entry.value / categoryData.reduce((sum, c) => sum + c.value, 0)) * 100)}%`
+                        `${entry.name} ${Math.round(((entry.value as number) / categoryData.reduce((sum, c) => sum + c.value, 0)) * 100)}%`
                       }
                       outerRadius={80}
                       fill="#8884d8"

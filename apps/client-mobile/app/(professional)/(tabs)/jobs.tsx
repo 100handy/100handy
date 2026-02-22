@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
+import { FlatList, View, Text, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
@@ -27,7 +27,7 @@ interface JobCardProps {
   showBadge?: 'new' | 'in_progress';
 }
 
-function JobCard({ booking, onPress, showBadge }: JobCardProps) {
+const JobCard = React.memo(function JobCard({ booking, onPress, showBadge }: JobCardProps) {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const today = new Date();
@@ -136,7 +136,7 @@ function JobCard({ booking, onPress, showBadge }: JobCardProps) {
       </View>
     </Pressable>
   );
-}
+});
 
 function EmptyState({ type }: { type: TabType }) {
   const content = {
@@ -196,15 +196,20 @@ export default function ProfessionalJobs() {
     }, [user?.id, refetch])
   );
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Error refreshing jobs:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
 
-  const handleJobPress = (bookingId: string) => {
+  const handleJobPress = useCallback((bookingId: string) => {
     router.push(`/(professional)/job-details/${bookingId}`);
-  };
+  }, [router]);
 
   const tabs: { key: TabType; label: string; count?: number }[] = [
     { key: 'pending', label: 'Pending', count: pendingCount > 0 ? pendingCount : undefined },
@@ -226,6 +231,22 @@ export default function ProfessionalJobs() {
   };
 
   const bookings = getBookingsForTab();
+
+  const getBadge = useCallback((status: string): 'new' | 'in_progress' | undefined => {
+    if (status === 'pending') return 'new';
+    if (status === 'in_progress') return 'in_progress';
+    return undefined;
+  }, []);
+
+  const renderJobCard = useCallback(({ item }: { item: BookingWithCustomer }) => (
+    <JobCard
+      booking={item}
+      onPress={() => handleJobPress(item.id)}
+      showBadge={getBadge(item.status)}
+    />
+  ), [getBadge, handleJobPress]);
+
+  const keyExtractor = useCallback((item: BookingWithCustomer) => item.id, []);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
@@ -278,44 +299,42 @@ export default function ProfessionalJobs() {
       </View>
 
       {/* Content */}
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="#B8926A"
-          />
-        }
-      >
-        {isLoading && !refreshing ? (
-          <View className="flex-1 items-center justify-center py-16">
-            <Text className="font-worksans text-[14px] text-[#6B6B6B]">
-              Loading jobs...
-            </Text>
-          </View>
-        ) : bookings.length === 0 ? (
-          <EmptyState type={activeTab} />
-        ) : (
-          <View className="py-4">
-            {bookings.map((booking) => (
-              <JobCard
-                key={booking.id}
-                booking={booking}
-                onPress={() => handleJobPress(booking.id)}
-                showBadge={
-                  booking.status === 'pending'
-                    ? 'new'
-                    : booking.status === 'in_progress'
-                    ? 'in_progress'
-                    : undefined
-                }
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+      {isLoading && !refreshing ? (
+        <View className="flex-1 items-center justify-center py-16">
+          <Text className="font-worksans text-[14px] text-[#6B6B6B]">
+            Loading jobs...
+          </Text>
+        </View>
+      ) : bookings.length === 0 ? (
+        <FlatList
+          data={[]}
+          renderItem={null}
+          ListEmptyComponent={<EmptyState type={activeTab} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor="#B8926A"
+            />
+          }
+        />
+      ) : (
+        <FlatList
+          data={bookings}
+          renderItem={renderJobCard}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={{ paddingVertical: 16 }}
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor="#B8926A"
+            />
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
