@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useHomeCategory } from "./home-category-context";
 import {
   useSubcategories,
   useTopLevelCategories,
@@ -23,11 +24,17 @@ const fallbackMainCategories = [
 
 export function Services() {
   const router = useRouter();
+  const homeCategory = useHomeCategory();
   const { data: mainCategories, isLoading: loadingMainCategories } =
     useTopLevelCategories();
 
   const [activeParentId, setActiveParentId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("Assembly");
+
+  // Sync initial/loaded category to Stats section
+  useEffect(() => {
+    homeCategory?.setActiveCategory(activeCategory);
+  }, [activeCategory, homeCategory?.setActiveCategory]);
 
   // Set default active parent once main categories load
   useEffect(() => {
@@ -42,15 +49,18 @@ export function Services() {
     useSubcategories(activeParentId);
 
   const handleMainCategoryClick = (category: Category) => {
+    const name = category.name;
+    // Sync to Stats section immediately
+    homeCategory?.setActiveCategory(name);
     // Avoid querying subcategories when we're using fallback IDs
     if (category.id.startsWith("fallback-")) {
       setActiveParentId(null);
-      setActiveCategory(category.name);
+      setActiveCategory(name);
       return;
     }
 
     setActiveParentId(category.id);
-    setActiveCategory(category.name);
+    setActiveCategory(name);
   };
 
   const handleSubCategoryClick = (subCategory: Category) => {
@@ -92,7 +102,17 @@ export function Services() {
         {/* Main Categories with Icons Above */}
         <div className="mb-6">
           <div className="flex items-center justify-center gap-8 flex-wrap">
-            {displayMainCategories.map((category) => (
+            {loadingMainCategories ? (
+              <>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div className="h-16 w-16 animate-pulse rounded-full bg-gray-200" />
+                    <div className="h-4 w-16 animate-pulse rounded bg-gray-200" />
+                  </div>
+                ))}
+              </>
+            ) : (
+            displayMainCategories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => handleMainCategoryClick(category as Category)}
@@ -103,14 +123,14 @@ export function Services() {
                   const Icon = getCategoryIcon(category.name);
                   return (
                     <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-full transition-all ${
+                      className={`flex h-16 w-16 items-center justify-center rounded-full transition-all ${
                         activeCategory === category.name
                           ? "bg-brand-terracotta/10"
                           : "bg-gray-100 hover:bg-gray-200"
                       }`}
                     >
                       <Icon
-                        className={`h-6 w-6 ${
+                        className={`h-8 w-8 ${
                           activeCategory === category.name ? "text-brand-terracotta" : "text-gray-500"
                         }`}
                       />
@@ -128,7 +148,8 @@ export function Services() {
                   {category.name}
                 </span>
               </button>
-            ))}
+            ))
+            )}
           </div>
         </div>
 
@@ -138,7 +159,15 @@ export function Services() {
         {/* Sub Categories */}
         <div className="flex flex-wrap items-center justify-center gap-3">
           {loading ? (
-            <div className="text-gray-500 text-sm">Loading services...</div>
+            <>
+              {[120, 100, 140, 110, 130, 95].map((w, i) => (
+                <div
+                  key={i}
+                  className="h-10 animate-pulse rounded-full bg-gray-200"
+                  style={{ width: w }}
+                />
+              ))}
+            </>
           ) : displaySubCategories.length > 0 ? (
             displaySubCategories.map((subCategory) => {
               const SubIcon = getCategoryIcon(subCategory.name);

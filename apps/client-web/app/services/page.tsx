@@ -2,11 +2,24 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Header, Footer } from "@/components/layout";
 import { getCategoryTree } from "@/lib/supabase/categories";
 import type { CategoryWithChildren } from "@/lib/supabase/types";
 import { getCategoryIcon } from "@/components/icons/category-icons";
 import { getCategoryRouteSlug, getServiceRoute } from "@/lib/service-routes";
+
+// Map category names to their card images
+const categoryImages: Record<string, string> = {
+  "Furniture Assembly": "/images/services/main/assembly.png",
+  "TV & Wall Mounting": "/images/services/main/mounting.png",
+  "Home Repairs & Fixes": "/images/services/main/home-repairs.jpeg",
+  "Plumbing": "/images/services/main/plumbing.jpeg",
+  "Electricians": "/images/services/main/electrical.jpeg",
+  "Sparkle Clean": "/images/services/main/cleaning.jpeg",
+  "Packing & Moving": "/images/services/main/moving.jpeg",
+  "The Great Outdoors": "/images/services/main/outdoor.png",
+};
 
 // Helper function to create slug from service name (fallback only)
 function slugify(text: string): string {
@@ -25,14 +38,28 @@ function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
   const subcategories = category.subcategories || [];
   const Icon = getCategoryIcon(category.name);
 
+  const cardImage = categoryImages[category.name];
+
   // Get first 6 subcategories to display
   const displayedSubcategories = subcategories.slice(0, 6);
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Category Icon */}
-      <div className="flex h-48 items-center justify-center bg-brand-dark-alt">
-        <Icon className="h-16 w-16 text-brand-cream" />
-      </div>
+      {/* Category Image or Icon Fallback */}
+      {cardImage ? (
+        <div className="relative h-48">
+          <Image
+            src={cardImage}
+            alt={category.name}
+            fill
+            className="object-cover"
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+          />
+        </div>
+      ) : (
+        <div className="flex h-48 items-center justify-center bg-brand-dark-alt">
+          <Icon className="h-16 w-16 text-brand-cream" />
+        </div>
+      )}
 
       {/* Category Content */}
       <div className="p-6">
@@ -70,7 +97,7 @@ function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
         {/* See More Link */}
         {subcategories.length > 6 && (
           <Link
-            href={`/services#${categorySlug}`}
+            href={`/services/${categorySlug}`}
             className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 font-medium hover:underline transition-colors"
           >
             See more {category.name} services →
@@ -87,10 +114,13 @@ function ServicesHero() {
     <section className="relative h-[400px] md:h-[500px] bg-gray-900">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img
-          src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1920&h=600&fit=crop"
+        <Image
+          src="/images/services/hero.jpeg"
           alt="Services Hero"
-          className="w-full h-full object-cover opacity-70"
+          fill
+          className="object-cover opacity-70"
+          priority
+          sizes="100vw"
         />
       </div>
 
