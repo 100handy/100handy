@@ -2,7 +2,7 @@ import React, { useState, useRef, type ReactNode } from 'react';
 import { View, Text, Pressable, Dimensions, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, MapPin, Calendar } from 'lucide-react-native';
 import { router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import StarRating from '@/assets/images/star-rating.svg';
@@ -22,6 +22,7 @@ const COLORS = {
   sageGreen: '#A3B899',
   sageGreenFigma: '#A0B194', // Exact color from Figma for "Got it" button
   clayOrange: '#D9896C',
+  chatBubbleUser: '#C9886D', // Figma reddish-brown for user chat messages
   warmTaupe: '#BFA28D',
   themeBackground: '#F6E4D8',
   themeFont: '#30352D',
@@ -132,7 +133,7 @@ const onboardingData = [
 
         {/* Chat Message 3 - Right aligned with avatar */}
         <View className="flex-row justify-end items-end gap-2">
-          <View className="flex-col bg-clay-orange rounded-2xl px-4 py-3 max-w-[60%] shadow-sm">
+          <View className="flex-col rounded-2xl px-4 py-3 max-w-[60%] shadow-sm" style={{ backgroundColor: COLORS.chatBubbleUser }}>
             <Text className="text-[13px] font-worksans-medium text-white mb-1">
               Yes, that&apos;s great{'\n'}See you soon!
             </Text>
@@ -160,17 +161,19 @@ const onboardingData = [
     ),
     content: (
       <View className="flex-col gap-4 mt-12">
-        {/* Task Card 1 - Help move my bags */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm">
+        {/* Task Card 1 - Help move my bags (opacity 0.43 per Figma) */}
+        <View className="bg-white rounded-2xl p-4 shadow-sm" style={{ opacity: 0.43 }}>
           <View className="flex-row justify-between">
             <View className="flex-col flex-1">
               <Text className="text-[8px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>Help move my bags</Text>
               <View className="flex-row items-center gap-1 mb-0.5">
+                <MapPin size={14} color={COLORS.themeFont} strokeWidth={1.5} />
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>
                   St John&apos;s Wood, Greater London, NW8 9
                 </Text>
               </View>
               <View className="flex-row items-center gap-1 mb-1">
+                <Calendar size={14} color={COLORS.themeFont} strokeWidth={1.5} />
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>Today</Text>
               </View>
               <Text className="text-[9px] font-worksans-medium" style={{ color: '#C1856A' }}>Open</Text>
@@ -191,11 +194,13 @@ const onboardingData = [
             <View className="flex-col flex-1">
               <Text className="text-[8px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>Carpet fitted</Text>
               <View className="flex-row items-center gap-1 mb-0.5">
+                <MapPin size={14} color={COLORS.themeFont} strokeWidth={1.5} />
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>
                   Redbridge, Wanstead E11 3DF
                 </Text>
               </View>
               <View className="flex-row items-center gap-1 mb-1">
+                <Calendar size={14} color={COLORS.themeFont} strokeWidth={1.5} />
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>Flexible</Text>
               </View>
               <Text className="text-[9px] font-worksans-medium" style={{ color: '#C1856A' }}>Open</Text>
@@ -210,19 +215,21 @@ const onboardingData = [
           </View>
         </View>
 
-        {/* Task Card 3 - Recliner mechanism broken */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm opacity-[0.428]">
+        {/* Task Card 3 - Recliner mechanism broken (opacity 0.43 per Figma) */}
+        <View className="bg-white rounded-2xl p-4 shadow-sm" style={{ opacity: 0.43 }}>
           <View className="flex-row justify-between">
             <View className="flex-col flex-1">
               <Text className="text-[8px] font-worksans-medium mb-1" style={{ color: COLORS.themeFont }}>
                 Recliner mechanism broken
               </Text>
               <View className="flex-row items-center gap-1 mb-0.5">
+                <MapPin size={14} color={COLORS.themeFont} strokeWidth={1.5} />
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>
                   Woolwich, SE 18
                 </Text>
               </View>
               <View className="flex-row items-center gap-1 mb-1">
+                <Calendar size={14} color={COLORS.themeFont} strokeWidth={1.5} />
                 <Text className="text-[5px] font-worksans-medium" style={{ color: COLORS.themeFont }}>On Thu, 4 Sep</Text>
               </View>
               <Text className="text-[9px] font-worksans-medium" style={{ color: '#C1856A' }}>Open</Text>
@@ -439,7 +446,7 @@ export default function ClientOnboarding() {
                       width: 13,
                       height: 13,
                       borderRadius: 6.5,
-                      backgroundColor: index === currentStep ? '#D9896C' : '#FFFFFF',
+                      backgroundColor: index === currentStep ? '#D9896C' : 'transparent',
                       borderWidth: 1,
                       borderColor: '#30352D'
                     }}

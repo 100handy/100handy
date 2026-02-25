@@ -1,21 +1,35 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, PanResponder, Text, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Polygon, LatLng, Region } from 'react-native-maps';
-import * as Location from 'expo-location';
-import { Hand, X } from 'lucide-react-native';
-import { Button, ButtonText } from '@/components/ui/button';
-import { useWorkArea, useSaveWorkArea, type Coordinate } from '@shared/supabase';
-import { useToast } from '@/components/ui/toast';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  PanResponder,
+  Text,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import MapView, { Polygon, LatLng, Region } from "react-native-maps";
+import * as Location from "expo-location";
+import { Hand, X } from "lucide-react-native";
+import { Button, ButtonText } from "@/components/ui/button";
+import {
+  useWorkArea,
+  useSaveWorkArea,
+  type Coordinate,
+} from "@shared/supabase";
+import { useToast } from "@/components/ui/toast";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default function WorkAreaTab() {
   const toast = useToast();
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null,
+  );
   const [region, setRegion] = useState<Region | null>(null);
 
   // Drawing state
@@ -27,8 +41,10 @@ export default function WorkAreaTab() {
   const mapRef = useRef<MapView>(null);
 
   // Query hooks for persistence
-  const { data: existingWorkArea, isLoading: isLoadingWorkArea } = useWorkArea();
-  const { mutate: saveWorkAreaMutation, isPending: isSaving } = useSaveWorkArea();
+  const { data: existingWorkArea, isLoading: isLoadingWorkArea } =
+    useWorkArea();
+  const { mutate: saveWorkAreaMutation, isPending: isSaving } =
+    useSaveWorkArea();
 
   // PanResponder for handling touch gestures on the map
   const panResponder = useRef(
@@ -46,37 +62,51 @@ export default function WorkAreaTab() {
           try {
             const coordinate = await mapRef.current.coordinateForPoint({
               x: locationX,
-              y: locationY
+              y: locationY,
             });
 
             if (coordinate) {
-              setDrawnCoordinates(prev => [...prev, coordinate]);
+              setDrawnCoordinates((prev) => [...prev, coordinate]);
             }
           } catch (error) {
-            console.error('Error converting point:', error);
+            console.error("Error converting point:", error);
           }
         }
       },
       onPanResponderRelease: () => {
         setIsDrawing(false);
-        setDrawnCoordinates(prev => {
+        setDrawnCoordinates((prev) => {
           if (prev.length > 2) {
             setIsReviewing(true);
-            return [...prev, prev[0]];
+            // Only add closing point if it's different from the last point
+            const lastPoint = prev[prev.length - 1];
+            const firstPoint = prev[0];
+            const isAlreadyClosed =
+              lastPoint.latitude === firstPoint.latitude &&
+              lastPoint.longitude === firstPoint.longitude;
+            if (isAlreadyClosed) {
+              return prev;
+            }
+            return [...prev, firstPoint];
           }
           return [];
         });
       },
-    })
+    }),
   ).current;
 
   // Load existing work area coordinates
   useEffect(() => {
-    if (existingWorkArea?.coordinates && existingWorkArea.coordinates.length > 0) {
-      const coords: LatLng[] = existingWorkArea.coordinates.map((c: Coordinate) => ({
-        latitude: c.latitude,
-        longitude: c.longitude,
-      }));
+    if (
+      existingWorkArea?.coordinates &&
+      existingWorkArea.coordinates.length > 0
+    ) {
+      const coords: LatLng[] = existingWorkArea.coordinates.map(
+        (c: Coordinate) => ({
+          latitude: c.latitude,
+          longitude: c.longitude,
+        }),
+      );
       setDrawnCoordinates(coords);
       setIsReviewing(true);
     }
@@ -85,8 +115,8 @@ export default function WorkAreaTab() {
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.error('Permission to access location was denied');
+      if (status !== "granted") {
+        console.error("Permission to access location was denied");
         const defaultRegion = {
           latitude: 51.5074,
           longitude: -0.1278,
@@ -112,7 +142,7 @@ export default function WorkAreaTab() {
 
   const handleSave = () => {
     if (drawnCoordinates.length > 2) {
-      const coordinates: Coordinate[] = drawnCoordinates.map(coord => ({
+      const coordinates: Coordinate[] = drawnCoordinates.map((coord) => ({
         latitude: coord.latitude,
         longitude: coord.longitude,
       }));
@@ -121,16 +151,16 @@ export default function WorkAreaTab() {
         { coordinates },
         {
           onSuccess: () => {
-            toast.success('Saved', 'Work area updated');
+            toast.success("Saved", "Work area updated");
           },
           onError: (error) => {
-            console.error('Failed to save work area:', error);
+            console.error("Failed to save work area:", error);
             toast.error(
-              'Save failed',
-              error instanceof Error ? error.message : 'Please try again'
+              "Save failed",
+              error instanceof Error ? error.message : "Please try again",
             );
           },
-        }
+        },
       );
     }
   };
@@ -149,10 +179,12 @@ export default function WorkAreaTab() {
 
   if (!region || isLoadingWorkArea) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#4A5347" />
-          <Text className="text-brand-dark-alt text-lg mt-4 font-worksans">Loading...</Text>
+          <Text className="text-brand-dark-alt text-lg mt-4 font-worksans">
+            Loading...
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -161,10 +193,13 @@ export default function WorkAreaTab() {
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      <SafeAreaView edges={['top']} className={`z-10 ${isReviewing ? 'bg-green-50' : 'bg-white'}`}>
+      <SafeAreaView
+        edges={["top"]}
+        className={`z-10 ${isReviewing ? "bg-green-50" : "bg-white"}`}
+      >
         <View className="px-6 py-4 flex-row items-center justify-center">
           <Text className="text-brand-dark-alt text-lg font-worksans-bold">
-            {isReviewing ? 'Reviewing work area' : 'Set Work Area'}
+            {isReviewing ? "Reviewing work area" : "Set Work Area"}
           </Text>
         </View>
       </SafeAreaView>
@@ -186,7 +221,11 @@ export default function WorkAreaTab() {
             <Polygon
               coordinates={drawnCoordinates}
               strokeColor="#1E88E5"
-              fillColor={isReviewing ? "rgba(30, 136, 229, 0.2)" : "rgba(30, 136, 229, 0.1)"}
+              fillColor={
+                isReviewing
+                  ? "rgba(30, 136, 229, 0.2)"
+                  : "rgba(30, 136, 229, 0.1)"
+              }
               strokeWidth={3}
               lineCap="round"
               lineJoin="round"
@@ -210,7 +249,9 @@ export default function WorkAreaTab() {
           <View className="flex-row justify-end mb-4">
             {isDrawingMode ? (
               <View className="bg-white rounded-full shadow-lg px-6 py-3 flex-row items-center gap-2">
-                <Text className="text-brand-dark-alt font-worksans-medium">Draw on map</Text>
+                <Text className="text-brand-dark-alt font-worksans-medium">
+                  Draw on map
+                </Text>
               </View>
             ) : (
               <Pressable
@@ -218,7 +259,9 @@ export default function WorkAreaTab() {
                 className="bg-white rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2"
               >
                 <Hand size={20} color="#4A5347" />
-                <Text className="text-[#4A5347] font-worksans-bold text-base">Draw area</Text>
+                <Text className="text-[#4A5347] font-worksans-bold text-base">
+                  Draw area
+                </Text>
               </Pressable>
             )}
           </View>
@@ -232,14 +275,16 @@ export default function WorkAreaTab() {
               className="bg-white rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2"
             >
               <X size={20} color="#4A5347" />
-              <Text className="text-[#4A5347] font-worksans-bold text-base">Clear</Text>
+              <Text className="text-[#4A5347] font-worksans-bold text-base">
+                Clear
+              </Text>
             </Pressable>
           </View>
         )}
 
         {/* Save Button */}
         <Button
-          className={`rounded-full shadow-sm h-[56px] ${isReviewing && !isSaving ? 'bg-[#4A5347]' : 'bg-gray-300'}`}
+          className={`rounded-full shadow-sm h-[56px] ${isReviewing && !isSaving ? "bg-[#4A5347]" : "bg-gray-300"}`}
           onPress={handleSave}
           isDisabled={!isReviewing || isSaving}
         >

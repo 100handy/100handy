@@ -1,13 +1,8 @@
-import { Stack, Redirect } from 'expo-router';
-import { useAuthStore } from '@shared/supabase';
+import { Stack } from 'expo-router';
 
 export default function ClientLayout() {
-  const { isAuthenticated } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Redirect href="/" />;
-  }
-
+  // Allow both authenticated and unauthenticated (guest) access to client home
+  // Guests can browse; auth is required for booking, profile, etc.
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />

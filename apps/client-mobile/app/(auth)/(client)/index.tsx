@@ -25,8 +25,8 @@ export default function ClientWelcome() {
 
       // Returning user: has seen onboarding AND accepted terms before
       if (hasSeenOnboarding === 'true' && hasAcceptedTerms === 'true') {
-        // Skip welcome, onboarding, terms - go directly to sign-in
-        router.replace('/(auth)/(client)/sign-in');
+        // Skip welcome, onboarding, terms - go directly to sign-up
+        router.replace('/(auth)/(client)/sign-up');
         return;
       }
 

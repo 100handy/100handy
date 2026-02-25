@@ -1,6 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, Image, Alert, View, Text, Pressable, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  ScrollView,
+  Image,
+  Alert,
+  View,
+  Text,
+  Pressable,
+  RefreshControl,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   User,
   FileText,
@@ -18,14 +26,14 @@ import {
   ChevronRight,
   Camera,
   Globe,
-} from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { switchToCustomerRole, useAuthStore } from '@shared/supabase';
-import { useProfileStore } from '@shared/supabase';
-import { queryClient } from '@shared/query/queryClient';
-import * as ImagePicker from 'expo-image-picker';
-import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
-import { useToast } from '@/components/ui/toast';
+} from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { switchToCustomerRole, useAuthStore } from "@shared/supabase";
+import { useProfileStore } from "@shared/supabase";
+import { queryClient } from "@shared/query/queryClient";
+import * as ImagePicker from "expo-image-picker";
+import AddProfilePhotoModal from "@/components/modals/AddProfilePhotoModal";
+import { useToast } from "@/components/ui/toast";
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -55,7 +63,7 @@ export default function ProfessionalProfileScreen() {
     try {
       await fetchProfile();
     } catch (error) {
-      console.error('Error refreshing profile:', error);
+      console.error("Error refreshing profile:", error);
     } finally {
       setRefreshing(false);
     }
@@ -63,7 +71,7 @@ export default function ProfessionalProfileScreen() {
 
   const handleSwitchToClient = async (): Promise<void> => {
     if (!user?.id) {
-      router.replace('/(auth)/(client)');
+      router.replace("/(auth)/(client)");
       return;
     }
 
@@ -71,18 +79,24 @@ export default function ProfessionalProfileScreen() {
     try {
       const ok = await switchToCustomerRole();
       if (!ok) {
-        console.error('Failed to switch to customer role');
-        toast.error('Switch failed', 'Could not switch to client mode. Please try again.');
+        console.error("Failed to switch to customer role");
+        toast.error(
+          "Switch failed",
+          "Could not switch to client mode. Please try again.",
+        );
         return;
       }
 
       await checkAuth();
       // Invalidate all queries after role switch to avoid stale data
       queryClient.invalidateQueries();
-      router.replace('/(client)/(tabs)/home');
+      router.replace("/(client)/(tabs)/home");
     } catch (err) {
-      console.error('Error switching to customer:', err);
-      toast.error('Switch failed', 'An error occurred while switching roles. Please try again.');
+      console.error("Error switching to customer:", err);
+      toast.error(
+        "Switch failed",
+        "An error occurred while switching roles. Please try again.",
+      );
     } finally {
       setIsSwitchingToClient(false);
     }
@@ -91,16 +105,19 @@ export default function ProfessionalProfileScreen() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.replace('/');
+      router.replace("/");
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
     }
   };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to upload a photo.');
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Sorry, we need camera roll permissions to upload a photo.",
+      );
       return;
     }
 
@@ -115,17 +132,20 @@ export default function ProfessionalProfileScreen() {
       const uploaded = await uploadAvatar(result.assets[0].uri);
       if (uploaded) {
         await fetchProfile();
-        Alert.alert('Success', 'Profile photo updated successfully!');
+        Alert.alert("Success", "Profile photo updated successfully!");
       } else {
-        Alert.alert('Error', 'Failed to upload photo. Please try again.');
+        Alert.alert("Error", "Failed to upload photo. Please try again.");
       }
     }
   };
 
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Sorry, we need camera permissions to take a photo.');
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Sorry, we need camera permissions to take a photo.",
+      );
       return;
     }
 
@@ -139,9 +159,9 @@ export default function ProfessionalProfileScreen() {
       const uploaded = await uploadAvatar(result.assets[0].uri);
       if (uploaded) {
         await fetchProfile();
-        Alert.alert('Success', 'Profile photo updated successfully!');
+        Alert.alert("Success", "Profile photo updated successfully!");
       } else {
-        Alert.alert('Error', 'Failed to upload photo. Please try again.');
+        Alert.alert("Error", "Failed to upload photo. Please try again.");
       }
     }
   };
@@ -149,80 +169,80 @@ export default function ProfessionalProfileScreen() {
   const menuItems: MenuItem[] = [
     {
       icon: <User color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Account detail',
-      onPress: () => router.push('/(professional)/profile/account-detail'),
+      label: "Account detail",
+      onPress: () => router.push("/(professional)/profile/account-detail"),
     },
     {
       icon: <FileText color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Tasker profile',
-      onPress: () => router.push('/(professional)/profile/tasker-profile'),
+      label: "Tasker profile",
+      onPress: () => router.push("/(professional)/profile/tasker-profile"),
     },
     {
       icon: <BarChart3 color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Performance',
-      onPress: () => router.push('/(professional)/(tabs)/performance'),
+      label: "Performance",
+      onPress: () => router.push("/(professional)/(tabs)/performance"),
     },
     {
       icon: <Calendar color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Sync calendar',
-      onPress: () => router.push('/(professional)/profile/calendar-settings'),
+      label: "Sync calendar",
+      onPress: () => router.push("/(professional)/profile/calendar-settings"),
     },
     {
       icon: <MessageSquare color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Chat templates',
-      onPress: () => router.push('/(professional)/profile/chat-templates'),
+      label: "Chat templates",
+      onPress: () => router.push("/(professional)/profile/chat-templates"),
     },
     {
       icon: <Megaphone color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Promote yourself',
-      onPress: () => router.push('/(professional)/profile/promote-yourself'),
+      label: "Promote yourself",
+      onPress: () => router.push("/(professional)/profile/promote-yourself"),
     },
     {
       icon: <CreditCard color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Payments',
-      onPress: () => router.push('/(professional)/profile/payments'),
+      label: "Payments",
+      onPress: () => router.push("/(professional)/profile/payments"),
     },
     {
       icon: <Bell color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Notifications',
-      onPress: () => router.push('/(professional)/profile/notifications'),
+      label: "Notifications",
+      onPress: () => router.push("/(professional)/profile/notifications"),
     },
     {
       icon: <HelpCircle color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Support',
-      onPress: () => router.push('/(professional)/profile/support'),
+      label: "Support",
+      onPress: () => router.push("/(professional)/profile/support"),
     },
     {
       icon: <Shield color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Account security',
-      onPress: () => router.push('/(professional)/profile/account-security'),
+      label: "Account security",
+      onPress: () => router.push("/(professional)/profile/account-security"),
     },
     {
       icon: <Info color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'About',
-      onPress: () => router.push('/profile/about'),
+      label: "About",
+      onPress: () => router.push("/profile/about"),
     },
     {
       icon: <Lock color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Password',
-      onPress: () => router.push('/profile/change-password'),
+      label: "Password",
+      onPress: () => router.push("/profile/change-password"),
     },
     {
       icon: <Globe color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: 'Go 100Handy',
+      label: "Go 100Handy",
       isDisabled: isSwitchingToClient,
       onPress: handleSwitchToClient,
     },
     {
       icon: <LogOut color="#C1856A" size={24} strokeWidth={1.5} />,
-      label: 'Log out',
+      label: "Log out",
       isLogout: true,
       onPress: handleSignOut,
     },
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       {/* Header */}
       <View className="py-6 px-5 items-center border-b border-gray-100">
         <Text className="font-worksans-bold text-2xl text-theme-font">
@@ -234,7 +254,11 @@ export default function ProfessionalProfileScreen() {
         className="flex-1 bg-white"
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#C1856A" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#C1856A"
+          />
         }
       >
         {/* Profile Photo Section */}
@@ -249,7 +273,9 @@ export default function ProfessionalProfileScreen() {
             ) : (
               <View className="w-full h-full items-center justify-center bg-brand-terracotta/20">
                 <Text className="font-worksans-bold text-3xl text-brand-terracotta">
-                  {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || '?'}
+                  {profile?.first_name?.[0] ||
+                    user?.email?.[0]?.toUpperCase() ||
+                    "?"}
                 </Text>
               </View>
             )}
@@ -259,7 +285,7 @@ export default function ProfessionalProfileScreen() {
             <Text className="font-worksans-bold text-xl text-theme-font">
               {profile?.first_name && profile?.last_name
                 ? `${profile.first_name} ${profile.last_name}`
-                : profile?.first_name || 'Professional'}
+                : profile?.first_name || "Professional"}
             </Text>
             {profile?.email && (
               <Text className="font-worksans text-sm text-gray-600">
@@ -274,7 +300,7 @@ export default function ProfessionalProfileScreen() {
           >
             <Camera size={18} color="#B29D88" />
             <Text className="font-worksans-semibold text-sm text-brand-taupe">
-              {profile?.avatar_url ? 'Change Photo' : 'Add Photo'}
+              {profile?.avatar_url ? "Change Photo" : "Add Photo"}
             </Text>
           </Pressable>
         </View>
@@ -284,7 +310,7 @@ export default function ProfessionalProfileScreen() {
           {menuItems.map((item, index) => (
             <Pressable
               key={index}
-              className={`px-5 py-5 border-b border-gray-100 ${item.isDisabled ? 'opacity-50' : ''}`}
+              className={`px-5 py-5 border-b border-gray-100 ${item.isDisabled ? "opacity-50" : ""}`}
               onPress={item.onPress}
               disabled={item.isDisabled}
             >
@@ -293,9 +319,9 @@ export default function ProfessionalProfileScreen() {
                   <View className="w-6 h-6 items-center justify-center mr-4">
                     {item.icon}
                   </View>
-                  <Text 
+                  <Text
                     className={`font-worksans text-lg ${
-                      item.isLogout ? 'text-clay-orange' : 'text-theme-font'
+                      item.isLogout ? "text-clay-orange" : "text-theme-font"
                     }`}
                   >
                     {item.label}

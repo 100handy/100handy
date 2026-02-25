@@ -52,8 +52,8 @@ export default function Index() {
       const hasSeenOnboarding = await AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING);
 
       if (hasSeenOnboarding === 'true') {
-        // Returning user but not authenticated - redirect to sign-in
-        router.replace('/(auth)/(client)/sign-in');
+        // User has completed onboarding - redirect to sign-up
+        router.replace('/(auth)/(client)/sign-up');
         setIsChecking(false);
       } else {
         // First time user - show welcome flow
@@ -66,8 +66,8 @@ export default function Index() {
       if (isAuthenticated && user) {
         await routeAuthenticatedUser();
       } else {
-        // Default to sign-in for errors (safer than showing welcome screen)
-        router.replace('/(auth)/(client)/sign-in');
+        // Default to sign-up for errors (user has seen onboarding flow)
+        router.replace('/(auth)/(client)/sign-up');
         setIsChecking(false);
       }
     }

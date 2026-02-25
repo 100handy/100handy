@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StatusBar, ScrollView, View, Text, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import { CheckIcon, ChevronLeft } from 'lucide-react-native';
@@ -53,21 +54,12 @@ export default function TermsAndPrivacyScreen() {
             </Text>
           </View>
 
-          {/* Illustration Placeholder */}
-          <View
-            style={{
-              width: 180,
-              height: 180,
-              marginBottom: 32,
-              backgroundColor: '#F3E3D3',
-              borderRadius: 90,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: 48 }}>📋</Text>
-            <Text style={{ fontSize: 12, color: '#30352D', marginTop: 8 }}>Terms & Privacy</Text>
-          </View>
+          {/* Illustration - Figma design */}
+          <Image
+            source={require('@/assets/images/terms-privacy-illustration.png')}
+            style={{ width: 200, height: 200, marginBottom: 32 }}
+            contentFit="contain"
+          />
 
           {/* Checkboxes */}
           <View className="flex-col w-full mb-8">

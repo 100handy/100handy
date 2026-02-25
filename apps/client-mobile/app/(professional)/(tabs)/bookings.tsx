@@ -1,21 +1,23 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ButtonText } from '@/components/ui/button';
+import React, { useState, useMemo, useEffect } from "react";
 import {
-  Modal,
-  ModalBackdrop,
-  ModalContent,
-} from '@/components/ui/modal';
-import { Plus, Trash2 } from 'lucide-react-native';
-import { toast } from 'sonner-native';
-import { TimePickerWheel } from '@/components/availability';
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Button, ButtonText } from "@/components/ui/button";
+import { Modal, ModalBackdrop, ModalContent } from "@/components/ui/modal";
+import { Plus, Trash2 } from "lucide-react-native";
+import { toast } from "sonner-native";
+import { TimePickerWheel } from "@/components/availability";
 import {
   useWeeklyAvailability,
   useSaveDayAvailability,
   type TimeSlotInput,
   type AvailabilitySlot,
-} from '@shared/supabase';
+} from "@shared/supabase";
 
 interface TimeSlot {
   id: string;
@@ -28,7 +30,7 @@ interface DayAvailability {
 }
 
 // Day names for weekly availability (index matches day_of_week in database: 0=Sunday)
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 // Get current week dates dynamically
 const getCurrentWeekDates = () => {
@@ -46,8 +48,10 @@ const getCurrentWeekDates = () => {
   });
 };
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
-const MINUTES = ['00', '15', '30', '45'];
+const HOURS = Array.from({ length: 24 }, (_, i) =>
+  i.toString().padStart(2, "0"),
+);
+const MINUTES = ["00", "15", "30", "45"];
 
 const HOUR_HEIGHT = 60;
 const START_HOUR = 0; // 12 AM
@@ -55,22 +59,27 @@ const END_HOUR = 24; // 12 AM next day
 
 // Helper to convert time string "HH:MM" to minutes from start of day
 const timeToMinutes = (time: string) => {
-  const [h, m] = time.split(':').map(Number);
+  const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 };
 
-// Helper to check if two time ranges overlap
-const isOverlapping = (start1: number, end1: number, start2: number, end2: number) => {
-  return Math.max(start1, start2) < Math.min(end1, end2);
+// Helper to check if two time ranges overlap (inclusive of exact matches)
+const isOverlapping = (
+  start1: number,
+  end1: number,
+  start2: number,
+  end2: number,
+) => {
+  return Math.max(start1, start2) <= Math.min(end1, end2);
 };
 
 export default function BookingsTab() {
   const [selectedDay, setSelectedDay] = useState(new Date().getDay());
   const [showAddModal, setShowAddModal] = useState(false);
-  const [startHour, setStartHour] = useState('18');
-  const [startMinute, setStartMinute] = useState('15');
-  const [endHour, setEndHour] = useState('20');
-  const [endMinute, setEndMinute] = useState('45');
+  const [startHour, setStartHour] = useState("18");
+  const [startMinute, setStartMinute] = useState("15");
+  const [endHour, setEndHour] = useState("20");
+  const [endMinute, setEndMinute] = useState("45");
   const [availability, setAvailability] = useState<DayAvailability>({});
   const [deletingSlots, setDeletingSlots] = useState<Set<string>>(new Set());
 
@@ -78,8 +87,10 @@ export default function BookingsTab() {
   const daysOfWeek = useMemo(() => getCurrentWeekDates(), []);
 
   // Query hooks for persistence
-  const { data: weeklyData, isLoading: isLoadingAvailability } = useWeeklyAvailability();
-  const { mutate: saveDayMutation, isPending: isSaving } = useSaveDayAvailability();
+  const { data: weeklyData, isLoading: isLoadingAvailability } =
+    useWeeklyAvailability();
+  const { mutate: saveDayMutation, isPending: isSaving } =
+    useSaveDayAvailability();
 
   // Load existing availability from database
   useEffect(() => {
@@ -87,11 +98,13 @@ export default function BookingsTab() {
       const transformed: DayAvailability = {};
 
       Object.entries(weeklyData).forEach(([dayIndex, slots]) => {
-        transformed[parseInt(dayIndex)] = (slots as AvailabilitySlot[]).map((slot: AvailabilitySlot) => ({
-          id: slot.id,
-          startTime: slot.start_time.slice(0, 5), // "HH:MM:SS" -> "HH:MM"
-          endTime: slot.end_time.slice(0, 5),
-        }));
+        transformed[parseInt(dayIndex)] = (slots as AvailabilitySlot[]).map(
+          (slot: AvailabilitySlot) => ({
+            id: slot.id,
+            startTime: slot.start_time.slice(0, 5), // "HH:MM:SS" -> "HH:MM"
+            endTime: slot.end_time.slice(0, 5),
+          }),
+        );
       });
 
       setAvailability(transformed);
@@ -107,7 +120,7 @@ export default function BookingsTab() {
   // Check for overlaps
   const overlappingSlots = useMemo(() => {
     if (!showAddModal) return [];
-    return currentDaySlots.filter(slot => {
+    return currentDaySlots.filter((slot) => {
       const slotStart = timeToMinutes(slot.startTime);
       const slotEnd = timeToMinutes(slot.endTime);
       return isOverlapping(selectionStart, selectionEnd, slotStart, slotEnd);
@@ -118,13 +131,15 @@ export default function BookingsTab() {
 
   const handleSave = () => {
     if (selectionEnd <= selectionStart) {
-      toast.error('End time must be after start time. Overnight slots are not supported.');
+      toast.error(
+        "End time must be after start time. Overnight slots are not supported.",
+      );
       return;
     }
 
     // Minimum 30-minute slot
     if (selectionEnd - selectionStart < 30) {
-      toast.error('Availability must be at least 30 minutes');
+      toast.error("Availability must be at least 30 minutes");
       return;
     }
 
@@ -137,18 +152,20 @@ export default function BookingsTab() {
       let minStart = selectionStart;
       let maxEnd = selectionEnd;
 
-      overlappingSlots.forEach(slot => {
+      overlappingSlots.forEach((slot) => {
         minStart = Math.min(minStart, timeToMinutes(slot.startTime));
         maxEnd = Math.max(maxEnd, timeToMinutes(slot.endTime));
       });
 
       // Remove overlapping slots
-      newSlots = newSlots.filter(slot => !overlappingSlots.includes(slot));
+      newSlots = newSlots.filter((slot) => !overlappingSlots.includes(slot));
 
       // Add merged slot
       const formatTime = (mins: number) => {
-        const h = Math.floor(mins / 60).toString().padStart(2, '0');
-        const m = (mins % 60).toString().padStart(2, '0');
+        const h = Math.floor(mins / 60)
+          .toString()
+          .padStart(2, "0");
+        const m = (mins % 60).toString().padStart(2, "0");
         return `${h}:${m}`;
       };
 
@@ -173,7 +190,7 @@ export default function BookingsTab() {
     }));
 
     // Persist to database
-    const slotsForDB: TimeSlotInput[] = newSlots.map(slot => ({
+    const slotsForDB: TimeSlotInput[] = newSlots.map((slot) => ({
       startTime: slot.startTime,
       endTime: slot.endTime,
     }));
@@ -182,18 +199,18 @@ export default function BookingsTab() {
       { dayIndex: selectedDay, slots: slotsForDB },
       {
         onSuccess: () => {
-          toast.success(isMerge ? 'Availability merged' : 'Availability added');
+          toast.success(isMerge ? "Availability merged" : "Availability added");
         },
         onError: (error) => {
-          console.error('Failed to save availability:', error);
-          toast.error('Failed to save. Please try again.');
+          console.error("Failed to save availability:", error);
+          toast.error("Failed to save. Please try again.");
           // Rollback to previous state on error
           setAvailability((prev) => ({
             ...prev,
             [selectedDay]: previousSlots,
           }));
         },
-      }
+      },
     );
 
     setShowAddModal(false);
@@ -201,7 +218,7 @@ export default function BookingsTab() {
 
   const removeTimeSlot = (slotId: string) => {
     // Track loading state for this slot
-    setDeletingSlots(prev => new Set(prev).add(slotId));
+    setDeletingSlots((prev) => new Set(prev).add(slotId));
 
     // Capture previous state for rollback
     const previousSlots = availability[selectedDay] || [];
@@ -214,7 +231,7 @@ export default function BookingsTab() {
     }));
 
     // Persist to database
-    const slotsForDB: TimeSlotInput[] = newSlots.map(slot => ({
+    const slotsForDB: TimeSlotInput[] = newSlots.map((slot) => ({
       startTime: slot.startTime,
       endTime: slot.endTime,
     }));
@@ -223,43 +240,45 @@ export default function BookingsTab() {
       { dayIndex: selectedDay, slots: slotsForDB },
       {
         onSuccess: () => {
-          toast.success('Slot removed');
+          toast.success("Slot removed");
         },
         onSettled: () => {
           // Clear loading state when done (success or error)
-          setDeletingSlots(prev => {
+          setDeletingSlots((prev) => {
             const next = new Set(prev);
             next.delete(slotId);
             return next;
           });
         },
         onError: (error) => {
-          console.error('Failed to remove slot:', error);
-          toast.error('Failed to remove slot');
+          console.error("Failed to remove slot:", error);
+          toast.error("Failed to remove slot");
           // Rollback to previous state on error
           setAvailability((prev) => ({
             ...prev,
             [selectedDay]: previousSlots,
           }));
         },
-      }
+      },
     );
   };
 
   const handleOpenModal = () => {
-    setStartHour('09');
-    setStartMinute('00');
-    setEndHour('17');
-    setEndMinute('00');
+    setStartHour("09");
+    setStartMinute("00");
+    setEndHour("17");
+    setEndMinute("00");
     setShowAddModal(true);
   };
 
   if (isLoadingAvailability) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#047857" />
-          <Text className="text-brand-dark-alt text-lg mt-4 font-worksans">Loading availability...</Text>
+          <Text className="text-brand-dark-alt text-lg mt-4 font-worksans">
+            Loading availability...
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -268,7 +287,7 @@ export default function BookingsTab() {
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      <SafeAreaView edges={['top']} className="bg-white z-10">
+      <SafeAreaView edges={["top"]} className="bg-white z-10">
         <View className="px-6 py-4 flex-row items-center justify-center">
           <Text className="text-brand-dark-alt text-lg font-worksans-bold">
             Set Availability
@@ -282,18 +301,21 @@ export default function BookingsTab() {
           <Pressable
             key={day.short}
             onPress={() => setSelectedDay(index)}
-            className={`flex-1 items-center py-3 rounded-lg ${selectedDay === index ? 'bg-emerald-700' : 'bg-transparent'
-              }`}
+            className={`flex-1 items-center py-3 rounded-lg ${
+              selectedDay === index ? "bg-emerald-700" : "bg-transparent"
+            }`}
           >
             <Text
-              className={`font-worksans text-[11px] mb-1 ${selectedDay === index ? 'text-white' : 'text-[#6B6B6B]'
-                }`}
+              className={`font-worksans text-[11px] mb-1 ${
+                selectedDay === index ? "text-white" : "text-[#6B6B6B]"
+              }`}
             >
               {day.short}
             </Text>
             <Text
-              className={`font-worksans-semibold text-[14px] ${selectedDay === index ? 'text-white' : 'text-brand-dark-alt'
-                }`}
+              className={`font-worksans-semibold text-[14px] ${
+                selectedDay === index ? "text-white" : "text-brand-dark-alt"
+              }`}
             >
               {day.date}
             </Text>
@@ -302,16 +324,35 @@ export default function BookingsTab() {
       </View>
 
       {/* Timeline View */}
-      <ScrollView className="flex-1 bg-white" contentContainerStyle={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT + 50, paddingBottom: 100 }}>
+      <ScrollView
+        className="flex-1 bg-white"
+        contentContainerStyle={{
+          height: (END_HOUR - START_HOUR) * HOUR_HEIGHT + 50,
+          paddingBottom: 100,
+        }}
+      >
         <View className="flex-row flex-1">
           {/* Time Labels */}
           <View className="w-16 border-r border-gray-100 bg-white">
             {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => {
               const hour = i + START_HOUR;
-              const displayHour = hour === 0 || hour === 24 ? '12 AM' : hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+              const displayHour =
+                hour === 0 || hour === 24
+                  ? "12 AM"
+                  : hour === 12
+                    ? "12 PM"
+                    : hour > 12
+                      ? `${hour - 12} PM`
+                      : `${hour} AM`;
               return (
-                <View key={i} style={{ height: HOUR_HEIGHT, justifyContent: 'flex-start' }} className="items-end pr-2 pt-2">
-                  <Text className="text-xs text-gray-400 font-worksans">{displayHour}</Text>
+                <View
+                  key={i}
+                  style={{ height: HOUR_HEIGHT, justifyContent: "flex-start" }}
+                  className="items-end pr-2 pt-2"
+                >
+                  <Text className="text-xs text-gray-400 font-worksans">
+                    {displayHour}
+                  </Text>
                 </View>
               );
             })}
@@ -324,15 +365,15 @@ export default function BookingsTab() {
               <View
                 key={i}
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   top: i * HOUR_HEIGHT,
                   left: 0,
                   right: 0,
                   height: 1,
-                  backgroundColor: '#F3F4F6',
-                  borderStyle: 'dashed',
+                  backgroundColor: "#F3F4F6",
+                  borderStyle: "dashed",
                   borderWidth: 1,
-                  borderColor: '#E5E7EB'
+                  borderColor: "#E5E7EB",
                 }}
               />
             ))}
@@ -348,7 +389,7 @@ export default function BookingsTab() {
                 <View
                   key={slot.id}
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     top,
                     height,
                     left: 10,
@@ -358,7 +399,9 @@ export default function BookingsTab() {
                 >
                   <View className="flex-row justify-between items-start">
                     <View>
-                      <Text className="text-white font-worksans-bold text-sm">Available</Text>
+                      <Text className="text-white font-worksans-bold text-sm">
+                        Available
+                      </Text>
                       <Text className="text-white font-worksans text-xs opacity-90">
                         {slot.startTime} - {slot.endTime}
                       </Text>
@@ -383,20 +426,20 @@ export default function BookingsTab() {
             {showAddModal && selectionEnd > selectionStart && (
               <View
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   top: (selectionStart / 60) * HOUR_HEIGHT,
                   height: ((selectionEnd - selectionStart) / 60) * HOUR_HEIGHT,
                   left: 10,
                   right: 10,
-                  borderStyle: 'dashed',
+                  borderStyle: "dashed",
                   borderWidth: 2,
-                  borderColor: '#047857',
-                  backgroundColor: 'rgba(4, 120, 87, 0.1)',
+                  borderColor: "#047857",
+                  backgroundColor: "rgba(4, 120, 87, 0.1)",
                 }}
                 className="rounded-lg justify-center items-center"
               >
                 <Text className="text-emerald-700 font-worksans-bold">
-                  {isMerge ? 'Merging...' : 'New Slot'}
+                  {isMerge ? "Merging..." : "New Slot"}
                 </Text>
               </View>
             )}
@@ -413,7 +456,11 @@ export default function BookingsTab() {
       </Pressable>
 
       {/* Add Availability Modal */}
-      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} size="full">
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        size="full"
+      >
         <ModalBackdrop />
         <ModalContent className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-0 m-0 max-w-none w-full">
           <View className="flex-col p-6">
@@ -432,7 +479,9 @@ export default function BookingsTab() {
                   {startHour}:{startMinute}
                 </Text>
               </View>
-              <Text className="font-worksans text-[16px] text-[#6B6B6B]">to</Text>
+              <Text className="font-worksans text-[16px] text-[#6B6B6B]">
+                to
+              </Text>
               <View className="px-6 py-3 rounded-lg bg-[#F5F5F5]">
                 <Text className="font-worksans-semibold text-[20px] text-brand-dark-alt">
                   {endHour}:{endMinute}
@@ -479,10 +528,10 @@ export default function BookingsTab() {
             <View className="flex-col gap-4">
               <Button
                 onPress={handleSave}
-                className={`rounded-full ${isMerge ? 'bg-emerald-700' : 'bg-brand-terracotta'}`}
+                className={`rounded-full ${isMerge ? "bg-emerald-700" : "bg-brand-terracotta"}`}
               >
                 <ButtonText className="font-worksans-semibold text-white text-[16px]">
-                  {isMerge ? 'Merge availability' : 'Add Availability'}
+                  {isMerge ? "Merge availability" : "Add Availability"}
                 </ButtonText>
               </Button>
 
