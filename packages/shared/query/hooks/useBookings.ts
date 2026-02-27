@@ -6,6 +6,8 @@ import {
   getBookingById,
   createBooking,
   cancelBooking,
+  cancelAcceptedBooking,
+  updateBookingDetails,
   // Professional booking functions
   getPendingBookingsForHandy,
   getUpcomingBookingsForHandy,
@@ -16,8 +18,9 @@ import {
   completeBooking,
   type BookingWithRelations,
   type BookingWithCustomer,
-  type CreateBookingInput
+  type CreateBookingInput,
 } from '../../supabase/bookings';
+import type { FormResponse } from '../../supabase/types/forms';
 
 // Query keys
 export const bookingKeys = {
@@ -318,6 +321,56 @@ export function useRetryPayment() {
     },
     onError: (error) => {
       console.error('Error retrying payment:', error);
+    },
+  });
+}
+
+// Mutation hook for professional cancelling an accepted booking
+export function useCancelAcceptedBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ bookingId, handyId, reason }: { bookingId: string; handyId: string; reason?: string }) =>
+      cancelAcceptedBooking(bookingId, handyId, reason),
+    onSuccess: (success, { bookingId }) => {
+      if (success) {
+        queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) });
+      }
+    },
+    onError: (error) => {
+      console.error('Error cancelling accepted booking:', error);
+    },
+  });
+}
+
+// Mutation hook for updating pending booking details
+export function useUpdateBookingDetails() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      bookingId,
+      customerId,
+      updates,
+    }: {
+      bookingId: string;
+      customerId: string;
+      updates: {
+        scheduled_date?: string;
+        scheduled_time?: string;
+        task_details?: string;
+        form_responses?: FormResponse;
+      };
+    }) => updateBookingDetails(bookingId, customerId, updates),
+    onSuccess: (success, { bookingId }) => {
+      if (success) {
+        queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) });
+        queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
+      }
+    },
+    onError: (error) => {
+      console.error('Error updating booking details:', error);
     },
   });
 }

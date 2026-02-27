@@ -2,12 +2,13 @@ import React from 'react';
 import { ScrollView, RefreshControl, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Loader } from '@/components/ui/loader';
-import { ClipboardList } from 'lucide-react-native';
+import { ClipboardList, ChevronRight, PenSquare, DollarSign, MessageSquare } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { TaskCard, Tab, EmptyState } from '@/components/tasks';
 import { useUserBookings } from '@shared/supabase/query';
 import { useAuthStore } from '@shared/supabase';
 import { bookingToTaskCardProps } from '@/lib/bookings';
+import { useMyTaskPosts, type TaskPostWithCategory } from '@shared/supabase';
 
 // Using Tailwind design tokens - colors are now defined in tailwind.config.js
 
@@ -19,22 +20,26 @@ export default function TasksScreen() {
   const { user } = useAuthStore();
   
   // Fetch bookings data using React Query
-  const { 
-    upcoming, 
-    past, 
-    cancelled, 
-    isLoading, 
-    isError, 
+  const {
+    upcoming,
+    past,
+    cancelled,
+    isLoading,
+    isError,
     error,
-    refetch 
+    refetch
   } = useUserBookings(user?.id || '');
+
+  // Fetch posted tasks
+  const { data: myTaskPosts, isLoading: isLoadingPosts, refetch: refetchPosts } = useMyTaskPosts();
 
   // Show loading only if we have a user ID and are actually loading
   const showLoading = isLoading && !!user?.id;
 
   const onRefresh = React.useCallback(() => {
     refetch();
-  }, [refetch]);
+    refetchPosts();
+  }, [refetch, refetchPosts]);
 
   const getCurrentBookings = () => {
     switch (activeTab) {
@@ -75,6 +80,7 @@ export default function TasksScreen() {
         <View className="flex-row bg-bg-primary">
           <Tab id="upcoming" label="Upcoming" active={activeTab === 'upcoming'} onPress={setActiveTab} />
           <Tab id="completed" label="Completed" active={activeTab === 'completed'} onPress={setActiveTab} />
+          <Tab id="posted" label="Posted" active={activeTab === 'posted'} onPress={setActiveTab} />
         </View>
 
         <View className="h-px bg-border opacity-80" />
@@ -102,6 +108,37 @@ export default function TasksScreen() {
                 <Text className="text-white font-medium">Sign In</Text>
               </Pressable>
             </View>
+          ) : activeTab === 'posted' ? (
+            isLoadingPosts ? (
+              <Loader text="Loading posted tasks..." />
+            ) : !myTaskPosts || myTaskPosts.length === 0 ? (
+              <View className="flex-col items-center justify-center py-12">
+                <PenSquare size={48} color="#B29D88" />
+                <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
+                  No posted tasks
+                </Text>
+                <Text className="text-sm text-[#666666] text-center px-8 mb-6">
+                  Post a task and let professionals bid on it
+                </Text>
+                <Pressable
+                  onPress={() => router.push('/(client)/post-task')}
+                  className="px-8 py-3 rounded-full"
+                  style={{ backgroundColor: '#C1856A' }}
+                >
+                  <Text className="text-white font-medium">Post a Task</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View className="flex-col space-y-2">
+                {myTaskPosts.map((post) => (
+                  <PostedTaskCard
+                    key={post.id}
+                    post={post}
+                    onPress={() => router.push(`/(client)/task-post-details/${post.id}`)}
+                  />
+                ))}
+              </View>
+            )
           ) : showLoading ? (
             <Loader text="Loading tasks..." />
           ) : isError ? (
@@ -146,5 +183,69 @@ export default function TasksScreen() {
         </ScrollView>
       </View>
     </SafeAreaView>
+  );
+}
+
+function PostedTaskCard({ post, onPress }: { post: TaskPostWithCategory; onPress: () => void }) {
+  const statusColors: Record<string, { bg: string; text: string }> = {
+    open: { bg: '#E8F5E9', text: '#2E7D32' },
+    assigned: { bg: '#E3F2FD', text: '#1565C0' },
+    completed: { bg: '#F5F5F5', text: '#6B7B6B' },
+    cancelled: { bg: '#FFEBEE', text: '#C62828' },
+  };
+  const status = statusColors[post.status] || statusColors.open;
+
+  return (
+    <Pressable
+      onPress={onPress}
+      className="bg-white mx-4 mt-3 p-4 rounded-2xl border border-gray-100"
+    >
+      <View className="flex-row items-center justify-between mb-2">
+        {post.category && (
+          <Text className="text-xs font-medium text-[#C1856A] uppercase">
+            {post.category.name}
+          </Text>
+        )}
+        <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: status.bg }}>
+          <Text className="text-[10px] font-bold uppercase" style={{ color: status.text }}>
+            {post.status}
+          </Text>
+        </View>
+      </View>
+
+      <Text className="text-[15px] font-bold text-[#30352D] mb-1">
+        {post.title}
+      </Text>
+
+      {post.description && (
+        <Text className="text-[13px] text-[#6B6B6B] mb-2" numberOfLines={2}>
+          {post.description}
+        </Text>
+      )}
+
+      {(post.budget_min_cents || post.budget_max_cents) && (
+        <View className="flex-row items-center mb-1">
+          <DollarSign size={14} color="#B29D88" />
+          <Text className="text-[13px] text-[#30352D] ml-1 font-medium">
+            {post.budget_min_cents && post.budget_max_cents
+              ? `£${(post.budget_min_cents / 100).toFixed(0)} - £${(post.budget_max_cents / 100).toFixed(0)}`
+              : post.budget_max_cents
+                ? `Up to £${(post.budget_max_cents / 100).toFixed(0)}`
+                : `From £${((post.budget_min_cents || 0) / 100).toFixed(0)}`}
+          </Text>
+        </View>
+      )}
+
+      <View className="flex-row items-center justify-between mt-2">
+        <Text className="text-[11px] text-[#9CA3AF]">
+          {new Date(post.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+        </Text>
+        <View className="flex-row items-center gap-1">
+          <MessageSquare size={14} color="#B29D88" />
+          <Text className="text-[12px] text-[#6B6B6B]">View bids</Text>
+          <ChevronRight size={14} color="#B29D88" />
+        </View>
+      </View>
+    </Pressable>
   );
 }

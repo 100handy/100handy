@@ -295,12 +295,17 @@ export default function ConfirmBookingScreen() {
           return;
         }
 
-        // Check if selected time is within any availability slot
-        const selectedHour = parseInt(selectedTime.split(':')[0]!, 10);
+        // Check if selected time + task duration fits within any availability slot
+        const parseTimeToMinutes = (time: string): number => {
+          const parts = time.split(':').map(Number);
+          return (parts[0] ?? 0) * 60 + (parts[1] ?? 0);
+        };
+        const selectedMinutes = parseTimeToMinutes(selectedTime);
+        const taskEndMinutes = selectedMinutes + estimatedHours * 60;
         const isTimeAvailable = daySlots.some((slot) => {
-          const startHour = parseInt(slot.start_time.split(':')[0]!, 10);
-          const endHour = parseInt(slot.end_time.split(':')[0]!, 10);
-          return selectedHour >= startHour && selectedHour < endHour;
+          const slotStart = parseTimeToMinutes(slot.start_time);
+          const slotEnd = parseTimeToMinutes(slot.end_time);
+          return selectedMinutes >= slotStart && taskEndMinutes <= slotEnd;
         });
 
         if (!isTimeAvailable) {

@@ -390,3 +390,67 @@ export async function processJobCompletionPayment(
 }> {
   return retryPaymentProcessing(bookingId, paymentIntentId, 3);
 }
+
+/**
+ * Payment history entry for client display
+ */
+export interface PaymentHistoryEntry {
+  id: string;
+  bookingId: string;
+  taskTitle: string;
+  taskerName: string;
+  scheduledDate: string;
+  amountCents: number;
+  paymentStatus: PaymentStatus | null;
+  createdAt: string;
+}
+
+/**
+ * Get payment history for a client
+ */
+export async function getClientPaymentHistory(userId: string): Promise<PaymentHistoryEntry[]> {
+  try {
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select(`
+        id,
+        task_title,
+        scheduled_date,
+        hourly_rate_cents,
+        estimated_hours,
+        discount_amount_cents,
+        payment_status,
+        created_at,
+        handy_profile:profiles!bookings_handy_profile_fkey(first_name, last_name)
+      `)
+      .eq('customer_id', userId)
+      .not('payment_status', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error('Error fetching payment history:', error);
+      throw error;
+    }
+
+    return (bookings || []).map((booking) => {
+      const handyArr = booking.handy_profile as Array<{ first_name: string | null; last_name: string | null }> | null;
+      const handy = handyArr && handyArr.length > 0 ? handyArr[0] : null;
+      return {
+        id: booking.id,
+        bookingId: booking.id,
+        taskTitle: booking.task_title,
+        taskerName: handy
+          ? `${handy.first_name || ''} ${handy.last_name || ''}`.trim() || 'Tasker'
+          : 'Tasker',
+        scheduledDate: booking.scheduled_date,
+        amountCents: (booking.hourly_rate_cents * (booking.estimated_hours || 1)) - (booking.discount_amount_cents || 0),
+        paymentStatus: booking.payment_status as PaymentStatus | null,
+        createdAt: booking.created_at,
+      };
+    });
+  } catch (error) {
+    console.error('Error in getClientPaymentHistory:', error);
+    throw error;
+  }
+}
