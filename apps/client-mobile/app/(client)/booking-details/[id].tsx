@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -8,15 +8,20 @@ import {
   Clock,
   MapPin,
   AlertCircle,
+  Info,
+  Edit,
   Star,
   MessageCircle,
   CheckCircle2,
 } from 'lucide-react-native';
 import type { BookingStatus } from '@shared/supabase/bookings';
+import { subscribeToBookingUpdates, unsubscribeFromBookingUpdates } from '@shared/supabase/bookings';
 import { useBookingById } from '@shared/query/hooks/useBookings';
 import { useHasReviewedBooking } from '@shared/query/hooks/useReviews';
 import { useAuthStore } from '@shared/store/auth';
 import { useConversationByBooking } from '@shared/supabase';
+import { useQueryClient } from '@tanstack/react-query';
+import { bookingKeys } from '@shared/query/hooks/useBookings';
 import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';
 import { HandymanCard } from '@/components/booking/HandymanCard';
 import { PricingBreakdown } from '@/components/booking/PricingBreakdown';
@@ -142,8 +147,22 @@ export default function BookingDetailScreen() {
     error,
   } = useBookingById(id || null);
 
+  const queryClient = useQueryClient();
   const { data: conversation } = useConversationByBooking(id || '');
   const { data: hasReviewed } = useHasReviewedBooking(id || '', 'customer');
+
+  // Subscribe to real-time booking status updates
+  useEffect(() => {
+    if (!id) return;
+    const channel = subscribeToBookingUpdates(id, () => {
+      // Invalidate the booking query to refetch with fresh data
+      queryClient.invalidateQueries({ queryKey: bookingKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
+    });
+    return () => {
+      unsubscribeFromBookingUpdates(channel);
+    };
+  }, [id, queryClient]);
 
   const formatDate = (dateStr: string | undefined) => {
     if (!dateStr) return 'Not scheduled';
@@ -183,6 +202,15 @@ export default function BookingDetailScreen() {
   const handleLeaveReview = () => {
     if (id) {
       router.push(`/(client)/review/${id}`);
+    }
+  };
+
+  const handleEditBooking = () => {
+    if (id && booking) {
+      router.push({
+        pathname: '/(client)/edit-booking',
+        params: { bookingId: id },
+      });
     }
   };
 
@@ -382,6 +410,22 @@ export default function BookingDetailScreen() {
             estimatedHours={booking.estimated_hours}
           />
 
+          {/* Edit Booking - only for pending */}
+          {booking.status === 'pending' && (
+            <Button
+              onPress={handleEditBooking}
+              variant="outline"
+              className="rounded-full border-gray-300"
+            >
+              <View className="flex-row items-center gap-2">
+                <Edit size={18} color="#C1856A" />
+                <ButtonText className="font-worksans-semibold" style={{ color: '#C1856A' }}>
+                  Edit Booking
+                </ButtonText>
+              </View>
+            </Button>
+          )}
+
           {/* Action Buttons */}
           {(booking.status === 'accepted' || booking.status === 'in_progress') && (
             <Button
@@ -433,6 +477,16 @@ export default function BookingDetailScreen() {
                 Cancel Booking
               </ButtonText>
             </Button>
+          )}
+
+          {/* In-progress cancellation info */}
+          {booking.status === 'in_progress' && (
+            <View className="bg-blue-50 rounded-lg border border-blue-200 p-4 flex-row items-start gap-3">
+              <Info size={20} color="#1D4ED8" />
+              <Text className="text-sm font-worksans flex-1" style={{ color: '#1E40AF' }}>
+                This booking is in progress and cannot be cancelled. Contact your tasker if you need to discuss any changes.
+              </Text>
+            </View>
           )}
 
           {/* Next Steps */}

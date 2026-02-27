@@ -9,9 +9,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MapView, { Polygon, LatLng, Region } from "react-native-maps";
+import MapView, { Polygon, Marker, LatLng, Region } from "react-native-maps";
 import * as Location from "expo-location";
-import { Hand, X } from "lucide-react-native";
+import { Hand, X, Pencil } from "lucide-react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import {
   useWorkArea,
@@ -36,6 +36,7 @@ export default function WorkAreaTab() {
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [drawnCoordinates, setDrawnCoordinates] = useState<LatLng[]>([]);
 
   const mapRef = useRef<MapView>(null);
@@ -169,12 +170,35 @@ export default function WorkAreaTab() {
     setDrawnCoordinates([]);
     setIsDrawingMode(false);
     setIsReviewing(false);
+    setIsEditing(false);
   };
 
   const toggleDrawingMode = () => {
     setIsDrawingMode(true);
+    setIsEditing(false);
     setDrawnCoordinates([]);
     setIsReviewing(false);
+  };
+
+  const toggleEditMode = () => {
+    setIsEditing((prev) => !prev);
+    setIsDrawingMode(false);
+  };
+
+  const handleVertexDrag = (index: number, coordinate: LatLng) => {
+    setDrawnCoordinates((prev) => {
+      const updated = [...prev];
+      updated[index] = coordinate;
+      // If dragging the first vertex, also update the closing point
+      if (index === 0 && updated.length > 1 && updated[updated.length - 1]) {
+        updated[updated.length - 1] = coordinate;
+      }
+      // If dragging the last point (closing point), also update the first
+      if (index === updated.length - 1 && updated.length > 1) {
+        updated[0] = coordinate;
+      }
+      return updated;
+    });
   };
 
   if (!region || isLoadingWorkArea) {
@@ -210,10 +234,10 @@ export default function WorkAreaTab() {
           ref={mapRef}
           style={StyleSheet.absoluteFillObject}
           initialRegion={region}
-          scrollEnabled={!isDrawingMode}
+          scrollEnabled={!isDrawingMode && !isEditing}
           zoomEnabled={!isDrawingMode}
-          rotateEnabled={!isDrawingMode}
-          pitchEnabled={!isDrawingMode}
+          rotateEnabled={!isDrawingMode && !isEditing}
+          pitchEnabled={!isDrawingMode && !isEditing}
           showsUserLocation
           showsMyLocationButton={false}
         >
@@ -231,6 +255,32 @@ export default function WorkAreaTab() {
               lineJoin="round"
             />
           )}
+          {/* Draggable vertex markers in edit mode */}
+          {isEditing &&
+            drawnCoordinates.map((coord, index) => {
+              // Skip the closing point (duplicate of first)
+              if (index === drawnCoordinates.length - 1 && drawnCoordinates.length > 2) return null;
+              return (
+                <Marker
+                  key={`vertex-${index}`}
+                  coordinate={coord}
+                  draggable
+                  onDragEnd={(e) => handleVertexDrag(index, e.nativeEvent.coordinate)}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                >
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      backgroundColor: index === 0 ? '#1E88E5' : '#fff',
+                      borderWidth: 3,
+                      borderColor: '#1E88E5',
+                    }}
+                  />
+                </Marker>
+              );
+            })}
         </MapView>
 
         {/* Drawing Overlay */}
@@ -267,9 +317,18 @@ export default function WorkAreaTab() {
           </View>
         )}
 
-        {/* Clear Button (when area is drawn) */}
+        {/* Edit/Clear Buttons (when area is drawn) */}
         {isReviewing && (
-          <View className="flex-row justify-end mb-4">
+          <View className="flex-row justify-end gap-3 mb-4">
+            <Pressable
+              onPress={toggleEditMode}
+              className={`rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2 ${isEditing ? "bg-blue-100" : "bg-white"}`}
+            >
+              <Pencil size={20} color={isEditing ? "#1E88E5" : "#4A5347"} />
+              <Text className={`font-worksans-bold text-base ${isEditing ? "text-blue-600" : "text-[#4A5347]"}`}>
+                {isEditing ? "Done editing" : "Edit vertices"}
+              </Text>
+            </Pressable>
             <Pressable
               onPress={handleClear}
               className="bg-white rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2"

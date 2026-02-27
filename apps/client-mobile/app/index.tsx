@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "expo-router";
 import { Loader } from "@/components/ui/loader";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,6 +18,7 @@ import { STORAGE_KEYS } from '@/lib/storage-keys';
 export default function Index() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const hasRouted = useRef(false);
   const { isAuthenticated, isLoading, initialize, userRole, isEmailVerified, hasCompletedOnboarding, user } = useAuthStore();
   const { getPendingBooking, clearPendingBooking } = usePendingBookingStore();
   const { setLocation } = useLocationStore();
@@ -30,6 +31,8 @@ export default function Index() {
   useEffect(() => {
     // Wait for auth to finish loading before checking onboarding
     if (isLoading) return;
+    // Prevent multiple routing calls during auth state changes
+    if (hasRouted.current) return;
 
     checkOnboardingStatus();
   }, [isLoading, isAuthenticated, user, userRole, isEmailVerified, hasCompletedOnboarding]);
@@ -53,10 +56,12 @@ export default function Index() {
 
       if (hasSeenOnboarding === 'true') {
         // User has completed onboarding - redirect to sign-up
+        hasRouted.current = true;
         router.replace('/(auth)/(client)/sign-up');
         setIsChecking(false);
       } else {
         // First time user - show welcome flow
+        hasRouted.current = true;
         router.replace('/(auth)/(client)');
         setIsChecking(false);
       }
@@ -67,6 +72,7 @@ export default function Index() {
         await routeAuthenticatedUser();
       } else {
         // Default to sign-up for errors (user has seen onboarding flow)
+        hasRouted.current = true;
         router.replace('/(auth)/(client)/sign-up');
         setIsChecking(false);
       }
@@ -104,6 +110,7 @@ export default function Index() {
     try {
       // Check email verification
       if (!isEmailVerified) {
+        hasRouted.current = true;
         router.replace({
           pathname: '/(auth)/verify-email',
           params: { email: user?.email || '' },
@@ -122,6 +129,7 @@ export default function Index() {
           const handyProfile = await getHandyProfile();
           const onboardingComplete = handyProfile?.onboarding_completed || false;
 
+          hasRouted.current = true;
           if (!onboardingComplete) {
             router.replace('/(auth)/(professional)/verify-info');
           } else {
@@ -130,15 +138,18 @@ export default function Index() {
         } catch (error) {
           console.error('Error checking professional onboarding:', error);
           // If error, still send to dashboard (onboarding/verification is completed there)
+          hasRouted.current = true;
           router.replace('/(professional)/(tabs)/dashboard');
         }
       } else if (isClient) {
         // Client - check onboarding first
         if (!hasCompletedOnboarding) {
+          hasRouted.current = true;
           router.replace('/(auth)/(client)/onboarding');
         } else {
           // Check for pending booking from before auth
           const hasPendingBooking = checkAndRestorePendingBooking();
+          hasRouted.current = true;
           if (!hasPendingBooking) {
             // No pending booking, go to home
             router.replace('/(client)/(tabs)/home');
@@ -146,11 +157,13 @@ export default function Index() {
         }
       } else {
         // Unknown role - default to client home
+        hasRouted.current = true;
         router.replace('/(client)/(tabs)/home');
       }
     } catch (error) {
       console.error('Error routing authenticated user:', error);
       // Default to client home on error (user is authenticated)
+      hasRouted.current = true;
       router.replace('/(client)/(tabs)/home');
     } finally {
       setIsChecking(false);

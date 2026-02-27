@@ -42,6 +42,8 @@ export {
   useStartBooking,
   useCompleteBooking,
   useRetryPayment,
+  useCancelAcceptedBooking,
+  useUpdateBookingDetails,
   useInvalidateHandyBookings,
 } from './hooks/useBookings';
 
@@ -199,3 +201,25 @@ export {
   useAccountBalance,
   accountBalanceKeys,
 } from './hooks/useAccountBalance';
+
+// Task post hooks and utilities
+export {
+  useOpenTaskPosts,
+  useMyTaskPosts,
+  useTaskPostById,
+  useCreateTaskPost,
+  useCancelTaskPost,
+  useBidsForTaskPost,
+  useMyBids,
+  useCreateBid,
+  useAcceptBid,
+  useWithdrawBid,
+  useInvalidateTaskPosts,
+  taskPostKeys,
+  type TaskPostWithCategory,
+  type TaskBidWithProfile,
+  type TaskBid,
+  type TaskPost,
+  type CreateTaskPostInput,
+  type CreateBidInput,
+} from './hooks/useTaskPosts';

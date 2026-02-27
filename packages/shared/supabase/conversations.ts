@@ -240,22 +240,42 @@ export async function getConversationByBooking(bookingId: string): Promise<Conve
 }
 
 /**
- * Get all messages for a conversation
+ * Get messages for a conversation with pagination
+ * @param conversationId - The conversation ID
+ * @param options - Pagination options
+ * @returns Array of messages (newest last) and whether there are more
  */
-export async function getConversationMessages(conversationId: string): Promise<ConversationMessage[]> {
+export async function getConversationMessages(
+  conversationId: string,
+  options?: { limit?: number; before?: string }
+): Promise<{ messages: ConversationMessage[]; hasMore: boolean }> {
   try {
-    const { data, error } = await supabase
+    const limit = options?.limit ?? 50;
+
+    let query = supabase
       .from('conversation_messages')
       .select('*')
       .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false })
+      .limit(limit + 1); // Fetch one extra to detect hasMore
+
+    if (options?.before) {
+      query = query.lt('created_at', options.before);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching conversation messages:', error);
       throw new Error(error.message);
     }
 
-    return data || [];
+    const messages = data || [];
+    const hasMore = messages.length > limit;
+    const trimmed = hasMore ? messages.slice(0, limit) : messages;
+
+    // Reverse to get chronological order (oldest first)
+    return { messages: trimmed.reverse(), hasMore };
   } catch (error) {
     console.error('Error in getConversationMessages:', error);
     throw error;

@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { FormResponse } from './types/forms';
 import type { PaymentStatus } from './payments';
 
@@ -897,8 +898,159 @@ export async function completeBooking(
     }
 
     return { success: true, paymentProcessed: false };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in completeBooking:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
+}
+
+/**
+ * Cancel an accepted booking (professional emergency cancellation)
+ * Changes status from 'accepted' to 'cancelled' and releases payment hold
+ */
+export async function cancelAcceptedBooking(
+  bookingId: string,
+  handyId: string,
+  reason?: string
+): Promise<boolean> {
+  try {
+    // Get booking to release payment hold
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('payment_intent_id, payment_status')
+      .eq('id', bookingId)
+      .eq('handy_id', handyId)
+      .eq('status', 'accepted')
+      .single();
+
+    if (!booking) {
+      console.warn(`Booking ${bookingId} not found or not in accepted status`);
+      return false;
+    }
+
+    // Release payment hold if authorized
+    if (booking.payment_intent_id && booking.payment_status === 'authorized') {
+      try {
+        const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
+        const released = await cancelPaymentIntent(booking.payment_intent_id);
+        if (released) {
+          await updateBookingPaymentStatus(bookingId, 'cancelled');
+        } else {
+          await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on professional cancellation.', {
+            paymentIntentId: booking.payment_intent_id,
+          });
+        }
+      } catch (e) {
+        console.error('Failed to release authorization hold:', bookingId, e);
+      }
+    }
+
+    const updateData: { status: BookingStatus; decline_reason?: string } = {
+      status: 'cancelled',
+    };
+    if (reason) {
+      updateData.decline_reason = reason;
+    }
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .update(updateData)
+      .eq('id', bookingId)
+      .eq('handy_id', handyId)
+      .eq('status', 'accepted')
+      .select();
+
+    if (error) {
+      console.error(`Error cancelling accepted booking ${bookingId}:`, error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Booking ${bookingId} not cancelled - status may not be accepted`);
+      return false;
+    }
+
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: { event: 'booking_status', bookingId, status: 'cancelled' },
+      })
+      .catch(() => undefined);
+
+    return true;
+  } catch (error) {
+    console.error('Error in cancelAcceptedBooking:', error);
+    return false;
+  }
+}
+
+/**
+ * Update booking details (only for pending bookings)
+ */
+export async function updateBookingDetails(
+  bookingId: string,
+  customerId: string,
+  updates: {
+    scheduled_date?: string;
+    scheduled_time?: string;
+    task_details?: string;
+    form_responses?: FormResponse;
+  }
+): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('bookings')
+      .update(updates)
+      .eq('id', bookingId)
+      .eq('customer_id', customerId)
+      .eq('status', 'pending')
+      .select();
+
+    if (error) {
+      console.error(`Error updating booking ${bookingId}:`, error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Booking ${bookingId} not updated - may not be pending or not owned by user`);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateBookingDetails:', error);
+    return false;
+  }
+}
+
+/**
+ * Subscribe to booking status changes via Supabase Realtime
+ */
+export function subscribeToBookingUpdates(
+  bookingId: string,
+  onUpdate: (booking: Booking) => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel(`booking:${bookingId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'bookings',
+        filter: `id=eq.${bookingId}`,
+      },
+      (payload) => {
+        onUpdate(payload.new as Booking);
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Unsubscribe from booking updates
+ */
+export async function unsubscribeFromBookingUpdates(channel: RealtimeChannel): Promise<void> {
+  await supabase.removeChannel(channel);
 }

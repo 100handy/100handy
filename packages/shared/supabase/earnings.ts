@@ -166,7 +166,7 @@ export async function getProfessionalPayouts(
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
     const endDate = new Date(year, month, 0).toISOString().split('T')[0];
 
-    // Get payments linked to completed bookings for this professional
+    // Get completed bookings with payment and payout status
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select(`
@@ -175,12 +175,13 @@ export async function getProfessionalPayouts(
         estimated_hours,
         discount_amount_cents,
         payment_status,
+        payout_status,
         scheduled_date,
         created_at
       `)
       .eq('handy_id', userId)
       .eq('status', 'completed')
-      .eq('payment_status', 'captured')
+      .in('payment_status', ['captured', 'pending', 'authorized'])
       .gte('scheduled_date', startDate)
       .lte('scheduled_date', endDate)
       .order('scheduled_date', { ascending: false });
@@ -190,13 +191,15 @@ export async function getProfessionalPayouts(
       throw error;
     }
 
-    // For now, treat each captured booking as a payout
-    // When Stripe Connect is implemented, this will query actual payout records
     return (bookings || []).map((booking) => ({
       id: `payout_${booking.id}`,
       amount: (booking.hourly_rate_cents * (booking.estimated_hours || 1)) - (booking.discount_amount_cents || 0),
-      status: 'paid' as const,
-      paidAt: booking.scheduled_date,
+      status: booking.payout_status === 'transferred'
+        ? 'paid' as const
+        : booking.payout_status === 'failed'
+          ? 'failed' as const
+          : 'pending' as const,
+      paidAt: booking.payout_status === 'transferred' ? booking.scheduled_date : null,
       createdAt: booking.created_at,
     }));
   } catch (error) {

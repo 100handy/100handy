@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getConversations,
   getConversation,
@@ -59,15 +59,32 @@ export function useConversationByBooking(bookingId: string) {
 }
 
 /**
- * Hook to fetch messages for a conversation with real-time updates
+ * Hook to fetch messages for a conversation with pagination and real-time updates
  */
 export function useConversationMessages(conversationId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: conversationKeys.messages(conversationId),
-    queryFn: () => getConversationMessages(conversationId),
+    queryFn: ({ pageParam }) =>
+      getConversationMessages(conversationId, {
+        limit: 50,
+        before: pageParam ?? undefined,
+      }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.hasMore || lastPage.messages.length === 0) return undefined;
+      // The oldest message's created_at is the cursor for the next (earlier) page
+      return lastPage.messages[0]?.created_at ?? undefined;
+    },
     enabled: !!conversationId,
-    staleTime: 1000 * 30, // 30 seconds
-    refetchInterval: 1000 * 30, // Refetch every 30 seconds as fallback
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 30,
+    select: (data) => ({
+      pages: data.pages,
+      pageParams: data.pageParams,
+      // Flatten all pages into a single messages array (oldest first)
+      messages: data.pages.flatMap((page) => page.messages),
+      hasMore: data.pages[0]?.hasMore ?? false,
+    }),
   });
 }
 
@@ -85,46 +102,48 @@ export function useSendConversationMessage() {
         queryKey: conversationKeys.messages(newMessage.conversation_id),
       });
 
-      // Snapshot the previous value
-      const previousMessages = queryClient.getQueryData<ConversationMessage[]>(
+      // Snapshot the previous value (infinite query data)
+      const previousData = queryClient.getQueryData(
         conversationKeys.messages(newMessage.conversation_id)
       );
 
       // Get actual user ID for the optimistic message
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Optimistically update to the new value
-      queryClient.setQueryData<ConversationMessage[]>(
+      // Create optimistic message
+      const optimisticMessage: ConversationMessage = {
+        id: `temp-${Date.now()}`,
+        conversation_id: newMessage.conversation_id,
+        sender_id: user?.id || '',
+        message: newMessage.message,
+        message_type: newMessage.message_type || 'text',
+        attachment_url: newMessage.attachment_url || null,
+        booking_id: newMessage.booking_id || null,
+        read_at: null,
+        created_at: new Date().toISOString(),
+      };
+
+      // Optimistically append to the last page of the infinite query
+      queryClient.setQueryData(
         conversationKeys.messages(newMessage.conversation_id),
-        (old) => {
-          if (!old) return old;
-
-          // Create optimistic message
-          const optimisticMessage: ConversationMessage = {
-            id: `temp-${Date.now()}`,
-            conversation_id: newMessage.conversation_id,
-            sender_id: user?.id || '',
-            message: newMessage.message,
-            message_type: newMessage.message_type || 'text',
-            attachment_url: newMessage.attachment_url || null,
-            booking_id: newMessage.booking_id || null,
-            read_at: null,
-            created_at: new Date().toISOString(),
-          };
-
-          return [...old, optimisticMessage];
+        (old: any) => {
+          if (!old?.pages?.length) return old;
+          const pages = [...old.pages];
+          const lastPage = { ...pages[pages.length - 1] };
+          lastPage.messages = [...lastPage.messages, optimisticMessage];
+          pages[pages.length - 1] = lastPage;
+          return { ...old, pages };
         }
       );
 
-      // Return context with previous value
-      return { previousMessages, conversationId: newMessage.conversation_id };
+      return { previousData, conversationId: newMessage.conversation_id };
     },
-    onError: (err, newMessage, context) => {
+    onError: (_err, _newMessage, context) => {
       // Rollback on error
-      if (context?.previousMessages) {
+      if (context?.previousData) {
         queryClient.setQueryData(
           conversationKeys.messages(context.conversationId),
-          context.previousMessages
+          context.previousData
         );
       }
     },

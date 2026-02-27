@@ -36,6 +36,7 @@ import {
   useCompleteBooking,
   useHasReviewedBooking,
   useRetryPayment,
+  useCancelAcceptedBooking,
   useConversationByBooking,
   useAuthStore,
   supabase,
@@ -128,6 +129,7 @@ export default function JobDetailsScreen() {
   const startMutation = useStartBooking();
   const completeMutation = useCompleteBooking();
   const retryPaymentMutation = useRetryPayment();
+  const cancelAcceptedMutation = useCancelAcceptedBooking();
   const [paymentDetails, setPaymentDetails] = useState<{
     payoutStatus: string | null;
     paymentIntentId: string | null;
@@ -321,6 +323,41 @@ export default function JobDetailsScreen() {
                 toast.error(result.error || 'Failed to complete job');
               }
             } catch (error) {
+              toast.error('Something went wrong');
+            } finally {
+              setActionLoading(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleCancelAccepted = () => {
+    Alert.alert(
+      'Cancel Accepted Job',
+      'Are you sure you want to cancel this job? The client will be notified and any payment hold will be released.',
+      [
+        { text: 'Keep Job', style: 'cancel' },
+        {
+          text: 'Cancel Job',
+          style: 'destructive',
+          onPress: async () => {
+            if (!id || !user?.id) return;
+            setActionLoading('cancelAccepted');
+            try {
+              const success = await cancelAcceptedMutation.mutateAsync({
+                bookingId: id,
+                handyId: user.id,
+                reason: 'Cancelled by professional',
+              });
+              if (success) {
+                toast.success('Job cancelled');
+                router.back();
+              } else {
+                toast.error('Failed to cancel job');
+              }
+            } catch {
               toast.error('Something went wrong');
             } finally {
               setActionLoading(null);
@@ -575,13 +612,22 @@ export default function JobDetailsScreen() {
           )}
 
           {booking.status === 'accepted' && (
-            <ActionButton
-              onPress={handleStart}
-              label="Start Job"
-              variant="primary"
-              loading={actionLoading === 'start'}
-              icon={<Play color="#fff" size={18} />}
-            />
+            <View className="gap-3">
+              <ActionButton
+                onPress={handleStart}
+                label="Start Job"
+                variant="primary"
+                loading={actionLoading === 'start'}
+                icon={<Play color="#fff" size={18} />}
+              />
+              <ActionButton
+                onPress={handleCancelAccepted}
+                label="Cancel Job"
+                variant="danger"
+                loading={actionLoading === 'cancelAccepted'}
+                icon={<XCircle color="#D32F2F" size={18} />}
+              />
+            </View>
           )}
 
           {booking.status === 'in_progress' && (
