@@ -23,6 +23,24 @@ interface AuthState {
   updateOnboardingStatus: (completed: boolean) => void;
 }
 
+/**
+ * Fetch the authoritative role from the profiles table.
+ * Falls back to null if the row is missing or the query fails.
+ * This prevents a client from elevating their role by calling supabase.auth.updateUser().
+ */
+async function fetchProfileRole(userId: string): Promise<'customer' | 'handy' | null> {
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+    return (data?.role as 'customer' | 'handy' | null) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   session: null,
@@ -46,11 +64,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Set up auth listener FIRST to avoid missing events between getSession and listener setup
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        console.log('Auth state changed:', event, session?.user?.phone || session?.user?.email);
-
         const user = session?.user;
         const metadata = user?.user_metadata;
 
+        // Set immediately with user_metadata role for fast initial render
         set({
           user: user || null,
           session,
@@ -61,6 +78,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           userRole: metadata?.role || null,
           isLoading: false
         });
+
+        // Override with authoritative DB role to prevent client-side role elevation
+        if (user?.id) {
+          fetchProfileRole(user.id).then((dbRole) => {
+            if (dbRole !== null) set({ userRole: dbRole });
+          });
+        }
       });
 
       // Store subscription for cleanup
@@ -78,6 +102,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = session?.user;
       const metadata = user?.user_metadata;
 
+      // Fetch authoritative role from DB during initialization
+      const dbRole = user?.id ? await fetchProfileRole(user.id) : null;
+
       set({
         user: user || null,
         session,
@@ -85,7 +112,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isEmailVerified: !!user?.email_confirmed_at,
         isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
-        userRole: metadata?.role || null,
+        userRole: dbRole ?? (metadata?.role || null),
         isLoading: false
       });
     } catch (error) {
@@ -215,6 +242,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const metadata = user?.user_metadata;
       const isAuthenticated = !!user;
 
+      // Fetch authoritative role from DB
+      const dbRole = user?.id ? await fetchProfileRole(user.id) : null;
+
       set({
         user: user || null,
         session,
@@ -222,7 +252,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isEmailVerified: !!user?.email_confirmed_at,
         isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
-        userRole: metadata?.role || null,
+        userRole: dbRole ?? (metadata?.role || null),
         isLoading: false
       });
 

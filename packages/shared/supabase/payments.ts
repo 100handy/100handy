@@ -31,7 +31,6 @@ export interface PayoutResult {
  */
 export async function createPaymentIntent(
   amount: number, // Amount in cents
-  customerId: string,
   metadata?: Record<string, string>
 ): Promise<PaymentIntentResult | null> {
   try {
@@ -39,7 +38,7 @@ export async function createPaymentIntent(
       body: {
         amount,
         currency: 'gbp',
-        customerId,
+        // customerId is now fetched server-side from profiles.stripe_customer_id
         metadata: {
           ...metadata,
           platform: '100handy',
@@ -115,6 +114,40 @@ export async function cancelPaymentIntent(paymentIntentId: string): Promise<bool
   } catch (error) {
     console.error('Error in cancelPaymentIntent:', error);
     return false;
+  }
+}
+
+/**
+ * Refund a captured payment (fully or partially)
+ * Used for disputes, incomplete jobs, and customer complaints
+ */
+export async function refundPayment(
+  bookingId: string,
+  amount?: number // Optional: partial refund amount in cents
+): Promise<{ success: boolean; refundId?: string; error?: string }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('refund-payment', {
+      body: { bookingId, amount },
+    });
+
+    if (error) {
+      console.error('Error refunding payment:', error);
+      return { success: false, error: error.message };
+    }
+
+    if (data?.success) {
+      await updateBookingPaymentStatus(bookingId, 'refunded');
+    }
+
+    return {
+      success: data?.success ?? false,
+      refundId: data?.refundId,
+      error: data?.error,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('Error in refundPayment:', err);
+    return { success: false, error: message };
   }
 }
 
@@ -318,7 +351,8 @@ export async function retryPaymentProcessing(
             await sleep(1000 * Math.pow(2, attempt - 1)); // 1s, 2s, 4s
             continue;
           }
-          // Final attempt failed - mark payment as failed
+          // Final attempt failed - release hold and mark payment as failed
+          await cancelPaymentIntent(paymentIntentId);
           await updateBookingPaymentStatus(bookingId, 'failed');
           await updateBookingPayoutStatus(bookingId, 'failed');
           await logPaymentError(bookingId, 'capture_failed', lastError, {
@@ -366,7 +400,11 @@ export async function retryPaymentProcessing(
     }
   }
 
-  // All retries exhausted
+  // All retries exhausted - release hold only if payment was NOT already captured
+  const finalStatus = await getBookingPaymentDetails(bookingId);
+  if (finalStatus?.paymentStatus !== 'captured') {
+    await cancelPaymentIntent(paymentIntentId);
+  }
   await updateBookingPayoutStatus(bookingId, 'failed');
   await logPaymentError(bookingId, 'retry_exhausted', lastError, {
     paymentIntentId,

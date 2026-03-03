@@ -4,8 +4,12 @@ import { useAuthStore } from '@shared/supabase';
 export default function ProfessionalLayout() {
   const { isAuthenticated, userRole } = useAuthStore();
 
-  if (!isAuthenticated || userRole !== 'handy') {
-    return <Redirect href="/" />;
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/role-selection" />;
+  }
+
+  if (userRole !== 'handy') {
+    return <Redirect href="/(client)/(tabs)/home" />;
   }
 
   return (

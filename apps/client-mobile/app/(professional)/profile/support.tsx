@@ -38,7 +38,6 @@ export default function SupportScreen() {
         return;
       }
 
-      console.log('Test push notification result:', data);
     } catch (e) {
       console.error('Test push notification error:', e);
     }

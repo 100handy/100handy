@@ -57,12 +57,46 @@ serve(async (req) => {
       );
     }
 
+    // Verify ownership: look up the booking linked to this payment intent
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: booking, error: bookingError } = await serviceClient
+      .from('bookings')
+      .select('id, customer_id, handy_id')
+      .eq('payment_intent_id', paymentIntentId)
+      .maybeSingle();
+
+    if (bookingError || !booking) {
+      return new Response(
+        JSON.stringify({ error: 'Booking not found for this payment intent' }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Only the customer or the assigned professional may trigger capture
+    if (user.id !== booking.customer_id && user.id !== booking.handy_id) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: you are not a party to this booking' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Capture the authorized payment
     // This actually charges the customer's card
-    const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId, {
-      // Optional: Capture a specific amount (less than or equal to authorized amount)
-      amount_to_capture: amount ? Math.round(amount) : undefined,
-    });
+    const paymentIntent = await stripe.paymentIntents.capture(
+      paymentIntentId,
+      amount ? { amount_to_capture: Math.round(amount) } : {},
+      { idempotencyKey: `${paymentIntentId}_capture` }
+    );
 
     return new Response(
       JSON.stringify({

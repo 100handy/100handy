@@ -29,14 +29,14 @@ export default function AuthRoleSelectionScreen() {
     router.push({
       pathname: '/(auth)/(client)',
       params: ref ? { ref } : {},
-    } as any);
+    } as Parameters<typeof router.push>[0]);
   };
 
   const handleProfessionalAuth = (): void => {
     router.push({
       pathname: '/(auth)/(professional)',
       params: ref ? { ref } : {},
-    } as any);
+    } as Parameters<typeof router.push>[0]);
   };
 
   return (

@@ -1638,6 +1638,38 @@ export async function deleteUserSkill(userSkillId: string): Promise<boolean> {
   }
 }
 
+/**
+ * Get rate suggestions for a specific skill from the database
+ * Falls back to empty array if the table doesn't exist or no data found
+ */
+export async function getSkillRateSuggestions(skillId: string): Promise<{
+  suggestedRates: number[];
+  suggestedRate: number | null;
+  minRate: number | null;
+  maxRate: number | null;
+}> {
+  try {
+    const { data, error } = await supabase
+      .from('skill_rate_suggestions')
+      .select('suggested_rates, suggested_rate, min_rate, max_rate')
+      .eq('skill_id', skillId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return { suggestedRates: [], suggestedRate: null, minRate: null, maxRate: null };
+    }
+
+    return {
+      suggestedRates: data.suggested_rates ?? [],
+      suggestedRate: data.suggested_rate ?? null,
+      minRate: data.min_rate ?? null,
+      maxRate: data.max_rate ?? null,
+    };
+  } catch {
+    return { suggestedRates: [], suggestedRate: null, minRate: null, maxRate: null };
+  }
+}
+
 // ============= SKILL SETS & TOOLS FUNCTIONS =============
 
 export interface SkillSet {

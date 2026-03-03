@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
 import { Image } from 'expo-image';
 import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
@@ -124,7 +124,6 @@ export default function ProfileScreen() {
 
   const handleMenuItemPress = (item: typeof menuItems[0]) => {
     if (item.title === 'Privacy settings') {
-      console.log('Opening privacy notice actionsheet');
       setShowPrivacyNotice(true);
     } else {
       navigateWithSecurityCheck(item.route, item.requiresSecurity);
@@ -144,10 +143,6 @@ export default function ProfileScreen() {
     setShowPrivacyNotice(false);
     router.push('/(client)/profile/privacy-settings');
   };
-
-  useEffect(() => {
-    console.log('showPrivacyNotice state changed:', showPrivacyNotice);
-  }, [showPrivacyNotice]);
 
   // Show sign-in prompt for unauthenticated users (after auth loading completes)
   if (!authLoading && !user?.id) {

@@ -77,7 +77,6 @@ export function useConversationMessages(conversationId: string) {
     },
     enabled: !!conversationId,
     staleTime: 1000 * 30,
-    refetchInterval: 1000 * 30,
     select: (data) => ({
       pages: data.pages,
       pageParams: data.pageParams,

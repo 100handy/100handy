@@ -287,7 +287,6 @@ export default function ClientOnboarding() {
 
       // If user is already authenticated, update their metadata
       if (isAuthenticated) {
-        console.log('[Onboarding] User is authenticated, updating metadata...');
         const { error } = await supabase.auth.updateUser({
           data: { onboarding_completed: true }
         });
@@ -295,7 +294,6 @@ export default function ClientOnboarding() {
         if (error) {
           console.error('[Onboarding] Error updating user metadata:', error);
         } else {
-          console.log('[Onboarding] User metadata updated successfully');
           // Update the auth store state
           updateOnboardingStatus(true);
         }

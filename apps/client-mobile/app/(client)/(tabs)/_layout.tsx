@@ -50,15 +50,6 @@ export default function ClientTabLayout() {
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
         }}
       />
-      
-      {/* Hide subdirectory routes from tabs */}
-      <Tabs.Screen name="tasks/details" options={{ href: null }} />
-      <Tabs.Screen name="tasks/choose-category" options={{ href: null }} />
-      <Tabs.Screen name="booking/manage" options={{ href: null }} />
-      <Tabs.Screen name="booking/address" options={{ href: null }} />
-      <Tabs.Screen name="professionals/available" options={{ href: null }} />
-      <Tabs.Screen name="professionals/details" options={{ href: null }} />
-      <Tabs.Screen name="chat/conversation" options={{ href: null }} />
     </Tabs>
   );
 }

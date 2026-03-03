@@ -38,7 +38,6 @@ export default function MessageSupportScreen() {
           await openTicket(ticketId);
         } else if (forceNew) {
           // Force create a new ticket (skip open ticket check)
-          console.log('Force creating new ticket');
           const newTicket = await createTicket({
             subject: 'General Support',
             message: 'Support ticket created',
@@ -58,11 +57,9 @@ export default function MessageSupportScreen() {
 
           if (openTickets.length > 0) {
             // Use the most recent open ticket
-            console.log('Found existing open ticket:', openTickets[0].id);
             await openTicket(openTickets[0].id);
           } else {
             // Create new ticket only if no open tickets exist
-            console.log('No open tickets found, creating new ticket');
             const newTicket = await createTicket({
               subject: 'General Support',
               message: 'Support ticket created',
@@ -100,10 +97,7 @@ export default function MessageSupportScreen() {
 
   const handleSendMessage = async (message: string, attachment?: any) => {
     try {
-      console.log('Sending message:', message, 'attachment:', attachment);
-
       if (!message.trim() && !attachment) {
-        console.log('Empty message, skipping send');
         return;
       }
 
@@ -112,7 +106,6 @@ export default function MessageSupportScreen() {
         attachment: attachment || null,
       });
 
-      console.log('Message sent successfully');
     } catch (error) {
       console.error('Error sending message:', error);
       Alert.alert(

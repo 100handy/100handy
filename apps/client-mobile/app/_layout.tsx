@@ -61,8 +61,7 @@ export default function RootLayout() {
           response.notification.request.content.data
         );
         if (route) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          router.push(route as any);
+          router.push(route as Parameters<typeof router.push>[0]);
         }
       }
     );
@@ -75,7 +74,7 @@ export default function RootLayout() {
         lastResponse.notification.request.content.data
       );
       if (route) {
-        router.push(route as any);
+        router.push(route as Parameters<typeof router.push>[0]);
       }
     })();
 
@@ -140,9 +139,7 @@ export default function RootLayout() {
   // Deep link listener for auth callbacks (email verification, password reset, OAuth)
   useEffect(() => {
     const subscription = Linking.addEventListener('url', async ({ url }) => {
-      console.log('Deep link received:', url);
       // Expo Router will automatically handle the routing to /auth/callback
-      // which will be created next
     });
 
     return () => {

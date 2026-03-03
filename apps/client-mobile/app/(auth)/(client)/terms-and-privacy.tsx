@@ -63,7 +63,6 @@ export default function TermsAndPrivacyScreen() {
 
           {/* Checkboxes */}
           <View className="flex-col w-full mb-8">
-            {/* TODO: Implement checkbox with React Native component */}
             <Pressable
               onPress={() => setTermsAccepted(!termsAccepted)}
               className="flex-row items-center mb-6"

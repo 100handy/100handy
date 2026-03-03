@@ -87,7 +87,7 @@ export default function ProfessionalWelcome() {
                   router.push({
                     pathname: '/(auth)/(professional)/sign-up',
                     params: { ...(ref ? { ref } : {}), via: 'welcome' },
-                  } as any)
+                  } as Parameters<typeof router.push>[0])
                 }
               >
                 <ButtonText className="text-[18px] font-worksans-bold">
@@ -102,7 +102,7 @@ export default function ProfessionalWelcome() {
                   router.push({
                     pathname: '/(auth)/(professional)/sign-in',
                     params: ref ? { ref } : {},
-                  } as any)
+                  } as Parameters<typeof router.push>[0])
                 }
               >
                 <Text className="text-center text-[18px] font-worksans-bold text-brand-terracotta">

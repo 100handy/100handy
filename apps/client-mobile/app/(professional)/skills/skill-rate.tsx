@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   View,
@@ -18,12 +18,9 @@ import {
   Sparkles,
   Edit3,
 } from "lucide-react-native";
-import { updateUserSkill } from "@shared/supabase/profile";
+import { updateUserSkill, getSkillRateSuggestions } from "@shared/supabase/profile";
 import { toast } from "sonner-native";
 
-// TODO: These should come from backend via skill_rate_suggestions table
-// When backend is ready, implement useEffect to fetch from supabase:
-// const { data } = await supabase.from('skill_rate_suggestions').select('*').eq('skill_id', skillId).single()
 const DEFAULT_HOURLY_RATES = [17, 18, 19, 20, 25, 30];
 const DEFAULT_SUGGESTED_RATE = 18;
 const DEFAULT_MIN_RATE = 10;
@@ -38,12 +35,26 @@ export default function SkillRateScreen() {
   }>();
   const [isSavingRate, setIsSavingRate] = useState(false);
 
-  // Rate configuration - currently using defaults, will be dynamic when backend is ready
-  // These state variables are kept for future use when implementing dynamic rate fetching
+  const [hourlyRates, setHourlyRates] = useState<number[]>(DEFAULT_HOURLY_RATES);
+  const [minRate, setMinRate] = useState(DEFAULT_MIN_RATE);
+  const [maxRate, setMaxRate] = useState(DEFAULT_MAX_RATE);
 
-  const [hourlyRates] = useState<number[]>(DEFAULT_HOURLY_RATES);
-  const [minRate] = useState(DEFAULT_MIN_RATE);
-  const [maxRate] = useState(DEFAULT_MAX_RATE);
+  useEffect(() => {
+    if (!params.skillId) return;
+    getSkillRateSuggestions(params.skillId).then((suggestions) => {
+      if (suggestions.suggestedRates.length > 0) {
+        setHourlyRates(suggestions.suggestedRates);
+      }
+      const newMin = suggestions.minRate ?? DEFAULT_MIN_RATE;
+      const newMax = suggestions.maxRate ?? DEFAULT_MAX_RATE;
+      if (suggestions.minRate !== null) setMinRate(newMin);
+      if (suggestions.maxRate !== null) setMaxRate(newMax);
+      // Clamp selectedRate to the server-provided bounds
+      setSelectedRate((prev) => Math.min(newMax, Math.max(newMin, prev)));
+    }).catch(() => {
+      // Fallback to defaults already set in state — no action needed
+    });
+  }, [params.skillId]);
 
   const parsedParamRate = Number.parseInt(params.rate ?? "", 10);
   const initialRate =

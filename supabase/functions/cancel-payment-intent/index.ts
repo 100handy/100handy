@@ -57,6 +57,38 @@ serve(async (req) => {
       );
     }
 
+    // Verify ownership: look up the booking linked to this payment intent
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: booking, error: bookingError } = await serviceClient
+      .from('bookings')
+      .select('id, customer_id, handy_id')
+      .eq('payment_intent_id', paymentIntentId)
+      .maybeSingle();
+
+    if (bookingError || !booking) {
+      return new Response(
+        JSON.stringify({ error: 'Booking not found for this payment intent' }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (user.id !== booking.customer_id && user.id !== booking.handy_id) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: you are not a party to this booking' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Get the payment intent to check its status
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
@@ -101,7 +133,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error('Error canceling payment intent:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Payment cancellation failed' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

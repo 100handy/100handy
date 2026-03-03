@@ -18,6 +18,35 @@ serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user } } = await authClient.auth.getUser();
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     const { bookingId, paymentIntentId } = await req.json();
 
     // Validate inputs
@@ -31,7 +60,7 @@ serve(async (req) => {
       );
     }
 
-    // Get booking details from Supabase
+    // Get booking details from Supabase (service role for admin access)
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -39,7 +68,7 @@ serve(async (req) => {
 
     const { data: booking, error: bookingError } = await supabaseClient
       .from('bookings')
-      .select('id, handy_id, hourly_rate_cents, estimated_hours')
+      .select('id, handy_id, hourly_rate_cents, estimated_hours, payment_intent_id')
       .eq('id', bookingId)
       .single();
 
@@ -48,6 +77,29 @@ serve(async (req) => {
         JSON.stringify({ error: 'Booking not found' }),
         {
           status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Verify the requesting user owns this booking (is the professional)
+    if (user.id !== booking.handy_id) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: you are not the professional on this booking' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Cross-reference: verify the provided paymentIntentId matches what's stored on the booking
+    // Prevents a professional from supplying a paymentIntentId from a higher-value booking
+    if (booking.payment_intent_id && booking.payment_intent_id !== paymentIntentId) {
+      return new Response(
+        JSON.stringify({ error: 'Payment intent does not match this booking' }),
+        {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
@@ -131,7 +183,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error('Error creating payout:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Payout processing failed' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

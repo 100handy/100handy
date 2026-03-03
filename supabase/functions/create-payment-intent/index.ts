@@ -44,7 +44,8 @@ serve(async (req) => {
       );
     }
 
-    const { amount, currency = 'gbp', customerId, metadata } = await req.json();
+    const { amount, currency = 'gbp', metadata } = await req.json();
+    const bookingId = metadata?.booking_id;
 
     // Validate amount
     if (!amount || amount <= 0) {
@@ -57,24 +58,42 @@ serve(async (req) => {
       );
     }
 
+    // Fetch the authenticated user's Stripe customer ID from the DB (not from request body)
+    // This prevents a user from charging another person's saved payment methods
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: profile } = await serviceClient
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('user_id', user.id)
+      .single();
+
+    const customerId = profile?.stripe_customer_id ?? null;
+
     // Create a PaymentIntent with manual capture (authorization hold)
     // This places a hold on the customer's card without charging it
     // The hold is valid for 7 days for online card payments
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount), // Amount in cents
-      currency: currency.toLowerCase(),
-      customer: customerId,
-      capture_method: 'manual', // Authorization hold - charge later when task completes
-      automatic_payment_methods: {
-        enabled: true,
-        allow_redirects: 'never', // Cards only, no redirect-based methods
+    const paymentIntent = await stripe.paymentIntents.create(
+      {
+        amount: Math.round(amount), // Amount in cents
+        currency: currency.toLowerCase(),
+        customer: customerId,
+        capture_method: 'manual', // Authorization hold - charge later when task completes
+        automatic_payment_methods: {
+          enabled: true,
+          allow_redirects: 'never', // Cards only, no redirect-based methods
+        },
+        metadata: {
+          ...metadata,
+          platform: '100handy',
+          user_id: user.id,
+        },
       },
-      metadata: {
-        ...metadata,
-        platform: '100handy',
-        user_id: user.id,
-      },
-    });
+      bookingId ? { idempotencyKey: `${bookingId}_create` } : undefined
+    );
 
     return new Response(
       JSON.stringify({
@@ -91,14 +110,9 @@ serve(async (req) => {
       type: error.type,
       code: error.code,
       statusCode: error.statusCode,
-      raw: error.raw,
     });
     return new Response(
-      JSON.stringify({
-        error: error.message,
-        type: error.type,
-        code: error.code,
-      }),
+      JSON.stringify({ error: 'Payment processing failed' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

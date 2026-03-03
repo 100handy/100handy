@@ -14,7 +14,6 @@ import {
   type PendingBookingData,
   listPaymentMethods,
   type PaymentMethod,
-  getOrCreateStripeCustomer,
   createPaymentIntent,
   cancelPaymentIntent,
   checkBookingConflict,
@@ -345,13 +344,6 @@ export default function ConfirmBookingScreen() {
       const minimumHours = Math.max(2, estimatedHours);
       const authorizationAmount = discountedRateCents * minimumHours;
 
-      const customerId = await getOrCreateStripeCustomer();
-      if (!customerId) {
-        setIsSubmitting(false);
-        Alert.alert('Payment Error', 'Unable to initialize payments. Please try again.');
-        return;
-      }
-
       const defaultMethod = paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0];
       const paymentMethodId = defaultMethod?.id;
       if (!paymentMethodId) {
@@ -360,7 +352,7 @@ export default function ConfirmBookingScreen() {
         return;
       }
 
-      const paymentIntent = await createPaymentIntent(authorizationAmount, customerId, {
+      const paymentIntent = await createPaymentIntent(authorizationAmount, {
         handy_id: profile.user_id,
         category_id: categoryId,
         estimated_hours: estimatedHours.toString(),
