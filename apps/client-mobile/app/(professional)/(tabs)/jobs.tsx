@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Play,
   Briefcase,
-  Search,
 } from 'lucide-react-native';
 import { useAuthStore } from '@shared/supabase';
 import {
@@ -253,22 +252,11 @@ export default function ProfessionalJobs() {
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
       {/* Header */}
       <View className="bg-white px-5 py-4 border-b border-[#F0F0F0]">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <Briefcase color="#30352D" size={22} strokeWidth={2} />
-            <Text className="font-worksans-bold text-[20px] text-brand-dark-alt ml-2">
-              Jobs
-            </Text>
-          </View>
-          <Pressable
-            onPress={() => router.push('/(professional)/browse-tasks')}
-            className="flex-row items-center gap-1 px-3 py-2 rounded-full bg-[#C1856A]"
-          >
-            <Search size={14} color="white" strokeWidth={2} />
-            <Text className="font-worksans-bold text-[12px] text-white">
-              Browse Tasks
-            </Text>
-          </Pressable>
+        <View className="flex-row items-center justify-center">
+          <Briefcase color="#30352D" size={22} strokeWidth={2} />
+          <Text className="font-worksans-bold text-[20px] text-brand-dark-alt ml-2">
+            Jobs
+          </Text>
         </View>
       </View>
 

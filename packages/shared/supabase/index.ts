@@ -16,7 +16,6 @@ export * from './availability';
 export * from './earnings';
 export * from './analytics';
 export * from './balance';
-export * from './task-posts';
 export * from './types/forms';
 export * from '../store';
 export * from '../query';

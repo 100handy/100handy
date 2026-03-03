@@ -171,10 +171,9 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       const isOnBookings = segmentStrings.includes('bookings') || segmentStrings.includes('my-tasks');
       const isOnMessages = segmentStrings.includes('messages') || segmentStrings.includes('chat');
       const isOnBookingFlow = segmentStrings.includes('book') || segmentStrings.includes('confirm-booking');
-      const isOnPostTask = segmentStrings.includes('post-task') || segmentStrings.includes('task-form');
       const isOnAccount = segmentStrings.includes('account') || segmentStrings.includes('settings');
 
-      const isProtectedRoute = isOnProfile || isOnBookings || isOnMessages || isOnBookingFlow || isOnPostTask || isOnAccount;
+      const isProtectedRoute = isOnProfile || isOnBookings || isOnMessages || isOnBookingFlow || isOnAccount;
 
       // Only redirect if trying to access protected routes that require authentication
       const tryingToAccessProtectedRoute = (inTabsGroup || inClientGroup || inProfessionalGroup) && !inAuthGroup && isProtectedRoute;

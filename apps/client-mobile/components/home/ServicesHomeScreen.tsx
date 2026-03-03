@@ -4,7 +4,6 @@ import {
   MapPin,
   Search,
   ChevronRight,
-  PenSquare,
 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -226,23 +225,6 @@ export function ServicesHomeScreen() {
               </View>
             )}
           </View>
-
-          {/* Post a Task Banner */}
-          <Pressable
-            onPress={() => router.push('/(client)/post-task')}
-            className="mx-5 mt-5 mb-2 flex-row items-center justify-between rounded-2xl px-5 py-4"
-            style={{ backgroundColor: '#C1856A' }}
-          >
-            <View className="flex-1 mr-3">
-              <Text className="text-base text-white" style={{ fontWeight: '700' }}>
-                Post a Task
-              </Text>
-              <Text className="text-xs text-white/80 mt-1">
-                Describe what you need and let professionals bid
-              </Text>
-            </View>
-            <PenSquare size={24} color="white" />
-          </Pressable>
 
           {/* Section Title */}
           <View className="px-5 pt-5 pb-4 bg-white flex-col">
