@@ -58,12 +58,17 @@ export interface PendingBookingData {
 interface PendingBookingState {
   // The pending booking data (null if none)
   pendingBooking: PendingBookingData | null;
+  hasHydrated: boolean;
+  pendingBookingRestored: boolean;
 
   // Actions
   setPendingBooking: (data: PendingBookingData) => void;
   clearPendingBooking: () => void;
   hasPendingBooking: () => boolean;
   getPendingBooking: () => PendingBookingData | null;
+  hasRestorablePendingBooking: () => boolean;
+  markPendingBookingRestored: () => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 
   // Check if pending booking is still valid (not expired)
   isBookingValid: () => boolean;
@@ -95,18 +100,21 @@ export const usePendingBookingStore = create<PendingBookingState>()(
   persist(
     (set, get) => ({
       pendingBooking: null,
+      hasHydrated: false,
+      pendingBookingRestored: false,
 
       setPendingBooking: (data: PendingBookingData) => {
         set({
           pendingBooking: {
             ...data,
             createdAt: Date.now(),
-          }
+          },
+          pendingBookingRestored: false,
         });
       },
 
       clearPendingBooking: () => {
-        set({ pendingBooking: null });
+        set({ pendingBooking: null, pendingBookingRestored: false });
       },
 
       hasPendingBooking: () => {
@@ -114,6 +122,12 @@ export const usePendingBookingStore = create<PendingBookingState>()(
         if (!pendingBooking) return false;
 
         // Check if booking is still valid (not expired)
+        return get().isBookingValid();
+      },
+
+      hasRestorablePendingBooking: () => {
+        const { pendingBooking, pendingBookingRestored } = get();
+        if (!pendingBooking || pendingBookingRestored) return false;
         return get().isBookingValid();
       },
 
@@ -129,6 +143,16 @@ export const usePendingBookingStore = create<PendingBookingState>()(
         }
 
         return pendingBooking;
+      },
+
+      markPendingBookingRestored: () => {
+        if (get().pendingBooking) {
+          set({ pendingBookingRestored: true });
+        }
+      },
+
+      setHasHydrated: (hasHydrated: boolean) => {
+        set({ hasHydrated });
       },
 
       isBookingValid: () => {
@@ -156,6 +180,9 @@ export const usePendingBookingStore = create<PendingBookingState>()(
       name: PENDING_BOOKING_STORAGE_KEY,
       storage: createJSONStorage(() => getStorage()),
       partialize: (state) => ({ pendingBooking: state.pendingBooking }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

@@ -16,12 +16,11 @@ import {
 } from 'lucide-react-native';
 import type { BookingStatus } from '@shared/supabase/bookings';
 import { subscribeToBookingUpdates, unsubscribeFromBookingUpdates } from '@shared/supabase/bookings';
-import { useBookingById } from '@shared/query/hooks/useBookings';
+import { bookingKeys, useBookingById } from '@shared/query/hooks/useBookings';
 import { useHasReviewedBooking } from '@shared/query/hooks/useReviews';
 import { useAuthStore } from '@shared/store/auth';
-import { useConversationByBooking } from '@shared/supabase';
+import { useExistingConversationByBooking } from '@shared/supabase';
 import { useQueryClient } from '@tanstack/react-query';
-import { bookingKeys } from '@shared/query/hooks/useBookings';
 import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';
 import { HandymanCard } from '@/components/booking/HandymanCard';
 import { PricingBreakdown } from '@/components/booking/PricingBreakdown';
@@ -104,7 +103,7 @@ function StatusBanner({ status, taskerName }: { status: BookingStatus; taskerNam
               Task Complete!
             </Text>
             <Text className="text-sm font-worksans" style={{ color: '#047857' }}>
-              Your task has been finished. Don't forget to leave a review!
+              Your task has been finished. Don&apos;t forget to leave a review!
             </Text>
           </View>
         </View>
@@ -148,7 +147,7 @@ export default function BookingDetailScreen() {
   } = useBookingById(id || null);
 
   const queryClient = useQueryClient();
-  const { data: conversation } = useConversationByBooking(id || '');
+  const { data: conversation } = useExistingConversationByBooking(id || '');
   const { data: hasReviewed } = useHasReviewedBooking(id || '', 'customer');
 
   // Subscribe to real-time booking status updates
@@ -251,7 +250,7 @@ export default function BookingDetailScreen() {
             {error?.message || 'Booking Not Found'}
           </Text>
           <Text className="text-base font-worksans text-center mb-6" style={{ color: '#6B7280' }}>
-            We couldn't find the booking you're looking for.
+            We couldn&apos;t find the booking you&apos;re looking for.
           </Text>
           <Button
             onPress={() => router.back()}
@@ -461,7 +460,7 @@ export default function BookingDetailScreen() {
             <View className="bg-green-50 rounded-lg border border-green-200 p-4 flex-row items-center gap-3">
               <CheckCircle2 size={20} color="#059669" />
               <Text className="text-sm font-worksans-semibold flex-1" style={{ color: '#065F46' }}>
-                You've reviewed this booking
+                You&apos;ve reviewed this booking
               </Text>
             </View>
           )}

@@ -3,12 +3,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, View, Text, Pressable } from 'react-native';
 import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
-import { ChevronLeft, Eye, EyeOff, Lock } from 'lucide-react-native';
+import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { resetPasswordSchema, type ResetPasswordFormData } from '@shared/schemas/auth';
-import { updatePassword } from '@shared/supabase/auth';
+import { signOut, updatePassword } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
 
 export default function ResetPassword() {
@@ -30,11 +30,12 @@ export default function ResetPassword() {
     try {
       setIsLoading(true);
       await updatePassword(data.password);
+      await signOut();
       toast.success('Password updated', 'You can now sign in with your new password');
       
-      // Navigate to sign in after a short delay
+      // Return to the role-neutral auth entry once the toast is visible.
       setTimeout(() => {
-        router.replace('/(auth)/(client)');
+        router.replace('/(auth)/role-selection');
       }, 1500);
     } catch (error) {
       console.error('Password update error:', error);
@@ -202,4 +203,3 @@ export default function ResetPassword() {
     </View>
   );
 }
-

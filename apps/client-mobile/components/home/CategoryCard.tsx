@@ -16,7 +16,7 @@ export function CategoryCard({ bg, icon: Icon, title, subtitle, width = 160 }: C
   return (
     <View style={{ width, height: 120 }} className="flex-col">
       <Pressable
-        onPress={() => router.push('/professionals/available')}
+        onPress={() => router.push('/(client)/search-services')}
         className={`rounded-xl p-4 flex-1 justify-between ${bg} shadow-sm`}
       >
         <View className="w-10 h-10 rounded-lg self-start bg-white/25 items-center justify-center">

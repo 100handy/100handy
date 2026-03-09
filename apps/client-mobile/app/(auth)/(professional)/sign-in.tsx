@@ -23,18 +23,15 @@ export default function ProfessionalSignIn() {
       // Update auth state
       const isAuthenticated = await checkAuth();
       if (isAuthenticated) {
-        // Check if user has the professional role
         const { userRole } = useAuthStore.getState();
-        if (userRole === 'handy') {
-          router.replace('/(professional)/(tabs)/dashboard');
-        } else if (userRole === 'customer') {
-          // Client user logging in through professional flow — redirect to client home
+
+        if (userRole === 'customer') {
+          // Client user logging in through professional flow — keep the hint,
+          // but let the root gate decide the final destination.
           toast.info('Client account', 'This account is registered as a client. Redirecting to your home screen.');
-          router.replace('/(client)/(tabs)/home');
-        } else {
-          // No role set — default to professional flow (new users choosing professional)
-          router.replace('/(professional)/(tabs)/dashboard');
         }
+
+        router.replace('/');
       } else {
         throw new Error('Authentication check failed');
       }
@@ -86,7 +83,7 @@ export default function ProfessionalSignIn() {
               {/* Sign Up Link */}
               <Pressable className="mt-2" onPress={() => router.push('/(auth)/(professional)/sign-up')}>
                 <Text className="text-center text-[14px] font-worksans-medium" style={{ color: '#30352D' }}>
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <Text style={{ color: '#C1856A' }}>Sign up</Text>
                 </Text>
               </Pressable>

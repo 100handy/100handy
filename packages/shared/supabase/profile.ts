@@ -49,7 +49,7 @@ function generateReferralCode(length: number = 8): string {
 
 export function buildReferralDeepLink(code: string): string {
   const normalized = code.trim().toUpperCase();
-  return `handy://(auth)/role-selection?ref=${encodeURIComponent(normalized)}`;
+  return `handy://role-selection?ref=${encodeURIComponent(normalized)}`;
 }
 
 /**

@@ -25,6 +25,11 @@ export interface ConversationMessage {
   created_at: string;
 }
 
+export interface ConversationMessageCursor {
+  created_at: string;
+  id: string;
+}
+
 export interface ConversationWithProfiles extends Conversation {
   client: {
     user_id: string;
@@ -240,6 +245,48 @@ export async function getConversationByBooking(bookingId: string): Promise<Conve
 }
 
 /**
+ * Get an existing conversation for a booking without creating one.
+ */
+export async function getExistingConversationByBooking(
+  bookingId: string
+): Promise<Conversation | null> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      throw new Error('Not authenticated');
+    }
+
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .select('customer_id, handy_id')
+      .eq('id', bookingId)
+      .single();
+
+    if (bookingError || !booking) {
+      throw new Error('Booking not found');
+    }
+
+    const { data: existing, error: fetchError } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('client_id', booking.customer_id)
+      .eq('tasker_id', booking.handy_id)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('Error fetching existing conversation:', fetchError);
+      throw new Error(fetchError.message);
+    }
+
+    return existing ?? null;
+  } catch (error) {
+    console.error('Error in getExistingConversationByBooking:', error);
+    throw error;
+  }
+}
+
+/**
  * Get messages for a conversation with pagination
  * @param conversationId - The conversation ID
  * @param options - Pagination options
@@ -247,7 +294,7 @@ export async function getConversationByBooking(bookingId: string): Promise<Conve
  */
 export async function getConversationMessages(
   conversationId: string,
-  options?: { limit?: number; before?: string }
+  options?: { limit?: number; before?: ConversationMessageCursor }
 ): Promise<{ messages: ConversationMessage[]; hasMore: boolean }> {
   try {
     const limit = options?.limit ?? 50;
@@ -257,10 +304,14 @@ export async function getConversationMessages(
       .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
       .limit(limit + 1); // Fetch one extra to detect hasMore
 
     if (options?.before) {
-      query = query.lt('created_at', options.before);
+      const { created_at, id } = options.before;
+      query = query.or(
+        `created_at.lt.${created_at},and(created_at.eq.${created_at},id.lt.${id})`
+      );
     }
 
     const { data, error } = await query;
@@ -375,10 +426,23 @@ export async function markMessagesAsRead(conversationId: string): Promise<void> 
     // Reset unread count
     const isClient = conversation.client_id === user.id;
     const updateField = isClient ? 'client_unread_count' : 'tasker_unread_count';
+    const otherParticipantId = isClient ? conversation.tasker_id : conversation.client_id;
+
+    const { count, error: countError } = await supabase
+      .from('conversation_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('conversation_id', conversationId)
+      .eq('sender_id', otherParticipantId)
+      .is('read_at', null);
+
+    if (countError) {
+      console.error('Error counting unread messages:', countError);
+      throw new Error(countError.message);
+    }
 
     await supabase
       .from('conversations')
-      .update({ [updateField]: 0 })
+      .update({ [updateField]: count ?? 0 })
       .eq('id', conversationId);
 
   } catch (error) {
@@ -392,7 +456,7 @@ export async function markMessagesAsRead(conversationId: string): Promise<void> 
  */
 export function subscribeToConversation(
   conversationId: string,
-  onMessage: (message: ConversationMessage) => void
+  onMessage: (event: 'INSERT' | 'UPDATE', message: ConversationMessage) => void
 ): RealtimeChannel {
   const channel = supabase
     .channel(`conversation:${conversationId}`)
@@ -405,8 +469,67 @@ export function subscribeToConversation(
         filter: `conversation_id=eq.${conversationId}`,
       },
       (payload) => {
-        onMessage(payload.new as ConversationMessage);
+        onMessage('INSERT', payload.new as ConversationMessage);
       }
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'conversation_messages',
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      (payload) => {
+        onMessage('UPDATE', payload.new as ConversationMessage);
+      }
+    )
+    .subscribe();
+
+  return channel;
+}
+
+/**
+ * Subscribe to conversation list-level changes so inbox/message tabs stay fresh.
+ */
+export function subscribeToConversationList(onChange: () => void): RealtimeChannel {
+  const channel = supabase
+    .channel('conversation:list')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversations',
+      },
+      onChange
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'conversations',
+      },
+      onChange
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversation_messages',
+      },
+      onChange
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'conversation_messages',
+      },
+      onChange
     )
     .subscribe();
 

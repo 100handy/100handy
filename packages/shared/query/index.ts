@@ -84,6 +84,8 @@ export {
   handymenKeys,
   type HandymanProfile,
   type HandymanFilters,
+  type HandymanReview,
+  type HandymanReviewProfile,
 } from './hooks/useHandymen';
 
 // Support hooks and utilities
@@ -115,6 +117,7 @@ export {
   useConversations,
   useConversation,
   useConversationByBooking,
+  useExistingConversationByBooking,
   useConversationMessages,
   useSendConversationMessage,
   useMarkAsRead,

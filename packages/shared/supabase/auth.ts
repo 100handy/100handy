@@ -162,7 +162,7 @@ export async function verifyEmailOTP(email: string, token: string) {
   const { data, error } = await supabase.auth.verifyOtp({
     email,
     token,
-    type: 'email',
+    type: 'signup',
   });
   if (error) throw error;
   return data;
@@ -173,6 +173,9 @@ export async function resendEmailOTP(email: string) {
   const { data, error } = await supabase.auth.resend({
     type: 'signup',
     email,
+    options: {
+      emailRedirectTo: getRedirectUrl(),
+    },
   });
   if (error) throw error;
   return data;

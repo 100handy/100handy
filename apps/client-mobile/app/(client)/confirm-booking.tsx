@@ -8,7 +8,6 @@ import {
   useHandymanProfile,
   useLocationStore,
   useCreateBooking,
-  type CreateBookingInput,
   type FormResponse,
   usePendingBookingStore,
   type PendingBookingData,
@@ -23,7 +22,6 @@ import {
   type Coordinate,
   type BookingFrequency,
   FREQUENCY_OPTIONS,
-  createRecurringBookings,
   calculateDiscountedRate,
 } from '@shared/supabase';
 import { useAuthStore } from '@shared/supabase';
@@ -40,6 +38,8 @@ export default function ConfirmBookingScreen() {
   const categoryName = params.categoryName as string;
   const selectedDate = params.selectedDate as string;
   const selectedTime = params.selectedTime as string;
+  const selectedFrequencyParam =
+    typeof params.selectedFrequency === 'string' ? params.selectedFrequency : 'once';
 
   // Parse form responses
   const formResponses: FormResponse = useMemo(() => {
@@ -58,7 +58,7 @@ export default function ConfirmBookingScreen() {
   const location = useLocationStore((state) => state.location);
 
   // Pending booking store for saving booking before auth
-  const { setPendingBooking, clearPendingBooking } = usePendingBookingStore();
+  const { setPendingBooking, clearPendingBooking, getPendingBooking } = usePendingBookingStore();
 
   // Fetch tasker profile with skill-specific pricing
   const { data: profile, isLoading: profileLoading } = useHandymanProfile(taskerId, categoryId);
@@ -69,10 +69,18 @@ export default function ConfirmBookingScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loadingPayment, setLoadingPayment] = useState(true);
-  const [selectedFrequency, setSelectedFrequency] = useState<BookingFrequency>('once');
+  const [selectedFrequency, setSelectedFrequency] = useState<BookingFrequency>(
+    FREQUENCY_OPTIONS.some((option) => option.value === selectedFrequencyParam)
+      ? (selectedFrequencyParam as BookingFrequency)
+      : 'once'
+  );
   const isSubmittingRef = useRef(false);
   const toast = useToast();
   const { confirmPayment } = useConfirmPayment();
+  const recurringFrequencies = useMemo(
+    () => FREQUENCY_OPTIONS.filter((option) => option.value !== 'once').map((option) => option.value),
+    []
+  );
 
   // Fetch payment methods on mount and when screen is focused
   useFocusEffect(
@@ -98,10 +106,15 @@ export default function ConfirmBookingScreen() {
 
   // Handle back navigation - ask user if they want to clear pending booking
   const handleBackPress = useCallback(() => {
-    // Check if there's a pending booking that was restored (user came from auth flow)
-    const hasPendingBooking = usePendingBookingStore.getState().hasPendingBooking();
+    const pendingBooking = getPendingBooking();
+    const isCurrentPendingDraft =
+      !!pendingBooking &&
+      pendingBooking.tasker.id === taskerId &&
+      pendingBooking.categoryId === categoryId &&
+      pendingBooking.selectedDate === selectedDate &&
+      pendingBooking.selectedTime === selectedTime;
 
-    if (hasPendingBooking && isAuthenticated) {
+    if (isCurrentPendingDraft && isAuthenticated) {
       Alert.alert(
         'Cancel Booking?',
         'Are you sure you want to go back? Your booking progress will be lost.',
@@ -126,7 +139,16 @@ export default function ConfirmBookingScreen() {
     // No pending booking, just go back normally
     router.back();
     return true;
-  }, [isAuthenticated, clearPendingBooking, router]);
+  }, [
+    categoryId,
+    clearPendingBooking,
+    getPendingBooking,
+    isAuthenticated,
+    router,
+    selectedDate,
+    selectedTime,
+    taskerId,
+  ]);
 
   // Handle hardware back button on Android
   useFocusEffect(
@@ -150,13 +172,14 @@ export default function ConfirmBookingScreen() {
   // Calculate discount based on frequency
   const frequencyOption = FREQUENCY_OPTIONS.find((f) => f.value === selectedFrequency);
   const discountPercent = frequencyOption?.discountPercent || 0;
-  const { discountedRateCents, discountAmountCents } = calculateDiscountedRate(
+  const { discountedRateCents } = calculateDiscountedRate(
     originalHourlyRateCents,
     discountPercent
   );
   const discountedHourlyRate = discountedRateCents / 100;
-  const estimatedPrice = discountedHourlyRate * estimatedHours;
-  const savingsAmount = (hourlyRate - discountedHourlyRate) * estimatedHours;
+  const authorizationHours = Math.max(2, estimatedHours);
+  const authorizationAmountCents = Math.round(discountedRateCents * authorizationHours);
+  const authorizationAmount = authorizationAmountCents / 100;
 
   // Save pending booking data to storage and redirect to auth
   const savePendingBookingAndRedirect = () => {
@@ -186,6 +209,8 @@ export default function ConfirmBookingScreen() {
         postalCode: location.postalCode,
         formattedAddress: location.formattedAddress,
         placeId: location.placeId,
+        latitude: location.latitude,
+        longitude: location.longitude,
       },
       formResponses,
       frequency: selectedFrequency,
@@ -199,6 +224,18 @@ export default function ConfirmBookingScreen() {
     // Redirect to sign up screen
     router.push('/(auth)/(client)/sign-up');
   };
+
+  const handleFrequencyChange = useCallback((frequency: BookingFrequency) => {
+    if (frequency !== 'once') {
+      toast.info(
+        'Recurring Bookings Coming Soon',
+        'Recurring booking checkout is temporarily unavailable in the mobile app.'
+      );
+      return;
+    }
+
+    setSelectedFrequency(frequency);
+  }, [toast]);
 
   const handleCreateBooking = async () => {
     // Debounce/mutex guard to prevent double-submission
@@ -247,6 +284,14 @@ export default function ConfirmBookingScreen() {
     // Check if payment method is added
     if (paymentMethods.length === 0) {
       toast.error('Payment Required', 'Please add a payment method to continue');
+      return;
+    }
+
+    if (selectedFrequency !== 'once') {
+      toast.error(
+        'Recurring Booking Unavailable',
+        'Recurring booking checkout is temporarily unavailable in the mobile app.'
+      );
       return;
     }
 
@@ -341,9 +386,6 @@ export default function ConfirmBookingScreen() {
       // Taskrabbit-style: authorize (hold) now, capture later when job is completed.
       // Match web behavior: hold minimum 2 hours worth of the hourly rate.
       // Use discounted rate for recurring bookings.
-      const minimumHours = Math.max(2, estimatedHours);
-      const authorizationAmount = discountedRateCents * minimumHours;
-
       const defaultMethod = paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0];
       const paymentMethodId = defaultMethod?.id;
       if (!paymentMethodId) {
@@ -352,7 +394,7 @@ export default function ConfirmBookingScreen() {
         return;
       }
 
-      const paymentIntent = await createPaymentIntent(authorizationAmount, {
+      const paymentIntent = await createPaymentIntent(authorizationAmountCents, {
         handy_id: profile.user_id,
         category_id: categoryId,
         estimated_hours: estimatedHours.toString(),
@@ -412,24 +454,8 @@ export default function ConfirmBookingScreen() {
         payment_intent_id: authorizedPaymentIntentId,
       };
 
-      // Create recurring bookings if frequency is not 'once', otherwise create single booking
-      let newBookingId: string;
-      if (selectedFrequency !== 'once') {
-        const result = await createRecurringBookings({
-          ...bookingInput,
-          frequency: selectedFrequency,
-        });
-        newBookingId = result.bookings[0]?.id || '';
-        if (result.totalSavings > 0) {
-          toast.success(
-            'Recurring booking created!',
-            `You'll save ${(result.totalSavings / 100).toFixed(2)} with your recurring booking.`
-          );
-        }
-      } else {
-        const newBooking = await createBookingMutation.mutateAsync(bookingInput);
-        newBookingId = newBooking.id;
-      }
+      const newBooking = await createBookingMutation.mutateAsync(bookingInput);
+      const newBookingId = newBooking.id;
 
       // Clear any pending booking after successful creation
       clearPendingBooking();
@@ -644,8 +670,9 @@ export default function ConfirmBookingScreen() {
           {/* Frequency Selection */}
           <FrequencySelector
             selectedFrequency={selectedFrequency}
-            onFrequencyChange={setSelectedFrequency}
-            hourlyRate={hourlyRate}
+            onFrequencyChange={handleFrequencyChange}
+            disabledFrequencies={recurringFrequencies}
+            disabledMessage="Recurring booking checkout is temporarily unavailable on mobile."
           />
 
           {/* Payment Method */}
@@ -702,7 +729,7 @@ export default function ConfirmBookingScreen() {
               style={{ backgroundColor: '#E8F5E1' }}
             >
               <Text className="flex-1 text-sm font-medium" style={{ color: '#2E7D32' }}>
-                You're saving {discountPercent}% with your recurring booking!
+                You&apos;re saving {discountPercent}% with your recurring booking!
               </Text>
             </View>
           )}
@@ -710,12 +737,13 @@ export default function ConfirmBookingScreen() {
           {/* Payment Hold Notice */}
           <View className="flex-col py-6">
             <Text className="text-sm text-gray-600 leading-5 mb-4">
-              You may see a temporary hold on your payment method in the amount of £{discountedHourlyRate.toFixed(2)}/hr. Don't worry -- you're only billed when your task is complete!
+                You may see a temporary hold on your payment method of £{authorizationAmount.toFixed(2)}.
+                Don&apos;t worry -- you&apos;re only billed when your task is complete!
             </Text>
 
             <Text className="text-sm text-gray-600 leading-5 mb-4">
               Pricing is inclusive of a{' '}
-              <Text className="text-brand-terracotta">£7.46/hr Trust and Support fee</Text>, as well as VAT, which is billed on 100Handy's fees.
+              <Text className="text-brand-terracotta">£7.46/hr Trust and Support fee</Text>, as well as VAT, which is billed on 100Handy&apos;s fees.
             </Text>
 
             <Text className="text-sm text-gray-600 leading-5">
@@ -729,7 +757,7 @@ export default function ConfirmBookingScreen() {
           >
             <CreditCard size={20} color="#C1856A" className="mr-3" />
             <Text className="flex-1 text-sm text-brand-terracotta">
-              You won't be billed until your task is complete.
+              You won&apos;t be billed until your task is complete.
             </Text>
           </View>
         </View>

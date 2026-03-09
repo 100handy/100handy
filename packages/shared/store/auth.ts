@@ -3,11 +3,14 @@ import { User, Session } from '@supabase/supabase-js';
 import { getSession } from '../supabase/auth';
 import { supabase } from '../supabase';
 import { queryClient } from '../query/queryClient';
+import { deleteDevicePushToken } from '../supabase/pushTokens';
 
 interface AuthState {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isRoleResolved: boolean;
+  currentPushToken: string | null;
   isAuthenticated: boolean;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
@@ -18,6 +21,7 @@ interface AuthState {
   cleanup: () => void;
   setUser: (user: User | null) => void;
   setSession: (session: Session | null) => void;
+  setCurrentPushToken: (token: string | null) => void;
   signOut: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
   updateOnboardingStatus: (completed: boolean) => void;
@@ -45,6 +49,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   session: null,
   isLoading: true,
+  isRoleResolved: false,
+  currentPushToken: null,
   isAuthenticated: false,
   isEmailVerified: false,
   isPhoneVerified: false,
@@ -60,12 +66,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         state.authSubscription.unsubscribe();
       }
 
-      set({ isLoading: true });
+      set({ isLoading: true, isRoleResolved: false });
 
       // Set up auth listener FIRST to avoid missing events between getSession and listener setup
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         const user = session?.user;
         const metadata = user?.user_metadata;
+        const fallbackRole = (metadata?.role as 'customer' | 'handy' | null | undefined) ?? null;
 
         // Set immediately with user_metadata role for fast initial render
         set({
@@ -75,14 +82,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isEmailVerified: !!user?.email_confirmed_at,
           isPhoneVerified: !!user?.phone_confirmed_at,
           hasCompletedOnboarding: metadata?.onboarding_completed || false,
-          userRole: metadata?.role || null,
+          userRole: fallbackRole,
+          isRoleResolved: !user,
           isLoading: false
         });
 
         // Override with authoritative DB role to prevent client-side role elevation
         if (user?.id) {
           fetchProfileRole(user.id).then((dbRole) => {
-            if (dbRole !== null) set({ userRole: dbRole });
+            if (get().user?.id !== user.id) return;
+            set({
+              userRole: dbRole ?? fallbackRole,
+              isRoleResolved: true,
+            });
           });
         }
       });
@@ -95,7 +107,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (error) {
         console.error('Error getting session:', error);
-        set({ user: null, session: null, isAuthenticated: false, isEmailVerified: false, isPhoneVerified: false, userRole: null, isLoading: false });
+        set({
+          user: null,
+          session: null,
+          isAuthenticated: false,
+          isEmailVerified: false,
+          isPhoneVerified: false,
+          userRole: null,
+          isRoleResolved: true,
+          isLoading: false,
+        });
         return;
       }
 
@@ -113,11 +134,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
         userRole: dbRole ?? (metadata?.role || null),
+        isRoleResolved: true,
         isLoading: false
       });
     } catch (error) {
       console.error('Error initializing auth:', error);
-      set({ user: null, session: null, isAuthenticated: false, isLoading: false });
+      set({
+        user: null,
+        session: null,
+        isAuthenticated: false,
+        isRoleResolved: true,
+        isLoading: false,
+      });
     }
   },
 
@@ -131,20 +159,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setUser: (user) => {
     const metadata = user?.user_metadata;
+    const fallbackRole = (metadata?.role as 'customer' | 'handy' | null | undefined) ?? null;
+
     set({
       user,
       isAuthenticated: !!user,
       isEmailVerified: !!user?.email_confirmed_at,
       isPhoneVerified: !!user?.phone_confirmed_at,
       hasCompletedOnboarding: metadata?.onboarding_completed || false,
-      userRole: metadata?.role || null,
+      userRole: fallbackRole,
+      isRoleResolved: !user,
       isLoading: false
     });
+
+    if (user?.id) {
+      fetchProfileRole(user.id).then((dbRole) => {
+        if (get().user?.id !== user.id) return;
+        set({
+          userRole: dbRole ?? fallbackRole,
+          isRoleResolved: true,
+        });
+      });
+    }
   },
 
   setSession: (session) => {
     const user = session?.user;
     const metadata = user?.user_metadata;
+    const fallbackRole = (metadata?.role as 'customer' | 'handy' | null | undefined) ?? null;
+
     set({
       session,
       user: user || null,
@@ -152,9 +195,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isEmailVerified: !!user?.email_confirmed_at,
       isPhoneVerified: !!user?.phone_confirmed_at,
       hasCompletedOnboarding: metadata?.onboarding_completed || false,
-      userRole: metadata?.role || null,
+      userRole: fallbackRole,
+      isRoleResolved: !user,
       isLoading: false
     });
+
+    if (user?.id) {
+      fetchProfileRole(user.id).then((dbRole) => {
+        if (get().user?.id !== user.id) return;
+        set({
+          userRole: dbRole ?? fallbackRole,
+          isRoleResolved: true,
+        });
+      });
+    }
+  },
+
+  setCurrentPushToken: (token) => {
+    set({ currentPushToken: token });
   },
 
   signOut: async () => {
@@ -163,12 +221,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Remove push token before signing out (requires auth context)
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from('device_push_tokens')
-            .delete()
-            .eq('user_id', user.id);
+        const { currentPushToken } = get();
+        if (currentPushToken) {
+          await deleteDevicePushToken(currentPushToken);
         }
       } catch (tokenError) {
         console.error('Error removing push token on logout:', tokenError);
@@ -196,6 +251,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         useBookingsStore.getState().reset();
         useProfessionalProfileStore.getState().clearProfile();
         useLocationStore.getState().clearLocation();
+        useLocationStore.getState().clearRecentLocations();
         useSupportStore.getState().reset();
         useTaskFormStore.getState().reset();
         usePendingBookingStore.getState().clearPendingBooking();
@@ -214,6 +270,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isPhoneVerified: false,
         hasCompletedOnboarding: false,
         userRole: null,
+        isRoleResolved: true,
+        currentPushToken: null,
         isLoading: false
       });
     } catch (error) {
@@ -253,13 +311,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
         userRole: dbRole ?? (metadata?.role || null),
+        isRoleResolved: true,
         isLoading: false
       });
 
       return isAuthenticated;
     } catch (error) {
       console.error('Error checking auth:', error);
-      set({ isLoading: false });
+      set({ isLoading: false, isRoleResolved: true });
       return false;
     }
   }

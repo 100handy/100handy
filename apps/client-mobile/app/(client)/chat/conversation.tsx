@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { View, Text, Image, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -24,18 +24,27 @@ export default function ConversationScreen() {
   const user = useAuthStore((state) => state.user);
 
   // Fetch conversation details
-  const { data: conversation, isLoading: conversationLoading } = useConversation(conversationId);
+  const {
+    data: conversation,
+    isLoading: conversationLoading,
+    isError: conversationError,
+  } = useConversation(conversationId);
 
   // Fetch messages
   const {
-    data: messages,
+    data: messagesData,
     isLoading: messagesLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     refetch: refetchMessages,
+    isError: messagesError,
   } = useConversationMessages(conversationId);
 
   // Mutations
   const sendMessage = useSendConversationMessage();
   const markAsRead = useMarkAsRead();
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Determine other user
   const isClient = user?.id === conversation?.client_id;
@@ -45,31 +54,49 @@ export default function ConversationScreen() {
     : 'User';
   const otherUserAvatar = otherUser?.avatar_url ?? undefined;
 
-  // Mark messages as read when screen loads
-  useEffect(() => {
+  const markConversationAsRead = useCallback(() => {
     if (conversationId) {
       markAsRead.mutate(conversationId);
     }
-  }, [conversationId]);
+  }, [conversationId, markAsRead]);
+
+  const scheduleRefresh = useCallback(() => {
+    if (refreshTimeoutRef.current) return;
+
+    refreshTimeoutRef.current = setTimeout(() => {
+      refreshTimeoutRef.current = null;
+      refetchMessages();
+    }, 120);
+  }, [refetchMessages]);
+
+  // Mark messages as read when screen loads
+  useEffect(() => {
+    if (conversationId) {
+      markConversationAsRead();
+    }
+  }, [conversationId, markConversationAsRead]);
 
   // Subscribe to real-time messages
   useEffect(() => {
     if (!conversationId) return;
 
-    const channel = subscribeToConversation(conversationId, (newMessage) => {
-      // Refetch messages to update UI
-      refetchMessages();
+    const channel = subscribeToConversation(conversationId, (event, newMessage) => {
+      scheduleRefresh();
 
-      // Mark as read if message is from other user
-      if (newMessage.sender_id !== user?.id) {
-        markAsRead.mutate(conversationId);
+      // Only newly inserted messages from the other user should trigger read marking.
+      if (event === 'INSERT' && newMessage.sender_id !== user?.id) {
+        markConversationAsRead();
       }
     });
 
     return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
+      }
       unsubscribeFromConversation(channel);
     };
-  }, [conversationId, user?.id]);
+  }, [conversationId, markConversationAsRead, scheduleRefresh, user?.id]);
 
   const handleSendMessage = async (message: string, attachment?: { uri?: string; name?: string }) => {
     if (!conversationId || !message.trim()) return;
@@ -92,6 +119,30 @@ export default function ConversationScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#C1856A" />
           <Text className="text-sm text-gray-600 mt-3">Loading conversation...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (conversationError || messagesError || !conversation) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-base font-semibold text-brand-dark-alt mb-2 text-center">
+            Conversation unavailable
+          </Text>
+          <Text className="text-sm text-gray-600 text-center mb-4">
+            This conversation could not be loaded right now.
+          </Text>
+          <Pressable
+            onPress={() => {
+              refetchMessages();
+              router.back();
+            }}
+            className="px-6 py-3 rounded-full bg-[#C1856A]"
+          >
+            <Text className="text-white font-semibold">Go back</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -133,12 +184,19 @@ export default function ConversationScreen() {
         {/* Messages List */}
         <View className="flex-1">
           <ConversationMessageList
-            messages={messages || []}
+            messages={messagesData?.messages ?? []}
             currentUserId={user?.id || ''}
             otherUserName={otherUserName}
             otherUserAvatar={otherUserAvatar}
             loading={messagesLoading}
+            loadingMore={isFetchingNextPage}
+            hasMore={!!hasNextPage}
             onRefresh={refetchMessages}
+            onLoadMore={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
           />
         </View>
 

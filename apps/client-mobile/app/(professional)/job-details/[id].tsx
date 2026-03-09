@@ -37,7 +37,7 @@ import {
   useHasReviewedBooking,
   useRetryPayment,
   useCancelAcceptedBooking,
-  useConversationByBooking,
+  useExistingConversationByBooking,
   useAuthStore,
   supabase,
 } from '@shared/supabase';
@@ -155,7 +155,7 @@ export default function JobDetailsScreen() {
   }, [booking?.customer_id]);
 
   // Get conversation for messaging
-  const { data: conversation, isLoading: conversationLoading } = useConversationByBooking(
+  const { data: conversation, isLoading: conversationLoading } = useExistingConversationByBooking(
     (booking?.status === 'accepted' || booking?.status === 'in_progress') ? (id || '') : ''
   );
 
@@ -228,7 +228,7 @@ export default function JobDetailsScreen() {
       } else {
         toast.error('Failed to accept job');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong');
     } finally {
       setActionLoading(null);
@@ -259,7 +259,7 @@ export default function JobDetailsScreen() {
               } else {
                 toast.error('Failed to decline job');
               }
-            } catch (error) {
+            } catch {
               toast.error('Something went wrong');
             } finally {
               setActionLoading(null);
@@ -280,7 +280,7 @@ export default function JobDetailsScreen() {
       } else {
         toast.error('Failed to start job');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong');
     } finally {
       setActionLoading(null);
@@ -322,7 +322,7 @@ export default function JobDetailsScreen() {
               } else {
                 toast.error(result.error || 'Failed to complete job');
               }
-            } catch (error) {
+            } catch {
               toast.error('Something went wrong');
             } finally {
               setActionLoading(null);
@@ -403,7 +403,7 @@ export default function JobDetailsScreen() {
             Job not found
           </Text>
           <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-2 text-center">
-            This job may have been cancelled or doesn't exist.
+            This job may have been cancelled or doesn&apos;t exist.
           </Text>
         </View>
       </SafeAreaView>
@@ -671,7 +671,7 @@ export default function JobDetailsScreen() {
             <View className="flex-row items-center justify-center py-2">
               <Star color="#B29D88" size={18} fill="#B29D88" />
               <Text className="font-worksans text-[14px] text-[#6B6B6B] ml-2">
-                You've rated this client
+                You&apos;ve rated this client
               </Text>
             </View>
           )}

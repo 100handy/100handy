@@ -9,7 +9,7 @@ import { OtpInput, OtpInputRef } from 'react-native-otp-entry';
 
 export default function ProfessionalVerifyEmailOtp() {
   const params = useLocalSearchParams();
-  const email = params.email as string;
+  const email = typeof params.email === 'string' ? params.email : '';
 
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -42,9 +42,9 @@ export default function ProfessionalVerifyEmailOtp() {
       const result = await verifyEmailOTP(email, otpCode);
 
       if (result.user) {
-        // OTP verified successfully - go to dashboard (complete onboarding/verification from there)
+        // Route through the root gate so onboarding and role routing stay in sync.
         toast.success('Success', 'Email verified!');
-        router.replace('/(auth)/(professional)/verify-info');
+        router.replace('/');
       }
     } catch (error) {
       console.error('Email OTP verification error:', error);

@@ -19,26 +19,16 @@ export default function ClientSignIn() {
   const handleSignIn = async (data: SignInFormData): Promise<void> => {
     setIsLoading(true);
     try {
-      const signInData = await signIn(data.email, data.password);
-      await checkAuth();
+      await signIn(data.email, data.password);
+      const isAuthenticated = await checkAuth();
 
-      // Route directly based on sign-in response data (avoids race condition with root index)
-      const user = signInData.user;
-      const metadata = user?.user_metadata;
-      const role = metadata?.role;
-      const emailVerified = !!user?.email_confirmed_at;
-
-      if (!emailVerified) {
-        router.replace({
-          pathname: '/(auth)/verify-email',
-          params: { email: user?.email || '' },
-        });
-      } else if (role === 'handy') {
-        router.replace('/(professional)/(tabs)/dashboard');
-      } else {
-        // Default to client home (customer role or unknown)
-        router.replace('/(client)/(tabs)/home');
+      if (!isAuthenticated) {
+        throw new Error('Authentication check failed');
       }
+
+      // Route through the root gate so role, verification, onboarding,
+      // and pending booking restore are resolved in one place.
+      router.replace('/');
     } catch (error) {
       console.error('Sign in error:', error);
       toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');
@@ -86,7 +76,7 @@ export default function ClientSignIn() {
               {/* Sign Up Link */}
               <Pressable className="mt-2" onPress={() => router.push('/(auth)/(client)/sign-up')}>
                 <Text className="text-center text-[14px] font-worksans-medium" style={{ color: '#30352D' }}>
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <Text style={{ color: '#C1856A' }}>Sign up</Text>
                 </Text>
               </Pressable>

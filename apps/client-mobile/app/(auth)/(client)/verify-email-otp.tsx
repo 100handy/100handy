@@ -42,9 +42,9 @@ export default function ClientVerifyEmailOtp() {
       const result = await verifyEmailOTP(email, otpCode);
 
       if (result.user) {
-        // OTP verified successfully - navigate to client home
+        // Route through the root gate so onboarding and pending booking restore stay consistent.
         toast.success('Success', 'Email verified!');
-        router.replace('/(client)/(tabs)/home');
+        router.replace('/');
       }
     } catch (error) {
       console.error('Email OTP verification error:', error);

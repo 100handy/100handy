@@ -8,9 +8,10 @@ import Svg, { Path } from 'react-native-svg';
 import StarRating from '@/assets/images/star-rating.svg';
 import Logo100Top from '@/assets/images/logo-100-top.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
-import { supabase } from '@shared/supabase';
+import { useAuthStore, usePendingBookingStore, useLocationStore, supabase } from '@shared/supabase';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
+
+const CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX = '@clientOnboardingCompleted:';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const GEOMETRIC_HEIGHT = SCREEN_HEIGHT * 0.42; // Top section for geometric shapes
@@ -252,16 +253,23 @@ export default function ClientOnboarding() {
   const [currentStep, setCurrentStep] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const totalSteps = onboardingData.length;
-  const { isAuthenticated, updateOnboardingStatus } = useAuthStore();
-  const { getPendingBooking } = usePendingBookingStore();
+  const { isAuthenticated, updateOnboardingStatus, user } = useAuthStore();
+  const { getPendingBooking, hasRestorablePendingBooking, markPendingBookingRestored } = usePendingBookingStore();
   const { setLocation } = useLocationStore();
 
   // Check for pending booking and navigate there instead of home
   const checkAndRestorePendingBooking = (): boolean => {
+    if (!hasRestorablePendingBooking()) {
+      return false;
+    }
+
     const pendingBooking = getPendingBooking();
     if (pendingBooking) {
       // Restore the location from pending booking
       setLocation(pendingBooking.location);
+
+      // Keep the restored draft until the user confirms or explicitly discards it.
+      markPendingBookingRestored();
 
       // Navigate to confirm booking with all the saved data
       router.replace({
@@ -273,6 +281,7 @@ export default function ClientOnboarding() {
           selectedDate: pendingBooking.selectedDate,
           selectedTime: pendingBooking.selectedTime,
           formResponses: JSON.stringify(pendingBooking.formResponses),
+          selectedFrequency: pendingBooking.frequency ?? 'once',
         },
       });
       return true;
@@ -284,6 +293,9 @@ export default function ClientOnboarding() {
     try {
       // Save to AsyncStorage for future app launches
       await AsyncStorage.setItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING, 'true');
+      if (user?.id) {
+        await AsyncStorage.setItem(`${CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX}${user.id}`, 'true');
+      }
 
       // If user is already authenticated, update their metadata
       if (isAuthenticated) {
@@ -294,9 +306,13 @@ export default function ClientOnboarding() {
         if (error) {
           console.error('[Onboarding] Error updating user metadata:', error);
         } else {
-          // Update the auth store state
+          // Update the auth store state after the server confirms the write.
           updateOnboardingStatus(true);
         }
+
+        // Even if the metadata write fails transiently, keep the current session
+        // from being forced back through onboarding on the next cold start.
+        updateOnboardingStatus(true);
 
         // Check for pending booking first
         const hasPendingBooking = checkAndRestorePendingBooking();

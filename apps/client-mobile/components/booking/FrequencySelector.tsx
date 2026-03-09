@@ -6,13 +6,15 @@ import { FREQUENCY_OPTIONS, type BookingFrequency } from '@shared/supabase';
 interface FrequencySelectorProps {
   selectedFrequency: BookingFrequency;
   onFrequencyChange: (frequency: BookingFrequency) => void;
-  hourlyRate: number; // In pounds for display
+  disabledFrequencies?: BookingFrequency[];
+  disabledMessage?: string;
 }
 
 export function FrequencySelector({
   selectedFrequency,
   onFrequencyChange,
-  hourlyRate,
+  disabledFrequencies = [],
+  disabledMessage,
 }: FrequencySelectorProps) {
   return (
     <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
@@ -20,19 +22,30 @@ export function FrequencySelector({
       <Text className="text-sm text-gray-600 mb-4">
         Save time and money by setting up a repeat cleaning with your Tasker.
       </Text>
+      {disabledMessage ? (
+        <Text className="text-sm mb-4" style={{ color: '#C1856A' }}>
+          {disabledMessage}
+        </Text>
+      ) : null}
 
       <View className="flex-col gap-2">
         {FREQUENCY_OPTIONS.map((option) => {
           const isSelected = selectedFrequency === option.value;
-          const discountedRate = hourlyRate * (1 - option.discountPercent / 100);
+          const isDisabled = disabledFrequencies.includes(option.value);
 
           return (
             <Pressable
               key={option.value}
-              onPress={() => onFrequencyChange(option.value)}
+              onPress={() => {
+                if (!isDisabled) {
+                  onFrequencyChange(option.value);
+                }
+              }}
+              disabled={isDisabled}
               className={`
                 py-4 px-5 border rounded-xl
                 ${isSelected ? 'border-[#30352D] bg-gray-100' : 'border-gray-300 bg-white'}
+                ${isDisabled ? 'opacity-50' : ''}
               `}
             >
               <View className="flex-row items-center justify-between">

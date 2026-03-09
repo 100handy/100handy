@@ -38,6 +38,21 @@ export interface HandymanFilters {
   sortBy?: 'recommended' | 'price_low' | 'price_high' | 'rating' | 'reviews';
 }
 
+export interface HandymanReviewProfile {
+  user_id: string;
+  first_name: string;
+  last_name: string | null;
+}
+
+export interface HandymanReview {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  customer_id: string;
+  profiles: HandymanReviewProfile | null;
+}
+
 // Query keys for handymen
 export const handymenKeys = {
   all: ['handymen'] as const,
@@ -335,7 +350,10 @@ export async function getHandymanProfile(handyId: string, categoryId?: string): 
 /**
  * Get handyman reviews
  */
-export async function getHandymanReviews(handyId: string, limit: number = 10) {
+export async function getHandymanReviews(
+  handyId: string,
+  limit: number = 10
+): Promise<HandymanReview[]> {
   const { data, error } = await supabase
     .from('reviews')
     .select(`
@@ -359,7 +377,12 @@ export async function getHandymanReviews(handyId: string, limit: number = 10) {
   // Fetch customer profiles separately
   const customerIds = data.map(review => review.customer_id).filter(Boolean);
 
-  if (customerIds.length === 0) return data;
+  if (customerIds.length === 0) {
+    return data.map((review) => ({
+      ...review,
+      profiles: null,
+    }));
+  }
 
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
@@ -369,7 +392,10 @@ export async function getHandymanReviews(handyId: string, limit: number = 10) {
   if (profilesError) {
     console.error(`Error fetching customer profiles:`, profilesError);
     // Return reviews without profile data rather than failing
-    return data;
+    return data.map((review) => ({
+      ...review,
+      profiles: null,
+    }));
   }
 
   // Create a map for quick lookup

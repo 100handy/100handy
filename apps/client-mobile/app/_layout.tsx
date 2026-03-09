@@ -1,8 +1,7 @@
 import "@/globals.css";
-import { Stack, router } from "expo-router";
+import { SplashScreen, Stack, router } from "expo-router";
 import { useFonts } from "expo-font";
 import { useEffect, useRef } from "react";
-import { SplashScreen } from "expo-router";
 import { AppState, Platform } from "react-native";
 import * as Linking from "expo-linking";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -26,6 +25,9 @@ initializePendingBookingStorage();
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const initializeAuth = useAuthStore((state) => state.initialize);
+  const cleanupAuth = useAuthStore((state) => state.cleanup);
+  const setCurrentPushToken = useAuthStore((state) => state.setCurrentPushToken);
   const [fontsLoaded, fontError] = useFonts({
     "Futura-Medium": require("../assets/fonts/futura-medium.ttf"),
     "SourceCodeProVariable": require("../assets/fonts/SourceCodePro-Regular.ttf"),
@@ -39,6 +41,14 @@ export default function RootLayout() {
     "Cardo-Bold": require("../assets/fonts/Cardo-Bold.ttf"),
     "Cardo-Italic": require("../assets/fonts/Cardo-Italic.ttf"),
   });
+
+  useEffect(() => {
+    initializeAuth();
+
+    return () => {
+      cleanupAuth();
+    };
+  }, [cleanupAuth, initializeAuth]);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -87,7 +97,12 @@ export default function RootLayout() {
     let isCancelled = false;
 
     const register = async () => {
-      if (!userId) return;
+      if (!userId) {
+        setCurrentPushToken(null);
+        lastRegisteredUserIdRef.current = null;
+        lastRegisteredTokenRef.current = null;
+        return;
+      }
 
       const token = await registerForPushNotificationsAsync();
       if (isCancelled || !token) return;
@@ -102,6 +117,7 @@ export default function RootLayout() {
 
       lastRegisteredUserIdRef.current = userId;
       lastRegisteredTokenRef.current = token;
+      setCurrentPushToken(token);
 
       await upsertDevicePushToken({
         expoPushToken: token,
@@ -115,7 +131,7 @@ export default function RootLayout() {
     return () => {
       isCancelled = true;
     };
-  }, [userId]);
+  }, [setCurrentPushToken, userId]);
 
   // AppState listener for token auto-refresh
   // This tells Supabase Auth to continuously refresh the session automatically if

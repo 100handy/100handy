@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, type Href } from 'expo-router';
 import { Loader } from '@/components/ui/loader';
 import { View, Text, Pressable } from 'react-native';
 import { supabase } from '@shared/supabase/supabaseClient';
+import { type EmailOtpType } from '@supabase/supabase-js';
 
 /**
  * Auth Callback Route
@@ -12,54 +13,112 @@ import { supabase } from '@shared/supabase/supabaseClient';
  * - Password reset links (handy://auth/callback?token_hash=...&type=recovery)
  * - OAuth callbacks (handy://auth/callback?access_token=...&refresh_token=...)
  *
- * Supabase automatically handles the session via the onAuthStateChange listener
- * in the auth store, so we just need to redirect the user appropriately.
+ * On mobile we complete the callback explicitly because session detection
+ * from deep links is disabled in the native Supabase client.
  */
 
-const POLL_INTERVAL_MS = 300;
-const POLL_TIMEOUT_MS = 8000;
+const EMAIL_OTP_TYPES = new Set<EmailOtpType>([
+  'signup',
+  'invite',
+  'magiclink',
+  'recovery',
+  'email_change',
+  'email',
+]);
+
+function isEmailOtpType(value: string | null): value is EmailOtpType {
+  return value !== null && EMAIL_OTP_TYPES.has(value as EmailOtpType);
+}
+
+function getSafeNextRoute(next: string | null, type: string | null): Href {
+  if (next && next.startsWith('/')) {
+    return next as Href;
+  }
+
+  if (type === 'recovery') {
+    return '/(auth)/reset-password';
+  }
+
+  return '/';
+}
+
+function getSafeErrorRoute(next: string | null, type: string | null): Href {
+  if (type === 'recovery') {
+    return '/(auth)/forgot-password';
+  }
+
+  if (next?.startsWith('/(professional)')) {
+    return '/(auth)/(professional)';
+  }
+
+  return '/(auth)/role-selection';
+}
 
 export default function AuthCallback() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const type = params.type as string;
+  const type = typeof params.type === 'string' ? params.type : null;
+  const tokenHash = typeof params.token_hash === 'string' ? params.token_hash : null;
+  const code = typeof params.code === 'string' ? params.code : null;
+  const accessToken = typeof params.access_token === 'string' ? params.access_token : null;
+  const refreshToken =
+    typeof params.refresh_token === 'string' ? params.refresh_token : null;
+  const next = typeof params.next === 'string' ? params.next : null;
+  const errorDescription =
+    typeof params.error_description === 'string' ? params.error_description : null;
   const [error, setError] = useState<string | null>(null);
 
   const processCallback = useCallback(async () => {
     try {
-      // Poll for a valid session instead of using a fixed delay
-      const start = Date.now();
-      let session = null;
+      if (errorDescription) {
+        throw new Error(decodeURIComponent(errorDescription));
+      }
 
-      while (Date.now() - start < POLL_TIMEOUT_MS) {
-        const { data, error: sessionError } = await supabase.auth.getSession();
+      if (tokenHash && isEmailOtpType(type)) {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          type,
+          token_hash: tokenHash,
+        });
+
+        if (verifyError) {
+          throw new Error(verifyError.message);
+        }
+      } else if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (exchangeError) {
+          throw new Error(exchangeError.message);
+        }
+      } else if (accessToken && refreshToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (sessionError) {
+          throw new Error(sessionError.message);
+        }
+      } else {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
         if (sessionError) {
           throw new Error(sessionError.message);
         }
 
-        if (data.session) {
-          session = data.session;
-          break;
+        if (!session) {
+          throw new Error('Authentication link is missing required callback parameters.');
         }
-
-        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
       }
 
-      if (!session) {
-        throw new Error('Session not available after authentication. Please try again.');
-      }
-
-      if (type === 'recovery') {
-        router.replace('/(auth)/reset-password');
-      } else {
-        router.replace('/');
-      }
+      router.replace(getSafeNextRoute(next, type));
     } catch (err) {
       console.error('Auth callback error:', err);
       setError(err instanceof Error ? err.message : 'Failed to complete sign in');
     }
-  }, [type, router]);
+  }, [accessToken, code, errorDescription, next, refreshToken, router, tokenHash, type]);
 
   useEffect(() => {
     processCallback();
@@ -86,7 +145,7 @@ export default function AuthCallback() {
           <Text className="text-white font-medium">Try Again</Text>
         </Pressable>
         <Pressable
-          onPress={() => router.replace('/(auth)/(client)')}
+          onPress={() => router.replace(getSafeErrorRoute(next, type))}
           className="px-8 py-3"
         >
           <Text className="text-brand-terracotta font-medium">Go to Sign In</Text>

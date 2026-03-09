@@ -1,16 +1,44 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, Pressable, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Mail, MessageCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useProfileStore, useConversations, useAuthStore } from '@shared/supabase';
+import {
+  useProfileStore,
+  useConversations,
+  useAuthStore,
+  subscribeToConversationList,
+  unsubscribeFromConversation,
+} from '@shared/supabase';
 import { ConversationItem } from '@/components/chat';
 
 export default function InboxScreen() {
   const router = useRouter();
   const { profile } = useProfileStore();
   const { user } = useAuthStore();
-  const { data: conversations, isLoading, error, refetch } = useConversations();
+  const { data: conversations, isLoading, error, refetch } = useConversations(!!user?.id);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = subscribeToConversationList(() => {
+      if (refreshTimeoutRef.current) return;
+
+      refreshTimeoutRef.current = setTimeout(() => {
+        refreshTimeoutRef.current = null;
+        refetch();
+      }, 120);
+    });
+
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
+      }
+      unsubscribeFromConversation(channel);
+    };
+  }, [refetch, user?.id]);
 
   // Filter conversations where current user is the tasker (professional)
   const myConversations = conversations?.filter(c => c.tasker_id === user?.id) || [];

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { Mail } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { supabase } from '@shared/supabase/supabaseClient';
+import { resendEmailOTP } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
 
 export default function VerifyEmail() {
@@ -17,12 +17,7 @@ export default function VerifyEmail() {
 
     try {
       setIsResending(true);
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-      });
-
-      if (error) throw error;
+      await resendEmailOTP(email);
 
       toast.success('Email sent', 'Please check your inbox');
     } catch (error) {
@@ -34,7 +29,7 @@ export default function VerifyEmail() {
   };
 
   const handleBackToSignIn = () => {
-    router.replace('/(auth)/(client)');
+    router.replace('/(auth)/role-selection');
   };
 
   return (
@@ -52,7 +47,7 @@ export default function VerifyEmail() {
 
         {/* Description */}
         <Text className="text-base font-worksans text-center text-typography-600 mb-2 leading-6">
-          We've sent a verification link to
+          We&apos;ve sent a verification link to
         </Text>
 
         <Text className="text-base font-worksans-semibold text-center mb-8" style={{ color: '#30352D' }}>
@@ -86,7 +81,7 @@ export default function VerifyEmail() {
         {/* Help Text */}
         <View className="mt-12 px-4">
           <Text className="text-xs font-worksans text-center text-typography-400 leading-5">
-            Didn't receive the email? Check your spam folder or try resending.
+            Didn&apos;t receive the email? Check your spam folder or try resending.
           </Text>
         </View>
       </View>

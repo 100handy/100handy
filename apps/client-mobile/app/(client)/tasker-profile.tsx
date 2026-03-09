@@ -1,30 +1,14 @@
 import React, { useState } from 'react';
 import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
-import { ChevronLeft, Star, SlidersHorizontal, Check, ChevronUp, X } from 'lucide-react-native';
+import { ChevronLeft, Star, SlidersHorizontal } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   RatingFilter,
   RatingFilterSheet,
   ScheduleSelectionSheet,
 } from '@/components/tasker';
-import { useHandymanProfile, useHandymanReviews } from '@shared/supabase';
-
-interface ReviewProfile {
-  user_id: string;
-  first_name: string;
-  last_name: string;
-}
-
-interface HandymanReview {
-  id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-  customer_id: string;
-  profiles: ReviewProfile | null;
-}
+import { useHandymanProfile, useHandymanReviews, type HandymanReview } from '@shared/supabase';
 
 export default function TaskerProfileScreen() {
   const router = useRouter();
@@ -119,7 +103,7 @@ export default function TaskerProfileScreen() {
             Profile not found
           </Text>
           <Text className="text-sm text-gray-600 text-center">
-            This tasker's profile could not be loaded
+            This tasker&apos;s profile could not be loaded
           </Text>
         </View>
       </SafeAreaView>

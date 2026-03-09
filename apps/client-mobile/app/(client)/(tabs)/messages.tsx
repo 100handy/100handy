@@ -1,15 +1,42 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MessageCircle } from 'lucide-react-native';
-import { useConversations, useAuthStore } from '@shared/supabase';
+import {
+  useConversations,
+  useAuthStore,
+  subscribeToConversationList,
+  unsubscribeFromConversation,
+} from '@shared/supabase';
 import { ConversationItem } from '../../../components/chat';
 
 export default function MessagesScreen() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuthStore();
-  const { data: conversations, isLoading, error, refetch } = useConversations();
+  const { data: conversations, isLoading, error, refetch } = useConversations(!!user?.id);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = subscribeToConversationList(() => {
+      if (refreshTimeoutRef.current) return;
+
+      refreshTimeoutRef.current = setTimeout(() => {
+        refreshTimeoutRef.current = null;
+        refetch();
+      }, 120);
+    });
+
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+        refreshTimeoutRef.current = null;
+      }
+      unsubscribeFromConversation(channel);
+    };
+  }, [refetch, user?.id]);
 
   // Show sign-in prompt for unauthenticated users (after auth loading completes)
   if (!authLoading && !user?.id) {

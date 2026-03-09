@@ -3,12 +3,14 @@ import {
   getConversations,
   getConversation,
   getConversationByBooking,
+  getExistingConversationByBooking,
   getConversationMessages,
   sendConversationMessage,
   markMessagesAsRead,
   SendConversationMessageInput,
   Conversation,
   ConversationMessage,
+  ConversationMessageCursor,
   ConversationWithProfiles,
 } from '../../supabase/conversations';
 import { supabase } from '../../supabase/supabaseClient';
@@ -26,10 +28,11 @@ export const conversationKeys = {
 /**
  * Hook to fetch all conversations for the current user
  */
-export function useConversations() {
+export function useConversations(enabled: boolean = true) {
   return useQuery({
     queryKey: conversationKeys.list(),
     queryFn: getConversations,
+    enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
@@ -59,6 +62,18 @@ export function useConversationByBooking(bookingId: string) {
 }
 
 /**
+ * Hook to fetch an existing conversation for a booking without creating one.
+ */
+export function useExistingConversationByBooking(bookingId: string) {
+  return useQuery({
+    queryKey: [...conversationKeys.byBooking(bookingId), 'existing'] as const,
+    queryFn: () => getExistingConversationByBooking(bookingId),
+    enabled: !!bookingId,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+/**
  * Hook to fetch messages for a conversation with pagination and real-time updates
  */
 export function useConversationMessages(conversationId: string) {
@@ -69,20 +84,27 @@ export function useConversationMessages(conversationId: string) {
         limit: 50,
         before: pageParam ?? undefined,
       }),
-    initialPageParam: null as string | null,
+    initialPageParam: null as ConversationMessageCursor | null,
     getNextPageParam: (lastPage) => {
       if (!lastPage.hasMore || lastPage.messages.length === 0) return undefined;
       // The oldest message's created_at is the cursor for the next (earlier) page
-      return lastPage.messages[0]?.created_at ?? undefined;
+      const oldestMessage = lastPage.messages[0];
+      return oldestMessage
+        ? {
+            created_at: oldestMessage.created_at,
+            id: oldestMessage.id,
+          }
+        : undefined;
     },
     enabled: !!conversationId,
     staleTime: 1000 * 30,
     select: (data) => ({
       pages: data.pages,
       pageParams: data.pageParams,
-      // Flatten all pages into a single messages array (oldest first)
-      messages: data.pages.flatMap((page) => page.messages),
-      hasMore: data.pages[0]?.hasMore ?? false,
+      // Pages are stored newest-first by useInfiniteQuery. Reverse them so the
+      // final flattened list stays globally chronological (oldest first).
+      messages: [...data.pages].reverse().flatMap((page) => page.messages),
+      hasMore: data.pages[data.pages.length - 1]?.hasMore ?? false,
     }),
   });
 }
@@ -128,9 +150,9 @@ export function useSendConversationMessage() {
         (old: any) => {
           if (!old?.pages?.length) return old;
           const pages = [...old.pages];
-          const lastPage = { ...pages[pages.length - 1] };
-          lastPage.messages = [...lastPage.messages, optimisticMessage];
-          pages[pages.length - 1] = lastPage;
+          const newestPage = { ...pages[0] };
+          newestPage.messages = [...newestPage.messages, optimisticMessage];
+          pages[0] = newestPage;
           return { ...old, pages };
         }
       );
