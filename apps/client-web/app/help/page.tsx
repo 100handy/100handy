@@ -14,7 +14,7 @@ export default function HelpPage() {
                         How can we help?
                     </h1>
                     <p className="text-base font-bold text-brand-dark-alt leading-[1.221] mb-[24px]">
-                        Are you a Tasker? Sign in to view additional resources.
+                        Are you a 100 Handy Pro? Sign in to view additional resources.
                     </p>
 
                     {/* Search Bar */}
@@ -64,10 +64,10 @@ export default function HelpPage() {
                             bgColor="bg-brand-terracotta"
                         />
 
-                        {/* Tasker */}
+                        {/* 100 Handy Pro */}
                         <CategoryCard
                             icon={<Globe className="w-[33.76px] h-[33.76px]" />}
-                            title="Tasker"
+                            title="100 Handy Pro"
                             bgColor="bg-brand-terracotta"
                         />
 

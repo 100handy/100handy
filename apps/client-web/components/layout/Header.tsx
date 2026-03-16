@@ -94,10 +94,10 @@ export default function Header({ currentPage }: HeaderProps) {
                 Sign up / Log in
               </Link>
               <Link
-                href="/become-tasker"
+                href="/become-100-handy-pro"
                 className="px-4 py-2 rounded-md bg-brand-terracotta text-white font-medium text-sm sm:text-base hover:bg-brand-terracotta/90 transition-colors"
               >
-                Become a Tasker
+                Become a Pro
               </Link>
             </nav>
           )}

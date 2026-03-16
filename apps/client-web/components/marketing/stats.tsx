@@ -101,7 +101,7 @@ const categoryContent: Record<string, CategoryContent> = {
       ["Furniture Removed", "400,000+"],
     ],
   },
-  "Outdoor help": {
+  "Outdoor Help": {
     title: "Outdoor Help",
     bullets: [
       "Quick tidy-ups to full garden care—season after season.",

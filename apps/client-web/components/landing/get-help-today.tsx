@@ -8,7 +8,7 @@ const services = [
   "Wardrobe Assembly",
   "Garden Assembly",
   "Crib Assembly",
-  "Hand Pictures",
+  "Hang Pictures",
   "Bed Assembly",
   "Garden",
   "Garden Assembly",

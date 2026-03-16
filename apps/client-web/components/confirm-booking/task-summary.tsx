@@ -54,7 +54,7 @@ export function TaskSummary({
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6">
-      {/* Tasker Profile */}
+      {/* Professional Profile */}
       <div className="mb-6 flex items-center gap-4">
         <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-200">
           <Image

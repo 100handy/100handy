@@ -5,6 +5,36 @@ import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
 
+// --- Helpers --- //
+const toSlug = (name: string) =>
+  name.toLowerCase().replace(/['']/g, '').replace(/\s+/g, '-');
+
+// --- UK Cities Data --- //
+const ukCities = [
+  { name: "London", slug: "london" },
+  { name: "Manchester", slug: "manchester" },
+  { name: "Birmingham", slug: "birmingham" },
+  { name: "Leeds", slug: "leeds" },
+  { name: "Liverpool", slug: "liverpool" },
+  { name: "Glasgow", slug: "glasgow" },
+  { name: "Edinburgh", slug: "edinburgh" },
+  { name: "Bristol", slug: "bristol" },
+  { name: "Sheffield", slug: "sheffield" },
+  { name: "Nottingham", slug: "nottingham" },
+  { name: "Leicester", slug: "leicester" },
+  { name: "Newcastle upon Tyne", slug: "newcastle-upon-tyne" },
+  { name: "Cardiff", slug: "cardiff" },
+  { name: "Belfast", slug: "belfast" },
+  { name: "Coventry", slug: "coventry" },
+  { name: "Brighton", slug: "brighton" },
+  { name: "Southampton", slug: "southampton" },
+  { name: "Reading", slug: "reading" },
+  { name: "Cambridge", slug: "cambridge" },
+  { name: "Oxford", slug: "oxford" },
+  { name: "Norwich", slug: "norwich" },
+  { name: "Exeter", slug: "exeter" },
+];
+
 // --- London Neighborhoods Data --- //
 // Layout matches Figma: 3 columns x 2 rows
 // Row 1: Central, North, South
@@ -125,7 +155,7 @@ const CitiesSection = () => {
                 {neighborhoods.map((neighborhood) => (
                   <li key={neighborhood}>
                     <Link
-                      href={`/locations/${neighborhood.toLowerCase().replace(/['\s]+/g, "-")}`}
+                      href={`/locations/${toSlug(neighborhood)}`}
                       className="text-[18px] text-brand-terracotta hover:underline transition-colors"
                     >
                       {neighborhood}
@@ -134,6 +164,23 @@ const CitiesSection = () => {
                 ))}
               </ul>
             </div>
+          ))}
+        </div>
+
+        {/* UK Cities */}
+        <h2 className="text-[44px] font-bold text-brand-dark-alt mt-20 mb-16">
+          UK Cities
+        </h2>
+
+        <div className="grid grid-cols-3 gap-x-16 gap-y-4">
+          {ukCities.map(({ name, slug }) => (
+            <Link
+              key={slug}
+              href={`/locations/${slug}`}
+              className="text-[18px] text-brand-terracotta hover:underline transition-colors"
+            >
+              {name}
+            </Link>
           ))}
         </div>
       </div>
@@ -145,12 +192,12 @@ const HowItWorksSection = () => {
   const steps = [
     {
       number: 1,
-      title: "Choose a Handy by price, skills, and reviews.",
+      title: "Choose a 100 Handy Pro by price, skills, and reviews.",
       bgColor: "bg-brand-terracotta"
     },
     {
       number: 2,
-      title: "Schedule your 100Handy tasker as early as today.",
+      title: "Schedule your 100 Handy Pro as early as today.",
       bgColor: "bg-brand-sage"
     },
     {

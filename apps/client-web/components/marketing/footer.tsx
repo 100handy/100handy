@@ -29,10 +29,10 @@ const socialLinks = [
 ];
 
 const discoverLinks = [
-  { label: "Become a 100Handy Pro", href: "/become-tasker" },
+  { label: "Become a 100 Handy Pro", href: "/become-100-handy-pro" },
   { label: "All Services", href: "/all-services" },
   { label: "Services by City", href: "/services-by-city" },
-  { label: "Rated Pro's", href: "/elite-taskers" },
+  { label: "100 Handy Stars", href: "/100-handy-star" },
 ];
 
 const companyLinks = [

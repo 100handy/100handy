@@ -29,6 +29,64 @@ const cityData: Record<string, { name: string; taskerCount: number; reviewCount:
   "oxford": { name: "Oxford", taskerCount: 600, reviewCount: "82k" },
   "norwich": { name: "Norwich", taskerCount: 430, reviewCount: "60k" },
   "exeter": { name: "Exeter", taskerCount: 380, reviewCount: "52k" },
+  // London — Central
+  "city-of-london": { name: "City of London", taskerCount: 620, reviewCount: "85k" },
+  "soho": { name: "Soho", taskerCount: 580, reviewCount: "78k" },
+  "holborn": { name: "Holborn", taskerCount: 540, reviewCount: "72k" },
+  "bloomsbury": { name: "Bloomsbury", taskerCount: 510, reviewCount: "68k" },
+  "fitzrovia": { name: "Fitzrovia", taskerCount: 490, reviewCount: "65k" },
+  "covent-garden": { name: "Covent Garden", taskerCount: 530, reviewCount: "71k" },
+  "marylebone": { name: "Marylebone", taskerCount: 560, reviewCount: "75k" },
+  // London — North
+  "camden-town": { name: "Camden Town", taskerCount: 640, reviewCount: "88k" },
+  "islington": { name: "Islington", taskerCount: 610, reviewCount: "83k" },
+  "highgate": { name: "Highgate", taskerCount: 420, reviewCount: "56k" },
+  "finsbury-park": { name: "Finsbury Park", taskerCount: 480, reviewCount: "64k" },
+  "holloway": { name: "Holloway", taskerCount: 450, reviewCount: "60k" },
+  "tottenham": { name: "Tottenham", taskerCount: 520, reviewCount: "69k" },
+  "wood-green": { name: "Wood Green", taskerCount: 460, reviewCount: "61k" },
+  "barnet": { name: "Barnet", taskerCount: 500, reviewCount: "67k" },
+  // London — South
+  "brixton": { name: "Brixton", taskerCount: 590, reviewCount: "80k" },
+  "clapham": { name: "Clapham", taskerCount: 630, reviewCount: "86k" },
+  "peckham": { name: "Peckham", taskerCount: 520, reviewCount: "69k" },
+  "greenwich": { name: "Greenwich", taskerCount: 570, reviewCount: "76k" },
+  "lewisham": { name: "Lewisham", taskerCount: 510, reviewCount: "68k" },
+  "crystal-palace": { name: "Crystal Palace", taskerCount: 430, reviewCount: "57k" },
+  "dulwich": { name: "Dulwich", taskerCount: 440, reviewCount: "59k" },
+  "croydon": { name: "Croydon", taskerCount: 600, reviewCount: "82k" },
+  // London — East
+  "shoreditch": { name: "Shoreditch", taskerCount: 580, reviewCount: "78k" },
+  "bethnal-green": { name: "Bethnal Green", taskerCount: 510, reviewCount: "68k" },
+  "hackney": { name: "Hackney", taskerCount: 620, reviewCount: "85k" },
+  "dalston": { name: "Dalston", taskerCount: 480, reviewCount: "64k" },
+  "hoxton": { name: "Hoxton", taskerCount: 460, reviewCount: "61k" },
+  "whitechapel": { name: "Whitechapel", taskerCount: 490, reviewCount: "65k" },
+  "canary-wharf": { name: "Canary Wharf", taskerCount: 550, reviewCount: "74k" },
+  "bow": { name: "Bow", taskerCount: 440, reviewCount: "59k" },
+  "leyton": { name: "Leyton", taskerCount: 470, reviewCount: "63k" },
+  "stratford": { name: "Stratford", taskerCount: 530, reviewCount: "71k" },
+  // London — West
+  "notting-hill": { name: "Notting Hill", taskerCount: 560, reviewCount: "75k" },
+  "kensington": { name: "Kensington", taskerCount: 590, reviewCount: "80k" },
+  "chelsea": { name: "Chelsea", taskerCount: 570, reviewCount: "76k" },
+  "hammersmith": { name: "Hammersmith", taskerCount: 540, reviewCount: "72k" },
+  "shepherds-bush": { name: "Shepherd's Bush", taskerCount: 510, reviewCount: "68k" },
+  "ealing": { name: "Ealing", taskerCount: 530, reviewCount: "71k" },
+  "acton": { name: "Acton", taskerCount: 470, reviewCount: "63k" },
+  "chiswick": { name: "Chiswick", taskerCount: 490, reviewCount: "65k" },
+  "richmond": { name: "Richmond", taskerCount: 520, reviewCount: "69k" },
+  // London — Greater
+  "wembley": { name: "Wembley", taskerCount: 540, reviewCount: "72k" },
+  "harrow": { name: "Harrow", taskerCount: 480, reviewCount: "64k" },
+  "watford": { name: "Watford", taskerCount: 460, reviewCount: "61k" },
+  "enfield": { name: "Enfield", taskerCount: 500, reviewCount: "67k" },
+  "ilford": { name: "Ilford", taskerCount: 470, reviewCount: "63k" },
+  "romford": { name: "Romford", taskerCount: 490, reviewCount: "65k" },
+  "kingston-upon-thames": { name: "Kingston upon Thames", taskerCount: 520, reviewCount: "69k" },
+  "twickenham": { name: "Twickenham", taskerCount: 450, reviewCount: "60k" },
+  "bexley": { name: "Bexley", taskerCount: 430, reviewCount: "57k" },
+  "sutton": { name: "Sutton", taskerCount: 440, reviewCount: "59k" },
 };
 
 // Services available in each city
@@ -81,7 +139,7 @@ export default async function CityPage({ params }: CityPageProps) {
             Services in {cityInfo.name}
           </h1>
           <p className="text-white text-[24px] mb-6 leading-relaxed max-w-2xl">
-            Browse {cityInfo.taskerCount.toLocaleString()}+ trusted Taskers ready to help with your home projects in {cityInfo.name}.
+            Browse {cityInfo.taskerCount.toLocaleString()}+ trusted 100 Handy Pros ready to help with your home projects in {cityInfo.name}.
           </p>
           <div className="flex items-center gap-2">
             <div className="flex">
