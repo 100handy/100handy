@@ -13,8 +13,8 @@ const steps = [
   },
   {
     number: 2,
-    title: "Choose Your Tasker",
-    description: "Browse trusted Taskers by skills, reviews, and price. Chat with them to confirm details.",
+    title: "Choose Your 100 Handy Pro",
+    description: "Browse trusted 100 Handy Pros by skills, reviews, and price. Chat with them to confirm details.",
     imagePath: "/images/how-it-works-2.png",
     imageWidth: 192,
     imageHeight: 192,
@@ -22,7 +22,7 @@ const steps = [
   {
     number: 3,
     title: "Get It Done!",
-    description: "Your Tasker arrives and gets the job done. Pay securely and leave a review, all through 100Handy.",
+    description: "Your 100 Handy Pro arrives and gets the job done. Pay securely and leave a review, all through 100 Handy.",
     imagePath: "/images/how-it-works-3.png",
     imageWidth: 182,
     imageHeight: 182,
@@ -38,40 +38,24 @@ export function ServiceHowItWorks(): React.JSX.Element {
         </h2>
 
         <div className="grid gap-16 md:grid-cols-3">
-          {steps.map((step) => {
-            return (
-              <div key={step.number} className="flex flex-col items-center">
-                {/* Illustration image placeholder */}
-                <div className="mb-8 flex items-center justify-center">
-                  <div 
-                    className="rounded-2xl bg-gradient-to-br from-brand-cream/50 to-gray-200/50 flex items-center justify-center"
-                    style={{
-                      width: step.imageWidth,
-                      height: step.imageHeight,
-                    }}
-                  >
-                    {/* Placeholder for actual image */}
-                    <div className="text-4xl text-gray-400">🔧</div>
-                  </div>
-                </div>
-
-                {/* Step number badge - separate line */}
-                <div className="mb-4 flex h-8 w-8 items-center justify-center rounded-full bg-brand-terracotta">
-                  <span className="text-[18px] font-bold text-white">{step.number}</span>
-                </div>
-
-                {/* Title */}
-                <h3 className="mb-4 text-center text-[24px] font-bold text-brand-dark-alt">
-                  {step.title}
-                </h3>
-
-                {/* Description */}
-                <p className="text-center text-[20px] leading-relaxed text-brand-dark-alt">
-                  {step.description}
-                </p>
+          {steps.map((step) => (
+            <div key={step.number} className="flex flex-col items-center">
+              {/* Step number badge */}
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-brand-terracotta">
+                <span className="text-[32px] font-bold text-white">{step.number}</span>
               </div>
-            );
-          })}
+
+              {/* Title */}
+              <h3 className="mb-4 text-center text-[24px] font-bold text-brand-dark-alt">
+                {step.title}
+              </h3>
+
+              {/* Description */}
+              <p className="text-center text-[20px] leading-relaxed text-brand-dark-alt">
+                {step.description}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

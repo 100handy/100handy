@@ -77,10 +77,10 @@ export function ContentSection({ title, longDescription, benefits, tasks, conten
             <h3 className="mb-6 text-[39px] font-bold leading-tight text-brand-dark-alt">
               What Kind of {title}
               <br />
-              Can a Tasker Help With?
+              Can a 100 Handy Pro Help With?
             </h3>
             <p className="mb-6 text-[20px] text-brand-dark-alt">
-              Taskers are skilled in a variety of {title.toLowerCase()} services, including:
+              100 Handy Pros are skilled in a variety of {title.toLowerCase()} services, including:
             </p>
 
             <div className="space-y-4">
@@ -97,7 +97,7 @@ export function ContentSection({ title, longDescription, benefits, tasks, conten
             </p>
 
             <p className="mt-6 text-[20px] text-brand-dark-alt">
-              A licensed contractor? Be sure to check your Tasker's qualifications when booking to ensure they meet your project's requirements.
+              A licensed contractor? Be sure to check your 100 Handy Pro's qualifications when booking to ensure they meet your project's requirements.
             </p>
           </div>
         )}

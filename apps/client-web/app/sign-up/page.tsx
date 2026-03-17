@@ -21,6 +21,77 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpFormData } from "@shared/schemas/auth";
 
+const countryCodes = [
+  { code: "+44", name: "UK", flag: "🇬🇧" },
+  { code: "+1", name: "US/Canada", flag: "🇺🇸" },
+  { code: "+61", name: "Australia", flag: "🇦🇺" },
+  { code: "+64", name: "New Zealand", flag: "🇳🇿" },
+  { code: "+353", name: "Ireland", flag: "🇮🇪" },
+  { code: "+27", name: "South Africa", flag: "🇿🇦" },
+  { code: "+91", name: "India", flag: "🇮🇳" },
+  { code: "+92", name: "Pakistan", flag: "🇵🇰" },
+  { code: "+880", name: "Bangladesh", flag: "🇧🇩" },
+  { code: "+94", name: "Sri Lanka", flag: "🇱🇰" },
+  { code: "+213", name: "Algeria", flag: "🇩🇿" },
+  { code: "+63", name: "Philippines", flag: "🇵🇭" },
+  { code: "+234", name: "Nigeria", flag: "🇳🇬" },
+  { code: "+233", name: "Ghana", flag: "🇬🇭" },
+  { code: "+254", name: "Kenya", flag: "🇰🇪" },
+  { code: "+255", name: "Tanzania", flag: "🇹🇿" },
+  { code: "+256", name: "Uganda", flag: "🇺🇬" },
+  { code: "+251", name: "Ethiopia", flag: "🇪🇹" },
+  { code: "+20", name: "Egypt", flag: "🇪🇬" },
+  { code: "+212", name: "Morocco", flag: "🇲🇦" },
+  { code: "+216", name: "Tunisia", flag: "🇹🇳" },
+  { code: "+249", name: "Sudan", flag: "🇸🇩" },
+  { code: "+243", name: "DR Congo", flag: "🇨🇩" },
+  { code: "+33", name: "France", flag: "🇫🇷" },
+  { code: "+49", name: "Germany", flag: "🇩🇪" },
+  { code: "+34", name: "Spain", flag: "🇪🇸" },
+  { code: "+39", name: "Italy", flag: "🇮🇹" },
+  { code: "+31", name: "Netherlands", flag: "🇳🇱" },
+  { code: "+32", name: "Belgium", flag: "🇧🇪" },
+  { code: "+41", name: "Switzerland", flag: "🇨🇭" },
+  { code: "+43", name: "Austria", flag: "🇦🇹" },
+  { code: "+46", name: "Sweden", flag: "🇸🇪" },
+  { code: "+47", name: "Norway", flag: "🇳🇴" },
+  { code: "+45", name: "Denmark", flag: "🇩🇰" },
+  { code: "+358", name: "Finland", flag: "🇫🇮" },
+  { code: "+351", name: "Portugal", flag: "🇵🇹" },
+  { code: "+30", name: "Greece", flag: "🇬🇷" },
+  { code: "+48", name: "Poland", flag: "🇵🇱" },
+  { code: "+420", name: "Czech Republic", flag: "🇨🇿" },
+  { code: "+36", name: "Hungary", flag: "🇭🇺" },
+  { code: "+40", name: "Romania", flag: "🇷🇴" },
+  { code: "+7", name: "Russia", flag: "🇷🇺" },
+  { code: "+380", name: "Ukraine", flag: "🇺🇦" },
+  { code: "+90", name: "Turkey", flag: "🇹🇷" },
+  { code: "+966", name: "Saudi Arabia", flag: "🇸🇦" },
+  { code: "+971", name: "UAE", flag: "🇦🇪" },
+  { code: "+974", name: "Qatar", flag: "🇶🇦" },
+  { code: "+965", name: "Kuwait", flag: "🇰🇼" },
+  { code: "+973", name: "Bahrain", flag: "🇧🇭" },
+  { code: "+968", name: "Oman", flag: "🇴🇲" },
+  { code: "+962", name: "Jordan", flag: "🇯🇴" },
+  { code: "+961", name: "Lebanon", flag: "🇱🇧" },
+  { code: "+98", name: "Iran", flag: "🇮🇷" },
+  { code: "+964", name: "Iraq", flag: "🇮🇶" },
+  { code: "+86", name: "China", flag: "🇨🇳" },
+  { code: "+81", name: "Japan", flag: "🇯🇵" },
+  { code: "+82", name: "South Korea", flag: "🇰🇷" },
+  { code: "+65", name: "Singapore", flag: "🇸🇬" },
+  { code: "+60", name: "Malaysia", flag: "🇲🇾" },
+  { code: "+66", name: "Thailand", flag: "🇹🇭" },
+  { code: "+84", name: "Vietnam", flag: "🇻🇳" },
+  { code: "+62", name: "Indonesia", flag: "🇮🇩" },
+  { code: "+55", name: "Brazil", flag: "🇧🇷" },
+  { code: "+54", name: "Argentina", flag: "🇦🇷" },
+  { code: "+52", name: "Mexico", flag: "🇲🇽" },
+  { code: "+56", name: "Chile", flag: "🇨🇱" },
+  { code: "+57", name: "Colombia", flag: "🇨🇴" },
+  { code: "+51", name: "Peru", flag: "🇵🇪" },
+];
+
 function SignUpForm() {
   const [countryCode, setCountryCode] = useState("+44");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -109,10 +180,12 @@ function SignUpForm() {
         <div className="bg-white rounded-[12px] shadow-2xl px-12 py-8">
             {/* Logo */}
             <div className="text-center mb-6">
-              <h1 className="text-[40px] text-brand-dark-alt">
-                <span className="font-light">100</span>
-                <span className="font-bold">HANDY</span>
-              </h1>
+              <Link href="/">
+                <h1 className="text-[40px] text-brand-dark-alt">
+                  <span className="font-light">100</span>
+                  <span className="font-bold">HANDY</span>
+                </h1>
+              </Link>
             </div>
 
             {/* Form */}
@@ -211,27 +284,25 @@ function SignUpForm() {
                 </label>
                 <div className="flex items-center gap-2 border-0 border-b border-gray-300 pb-1">
                   <Select value={countryCode} onValueChange={setCountryCode}>
-                    <SelectTrigger className="w-[100px] border-0 shadow-none focus:ring-0 h-auto p-0">
+                    <SelectTrigger className="w-[110px] border-0 shadow-none focus:ring-0 h-auto p-0">
                       <SelectValue>
                         <div className="flex items-center gap-1">
-                          <span className="text-lg">{countryCode === "+44" ? "🇬🇧" : "🇮🇳"}</span>
+                          <span className="text-lg">
+                            {countryCodes.find(c => c.code === countryCode)?.flag ?? "🏳️"}
+                          </span>
                           <span className="text-[15px] font-bold text-brand-dark-alt">{countryCode}</span>
                         </div>
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="+44">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">🇬🇧</span>
-                          <span>+44 (UK)</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="+91">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">🇮🇳</span>
-                          <span>+91 (India)</span>
-                        </div>
-                      </SelectItem>
+                    <SelectContent className="max-h-60">
+                      {countryCodes.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{country.flag}</span>
+                            <span>{country.code} ({country.name})</span>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <Input
@@ -272,7 +343,7 @@ function SignUpForm() {
               {/* Help Text */}
               <p className="text-[12px] font-medium text-brand-dark-alt leading-relaxed">
                 Your phone and postcode help us match and <br />
-                Connect you with right Taskers.
+                connect you with the right 100 Handy Pros.
               </p>
 
               {/* Terms Checkbox */}

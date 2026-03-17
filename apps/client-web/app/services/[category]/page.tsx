@@ -132,7 +132,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               {meta.title} Services
             </h2>
             <p className="mb-10 text-[18px] text-gray-600">
-              Browse our {meta.title.toLowerCase()} services and book a trusted Tasker today.
+              Browse our {meta.title.toLowerCase()} services and book a trusted 100 Handy Pro today.
             </p>
 
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">

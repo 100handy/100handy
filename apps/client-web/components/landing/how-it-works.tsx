@@ -3,7 +3,7 @@
 const steps = [
   {
     number: 1,
-    title: "Choose a Tasker by price, skills, and reviews.",
+    title: "Choose a 100 Handy Pro by price, skills, and reviews.",
   },
   {
     number: 2,

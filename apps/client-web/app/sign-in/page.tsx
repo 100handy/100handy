@@ -80,10 +80,12 @@ function SignInForm() {
         <div className="bg-white rounded-[12px] shadow-2xl px-12 py-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-[40px] text-brand-dark-alt">
-              <span className="font-light">100</span>
-              <span className="font-bold">HANDY</span>
-            </h1>
+            <Link href="/">
+              <h1 className="text-[40px] text-brand-dark-alt">
+                <span className="font-light">100</span>
+                <span className="font-bold">HANDY</span>
+              </h1>
+            </Link>
           </div>
 
           {/* Form */}

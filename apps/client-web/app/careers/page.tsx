@@ -1,4 +1,5 @@
 import { Header, Footer } from "@/components/layout";
+import { ValuesCarousel } from "@/components/careers";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,28 +7,6 @@ export const metadata: Metadata = {
   description: "Join the team that is redefining how the world gets work done. We're connecting neighbors, empowering professionals, and simplifying lives.",
 };
 
-const values = [
-  {
-    title: "Dare to Innovate",
-    description: "We don't settle for \"good enough.\" We approach every problem with fresh eyes and fearless curiosity. We aren't afraid to break things if it means building something better. Failure is just data gathering for the next big win.",
-  },
-  {
-    title: "Win as One Team",
-    description: "We check our egos at the door. We work passionately under one roof (physical or digital), elevating our peers and inspiring trust. We are kind, candid, and assume good intent. When one of us wins, we all win.",
-  },
-  {
-    title: "Own the Outcome",
-    description: "We are all responsible for the success of 100 Handy. We don't pass the buck. We take smart risks, make decisions faster, and deliver results that make a lasting impact on our business and the planet.",
-  },
-  {
-    title: "Simplicity is Speed",
-    description: "Complex problems require simple solutions. We value momentum over perfection. We strive to strip away the noise and focus on what truly matters to get our mission to more people, faster.",
-  },
-  {
-    title: "Champion the User",
-    description: "Our community is the heartbeat of our company. We build solutions that start with the customer's needs. We are a force for good and we make every decision with Clients and Pros in mind.",
-  },
-];
 
 export default function CareersPage() {
   return (
@@ -81,43 +60,8 @@ export default function CareersPage() {
           </div>
         </section>
 
-        {/* Values Section */}
-        <section className="bg-gray-50 py-20">
-          <div className="mx-auto max-w-[1920px] px-8">
-            <div className="mx-auto max-w-5xl">
-              <div className="mb-12 text-center">
-                <h2 className="text-[36px] font-bold text-brand-dark-alt">
-                  We live by our values.
-                </h2>
-                <p className="mt-4 text-[18px] italic text-brand-dark-alt/80">
-                  Our culture is our operating system. It guides how we hire, how we build, and how we treat each other.
-                </p>
-              </div>
-
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {values.map((value) => (
-                  <div key={value.title} className="rounded-2xl bg-white p-8 shadow-sm">
-                    <h3 className="mb-4 text-[24px] font-bold text-brand-dark-alt">
-                      {value.title}
-                    </h3>
-                    <p className="text-[16px] leading-relaxed text-brand-dark-alt/80">
-                      {value.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-12 text-center">
-                <a
-                  href="#open-roles"
-                  className="inline-block rounded-lg bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
-                >
-                  See Open Roles
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Values Section - Carousel */}
+        <ValuesCarousel />
 
         {/* Culture Section */}
         <section className="bg-white py-20">

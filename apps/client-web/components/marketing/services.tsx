@@ -69,7 +69,7 @@ export function Services() {
   };
 
   const handleSeeAllServices = () => {
-    router.push('/all-services');
+    router.push('/services');
   };
 
   // Use fallback if no categories loaded

@@ -1,12 +1,12 @@
 "use client";
 
 const resources = [
-  { title: "Download Logos", type: "logos" },
-  { title: "Download B-Roll", type: "video" },
-  { title: "Download Fact Sheet", type: "document" },
-  { title: "Download Tasker Images", type: "images" },
-  { title: "Download Product Images", type: "images" },
-  { title: "Download Client Images", type: "images" },
+  { title: "Download Logos", href: "mailto:press@100handy.com" },
+  { title: "Download B-Roll", href: "mailto:press@100handy.com" },
+  { title: "Download Fact Sheet", href: "mailto:press@100handy.com" },
+  { title: "Download 100 Handy Pro Images", href: "mailto:press@100handy.com" },
+  { title: "Download Product Images", href: "mailto:press@100handy.com" },
+  { title: "Download Client Images", href: "mailto:press@100handy.com" },
 ];
 
 export function MediaResources(): React.JSX.Element {
@@ -22,7 +22,7 @@ export function MediaResources(): React.JSX.Element {
             A collection of brand assets for your use.
           </p>
           <p className="text-[20px] text-brand-dark-alt">
-            All logo and media usage must follow the 100Handy brand guidelines. For specific media requests, please contact{" "}
+            All logo and media usage must follow the 100 Handy brand guidelines. For specific media requests, please contact{" "}
             <a href="mailto:press@100handy.com" className="text-brand-terracotta underline hover:text-brand-terracotta/85">
               press@100handy.com
             </a>
@@ -31,27 +31,15 @@ export function MediaResources(): React.JSX.Element {
 
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
           {resources.map((resource, index) => (
-            <button
+            <a
               key={index}
-              className="group overflow-hidden rounded-2xl bg-gray-50 transition-all hover:shadow-lg"
+              href={resource.href}
+              className="flex items-center justify-center rounded-2xl bg-brand-terracotta px-8 py-10 text-center transition-all hover:bg-brand-terracotta/90"
             >
-              {/* Placeholder image area */}
-              <div className="flex h-48 items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-                <div className="text-6xl text-gray-500">
-                  {resource.type === "logos" && "🏢"}
-                  {resource.type === "video" && "🎬"}
-                  {resource.type === "document" && "📄"}
-                  {resource.type === "images" && "🖼️"}
-                </div>
-              </div>
-
-              {/* Title */}
-              <div className="p-6">
-                <h3 className="text-[24px] font-bold text-brand-dark underline group-hover:text-brand-terracotta">
-                  {resource.title}
-                </h3>
-              </div>
-            </button>
+              <span className="text-[20px] font-bold text-white underline">
+                {resource.title}
+              </span>
+            </a>
           ))}
         </div>
       </div>

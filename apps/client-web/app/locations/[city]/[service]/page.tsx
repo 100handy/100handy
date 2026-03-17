@@ -10,27 +10,27 @@ import { FAQSection } from "@/components/location-service/faq-section";
 const serviceData: Record<string, { name: string; description: string; category: string }> = {
   "furniture-assembly": {
     name: "Furniture Assembly",
-    description: "Need someone to put together furniture? Hire a Tasker to assemble your furniture and leave the building to them.",
+    description: "Need someone to put together furniture? Hire a 100 Handy Pro to assemble your furniture and leave the building to them.",
     category: "Handyman"
   },
   "tv-mounting": {
     name: "TV Mounting",
-    description: "Mount your TV safely and professionally with expert help from local Taskers.",
+    description: "Mount your TV safely and professionally with expert help from local 100 Handy Pros.",
     category: "Handyman"
   },
   "handyman": {
     name: "Handyman",
-    description: "If you're looking for local handyman services to help with home maintenance projects, just search \"handyman near me\" on 100Handy.",
+    description: "If you're looking for local handyman services to help with home maintenance projects, just search \"handyman near me\" on 100 Handy.",
     category: "Services"
   },
   "home-cleaning": {
     name: "Home Cleaning",
-    description: "Get professional home cleaning services from trusted Taskers in your area.",
+    description: "Get professional home cleaning services from trusted 100 Handy Pros in your area.",
     category: "Cleaning"
   },
   "help-moving": {
     name: "Help Moving",
-    description: "Get help with your move from experienced Taskers who can handle heavy lifting and transport.",
+    description: "Get help with your move from experienced 100 Handy Pros who can handle heavy lifting and transport.",
     category: "Moving"
   },
   "home-repairs-and-fixes": {
@@ -104,6 +104,64 @@ const cityData: Record<string, { name: string; taskerCount: number; reviewCount:
   "oxford": { name: "Oxford", taskerCount: 600, reviewCount: "82k" },
   "norwich": { name: "Norwich", taskerCount: 430, reviewCount: "60k" },
   "exeter": { name: "Exeter", taskerCount: 380, reviewCount: "52k" },
+  // London — Central
+  "city-of-london": { name: "City of London", taskerCount: 620, reviewCount: "85k" },
+  "soho": { name: "Soho", taskerCount: 580, reviewCount: "78k" },
+  "holborn": { name: "Holborn", taskerCount: 540, reviewCount: "72k" },
+  "bloomsbury": { name: "Bloomsbury", taskerCount: 510, reviewCount: "68k" },
+  "fitzrovia": { name: "Fitzrovia", taskerCount: 490, reviewCount: "65k" },
+  "covent-garden": { name: "Covent Garden", taskerCount: 530, reviewCount: "71k" },
+  "marylebone": { name: "Marylebone", taskerCount: 560, reviewCount: "75k" },
+  // London — North
+  "camden-town": { name: "Camden Town", taskerCount: 640, reviewCount: "88k" },
+  "islington": { name: "Islington", taskerCount: 610, reviewCount: "83k" },
+  "highgate": { name: "Highgate", taskerCount: 420, reviewCount: "56k" },
+  "finsbury-park": { name: "Finsbury Park", taskerCount: 480, reviewCount: "64k" },
+  "holloway": { name: "Holloway", taskerCount: 450, reviewCount: "60k" },
+  "tottenham": { name: "Tottenham", taskerCount: 520, reviewCount: "69k" },
+  "wood-green": { name: "Wood Green", taskerCount: 460, reviewCount: "61k" },
+  "barnet": { name: "Barnet", taskerCount: 500, reviewCount: "67k" },
+  // London — South
+  "brixton": { name: "Brixton", taskerCount: 590, reviewCount: "80k" },
+  "clapham": { name: "Clapham", taskerCount: 630, reviewCount: "86k" },
+  "peckham": { name: "Peckham", taskerCount: 520, reviewCount: "69k" },
+  "greenwich": { name: "Greenwich", taskerCount: 570, reviewCount: "76k" },
+  "lewisham": { name: "Lewisham", taskerCount: 510, reviewCount: "68k" },
+  "crystal-palace": { name: "Crystal Palace", taskerCount: 430, reviewCount: "57k" },
+  "dulwich": { name: "Dulwich", taskerCount: 440, reviewCount: "59k" },
+  "croydon": { name: "Croydon", taskerCount: 600, reviewCount: "82k" },
+  // London — East
+  "shoreditch": { name: "Shoreditch", taskerCount: 580, reviewCount: "78k" },
+  "bethnal-green": { name: "Bethnal Green", taskerCount: 510, reviewCount: "68k" },
+  "hackney": { name: "Hackney", taskerCount: 560, reviewCount: "75k" },
+  "dalston": { name: "Dalston", taskerCount: 490, reviewCount: "65k" },
+  "hoxton": { name: "Hoxton", taskerCount: 470, reviewCount: "63k" },
+  "whitechapel": { name: "Whitechapel", taskerCount: 500, reviewCount: "67k" },
+  "canary-wharf": { name: "Canary Wharf", taskerCount: 620, reviewCount: "85k" },
+  "bow": { name: "Bow", taskerCount: 430, reviewCount: "57k" },
+  "leyton": { name: "Leyton", taskerCount: 440, reviewCount: "59k" },
+  "stratford": { name: "Stratford", taskerCount: 520, reviewCount: "69k" },
+  // London — West
+  "notting-hill": { name: "Notting Hill", taskerCount: 590, reviewCount: "80k" },
+  "kensington": { name: "Kensington", taskerCount: 640, reviewCount: "88k" },
+  "chelsea": { name: "Chelsea", taskerCount: 660, reviewCount: "91k" },
+  "hammersmith": { name: "Hammersmith", taskerCount: 570, reviewCount: "76k" },
+  "shepherds-bush": { name: "Shepherd's Bush", taskerCount: 530, reviewCount: "71k" },
+  "ealing": { name: "Ealing", taskerCount: 560, reviewCount: "75k" },
+  "acton": { name: "Acton", taskerCount: 480, reviewCount: "64k" },
+  "chiswick": { name: "Chiswick", taskerCount: 510, reviewCount: "68k" },
+  "richmond": { name: "Richmond", taskerCount: 540, reviewCount: "72k" },
+  // Greater London
+  "wembley": { name: "Wembley", taskerCount: 550, reviewCount: "74k" },
+  "harrow": { name: "Harrow", taskerCount: 490, reviewCount: "65k" },
+  "watford": { name: "Watford", taskerCount: 460, reviewCount: "61k" },
+  "enfield": { name: "Enfield", taskerCount: 510, reviewCount: "68k" },
+  "ilford": { name: "Ilford", taskerCount: 520, reviewCount: "69k" },
+  "romford": { name: "Romford", taskerCount: 480, reviewCount: "64k" },
+  "kingston-upon-thames": { name: "Kingston upon Thames", taskerCount: 530, reviewCount: "71k" },
+  "twickenham": { name: "Twickenham", taskerCount: 490, reviewCount: "65k" },
+  "bexley": { name: "Bexley", taskerCount: 440, reviewCount: "59k" },
+  "sutton": { name: "Sutton", taskerCount: 460, reviewCount: "61k" },
 };
 
 interface LocationServicePageProps {
@@ -229,13 +287,13 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
                   <svg className="w-5 h-5 text-white mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-white text-[24px]">Browse {city.taskerCount.toLocaleString()}+ Taskers with a variety of skills.</p>
+                  <p className="text-white text-[24px]">Browse {city.taskerCount.toLocaleString()}+ 100 Handy Pros with a variety of skills.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-white mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-white text-[24px]">All Taskers bring their own tools and equipment.</p>
+                  <p className="text-white text-[24px]">All 100 Handy Pros bring their own tools and equipment.</p>
                 </div>
               </div>
 
@@ -258,7 +316,7 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
       <section className="bg-white py-20">
         <div className="max-w-[1920px] mx-auto px-8">
           <h2 className="text-brand-dark-alt font-bold text-[37px] mb-12">
-            {city.taskerCount.toLocaleString()} featured {service.name} Taskers in {city.name}
+            {city.taskerCount.toLocaleString()} featured {service.name} 100 Handy Pros in {city.name}
           </h2>
 
           <div className="grid grid-cols-3 gap-6 mb-8">
@@ -284,7 +342,7 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
 
           <div className="text-center">
             <button className="border-2 border-brand-dark-alt text-brand-dark-alt hover:bg-brand-dark-alt hover:text-white font-semibold py-3 px-10 rounded-md transition-colors text-[18px]">
-              Search all Taskers
+              Search all 100 Handy Pros
             </button>
           </div>
         </div>
@@ -305,9 +363,9 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
               </p>
             </div>
             <div>
-              <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4">Vetted Taskers</h3>
+              <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4">Vetted 100 Handy Pros</h3>
               <p className="text-brand-dark-alt text-[21px] leading-relaxed">
-                Taskers are always background checked before joining the platform.
+                100 Handy Pros are always background checked before joining the platform.
               </p>
             </div>
             <div>
@@ -326,80 +384,43 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
       {/* How It Works */}
       <section className="bg-brand-dark py-20">
         <div className="max-w-[1920px] mx-auto px-8">
-          <div className="grid grid-cols-2 gap-12 items-center">
-            <div className="bg-white rounded-2xl p-12 shadow-2xl">
-              <h2 className="text-brand-dark-alt font-bold text-[33px] mb-10">How it works</h2>
+          <div className="bg-white rounded-2xl p-12 shadow-2xl max-w-2xl mx-auto">
+            <h2 className="text-brand-dark-alt font-bold text-[33px] mb-10">How it works</h2>
 
-              <div className="space-y-8">
-                <div className="flex items-start gap-4">
-                  <div className="bg-brand-terracotta w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-[33px] font-bold">1</span>
-                  </div>
-                  <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
-                    Choose a Tasker by price, skills, and reviews.
-                  </p>
+            <div className="space-y-8">
+              <div className="flex items-start gap-4">
+                <div className="bg-brand-terracotta w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[33px] font-bold">1</span>
                 </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="bg-brand-sage w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-[33px] font-bold">2</span>
-                  </div>
-                  <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
-                    Schedule a Tasker as early as today.
-                  </p>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="bg-brand-sage w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-[33px] font-bold">3</span>
-                  </div>
-                  <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
-                    Chat, pay, tip, and review, all in one place.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center">
-              <svg width="289" height="220" viewBox="0 0 289 220" className="text-brand-sage opacity-60">
-                <circle cx="50" cy="50" r="50" fill="currentColor" />
-                <polygon points="145,0 289,220 0,220" fill="currentColor" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews */}
-      <section className="bg-white py-20">
-        <div className="max-w-[1920px] mx-auto px-8">
-          <h2 className="text-brand-dark-alt font-bold text-[44px] mb-12">
-            See what happy customers are saying about {service.name.toLowerCase()} in {city.name}
-          </h2>
-
-          <div className="grid grid-cols-3 gap-6 mb-10">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="border border-gray-200 rounded-2xl p-6">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <h4 className="text-brand-dark-alt font-bold text-[24px] mb-2">Customer {index + 1}</h4>
-                <p className="text-brand-dark-alt text-[24px] mb-3">{service.name}</p>
-                <p className="text-brand-dark-alt text-[21px] leading-relaxed">
-                  Great service! Professional and efficient. Highly recommend for anyone in {city.name}.
+                <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
+                  Choose a 100 Handy Pro by price, skills, and reviews.
                 </p>
               </div>
-            ))}
-          </div>
 
-          <div className="text-center">
-            <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
-              Get started
-            </button>
+              <div className="flex items-start gap-4">
+                <div className="bg-brand-sage w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[33px] font-bold">2</span>
+                </div>
+                <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
+                  Schedule a 100 Handy Pro as early as today.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="bg-brand-sage w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[33px] font-bold">3</span>
+                </div>
+                <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
+                  Chat, pay, tip, and review, all in one place.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-10 text-center">
+              <button className="bg-brand-terracotta hover:bg-brand-terracotta/90 text-white font-semibold py-3 px-10 rounded-md transition-colors text-[20px]">
+                Book Now
+              </button>
+            </div>
           </div>
         </div>
       </section>

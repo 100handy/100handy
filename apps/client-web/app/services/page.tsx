@@ -94,15 +94,6 @@ function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
           </ul>
         )}
 
-        {/* See More Link */}
-        {subcategories.length > 6 && (
-          <Link
-            href={`/services/${categorySlug}`}
-            className="text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 font-medium hover:underline transition-colors"
-          >
-            See more {category.name} services →
-          </Link>
-        )}
       </div>
     </div>
   );
@@ -126,12 +117,12 @@ function ServicesHero() {
 
       {/* Hero Content */}
       <div className="relative h-full flex items-center justify-center">
-        <div className="text-center max-w-3xl mx-auto px-4">
-          <h1 className="text-[48px] md:text-[64px] font-bold text-white mb-4 leading-tight drop-shadow-lg">
+        <div className="bg-white rounded-2xl px-12 py-10 text-center max-w-2xl mx-auto shadow-xl">
+          <h1 className="text-[48px] md:text-[56px] font-bold text-brand-dark-alt mb-4 leading-tight">
             Your to-do list is on us.
           </h1>
-          <p className="text-[24px] md:text-[28px] text-white font-medium drop-shadow-lg">
-            Hire a trusted Tasker presto.
+          <p className="text-[22px] md:text-[26px] text-brand-dark-alt font-medium">
+            Hire a trusted 100 Handy Pro today.
           </p>
         </div>
       </div>

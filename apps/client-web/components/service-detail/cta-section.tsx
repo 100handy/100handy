@@ -22,7 +22,7 @@ export function CTASection({ categoryName, ctaImage }: CTASectionProps): React.J
             <div className="relative h-[321px] overflow-hidden rounded-3xl">
               <Image
                 src={ctaImage}
-                alt="Ready to hire a Tasker?"
+                alt="Ready to hire a 100 Handy Pro?"
                 fill
                 className="object-cover"
                 sizes="(min-width: 1024px) 50vw, 100vw"
@@ -43,7 +43,7 @@ export function CTASection({ categoryName, ctaImage }: CTASectionProps): React.J
           {/* Right column - CTA text and button */}
           <div className="flex flex-col items-center justify-center text-center">
             <h2 className="mb-8 text-[39px] font-bold text-brand-dark-alt">
-              Ready to hire a Tasker?
+              Ready to hire a 100 Handy Pro?
             </h2>
             <Link
               href={href}

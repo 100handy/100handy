@@ -37,7 +37,7 @@ export function FAQSection({ serviceName, cityName }: FAQSectionProps) {
           {openFaq && (
             <div className="py-6 border-b border-gray-300">
               <p className="text-brand-dark-alt text-[18px] leading-relaxed">
-                Rates in {cityName} typically range from £30-£60 per hour, depending on the complexity of the task and the experience level of the Tasker.
+                Rates in {cityName} typically range from £30-£60 per hour, depending on the complexity of the task and the experience level of the 100 Handy Pro.
               </p>
             </div>
           )}
