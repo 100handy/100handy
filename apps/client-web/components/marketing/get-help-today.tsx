@@ -2,15 +2,15 @@ import Link from "next/link";
 
 const services = [
   { name: "Furniture Assembly", href: "/services/furniture-assembly/furniture-assembly" },
-  { name: "TV Mounting", href: "/services/tv-wall-mounting/tv-wall-mounting" },
-  { name: "Install Curtains and Blinds", href: "/services/tv-wall-mounting/install-curtains-blinds" },
-  { name: "Plumbing", href: "/services/plumbing/plumbing" },
+  { name: "TV Mounting", href: "/services/tv-wall-mounting/tv-mounting" },
+  { name: "Install Curtains and Blinds", href: "/services/tv-wall-mounting/curtains-and-blinds" },
+  { name: "Plumbing", href: "/services/plumbing/leak-fixing" },
   { name: "Light Installation", href: "/services/electrical/light-installation" },
-  { name: "Deep Cleaning", href: "/services/cleaning/deep-cleaning" },
+  { name: "Deep Cleaning", href: "/services/cleaning/deep-clean" },
   { name: "Gardening", href: "/services/outdoor/gardening" },
-  { name: "Gutter Cleaning", href: "/services/outdoor/gutter-cleaning" },
-  { name: "Hang Pictures", href: "/services/tv-wall-mounting/hang-pictures" },
-  { name: "Bed Assembly", href: "/services/furniture-assembly/bed-assembly" },
+  { name: "Gutter Cleaning", href: "/services/outdoor/roof-gutter-cleaning" },
+  { name: "Hang Pictures", href: "/services/tv-wall-mounting/hanging-pictures" },
+  { name: "IKEA Assembly", href: "/services/furniture-assembly/ikea-assembly" },
   { name: "Wardrobe Assembly", href: "/services/furniture-assembly/wardrobe-assembly" },
   { name: "Home Repairs", href: "/services/home-repairs/home-repairs" },
 ];
