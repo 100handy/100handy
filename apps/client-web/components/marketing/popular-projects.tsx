@@ -5,43 +5,81 @@ import Image from "next/image";
 import { useGroupedSubcategories } from "@shared/supabase";
 import { useMemo } from "react";
 
-// Map service names to their card images
+// Map service names to their card images (case-insensitive lookup via lowercase key)
 const serviceImages: Record<string, string> = {
-  "Furniture assembly": "/images/home/furniture-assembly.jpeg",
-  "Furniture Assembly": "/images/home/furniture-assembly.jpeg",
-  "IKEA assembly": "/images/home/furniture-assembly.jpeg",
-  "IKEA Assembly": "/images/home/furniture-assembly.jpeg",
-  "TV mounting": "/images/home/tv.jpeg",
-  "TV Mounting": "/images/home/tv.jpeg",
-  "Put up shelves": "/images/home/blinds.png",
-  "Minor home repairs": "/images/home/light.png",
-  "Deep clean": "/images/home/deepclean.png",
-  "Deep Clean": "/images/home/deepclean.png",
-  "Moving help": "/images/services/moving/moving-help.png",
-  "Moving Help": "/images/services/moving/moving-help.png",
-  "Gardening": "/images/home/gardening.jpeg",
-  "Leak fixing": "/images/home/plumber.jpeg",
-  "Leak Fixing": "/images/home/plumber.jpeg",
-  "Light installation": "/images/home/light.png",
-  "Light Installation": "/images/home/light.png",
-  "Gutter cleaning": "/images/home/guttercleaning.jpeg",
-  "Roof and Gutter Cleaning": "/images/home/guttercleaning.jpeg",
+  // Assembly
+  "furniture assembly": "/images/home/furniture-assembly.jpeg",
+  "ikea assembly": "/images/home/furniture-assembly.jpeg",
+  "office furniture assembly": "/images/services/assembly/office-furniture-assembly.jpeg",
+  "wardrobe assembly": "/images/services/assembly/wardrobe-assembly.png",
+  "crib assembly": "/images/services/assembly/crib-assembly.jpeg",
+  // Mounting
+  "tv mounting": "/images/home/tv.jpeg",
+  "wall mounting": "/images/services/mounting/wall-mounting.jpeg",
+  "shelf mounting": "/images/services/mounting/shelf-mounting.jpeg",
+  "put up shelves": "/images/services/mounting/shelf-mounting.jpeg",
+  "hanging pictures and artwork": "/images/services/mounting/hanging-pictures.jpeg",
+  "install curtains and blinds": "/images/home/blinds.png",
+  "curtains and blinds": "/images/home/blinds.png",
+  "light fixture installation": "/images/services/mounting/light-fixture-installation.jpeg",
+  // Home Repairs
+  "home repairs": "/images/services/main/home-repairs.jpeg",
+  "minor home repairs": "/images/services/home-repairs/minor-home-repairs.jpeg",
+  "door, cabinet, and furniture repairs": "/images/services/home-repairs/door-cabinet-furniture-repairs.jpeg",
+  "sealing and caulking": "/images/services/home-repairs/sealing-and-caulking.jpeg",
+  "flooring and tiling help": "/images/services/home-repairs/flooring-and-tiling.jpeg",
+  "light carpentry": "/images/services/home-repairs/light-carpentry.jpeg",
+  "window and blinds repair": "/images/services/home-repairs/window-blinds-repair.jpeg",
+  // Plumbing
+  "plumbing": "/images/home/plumber.jpeg",
+  "leak fixing": "/images/home/plumber.jpeg",
+  "drain unblocking": "/images/services/plumbing/drain-unblocking.jpeg",
+  "tap replacement": "/images/services/plumbing/tap-replacement.jpeg",
+  "washing machine installation": "/images/services/plumbing/washing-machine-installation.jpeg",
+  "water filter installation": "/images/services/plumbing/water-filter-installation.jpeg",
+  // Electrical
+  "light installation": "/images/home/light.png",
+  "sockets installation and repair": "/images/services/electrical/sockets-installation-repair.jpeg",
+  "switches installation and repair": "/images/services/electrical/switches-installation-repair.jpeg",
+  "cables repair": "/images/services/electrical/cables-repair.jpeg",
+  // Cleaning
+  "deep clean": "/images/home/deepclean.png",
+  "deep cleaning": "/images/home/deepclean.png",
+  "clean": "/images/services/cleaning/clean.jpeg",
+  "party clean up": "/images/services/cleaning/party-clean-up.jpeg",
+  "end of tenancy": "/images/services/cleaning/end-of-tenancy.jpeg",
+  "office cleaning": "/images/services/cleaning/office-cleaning.jpeg",
+  "airbnb cleaning": "/images/services/cleaning/airbnb-cleaning.jpeg",
+  // Moving
+  "moving help": "/images/services/moving/moving-help.png",
+  "packing and moving": "/images/services/moving/packing-and-moving.jpeg",
+  "van assisted moving help": "/images/services/moving/van-assisted-moving.jpeg",
+  "heavy lifting and loading": "/images/services/moving/heavy-lifting-loading.jpeg",
+  "full service movers": "/images/services/moving/full-service-movers.jpg",
+  // Outdoor
+  "gardening": "/images/home/gardening.jpeg",
+  "gutter cleaning": "/images/home/guttercleaning.jpeg",
+  "roof and gutter cleaning": "/images/home/guttercleaning.jpeg",
+  "landscaping": "/images/services/outdoor/landscaping.jpeg",
+  "lawn care": "/images/services/outdoor/lawn-care.jpeg",
+  "branch and hedge trimming": "/images/services/outdoor/branch-hedge-trimming.jpeg",
+  "leaf raking and removal": "/images/services/outdoor/leaf-raking-removal.jpeg",
 };
 
-// Fallback when DB is unavailable
+// Fallback when DB is unavailable — matches doc's Popular Services list
 const fallbackServices = [
-  { title: "Furniture assembly", category: "Furniture assembly", price: "From £36" },
-  { title: "IKEA assembly", category: "IKEA assembly", price: "From £36" },
-  { title: "TV mounting", category: "TV mounting", price: "From £45" },
-  { title: "Put up shelves", category: "Put up shelves", price: "From £35" },
-  { title: "Minor home repairs", category: "Minor home repairs", price: "From £40" },
-  { title: "Deep clean", category: "Deep clean", price: "From £55" },
-  { title: "Moving help", category: "Moving help", price: "From £45" },
+  { title: "Furniture Assembly", category: "Furniture Assembly", price: "From £36" },
+  { title: "TV Mounting", category: "TV Mounting", price: "From £45" },
+  { title: "Install Curtains and Blinds", category: "Install Curtains and Blinds", price: "From £35" },
+  { title: "Plumbing", category: "Plumbing", price: "From £40" },
+  { title: "Light Installation", category: "Light Installation", price: "From £38" },
+  { title: "Deep Clean", category: "Deep Clean", price: "From £55" },
   { title: "Gardening", category: "Gardening", price: "From £40" },
+  { title: "Gutter Cleaning", category: "Gutter Cleaning", price: "From £45" },
 ];
 
 function ServiceCardImage({ title }: { title: string }) {
-  const img = serviceImages[title];
+  const img = serviceImages[title.toLowerCase()];
 
   if (img) {
     return (

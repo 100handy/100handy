@@ -33,7 +33,7 @@ export function GettingStarted(): React.JSX.Element {
     <section className="bg-gray-50 py-20">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-12 text-center text-[36px] font-bold text-brand-dark-alt">
-          Getting started is simple
+          Getting Started is Simple
         </h2>
 
         <div className="grid gap-16 md:gap-12 lg:gap-16">

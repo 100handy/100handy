@@ -523,8 +523,8 @@ function BrowseProsContent() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
         {currentStep === 2 ? (
-          <div className="flex gap-8">
-            <aside className="w-80 flex-shrink-0 space-y-6">
+          <div className="flex flex-col md:flex-row gap-8">
+            <aside className="w-full md:w-80 flex-shrink-0 space-y-6">
               <BrowseFilters onFilterChange={handleFilterChange} />
               <PeaceOfMindCard />
             </aside>

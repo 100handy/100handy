@@ -30,8 +30,16 @@ function findServiceKey(
   slug: string
 ): string | undefined {
   if (categoryData[slug]) return slug;
-  return Object.keys(categoryData).find(
+  // Try partial match
+  const partial = Object.keys(categoryData).find(
     (key) => key.includes(slug) || slug.includes(key)
+  );
+  if (partial) return partial;
+  // Try match ignoring "-and-" (DB names include "and", data keys may not)
+  const normalized = slug.replace(/-and-/g, "-");
+  if (categoryData[normalized]) return normalized;
+  return Object.keys(categoryData).find(
+    (key) => key.replace(/-and-/g, "-").includes(normalized) || normalized.includes(key.replace(/-and-/g, "-"))
   );
 }
 

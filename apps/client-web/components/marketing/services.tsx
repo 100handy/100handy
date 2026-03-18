@@ -145,7 +145,7 @@ export function Services() {
                       : "font-medium text-brand-dark-alt hover:text-brand-terracotta"
                   }`}
                 >
-                  {category.name}
+                  {category.name === "Outdoor help" ? "Outdoor Help" : category.name}
                 </span>
               </button>
             ))

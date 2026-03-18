@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
 
@@ -34,20 +35,6 @@ const taskTypes = [
 
 // --- Components --- //
 
-const Header = () => {
-  return (
-    <header className="bg-white border-b border-gray-200">
-      <div className="max-w-[1920px] mx-auto px-8 py-4">
-        <div className="flex items-center">
-          <svg width="253" height="38" viewBox="0 0 253 38" className="text-brand-dark">
-            <text x="0" y="30" fontSize="32" fontWeight="bold" fill="currentColor">100HANDY</text>
-          </svg>
-        </div>
-      </div>
-    </header>
-  );
-};
-
 const HeroSection = () => {
   return (
     <section className="bg-white pt-16 pb-8">
@@ -76,50 +63,23 @@ const BenefitsSection = () => {
     <section className="bg-white py-16">
       <div className="max-w-[1920px] mx-auto px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-          <div className="text-center">
-            <div className="w-[160px] h-[160px] mx-auto mb-8 bg-brand-dark rounded-full flex items-center justify-center overflow-hidden">
-              <svg width="180" height="136" viewBox="0 0 180 136" className="text-gray-500">
-                <circle cx="50" cy="50" r="45" fill="currentColor" opacity="0.5" />
-                <polygon points="90,10 170,126 10,126" fill="currentColor" opacity="0.5" />
-              </svg>
+          {[
+            { num: 1, title: "Build Customer Loyalty", desc: "Offer a convenient, reliable solution for assembly and installation — so your customers feel supported from delivery to done." },
+            { num: 2, title: "Increase Sales & Reduce Returns", desc: "When customers know help is available, they're more likely to buy — and less likely to return items because setup felt overwhelming." },
+            { num: 3, title: "Seamless Integration", desc: "We can support scheduling and service workflows to make booking and payment feel effortless for your customers and your team." },
+          ].map((item) => (
+            <div key={item.num} className="text-center">
+              <div className="w-20 h-20 mx-auto mb-8 bg-brand-terracotta rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-[36px]">{item.num}</span>
+              </div>
+              <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4 leading-tight">
+                {item.title}
+              </h3>
+              <p className="text-brand-dark-alt text-[20px] leading-relaxed">
+                {item.desc}
+              </p>
             </div>
-            <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4 leading-tight">
-              Build Customer Loyalty
-            </h3>
-            <p className="text-brand-dark-alt text-[20px] leading-relaxed">
-              Offer a convenient, reliable solution for assembly and installation — so your customers feel supported from delivery to done.
-            </p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-[160px] h-[160px] mx-auto mb-8 bg-brand-dark rounded-full flex items-center justify-center overflow-hidden">
-              <svg width="180" height="136" viewBox="0 0 180 136" className="text-gray-500">
-                <circle cx="50" cy="50" r="45" fill="currentColor" opacity="0.5" />
-                <polygon points="90,10 170,126 10,126" fill="currentColor" opacity="0.5" />
-              </svg>
-            </div>
-            <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4 leading-tight">
-              Increase Sales & Reduce Returns
-            </h3>
-            <p className="text-brand-dark-alt text-[20px] leading-relaxed">
-              When customers know help is available, they&apos;re more likely to buy — and less likely to return items because setup felt overwhelming.
-            </p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-[160px] h-[160px] mx-auto mb-8 bg-brand-dark rounded-full flex items-center justify-center overflow-hidden">
-              <svg width="180" height="136" viewBox="0 0 180 136" className="text-gray-500">
-                <circle cx="50" cy="50" r="45" fill="currentColor" opacity="0.5" />
-                <polygon points="90,10 170,126 10,126" fill="currentColor" opacity="0.5" />
-              </svg>
-            </div>
-            <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4 leading-tight">
-              Seamless Integration
-            </h3>
-            <p className="text-brand-dark-alt text-[20px] leading-relaxed">
-              We can support scheduling and service workflows to make booking and payment feel effortless for your customers and your team.
-            </p>
-          </div>
+          ))}
         </div>
 
         <div className="text-center">
@@ -137,18 +97,6 @@ const BenefitsSection = () => {
   );
 };
 
-const DecorativeSection = () => {
-  return (
-    <section className="bg-brand-dark py-32">
-      <div className="max-w-[1920px] mx-auto px-8 flex items-center justify-center">
-        <svg width="710" height="536" viewBox="0 0 710 536" className="text-gray-500">
-          <circle cx="200" cy="150" r="120" fill="currentColor" opacity="0.5" />
-          <polygon points="355,0 710,536 0,536" fill="currentColor" opacity="0.4" />
-        </svg>
-      </div>
-    </section>
-  );
-};
 
 const FormSection = () => {
   const [formData, setFormData] = useState({
@@ -398,8 +346,8 @@ const FormSection = () => {
             {/* Footer Link */}
             <div>
               <p className="text-brand-dark-alt text-[20px]">
-                Looking to sign up as a Handy?{" "}
-                <Link href="/become-tasker" className="text-brand-terracotta underline hover:text-brand-coral">
+                Looking to sign up as a 100 Handy Pro?{" "}
+                <Link href="/become-100-handy-pro" className="text-brand-terracotta underline hover:text-brand-coral">
                   Submit your application here
                 </Link>
               </p>
@@ -427,7 +375,6 @@ export default function ForBusinessPage() {
       <Header />
       <HeroSection />
       <BenefitsSection />
-      <DecorativeSection />
       <FormSection />
       <Footer />
       <HelpButton />

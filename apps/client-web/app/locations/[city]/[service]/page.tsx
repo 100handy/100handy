@@ -260,7 +260,7 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
       {/* Hero Section */}
       <section className="bg-brand-dark py-16">
         <div className="max-w-[1920px] mx-auto px-8">
-          <div className="grid grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
               <h1 className="text-white font-bold text-[44px] leading-tight mb-6">
                 {service.name} Services in<br />
@@ -319,7 +319,7 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
             {city.taskerCount.toLocaleString()} featured {service.name} 100 Handy Pros in {city.name}
           </h2>
 
-          <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {taskers.map((tasker, index) => (
               <div key={index} className="border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-shadow">
                 <div className="flex items-start gap-4 mb-4">
@@ -355,7 +355,7 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
             Your satisfaction, guaranteed
           </h2>
 
-          <div className="grid grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">
             <div>
               <h3 className="text-brand-dark-alt font-bold text-[32px] mb-4">Happiness Pledge</h3>
               <p className="text-brand-dark-alt text-[21px] leading-relaxed">

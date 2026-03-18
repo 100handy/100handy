@@ -26,7 +26,7 @@ export function LandingServices(): React.JSX.Element {
       <div className="mx-auto max-w-[1920px] px-8">
         {/* Main Categories with Icons Above */}
         <div className="mb-6">
-          <div className="flex items-center justify-center gap-8">
+          <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
             {mainCategories.map((category) => (
               <button
                 key={category.name}

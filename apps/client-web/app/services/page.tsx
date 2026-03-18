@@ -9,15 +9,24 @@ import type { CategoryWithChildren } from "@/lib/supabase/types";
 import { getCategoryIcon } from "@/components/icons/category-icons";
 import { getCategoryRouteSlug, getServiceRoute } from "@/lib/service-routes";
 
-// Map category names to their card images
+// Map category names to their card images (includes both DB and fallback names)
 const categoryImages: Record<string, string> = {
+  "Assembly": "/images/services/main/assembly.png",
   "Furniture Assembly": "/images/services/main/assembly.png",
+  "Mounting": "/images/services/main/mounting.png",
   "TV & Wall Mounting": "/images/services/main/mounting.png",
+  "Home Repairs": "/images/services/main/home-repairs.jpeg",
   "Home Repairs & Fixes": "/images/services/main/home-repairs.jpeg",
   "Plumbing": "/images/services/main/plumbing.jpeg",
+  "Plumbers": "/images/services/main/plumbing.jpeg",
+  "Electrical": "/images/services/main/electrical.jpeg",
   "Electricians": "/images/services/main/electrical.jpeg",
+  "Cleaning": "/images/services/main/cleaning.jpeg",
   "Sparkle Clean": "/images/services/main/cleaning.jpeg",
+  "Moving": "/images/services/main/moving.jpeg",
   "Packing & Moving": "/images/services/main/moving.jpeg",
+  "Outdoor help": "/images/services/main/outdoor.png",
+  "Outdoor Help": "/images/services/main/outdoor.png",
   "The Great Outdoors": "/images/services/main/outdoor.png",
 };
 

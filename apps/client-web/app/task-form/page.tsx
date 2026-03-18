@@ -590,7 +590,7 @@ function TaskFormContent() {
             </Link>
 
             {/* Progress Stepper */}
-            <div className="flex items-center gap-2 flex-1 max-w-2xl mx-8">
+            <div className="flex items-center gap-2 flex-1 max-w-2xl mx-2 sm:mx-8">
               {steps.map((step, index) => (
                 <div key={step.number} className="flex items-center flex-1">
                   {/* Step Circle */}
@@ -652,7 +652,7 @@ function TaskFormContent() {
               ) : (
                 <>
                   <p className="text-brand-dark text-sm">
-                    Tell us about your task. We use these details to show Taskers in your area
+                    Tell us about your task. We use these details to show 100 Handy Pros in your area
                   </p>
                   <p className="text-brand-dark text-sm">Who fit your needs.</p>
                 </>
