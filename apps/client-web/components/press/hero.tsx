@@ -2,9 +2,9 @@
 
 export function PressHero(): React.JSX.Element {
   return (
-    <section className="relative bg-[#3D4539] py-32">
+    <section className="relative bg-[#3D4539] py-16">
       <div className="mx-auto max-w-[1920px] px-8">
-        <div className="relative flex min-h-[400px] items-center justify-center">
+        <div className="relative flex min-h-[470px] items-center justify-center">
           {/* Decorative shapes - matching Figma design */}
           <div className="absolute left-1/2 top-[15%] h-36 w-36 -translate-x-36 rounded-full bg-[#5A6357]/70" />
           <div

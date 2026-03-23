@@ -30,7 +30,7 @@ export function ConfirmDetails({
         </h3>
 
         <p className="mb-4 text-[16px] text-brand-dark">
-          You may see a temporary hold on your payment method in the amount of your Tasker's hourly rate. Don't worry - you're only billed when your task is complete!
+          You may see a temporary hold on your payment method in the amount of your 100 Handy Pro's hourly rate. Don't worry - you're only billed when your task is complete!
         </p>
 
         {/* Payment already authorized - show retry booking button */}

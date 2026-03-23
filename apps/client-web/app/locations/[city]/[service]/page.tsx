@@ -40,7 +40,7 @@ const serviceData: Record<string, { name: string; description: string; category:
   },
   "home-repairs": {
     name: "Home Repairs",
-    description: "From minor fixes to major repairs, our skilled Taskers can handle all your home maintenance needs.",
+    description: "From minor fixes to major repairs, our skilled 100 Handy Pros can handle all your home maintenance needs.",
     category: "Repairs"
   },
   "plumbing": {
@@ -76,6 +76,304 @@ const serviceData: Record<string, { name: string; description: string; category:
   "great-outdoors": {
     name: "The Great Outdoors",
     description: "From quick tidy-ups to full garden care, our outdoor pros help you keep things clean, trimmed, and looking their best—season after season.",
+    category: "Outdoor"
+  },
+  // Assembly sub-services
+  "ikea-assembly": {
+    name: "IKEA Assembly",
+    description: "Expert IKEA furniture assembly by trusted 100 Handy Pros. We handle the instructions so you don't have to.",
+    category: "Assembly"
+  },
+  "office-furniture-assembly": {
+    name: "Office Furniture Assembly",
+    description: "Get your workspace set up quickly with professional office furniture assembly from local 100 Handy Pros.",
+    category: "Assembly"
+  },
+  "wardrobe-assembly": {
+    name: "Wardrobe Assembly",
+    description: "Professional wardrobe assembly services. Our 100 Handy Pros build wardrobes of all sizes with precision.",
+    category: "Assembly"
+  },
+  "crib-assembly": {
+    name: "Crib Assembly",
+    description: "Safe, secure crib assembly by experienced 100 Handy Pros. Peace of mind for your little one.",
+    category: "Assembly"
+  },
+  // Mounting sub-services
+  "tv-wall-mounting": {
+    name: "TV & Wall Mounting",
+    description: "Professional TV and wall mounting services. Get that perfectly straight finish with the right tools and expertise.",
+    category: "Mounting"
+  },
+  "wall-mounting": {
+    name: "Wall Mounting",
+    description: "Secure wall mounting for shelves, art, mirrors, and more. Our 100 Handy Pros bring the right tools for every surface.",
+    category: "Mounting"
+  },
+  "shelf-mounting": {
+    name: "Shelf Mounting",
+    description: "Get shelves mounted securely and level by experienced 100 Handy Pros in your area.",
+    category: "Mounting"
+  },
+  "put-up-shelves": {
+    name: "Put Up Shelves",
+    description: "Professional shelf installation services. Our 100 Handy Pros ensure your shelves are level and secure.",
+    category: "Mounting"
+  },
+  "hanging-pictures": {
+    name: "Hanging Pictures and Artwork",
+    description: "Hang pictures, mirrors, and artwork with precision. Our 100 Handy Pros ensure everything is straight and secure.",
+    category: "Mounting"
+  },
+  "hanging-pictures-and-artwork": {
+    name: "Hanging Pictures and Artwork",
+    description: "Hang pictures, mirrors, and artwork with precision. Our 100 Handy Pros ensure everything is straight and secure.",
+    category: "Mounting"
+  },
+  "light-fixture-installation": {
+    name: "Light Fixture Installation",
+    description: "Professional light fixture installation. Our 100 Handy Pros handle ceiling lights, pendant lights, and more.",
+    category: "Mounting"
+  },
+  "curtains-and-blinds": {
+    name: "Install Curtains and Blinds",
+    description: "Get curtains and blinds installed professionally. Our 100 Handy Pros ensure a perfect fit every time.",
+    category: "Mounting"
+  },
+  "install-curtains-and-blinds": {
+    name: "Install Curtains and Blinds",
+    description: "Get curtains and blinds installed professionally. Our 100 Handy Pros ensure a perfect fit every time.",
+    category: "Mounting"
+  },
+  // Home Repairs sub-services
+  "minor-home-repairs": {
+    name: "Minor Home Repairs",
+    description: "Quick fixes and small repairs handled efficiently by experienced 100 Handy Pros.",
+    category: "Repairs"
+  },
+  "door-cabinet-furniture-repairs": {
+    name: "Door, Cabinet, and Furniture Repairs",
+    description: "Professional repair services for doors, cabinets, and furniture. Our 100 Handy Pros restore them to working order.",
+    category: "Repairs"
+  },
+  "door-cabinet-and-furniture-repairs": {
+    name: "Door, Cabinet, and Furniture Repairs",
+    description: "Professional repair services for doors, cabinets, and furniture. Our 100 Handy Pros restore them to working order.",
+    category: "Repairs"
+  },
+  "window-blinds-repair": {
+    name: "Window and Blinds Repair",
+    description: "Expert window and blinds repair by trusted 100 Handy Pros in your area.",
+    category: "Repairs"
+  },
+  "window-and-blinds-repair": {
+    name: "Window and Blinds Repair",
+    description: "Expert window and blinds repair by trusted 100 Handy Pros in your area.",
+    category: "Repairs"
+  },
+  "sealing-and-caulking": {
+    name: "Sealing and Caulking",
+    description: "Professional sealing and caulking services to keep your home watertight and well-maintained.",
+    category: "Repairs"
+  },
+  "flooring-and-tiling": {
+    name: "Flooring and Tiling Help",
+    description: "Get help with flooring and tiling projects from experienced 100 Handy Pros.",
+    category: "Repairs"
+  },
+  "flooring-and-tiling-help": {
+    name: "Flooring and Tiling Help",
+    description: "Get help with flooring and tiling projects from experienced 100 Handy Pros.",
+    category: "Repairs"
+  },
+  "light-carpentry": {
+    name: "Light Carpentry",
+    description: "Skilled carpentry for shelving, trim, minor woodwork, and more. Our 100 Handy Pros handle it with care.",
+    category: "Repairs"
+  },
+  // Plumbing sub-services
+  "leak-fixing": {
+    name: "Leak Fixing",
+    description: "Fast, reliable leak repair from experienced plumbing 100 Handy Pros in your area.",
+    category: "Plumbing"
+  },
+  "drain-unblocking": {
+    name: "Drain Unblocking",
+    description: "Professional drain unblocking to get your pipes flowing freely again.",
+    category: "Plumbing"
+  },
+  "tap-replacement": {
+    name: "Tap Replacement",
+    description: "Expert tap replacement services. Our 100 Handy Pros install new taps quickly and leak-free.",
+    category: "Plumbing"
+  },
+  "washing-machine-installation": {
+    name: "Washing Machine Installation",
+    description: "Professional washing machine installation and connection by experienced 100 Handy Pros.",
+    category: "Plumbing"
+  },
+  "water-filter-installation": {
+    name: "Water Filter Installation",
+    description: "Get water filters installed professionally for clean, filtered water at home.",
+    category: "Plumbing"
+  },
+  // Electrical sub-services
+  "light-installation": {
+    name: "Light Installation",
+    description: "Professional light installation services. Our electricians handle all types of light fixtures safely.",
+    category: "Electrical"
+  },
+  "sockets-installation-repair": {
+    name: "Sockets Installation and Repair",
+    description: "Expert socket installation and repair by qualified 100 Handy Pros.",
+    category: "Electrical"
+  },
+  "sockets-installation-and-repair": {
+    name: "Sockets Installation and Repair",
+    description: "Expert socket installation and repair by qualified 100 Handy Pros.",
+    category: "Electrical"
+  },
+  "switches-installation-repair": {
+    name: "Switches Installation and Repair",
+    description: "Professional switch installation and repair services from trusted 100 Handy Pros.",
+    category: "Electrical"
+  },
+  "switches-installation-and-repair": {
+    name: "Switches Installation and Repair",
+    description: "Professional switch installation and repair services from trusted 100 Handy Pros.",
+    category: "Electrical"
+  },
+  "cables-repair": {
+    name: "Cables Repair",
+    description: "Safe cable repair services from experienced electricians on the 100 Handy platform.",
+    category: "Electrical"
+  },
+  // Cleaning sub-services
+  "deep-clean": {
+    name: "Deep Clean",
+    description: "Thorough deep cleaning services that leave every corner spotless. Book a trusted 100 Handy Pro today.",
+    category: "Cleaning"
+  },
+  "deep-cleaning": {
+    name: "Deep Cleaning",
+    description: "Thorough deep cleaning services that leave every corner spotless. Book a trusted 100 Handy Pro today.",
+    category: "Cleaning"
+  },
+  "clean": {
+    name: "Home Cleaning",
+    description: "Professional home cleaning from trusted 100 Handy Pros. A cleaner space changes everything.",
+    category: "Cleaning"
+  },
+  "party-clean-up": {
+    name: "Party Clean Up",
+    description: "Post-party clean up handled quickly and thoroughly by local 100 Handy Pros.",
+    category: "Cleaning"
+  },
+  "end-of-tenancy": {
+    name: "End of Tenancy Cleaning",
+    description: "Professional end of tenancy cleaning to help you get your deposit back.",
+    category: "Cleaning"
+  },
+  "office-cleaning": {
+    name: "Office Cleaning",
+    description: "Keep your workspace spotless with professional office cleaning from 100 Handy Pros.",
+    category: "Cleaning"
+  },
+  "airbnb-cleaning": {
+    name: "Airbnb Cleaning",
+    description: "Reliable Airbnb turnover cleaning to keep your guests happy and your reviews stellar.",
+    category: "Cleaning"
+  },
+  // Moving sub-services
+  "van-assisted-moving": {
+    name: "Van Assisted Moving Help",
+    description: "Moving help with a van. Our 100 Handy Pros make your move easier with vehicle-assisted transport.",
+    category: "Moving"
+  },
+  "van-assisted-moving-help": {
+    name: "Van Assisted Moving Help",
+    description: "Moving help with a van. Our 100 Handy Pros make your move easier with vehicle-assisted transport.",
+    category: "Moving"
+  },
+  "moving-help": {
+    name: "Moving Help",
+    description: "Get reliable moving help from experienced 100 Handy Pros in your area.",
+    category: "Moving"
+  },
+  "waste-furniture-removal": {
+    name: "Waste and Furniture Removal",
+    description: "Professional waste and furniture removal services. Our 100 Handy Pros handle the heavy lifting.",
+    category: "Moving"
+  },
+  "waste-and-furniture-removal": {
+    name: "Waste and Furniture Removal",
+    description: "Professional waste and furniture removal services. Our 100 Handy Pros handle the heavy lifting.",
+    category: "Moving"
+  },
+  "heavy-lifting-loading": {
+    name: "Heavy Lifting and Loading",
+    description: "Need help with heavy items? Our 100 Handy Pros handle lifting and loading with care.",
+    category: "Moving"
+  },
+  "heavy-lifting-and-loading": {
+    name: "Heavy Lifting and Loading",
+    description: "Need help with heavy items? Our 100 Handy Pros handle lifting and loading with care.",
+    category: "Moving"
+  },
+  "packing-and-moving": {
+    name: "Packing and Moving",
+    description: "Full packing and moving support from experienced 100 Handy Pros to make your move stress-free.",
+    category: "Moving"
+  },
+  "full-service-movers": {
+    name: "Full Service Movers",
+    description: "End-to-end moving services. Our 100 Handy Pros handle everything from packing to unpacking.",
+    category: "Moving"
+  },
+  // Outdoor sub-services
+  "gardening": {
+    name: "Gardening",
+    description: "Professional gardening services from local 100 Handy Pros to keep your garden looking beautiful.",
+    category: "Outdoor"
+  },
+  "lawn-care": {
+    name: "Lawn Care",
+    description: "Expert lawn care services. Our 100 Handy Pros keep your lawn healthy and well-maintained.",
+    category: "Outdoor"
+  },
+  "landscaping": {
+    name: "Landscaping",
+    description: "Transform your outdoor space with professional landscaping from experienced 100 Handy Pros.",
+    category: "Outdoor"
+  },
+  "leaf-raking-removal": {
+    name: "Leaf Raking and Removal",
+    description: "Efficient leaf raking and removal services to keep your garden tidy all year round.",
+    category: "Outdoor"
+  },
+  "leaf-raking-and-removal": {
+    name: "Leaf Raking and Removal",
+    description: "Efficient leaf raking and removal services to keep your garden tidy all year round.",
+    category: "Outdoor"
+  },
+  "roof-gutter-cleaning": {
+    name: "Roof and Gutter Cleaning",
+    description: "Professional roof and gutter cleaning to prevent blockages and water damage.",
+    category: "Outdoor"
+  },
+  "roof-and-gutter-cleaning": {
+    name: "Roof and Gutter Cleaning",
+    description: "Professional roof and gutter cleaning to prevent blockages and water damage.",
+    category: "Outdoor"
+  },
+  "branch-hedge-trimming": {
+    name: "Branch and Hedge Trimming",
+    description: "Expert branch and hedge trimming to keep your garden neat and well-shaped.",
+    category: "Outdoor"
+  },
+  "branch-and-hedge-trimming": {
+    name: "Branch and Hedge Trimming",
+    description: "Expert branch and hedge trimming to keep your garden neat and well-shaped.",
     category: "Outdoor"
   },
 };
@@ -237,7 +535,7 @@ interface LocationServiceContentProps {
   }>;
 }
 
-function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers }: LocationServiceContentProps) {
+function LocationServiceContent({ city, service, citySlug, taskers }: LocationServiceContentProps) {
   return (
     <div className="bg-white min-h-screen">
       <Header />
@@ -297,9 +595,9 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
                 </div>
               </div>
 
-              <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+              <Link href="/task-form" className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
                 Book Now
-              </button>
+              </Link>
             </div>
 
             <div className="flex items-center justify-center">
@@ -378,9 +676,6 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
         </div>
       </section>
 
-      {/* FAQ */}
-      <FAQSection serviceName={service.name} cityName={city.name} />
-
       {/* How It Works */}
       <section className="bg-brand-dark py-20">
         <div className="max-w-[1920px] mx-auto px-8">
@@ -417,13 +712,16 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
             </div>
 
             <div className="mt-10 text-center">
-              <button className="bg-brand-terracotta hover:bg-brand-terracotta/90 text-white font-semibold py-3 px-10 rounded-md transition-colors text-[20px]">
+              <Link href="/task-form" className="inline-block bg-brand-terracotta hover:bg-brand-terracotta/90 text-white font-semibold py-3 px-10 rounded-md transition-colors text-[20px]">
                 Book Now
-              </button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      <FAQSection serviceName={service.name} cityName={city.name} />
 
       <Footer />
 

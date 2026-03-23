@@ -281,7 +281,7 @@ export function SelectDateTimeModal({
                     </select>
                   ) : (
                     <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                      This day doesn&rsquo;t have availability yet. Try another date or message the Tasker.
+                      This day doesn&rsquo;t have availability yet. Try another date or message the 100 Handy Pro.
                     </p>
                   )}
                 </div>
@@ -324,7 +324,7 @@ export function SelectDateTimeModal({
                   />
                 </svg>
                 <p className="text-xs leading-tight text-gray-600">
-                  Next, confirm your details to get connected with your Tasker.
+                  Next, confirm your details to get connected with your 100 Handy Pro.
                 </p>
               </div>
             </div>

@@ -9,7 +9,7 @@ import { useMemo } from "react";
 const serviceImages: Record<string, string> = {
   // Assembly
   "furniture assembly": "/images/home/furniture-assembly.jpeg",
-  "ikea assembly": "/images/home/furniture-assembly.jpeg",
+  "ikea assembly": "/images/services/assembly/ikea-assembly.jpeg",
   "office furniture assembly": "/images/services/assembly/office-furniture-assembly.jpeg",
   "wardrobe assembly": "/images/services/assembly/wardrobe-assembly.png",
   "crib assembly": "/images/services/assembly/crib-assembly.jpeg",

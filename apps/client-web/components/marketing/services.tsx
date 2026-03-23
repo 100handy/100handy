@@ -101,7 +101,7 @@ export function Services() {
       <div className="mx-auto max-w-[1920px] px-8">
         {/* Main Categories with Icons Above */}
         <div className="mb-6">
-          <div className="flex items-center justify-center gap-8 flex-wrap">
+          <div className="flex items-center justify-center gap-10 flex-wrap">
             {loadingMainCategories ? (
               <>
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -123,14 +123,14 @@ export function Services() {
                   const Icon = getCategoryIcon(category.name);
                   return (
                     <div
-                      className={`flex h-16 w-16 items-center justify-center rounded-full transition-all ${
+                      className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${
                         activeCategory === category.name
                           ? "bg-brand-terracotta/10"
                           : "bg-gray-100 hover:bg-gray-200"
                       }`}
                     >
                       <Icon
-                        className={`h-8 w-8 ${
+                        className={`h-10 w-10 ${
                           activeCategory === category.name ? "text-brand-terracotta" : "text-gray-500"
                         }`}
                       />

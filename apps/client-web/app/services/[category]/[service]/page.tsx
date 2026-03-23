@@ -109,7 +109,7 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
           ctaImage={serviceData.contentImage}
         />
         <FAQs service={serviceData.title} faqs={serviceData.faqs} />
-        <Cities service={serviceData.title} />
+        <Cities service={serviceData.title} serviceSlug={service} />
       </main>
       <Footer />
     </div>

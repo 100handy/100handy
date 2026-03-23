@@ -36,7 +36,7 @@ const ServicesSection = () => {
     <section className="bg-white py-20">
       <div className="max-w-[1920px] mx-auto px-8">
         <h1 className="text-[44px] font-bold text-brand-dark-alt mb-16">
-          Find the best home services taskers nearby
+          Find the Best Home Services Pros Nearby
         </h1>
 
         <div className="space-y-6">

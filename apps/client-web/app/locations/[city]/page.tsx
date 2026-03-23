@@ -141,7 +141,7 @@ export default async function CityPage({ params }: CityPageProps) {
           <p className="text-white text-[24px] mb-6 leading-relaxed max-w-2xl">
             Browse {cityInfo.taskerCount.toLocaleString()}+ trusted 100 Handy Pros ready to help with your home projects in {cityInfo.name}.
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-8">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
                 <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -151,6 +151,9 @@ export default async function CityPage({ params }: CityPageProps) {
             </div>
             <span className="text-white text-[20px] font-semibold">{cityInfo.reviewCount} Reviews</span>
           </div>
+          <Link href="/task-form" className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+            Book Now
+          </Link>
         </div>
       </section>
 

@@ -63,7 +63,7 @@ export function TaskerCard({
               Select & Continue
             </button>
             <p className="text-gray-600 text-xs text-center leading-tight max-w-[144px]">
-              You can chat with your Tasker, adjust task details, or change task time after booking
+              You can chat with your 100 Handy Pro, adjust task details, or change task time after booking
             </p>
           </div>
 

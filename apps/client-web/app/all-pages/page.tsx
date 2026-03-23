@@ -29,9 +29,9 @@ export default function AllPagesPage() {
       { path: "/book-task", label: "Book Task" },
       { path: "/task-form", label: "Task Form" },
     ],
-    "Tasker Pages": [
-      { path: "/become-tasker", label: "Become Tasker" },
-      { path: "/elite-taskers", label: "Elite Taskers" },
+    "100 Handy Pro Pages": [
+      { path: "/become-100-handy-pro", label: "Become 100 Handy Pro" },
+      { path: "/elite-taskers", label: "100 Handy Stars" },
     ],
     "Location-Based Pages": [
       { path: "/handyman-london", label: "Handyman London" },

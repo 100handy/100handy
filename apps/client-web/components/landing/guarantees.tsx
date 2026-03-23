@@ -30,7 +30,7 @@ export function LandingGuarantees(): React.JSX.Element {
             </p>
           </div>
 
-          {/* ID-Checked Taskers */}
+          {/* ID-Checked Pros */}
           <div>
             <div className="mb-4 flex items-center justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
@@ -40,10 +40,10 @@ export function LandingGuarantees(): React.JSX.Element {
               </div>
             </div>
             <h3 className="mb-3 text-center text-[27px] font-medium text-brand-dark-alt">
-              ID- Checked Taskers
+              ID-Checked 100 Handy Pros
             </h3>
             <p className="text-center text-[17px] leading-relaxed text-black">
-              Taskers are always identity checked before joining the platform.
+              100 Handy Pros are always identity checked before joining the platform.
             </p>
           </div>
 

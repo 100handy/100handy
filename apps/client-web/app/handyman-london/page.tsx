@@ -193,7 +193,7 @@ const FeaturedTaskersSection = () => {
 
         <div className="text-center">
           <button className="border-2 border-brand-dark-alt text-brand-dark-alt hover:bg-brand-dark-alt hover:text-white font-semibold py-3 px-10 rounded-md transition-colors text-[18px]">
-            Search all Taskers
+            Search all 100 Handy Pros
           </button>
         </div>
       </div>
@@ -299,7 +299,7 @@ const HowItWorksSection = () => {
                   <span className="text-white text-[33px] font-bold">1</span>
                 </div>
                 <p className="text-brand-dark-alt text-[20px] leading-relaxed pt-2">
-                  Choose a Tasker by price,<br />
+                  Choose a 100 Handy Pro by price,<br />
                   skills, and reviews.
                 </p>
               </div>

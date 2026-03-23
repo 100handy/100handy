@@ -296,9 +296,9 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
 
       <div className="border-t border-gray-200" />
 
-      {/* Tasker Type */}
+      {/* Pro Type */}
       <div>
-        <h3 className="text-brand-dark-alt text-sm font-semibold mb-3">Tasker type</h3>
+        <h3 className="text-brand-dark-alt text-sm font-semibold mb-3">Pro type</h3>
         <label className="flex items-center gap-2.5 cursor-pointer">
           <input
             type="checkbox"
@@ -306,7 +306,7 @@ export function BrowseFilters({ onFilterChange }: BrowseFiltersProps) {
             onChange={(e) => setIsEliteTasker(e.target.checked)}
             className="w-4 h-4 rounded-sm border border-gray-300 accent-brand-dark-alt focus:outline-none focus:ring-1 focus:ring-brand-dark-alt"
           />
-          <span className="text-brand-dark-alt text-sm">Elite Tasker</span>
+          <span className="text-brand-dark-alt text-sm">100 Handy Star</span>
         </label>
       </div>
 

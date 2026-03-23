@@ -286,7 +286,7 @@ export default function ProfessionalDetailPage({
                   Select & Continue
                 </button>
                 <p className="text-gray-500 text-xs text-center mt-4">
-                  You can chat with your Tasker and adjust task details after booking
+                  You can chat with your 100 Handy Pro and adjust task details after booking
                 </p>
               </div>
             </div>

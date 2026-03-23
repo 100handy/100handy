@@ -4,6 +4,7 @@ import Link from "next/link";
 
 interface CitiesProps {
   service: string;
+  serviceSlug?: string;
 }
 
 // Helper function to create slug from city name
@@ -32,8 +33,8 @@ const citiesColumns = [
   ["Reading", "Cambridge", "Oxford", "Norwich", "Exeter"],
 ];
 
-export function Cities({ service }: CitiesProps): React.JSX.Element {
-  const serviceSlug = slugifyService(service);
+export function Cities({ service, serviceSlug: propSlug }: CitiesProps): React.JSX.Element {
+  const serviceSlug = propSlug || slugifyService(service);
 
   return (
     <section className="bg-[#F5F3F1] py-20">

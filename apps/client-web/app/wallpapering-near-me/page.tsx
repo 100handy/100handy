@@ -128,7 +128,7 @@ export default function WallpaperingNearMe() {
     {
       question: "What's included in 100Handy wallpaper task?",
       answer:
-        "Our wallpaper service includes surface preparation, professional wallpaper application, trimming, and cleanup. You provide the wallpaper, and our skilled Taskers handle the rest!",
+        "Our wallpaper service includes surface preparation, professional wallpaper application, trimming, and cleanup. You provide the wallpaper, and our skilled 100 Handy Pros handle the rest!",
     },
   ];
 
@@ -199,7 +199,7 @@ export default function WallpaperingNearMe() {
                     </svg>
                   </div>
                   <p className="text-lg leading-relaxed">
-                    Skilled Taskers provide precise and flawless wallpaper
+                    Skilled 100 Handy Pros provide precise and flawless wallpaper
                     application.
                   </p>
                 </div>
@@ -218,7 +218,7 @@ export default function WallpaperingNearMe() {
                     </svg>
                   </div>
                   <p className="text-lg leading-relaxed">
-                    Tasker can handle all types of wallpaper patterns and
+                    100 Handy Pro can handle all types of wallpaper patterns and
                     textures.
                   </p>
                 </div>
@@ -627,7 +627,7 @@ export default function WallpaperingNearMe() {
               </h3>
               <p className="text-brand-dark mb-6 leading-relaxed">
                 Whatever it is that needs doing, chances are great that there's
-                a Tasker in London who'd love to help you with it! Since there's
+                a 100 Handy Pro in London who'd love to help you with it! Since there's
                 a wide variety of home improvement tasks available, here's a
                 brief list of the most popular ones on 100handy:
               </p>
@@ -636,10 +636,10 @@ export default function WallpaperingNearMe() {
                 The expertise you need
               </h3>
               <p className="text-brand-dark mb-6 leading-relaxed">
-                Before hiring a Tasker on 100handy, check out their reviews,
+                Before hiring a 100 Handy Pro on 100handy, check out their reviews,
                 ratings, and the tasks they've completed for other customers.
-                Get more information on each Tasker by going to their unique
-                profile page. When you like what you see, pick the Tasker that's
+                Get more information on each 100 Handy Pro by going to their unique
+                profile page. When you like what you see, pick the 100 Handy Pro that's
                 right for you, and they'll get to work on your home project!
               </p>
 
@@ -649,14 +649,14 @@ export default function WallpaperingNearMe() {
               <p className="text-brand-dark mb-6 leading-relaxed">
                 Same-day booking is available on 100handy. You can also browse
                 prices and choose a time that works best for you and your
-                Tasker. Need help? Rely on our dedicated customer support team
-                to assist with any questions. Communication with your Tasker is
+                100 Handy Pro. Need help? Rely on our dedicated customer support team
+                to assist with any questions. Communication with your 100 Handy Pro is
                 easy on 100handy—you can chat to sort out the details before
                 booking, or contact them after the job.
               </p>
 
               <h3 className="text-brand-dark-alt font-bold text-2xl mb-4 mt-8">
-                There's a tasker map
+                There's a pro map
               </h3>
               <p className="text-brand-dark leading-relaxed">
                 Convenient services that fit your schedule and budget are just a

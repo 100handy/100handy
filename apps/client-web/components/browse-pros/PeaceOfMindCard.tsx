@@ -19,7 +19,7 @@ export function PeaceOfMindCard() {
       </svg>
       <div>
         <p className="text-brand-dark-alt text-sm leading-relaxed">
-          Always have peace of mind. All Taskers undergo ID checks.
+          Always have peace of mind. All 100 Handy Pros undergo ID checks.
         </p>
         <button className="text-brand-terracotta text-sm font-medium mt-1 hover:underline">
           Learn More

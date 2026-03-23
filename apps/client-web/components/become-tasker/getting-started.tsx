@@ -36,11 +36,14 @@ export function GettingStarted(): React.JSX.Element {
           Getting Started is Simple
         </h2>
 
-        <div className="grid gap-16 md:gap-12 lg:gap-16">
+        <div className="grid gap-8 md:gap-6 lg:gap-8">
           {/* First row - 3 items */}
-          <div className="grid gap-12 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-3">
             {steps.slice(0, 3).map((step) => (
-              <div key={step.number}>
+              <div
+                key={step.number}
+                className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
+              >
                 <h3 className="mb-4 text-[28px] font-bold text-brand-dark-alt">
                   {step.number}. {step.title}
                 </h3>
@@ -51,10 +54,13 @@ export function GettingStarted(): React.JSX.Element {
             ))}
           </div>
 
-          {/* Second row - 2 items (centered) */}
-          <div className="grid gap-12 md:grid-cols-2 lg:max-w-3xl">
+          {/* Second row - 2 items */}
+          <div className="grid gap-8 md:grid-cols-2 lg:max-w-3xl">
             {steps.slice(3).map((step) => (
-              <div key={step.number}>
+              <div
+                key={step.number}
+                className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
+              >
                 <h3 className="mb-4 text-[28px] font-bold text-brand-dark-alt">
                   {step.number}. {step.title}
                 </h3>
@@ -69,4 +75,3 @@ export function GettingStarted(): React.JSX.Element {
     </section>
   );
 }
-

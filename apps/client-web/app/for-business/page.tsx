@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
@@ -37,21 +38,31 @@ const taskTypes = [
 
 const HeroSection = () => {
   return (
-    <section className="bg-white pt-16 pb-8">
-      <div className="max-w-[1920px] mx-auto px-8 text-center">
-        <h1 className="text-brand-dark-alt font-bold text-[42px] mb-6">
-          Boost sales — without adding operational load
-        </h1>
-        <p className="text-brand-dark-alt text-[24px] mb-10">
-          100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation — so customers get a complete &quot;buy-to-done&quot; experience.
-        </p>
-        <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px] mb-4">
-          Get in touch to learn more
-        </button>
-        <div className="flex justify-center">
-          <svg className="w-12 h-16 text-brand-terracotta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
+    <section className="relative bg-brand-dark py-16">
+      <div className="relative flex min-h-[470px] items-center justify-center">
+        {/* Hero background image */}
+        <div className="absolute inset-0 overflow-hidden">
+          <Image
+            src="/images/hero/partnerheroimage.png"
+            alt="Partner with 100 Handy"
+            fill
+            className="object-cover opacity-30"
+            priority
+            sizes="100vw"
+          />
+        </div>
+
+        {/* Highlighted text overlay */}
+        <div className="relative z-10 mx-auto max-w-4xl px-8 text-center">
+          <h1 className="mb-6 text-[48px] font-bold leading-tight text-white">
+            Boost sales — without adding operational load
+          </h1>
+          <p className="mb-10 text-[22px] leading-relaxed text-white/90">
+            100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation — so customers get a complete &quot;buy-to-done&quot; experience.
+          </p>
+          <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+            Get in touch to learn more
+          </button>
         </div>
       </div>
     </section>
