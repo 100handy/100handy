@@ -38,18 +38,18 @@ export default function BlogPage() {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative bg-brand-dark py-16">
-          <div className="relative flex min-h-[470px] items-center justify-center">
-            {/* Background image */}
-            <div className="absolute inset-0 overflow-hidden">
-              <Image
-                src="/images/hero/heroimage2.jpeg"
-                alt="100 Handy Blog"
-                fill
-                className="object-cover opacity-30"
-                sizes="100vw"
-              />
-            </div>
+        <section className="relative bg-brand-dark">
+          {/* Background image - covers entire section */}
+          <div className="absolute inset-0 overflow-hidden">
+            <Image
+              src="/images/hero/heroimage2.jpeg"
+              alt="100 Handy Blog"
+              fill
+              className="object-cover opacity-30"
+              sizes="100vw"
+            />
+          </div>
+          <div className="relative flex min-h-[530px] items-center justify-center">
 
             <div className="relative z-10 text-center">
               <h1 className="mb-6 text-[67px] font-bold leading-none text-white">
