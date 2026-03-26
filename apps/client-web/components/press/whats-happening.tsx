@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 export function WhatsHappening(): React.JSX.Element {
   return (
     <section className="bg-[#F5F0E8] py-20">
@@ -19,16 +21,15 @@ export function WhatsHappening(): React.JSX.Element {
             </button>
           </div>
 
-          {/* Right side - Decorative card with border */}
+          {/* Right side - Illustration */}
           <div className="rounded-3xl bg-[#F5F0E8] p-2">
-            <div className="relative h-[400px] overflow-hidden rounded-[20px] bg-[#3D4539]">
-              {/* Decorative shapes */}
-              <div className="absolute right-[30%] top-[25%] h-32 w-32 rounded-full bg-[#5A6357]/60" />
-              <div
-                className="absolute bottom-[20%] right-[20%] h-44 w-44 bg-[#6B7564]/60"
-                style={{
-                  clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-                }}
+            <div className="relative h-[400px] overflow-hidden rounded-[20px] bg-[#E0D5C8]">
+              <Image
+                src="/images/press/we-bring-people-together.jpeg"
+                alt="What's happening at 100 Handy"
+                fill
+                className="object-cover"
+                sizes="(min-width: 1024px) 50vw, 100vw"
               />
             </div>
           </div>

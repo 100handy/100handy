@@ -1,19 +1,20 @@
 "use client";
 
+import Image from "next/image";
+
 export function WhatIsHandy(): React.JSX.Element {
   return (
     <section className="bg-white py-20">
       <div className="mx-auto max-w-[1920px] px-8">
         <div className="grid items-center gap-12 lg:grid-cols-[1.5fr_1fr]">
-          {/* Left side - Dark decorative card */}
-          <div className="relative h-[400px] overflow-hidden rounded-3xl bg-brand-dark">
-            {/* Decorative shapes */}
-            <div className="absolute left-[25%] top-[30%] h-32 w-32 rounded-full bg-[#5A6357]/50" />
-            <div
-              className="absolute bottom-[20%] right-[25%] h-44 w-44 bg-[#5A6357]/50"
-              style={{
-                clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-              }}
+          {/* Left side - Illustration */}
+          <div className="relative h-[400px] overflow-hidden rounded-3xl">
+            <Image
+              src="/images/become-tasker/what-is-100handy.jpeg"
+              alt="What is 100 Handy?"
+              fill
+              className="object-cover"
+              sizes="(min-width: 1024px) 60vw, 100vw"
             />
           </div>
 

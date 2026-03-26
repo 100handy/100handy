@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 export function TaskerTestimonial(): React.JSX.Element {
   return (
     <section className="bg-gray-50 py-20">
@@ -15,15 +17,14 @@ export function TaskerTestimonial(): React.JSX.Element {
             </p>
           </div>
 
-          {/* Right side - Dark decorative card */}
-          <div className="relative h-[400px] overflow-hidden rounded-3xl bg-brand-dark">
-            {/* Decorative shapes */}
-            <div className="absolute right-[30%] top-[25%] h-32 w-32 rounded-full bg-[#5A6357]/50" />
-            <div
-              className="absolute bottom-[20%] right-[20%] h-44 w-44 bg-[#5A6357]/50"
-              style={{
-                clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-              }}
+          {/* Right side - Illustration */}
+          <div className="relative h-[400px] overflow-hidden rounded-3xl">
+            <Image
+              src="/images/become-tasker/getting-started.jpeg"
+              alt="100 Handy Pro testimonial"
+              fill
+              className="object-cover"
+              sizes="(min-width: 1024px) 50vw, 100vw"
             />
           </div>
         </div>

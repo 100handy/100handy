@@ -1,4 +1,5 @@
 import { Header, Footer } from "@/components/layout";
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -39,14 +40,16 @@ export default function BlogPage() {
         {/* Hero Section */}
         <section className="relative bg-brand-dark py-16">
           <div className="relative flex min-h-[470px] items-center justify-center">
-            {/* Decorative shapes */}
-            <div className="absolute left-[10%] top-[15%] h-[217px] w-[218px] rounded-full bg-[#5A6357]/60" />
-            <div
-              className="absolute bottom-[5%] right-[8%] h-[442px] w-[512px] bg-[#5A6357]/60"
-              style={{
-                clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-              }}
-            />
+            {/* Background image */}
+            <div className="absolute inset-0 overflow-hidden">
+              <Image
+                src="/images/hero/heroimage2.jpeg"
+                alt="100 Handy Blog"
+                fill
+                className="object-cover opacity-30"
+                sizes="100vw"
+              />
+            </div>
 
             <div className="relative z-10 text-center">
               <h1 className="mb-6 text-[67px] font-bold leading-none text-white">

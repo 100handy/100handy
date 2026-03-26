@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Check } from "lucide-react";
 import { useHomeCategory } from "./home-category-context";
 
@@ -245,10 +246,40 @@ function getCategoryContent(categoryName: string): CategoryContent {
   );
 }
 
+const categoryImages: Record<string, string> = {
+  Assembly: "/images/homepage-hero-services/assembly.png",
+  "Furniture Assembly": "/images/homepage-hero-services/assembly.png",
+  Mounting: "/images/homepage-hero-services/mounting.jpeg",
+  "TV & Wall Mounting": "/images/homepage-hero-services/mounting.jpeg",
+  "Home Repairs": "/images/homepage-hero-services/homerepair.png",
+  "Home Repairs & Fixes": "/images/homepage-hero-services/homerepair.png",
+  Plumbing: "/images/homepage-hero-services/plumbing.jpeg",
+  Plumbers: "/images/homepage-hero-services/plumbing.jpeg",
+  Electrical: "/images/homepage-hero-services/electrical.jpeg",
+  Electricians: "/images/homepage-hero-services/electrical.jpeg",
+  Cleaning: "/images/homepage-hero-services/cleaning.png",
+  "Sparkle Clean": "/images/homepage-hero-services/cleaning.png",
+  Moving: "/images/homepage-hero-services/moving.jpeg",
+  "Packing & Moving": "/images/homepage-hero-services/moving.jpeg",
+  "Outdoor Help": "/images/homepage-hero-services/outdoorhelp.jpeg",
+  "The Great Outdoors": "/images/homepage-hero-services/outdoorhelp.jpeg",
+};
+
+function getCategoryImage(categoryName: string): string {
+  return (
+    categoryImages[categoryName] ??
+    Object.entries(categoryImages).find(([key]) =>
+      categoryName.toLowerCase().includes(key.toLowerCase())
+    )?.[1] ??
+    "/images/homepage-hero-services/assembly.png"
+  );
+}
+
 export function Stats() {
   const homeCategory = useHomeCategory();
   const activeCategory = homeCategory?.activeCategory ?? "Assembly";
   const content = getCategoryContent(activeCategory);
+  const categoryImage = getCategoryImage(activeCategory);
 
   return (
     <section className="bg-[#FAFAF9] py-16">
@@ -259,16 +290,14 @@ export function Stats() {
             {/* Beige background */}
             <div className="absolute inset-0 bg-brand-cream" />
             
-            {/* Dark green section on the right */}
-            <div className="absolute right-0 top-0 h-full w-[58%] rounded-l-[50px] bg-[#3C423B]">
-              {/* Circle decoration */}
-              <div className="absolute left-[20%] top-[30%] h-28 w-28 rounded-full bg-[#5A6357]/50" />
-              {/* Triangle decoration */}
-              <div 
-                className="absolute bottom-[20%] right-[25%] h-40 w-40 bg-[#5A6357]/50"
-                style={{ 
-                  clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-                }}
+            {/* Illustration on the right */}
+            <div className="absolute right-0 top-0 h-full w-[58%] overflow-hidden rounded-l-[50px] bg-[#E8E0D4]">
+              <Image
+                src={categoryImage}
+                alt={content.title}
+                fill
+                className="object-contain object-center"
+                sizes="(min-width: 1024px) 40vw, 100vw"
               />
             </div>
 
