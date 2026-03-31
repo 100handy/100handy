@@ -1,89 +1,40 @@
-import { Search, Plus } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { format } from 'date-fns'
 import Header from '@/components/header'
-
-const pages = [
-  {
-    title: 'Home',
-    slug: '/home',
-    status: 'Published',
-    statusColor: 'green',
-    lastModified: '2023-10-27',
-  },
-  {
-    title: 'About Us',
-    slug: '/about',
-    status: 'Published',
-    statusColor: 'green',
-    lastModified: '2023-10-25',
-  },
-  {
-    title: 'Services',
-    slug: '/services',
-    status: 'Draft',
-    statusColor: 'blue',
-    lastModified: '2023-10-28',
-  },
-  {
-    title: 'Contact Us',
-    slug: '/contact',
-    status: 'Published',
-    statusColor: 'green',
-    lastModified: '2023-10-22',
-  },
-  {
-    title: 'Privacy Policy',
-    slug: '/privacy-policy',
-    status: 'Pending Review',
-    statusColor: 'yellow',
-    lastModified: '2023-10-29',
-  },
-  {
-    title: 'Terms of Service',
-    slug: '/terms-of-service',
-    status: 'Published',
-    statusColor: 'green',
-    lastModified: '2023-10-20',
-  },
-]
+import { pageRegistry } from '@/lib/cms/page-registry'
+import { useAllPagesLastUpdated } from '@/lib/api/site-content'
 
 export default function ContentPagesPage() {
+  const { data: lastUpdated } = useAllPagesLastUpdated()
+
+  const pages = Object.entries(pageRegistry).map(([key, def]) => ({
+    key,
+    title: def.label,
+    slug: def.slug,
+    sectionCount: Object.keys(def.sections).length,
+    fieldCount: Object.values(def.sections).reduce(
+      (sum, s) => sum + Object.keys(s.fields).length,
+      0
+    ),
+    lastModified: lastUpdated?.[key] ?? null,
+  }))
+
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="All Pages" />
+      <Header title="Content Pages" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="w-full">
-
-          {/* Filters and Actions */}
-          <div className="flex items-center justify-between mb-6 gap-4">
-            <div className="flex items-center gap-4">
-              {/* Search */}
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search pages..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              {/* Status Filter */}
-              <select className="pl-3 pr-10 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                <option>All Statuses</option>
-                <option>Published</option>
-                <option>Draft</option>
-                <option>Pending Review</option>
-              </select>
+          {/* Search */}
+          <div className="flex items-center mb-6">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search pages..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
-
-            {/* Create Button */}
-            <Link
-              to="/content/pages/create"
-              className="bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4" />
-              Create New Page
-            </Link>
           </div>
 
           {/* Table */}
@@ -91,9 +42,10 @@ export default function ContentPagesPage() {
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                  <th className="px-6 py-3" scope="col">Page Title</th>
-                  <th className="px-6 py-3" scope="col">URL Slug</th>
-                  <th className="px-6 py-3" scope="col">Status</th>
+                  <th className="px-6 py-3" scope="col">Page</th>
+                  <th className="px-6 py-3" scope="col">URL</th>
+                  <th className="px-6 py-3" scope="col">Sections</th>
+                  <th className="px-6 py-3" scope="col">Fields</th>
                   <th className="px-6 py-3" scope="col">Last Modified</th>
                   <th className="px-6 py-3" scope="col">
                     <span className="sr-only">Actions</span>
@@ -101,32 +53,30 @@ export default function ContentPagesPage() {
                 </tr>
               </thead>
               <tbody>
-                {pages.map((page, index) => (
+                {pages.map((page) => (
                   <tr
-                    key={index}
+                    key={page.key}
                     className="bg-white dark:bg-gray-800/50 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600/50"
                   >
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                       {page.title}
                     </td>
-                    <td className="px-6 py-4">{page.slug}</td>
+                    <td className="px-6 py-4 text-gray-500">{page.slug}</td>
+                    <td className="px-6 py-4">{page.sectionCount}</td>
+                    <td className="px-6 py-4">{page.fieldCount}</td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${page.statusColor === 'green'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                          : page.statusColor === 'blue'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-                          }`}
-                      >
-                        {page.status}
-                      </span>
+                      {page.lastModified
+                        ? format(new Date(page.lastModified), 'MMM d, yyyy')
+                        : <span className="text-gray-400 italic">Not yet edited</span>
+                      }
                     </td>
-                    <td className="px-6 py-4">{page.lastModified}</td>
                     <td className="px-6 py-4 text-right">
-                      <a className="font-medium text-primary hover:underline" href="#">
+                      <Link
+                        to={`/content/pages/${page.key}`}
+                        className="font-medium text-primary hover:underline"
+                      >
                         Edit
-                      </a>
+                      </Link>
                     </td>
                   </tr>
                 ))}

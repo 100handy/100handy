@@ -21,6 +21,7 @@ import DataAnalyticsPage from '@/pages/insights/data-analytics'
 import PromotionsManagementPage from '@/pages/promotions/promotions-management'
 import ContentPagesPage from '@/pages/content/pages'
 import CreatePagePage from '@/pages/content/create-page'
+import PageEditorPage from '@/pages/content/page-editor'
 import BlogsPage from '@/pages/content/blogs'
 import MediaPage from '@/pages/content/media'
 import FAQsPage from '@/pages/content/faqs'
@@ -88,6 +89,7 @@ function App() {
           <Route path="/promotions/management" element={<PromotionsManagementPage />} />
           <Route path="/content/pages" element={<ContentPagesPage />} />
           <Route path="/content/pages/create" element={<CreatePagePage />} />
+          <Route path="/content/pages/:pageKey" element={<PageEditorPage />} />
           <Route path="/content/page-settings" element={<div className="p-6">Page Settings</div>} />
           <Route path="/content/blogs" element={<BlogsPage />} />
           <Route path="/content/media" element={<MediaPage />} />

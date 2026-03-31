@@ -47,25 +47,29 @@ COMMENT ON COLUMN bookings.original_hourly_rate_cents IS 'Original hourly rate b
 
 COMMENT ON TABLE recurring_booking_series IS 'Tracks metadata for recurring booking series';
 
--- Enable RLS on new table
+-- Enable RLS on new table (safe to run if already enabled)
 ALTER TABLE "public"."recurring_booking_series" ENABLE ROW LEVEL SECURITY;
 
--- RLS policies for recurring_booking_series
+-- RLS policies for recurring_booking_series (drop first to be idempotent)
+DROP POLICY IF EXISTS "Customers can view own recurring series" ON "public"."recurring_booking_series";
 CREATE POLICY "Customers can view own recurring series"
     ON "public"."recurring_booking_series"
     FOR SELECT
     USING (auth.uid() = customer_id);
 
+DROP POLICY IF EXISTS "Customers can create recurring series" ON "public"."recurring_booking_series";
 CREATE POLICY "Customers can create recurring series"
     ON "public"."recurring_booking_series"
     FOR INSERT
     WITH CHECK (auth.uid() = customer_id);
 
+DROP POLICY IF EXISTS "Customers can update own recurring series" ON "public"."recurring_booking_series";
 CREATE POLICY "Customers can update own recurring series"
     ON "public"."recurring_booking_series"
     FOR UPDATE
     USING (auth.uid() = customer_id);
 
+DROP POLICY IF EXISTS "Professionals can view assigned series" ON "public"."recurring_booking_series";
 CREATE POLICY "Professionals can view assigned series"
     ON "public"."recurring_booking_series"
     FOR SELECT
