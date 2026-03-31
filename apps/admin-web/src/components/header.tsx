@@ -34,7 +34,7 @@ export default function Header({ title }: HeaderProps) {
   const displayName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Admin'
     : 'Admin'
-  const displayEmail = user?.email || 'admin@taskconnect.com'
+  const displayEmail = user?.email || 'admin@100handy.com'
   const avatarUrl = profile?.avatar_url
 
   return (

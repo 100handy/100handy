@@ -116,7 +116,7 @@ export default function VerifyCodePage() {
                   fillRule="evenodd"
                 />
               </svg>
-              <h1 className="text-2xl font-bold">TaskPro Admin</h1>
+              <h1 className="text-2xl font-bold">100 Handy Admin</h1>
             </div>
           </div>
 

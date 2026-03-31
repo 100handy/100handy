@@ -165,7 +165,7 @@ export default function BlogsPage() {
                                     <input
                                         type="text"
                                         id="meta-title"
-                                        defaultValue="10 Home Renovation Tips for Success | TaskPro Blog"
+                                        defaultValue="10 Home Renovation Tips for Success | 100 Handy Blog"
                                         className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>

@@ -116,7 +116,7 @@ export default function Sidebar() {
                         />
                     </svg>
                 </div>
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">TaskGo</h1>
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">100 Handy</h1>
             </div>
 
             <nav className="flex-1 px-4 py-6 space-y-2">
