@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
@@ -128,12 +129,26 @@ const londonAreas = [
 
 const HeroSection = () => {
   return (
-    <section className="bg-brand-dark h-[261px] flex items-center justify-center">
-      <div className="max-w-[1920px] mx-auto px-8 flex items-center justify-center">
-        <svg width="250" height="190" viewBox="0 0 250 190" className="text-brand-sage">
-          <circle cx="100" cy="60" r="35" fill="currentColor" opacity="0.6" />
-          <polygon points="125,90 200,180 50,180" fill="currentColor" opacity="0.6" />
-        </svg>
+    <section className="relative bg-brand-dark">
+      <div className="absolute inset-0 overflow-hidden">
+        <Image
+          src="/images/hero/heroimage2.jpeg"
+          alt="Services by City"
+          fill
+          priority
+          className="object-cover opacity-30"
+          sizes="100vw"
+        />
+      </div>
+      <div className="relative flex min-h-[470px] items-center justify-center">
+        <div className="relative z-10 text-center px-8">
+          <h1 className="text-[67px] font-bold leading-none text-white mb-6">
+            Services by City
+          </h1>
+          <p className="text-[22px] text-white/80">
+            Find trusted 100 Handy Pros in your area
+          </p>
+        </div>
       </div>
     </section>
   );

@@ -13,6 +13,7 @@ export function PressHero(): React.JSX.Element {
               src="/images/press/pressheroimage.jpeg"
               alt="100 Handy Press"
               fill
+              priority
               className="object-cover opacity-30"
               sizes="100vw"
             />

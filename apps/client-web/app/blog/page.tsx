@@ -49,7 +49,7 @@ export default function BlogPage() {
               sizes="100vw"
             />
           </div>
-          <div className="relative flex min-h-[530px] items-center justify-center">
+          <div className="relative flex min-h-[470px] items-center justify-center">
 
             <div className="relative z-10 text-center">
               <h1 className="mb-6 text-[67px] font-bold leading-none text-white">

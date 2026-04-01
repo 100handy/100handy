@@ -132,7 +132,7 @@ function CategoryCard({ icon, title, bgColor }: { icon: React.ReactNode; title: 
 function CTACard({ title, description }: { title: string; description: string }) {
     return (
         <div className="bg-white rounded-lg shadow-[0px_3px_6px_0px_rgba(0,0,0,0.16)] hover:shadow-lg transition-shadow">
-            <div className="pt-[99px] pb-[0px] px-8">
+            <div className="p-10">
                 <h3 className="text-xl font-bold text-brand-dark leading-[1.221] mb-[43px]">{title}</h3>
                 <p className="text-xl font-medium text-brand-dark leading-[1.221]">{description}</p>
             </div>

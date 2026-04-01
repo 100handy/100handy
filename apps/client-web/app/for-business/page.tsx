@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 
 // --- Data --- //
 const countries = [
@@ -38,31 +39,31 @@ const taskTypes = [
 
 const HeroSection = () => {
   return (
-    <section className="relative bg-brand-dark py-16">
-      <div className="relative flex min-h-[470px] items-center justify-center">
-        {/* Hero background image */}
-        <div className="absolute inset-0 overflow-hidden">
-          <Image
-            src="/images/hero/partnerheroimage.png"
-            alt="Partner with 100 Handy"
-            fill
-            className="object-cover opacity-30"
-            priority
-            sizes="100vw"
-          />
-        </div>
+    <section className="relative">
+      <div className="absolute inset-0 overflow-hidden">
+        <Image
+          src="/images/hero/partnerheroimage.png"
+          alt="Partner with 100 Handy"
+          fill
+          className="object-cover"
+          priority
+          sizes="100vw"
+        />
+        {/* White overlay */}
+        <div className="absolute inset-0 bg-white/70" />
+      </div>
 
-        {/* Highlighted text overlay */}
+      <div className="relative flex min-h-[470px] items-center justify-center">
         <div className="relative z-10 mx-auto max-w-4xl px-8 text-center">
-          <h1 className="mb-6 text-[48px] font-bold leading-tight text-white">
+          <h1 className="mb-6 text-[48px] font-bold leading-tight text-brand-dark">
             Boost sales — without adding operational load
           </h1>
-          <p className="mb-10 text-[22px] leading-relaxed text-white/90">
+          <p className="mb-10 text-[22px] leading-relaxed text-brand-dark/80">
             100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation — so customers get a complete &quot;buy-to-done&quot; experience.
           </p>
-          <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+          <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px] h-auto">
             Get in touch to learn more
-          </button>
+          </Button>
         </div>
       </div>
     </section>
@@ -94,9 +95,9 @@ const BenefitsSection = () => {
         </div>
 
         <div className="text-center">
-          <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px] mb-4">
+          <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px] h-auto mb-4">
             Get in touch to learn more
-          </button>
+          </Button>
           <div className="flex justify-center">
             <svg className="w-12 h-16 text-brand-terracotta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -345,13 +346,13 @@ const FormSection = () => {
 
             {/* Submit Button */}
             <div>
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-4 px-12 rounded-md transition-colors text-[20px] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-4 px-12 rounded-md transition-colors text-[20px] h-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Submitting..." : "Submit"}
-              </button>
+              </Button>
             </div>
 
             {/* Footer Link */}

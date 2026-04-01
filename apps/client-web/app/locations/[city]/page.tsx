@@ -4,6 +4,16 @@ import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
+import { FurnitureAssemblyIcon } from "@/components/icons/categories/FurnitureAssemblyIcon";
+import { TvMountingIcon } from "@/components/icons/categories/TvMountingIcon";
+import { MinorHomeRepairsIcon } from "@/components/icons/categories/MinorHomeRepairsIcon";
+import { CleanIcon } from "@/components/icons/categories/CleanIcon";
+import { MovingHelpIcon } from "@/components/icons/categories/MovingHelpIcon";
+import { LightCarpentryIcon } from "@/components/icons/categories/LightCarpentryIcon";
+import { LeakFixingIcon } from "@/components/icons/categories/LeakFixingIcon";
+import { LightInstallationIcon } from "@/components/icons/categories/LightInstallationIcon";
+import { DeepCleanIcon } from "@/components/icons/categories/DeepCleanIcon";
+import { GardeningIcon } from "@/components/icons/categories/GardeningIcon";
 
 // City data mapping
 const cityData: Record<string, { name: string; taskerCount: number; reviewCount: string }> = {
@@ -89,6 +99,21 @@ const cityData: Record<string, { name: string; taskerCount: number; reviewCount:
   "sutton": { name: "Sutton", taskerCount: 440, reviewCount: "59k" },
 };
 
+type IconComponent = React.ComponentType<{ className?: string }>;
+
+const serviceIconMap: Record<string, IconComponent> = {
+  "furniture-assembly": FurnitureAssemblyIcon,
+  "tv-mounting": TvMountingIcon,
+  "handyman": MinorHomeRepairsIcon,
+  "home-cleaning": CleanIcon,
+  "help-moving": MovingHelpIcon,
+  "home-repairs-and-fixes": LightCarpentryIcon,
+  "plumbing": LeakFixingIcon,
+  "electrical": LightInstallationIcon,
+  "cleaning": DeepCleanIcon,
+  "outdoor": GardeningIcon,
+};
+
 // Services available in each city
 const services = [
   { slug: "furniture-assembly", name: "Furniture Assembly" },
@@ -141,7 +166,7 @@ export default async function CityPage({ params }: CityPageProps) {
           <p className="text-white text-[24px] mb-6 leading-relaxed max-w-2xl">
             Browse {cityInfo.taskerCount.toLocaleString()}+ trusted 100 Handy Pros ready to help with your home projects in {cityInfo.name}.
           </p>
-          <div className="flex items-center gap-2 mb-8">
+          <div className="flex items-center gap-2">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
                 <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -151,9 +176,6 @@ export default async function CityPage({ params }: CityPageProps) {
             </div>
             <span className="text-white text-[20px] font-semibold">{cityInfo.reviewCount} Reviews</span>
           </div>
-          <Link href="/task-form" className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
-            Book Now
-          </Link>
         </div>
       </section>
 
@@ -165,23 +187,26 @@ export default async function CityPage({ params }: CityPageProps) {
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {services.map((service) => (
-              <Link
-                key={service.slug}
-                href={`/locations/${city}/${service.slug}`}
-                className="border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-brand-terracotta transition-all group"
-              >
-                <div className="w-12 h-12 bg-brand-sage/20 rounded-full mb-4 flex items-center justify-center">
-                  <div className="w-6 h-6 bg-brand-sage rounded-full" />
-                </div>
-                <h3 className="text-brand-dark-alt font-bold text-[20px] group-hover:text-brand-terracotta transition-colors">
-                  {service.name}
-                </h3>
-                <p className="text-gray-600 text-[16px] mt-2">
-                  Find {service.name.toLowerCase()} help in {cityInfo.name}
-                </p>
-              </Link>
-            ))}
+            {services.map((service) => {
+              const Icon = serviceIconMap[service.slug];
+              return (
+                <Link
+                  key={service.slug}
+                  href={`/locations/${city}/${service.slug}`}
+                  className="border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-brand-terracotta transition-all group"
+                >
+                  <div className="w-12 h-12 bg-brand-sage/20 rounded-full mb-4 flex items-center justify-center">
+                    {Icon && <Icon className="w-6 h-6 text-brand-sage" />}
+                  </div>
+                  <h3 className="text-brand-dark-alt font-bold text-[20px] group-hover:text-brand-terracotta transition-colors">
+                    {service.name}
+                  </h3>
+                  <p className="text-gray-600 text-[16px] mt-2">
+                    Find {service.name.toLowerCase()} help in {cityInfo.name}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

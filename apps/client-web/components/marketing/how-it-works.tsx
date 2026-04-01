@@ -5,18 +5,28 @@ import Image from "next/image";
 const steps = [
   {
     number: 1,
-    title: "Find Your Expert",
-    description: "Tell us what you need. Browse profiles, check ratings, and compare transparent pricing to find the perfect pro.",
+    title: "Choose a Service",
+    description: "Browse our categories and pick exactly the help you need — from furniture assembly to outdoor work.",
   },
   {
     number: 2,
-    title: "Book Instantly",
-    description: "Select a date and time that fits your busy schedule. No phone tag, no waiting windows.",
+    title: "Tell Us What You Need",
+    description: "Describe your task, share photos if helpful, and let us know when you'd like it done.",
   },
   {
     number: 3,
-    title: "Relax & Enjoy",
-    description: "Your pro arrives fully equipped to handle the job. Payment is released securely only when the work is done.",
+    title: "Get Matched With a Pro",
+    description: "We connect you with a vetted, local 100 Handy Pro who has the right skills for your job.",
+  },
+  {
+    number: 4,
+    title: "Book Your Time Slot",
+    description: "Pick a date and time that works for you. Schedule as early as today — no phone tag, no waiting.",
+  },
+  {
+    number: 5,
+    title: "Sit Back & Relax",
+    description: "Your pro arrives ready to work. Payment is released only once the job is done to your satisfaction.",
   },
 ];
 
@@ -40,11 +50,11 @@ export function HowItWorks() {
           </div>
 
           {/* White info card */}
-          <div className="absolute left-8 top-1/2 z-10 w-[380px] -translate-y-1/2 rounded-2xl bg-white p-7 shadow-xl">
+          <div className="absolute left-8 top-1/2 z-10 w-[420px] -translate-y-1/2 rounded-2xl bg-white p-7 shadow-xl">
             <h3 className="mb-6 text-[24px] font-medium text-brand-dark-alt">
-              Home Improvement in 3 Steps
+              Getting Started is Simple
             </h3>
-            <div className="space-y-5">
+            <div className="space-y-4">
               {steps.map((step) => (
                 <div key={step.number} className="flex items-start gap-3">
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-brand-terracotta text-[14px] font-bold text-white">
