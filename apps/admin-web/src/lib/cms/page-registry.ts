@@ -18,39 +18,6 @@ export interface PageDefinition {
 }
 
 export const pageRegistry: Record<string, PageDefinition> = {
-  home: {
-    label: 'Home',
-    slug: '/',
-    sections: {
-      hero: {
-        label: 'Hero Section',
-        fields: {
-          title: { type: 'text', label: 'Heading', placeholder: 'Book trusted help for your home — fast.' },
-          subtitle: { type: 'text', label: 'Subheading', placeholder: 'Assembly, repairs, cleaning...' },
-        },
-      },
-      how_it_works: {
-        label: 'How It Works',
-        fields: {
-          title: { type: 'text', label: 'Section Title', placeholder: 'How it works' },
-          step_1_title: { type: 'text', label: 'Step 1 Title', placeholder: 'Describe your task' },
-          step_1_description: { type: 'rich_text', label: 'Step 1 Description', placeholder: 'Tell us what you need done...' },
-          step_2_title: { type: 'text', label: 'Step 2 Title', placeholder: 'Get matched' },
-          step_2_description: { type: 'rich_text', label: 'Step 2 Description', placeholder: 'We match you with...' },
-          step_3_title: { type: 'text', label: 'Step 3 Title', placeholder: 'Get it done' },
-          step_3_description: { type: 'rich_text', label: 'Step 3 Description', placeholder: 'Your Tasker arrives...' },
-        },
-      },
-      get_help_today: {
-        label: 'Get Help Today CTA',
-        fields: {
-          title: { type: 'text', label: 'CTA Heading', placeholder: 'Get help today' },
-          subtitle: { type: 'text', label: 'CTA Subheading', placeholder: 'Book a tasker now' },
-          background_image: { type: 'image_url', label: 'Background Image' },
-        },
-      },
-    },
-  },
   'about-us': {
     label: 'About Us',
     slug: '/about-us',

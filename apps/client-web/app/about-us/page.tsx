@@ -6,6 +6,8 @@ import { MessageSquare } from "lucide-react";
 import { PolygonIcon, CircleIcon } from "@/components/icons";
 import { getPageContent } from "@/lib/cms";
 
+export const dynamic = 'force-dynamic'
+
 // Data for the leadership team to avoid repetition
 const leadershipTeam = [
   { name: "Berkay Dasha", role: "Chief Executive Officer", image: "/team/1.jpg" },

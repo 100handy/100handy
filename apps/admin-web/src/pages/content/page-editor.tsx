@@ -49,14 +49,12 @@ export default function PageEditorPage() {
     for (const [sectionKey, section] of Object.entries(pageDef.sections)) {
       for (const [fieldKey, fieldDef] of Object.entries(section.fields)) {
         const value = formValues[`${sectionKey}.${fieldKey}`] ?? ''
-        if (value.trim()) {
-          fields.push({
-            section_key: sectionKey,
-            field_key: fieldKey,
-            content_type: fieldDef.type,
-            value,
-          })
-        }
+        fields.push({
+          section_key: sectionKey,
+          field_key: fieldKey,
+          content_type: fieldDef.type,
+          value,
+        })
       }
     }
 

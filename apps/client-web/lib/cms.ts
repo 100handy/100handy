@@ -2,7 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 
 /**
  * Lightweight Supabase client for public CMS reads.
- * Does NOT use cookies — keeps pages statically renderable.
+ * Does NOT use cookies, so CMS-backed pages can opt into dynamic rendering
+ * without depending on the authenticated app session.
  */
 function createCmsClient() {
   return createClient(

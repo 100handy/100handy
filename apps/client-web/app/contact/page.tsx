@@ -4,6 +4,8 @@ import { Footer } from "@/components/marketing/footer";
 import { MessageIcon, SendEmailIcon, PhoneIcon, HelpIcon } from "@/components/icons";
 import { getPageContent } from "@/lib/cms";
 
+export const dynamic = 'force-dynamic'
+
 // --- Components --- //
 
 const ContactCard = ({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) => (

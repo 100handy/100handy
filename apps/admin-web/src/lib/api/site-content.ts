@@ -84,6 +84,17 @@ export function useSavePageContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
+      const { data: existingRows, error: existingError } = await supabase
+        .from('site_content')
+        .select('section_key, field_key')
+        .eq('page_key', pageKey)
+
+      if (existingError) throw existingError
+
+      const existingKeys = new Set(
+        (existingRows ?? []).map((row) => `${row.section_key}.${row.field_key}`)
+      )
+
       const rows = fields
         .filter((f) => f.value.trim() !== '')
         .map((f) => ({
@@ -95,13 +106,29 @@ export function useSavePageContent() {
           updated_by: user.id,
         }))
 
-      if (rows.length === 0) return
+      const fieldsToDelete = fields.filter((field) => (
+        field.value.trim() === '' &&
+        existingKeys.has(`${field.section_key}.${field.field_key}`)
+      ))
 
-      const { error } = await supabase
-        .from('site_content')
-        .upsert(rows, { onConflict: 'page_key,section_key,field_key' })
+      if (rows.length > 0) {
+        const { error } = await supabase
+          .from('site_content')
+          .upsert(rows, { onConflict: 'page_key,section_key,field_key' })
 
-      if (error) throw error
+        if (error) throw error
+      }
+
+      for (const field of fieldsToDelete) {
+        const { error } = await supabase
+          .from('site_content')
+          .delete()
+          .eq('page_key', pageKey)
+          .eq('section_key', field.section_key)
+          .eq('field_key', field.field_key)
+
+        if (error) throw error
+      }
     },
     onSuccess: (_, { pageKey }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'site-content', pageKey] })
