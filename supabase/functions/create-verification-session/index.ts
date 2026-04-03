@@ -102,8 +102,7 @@ serve(async (req) => {
             .from('handy_profiles')
             .update({
                 stripe_verification_session_id: verificationSession.id,
-                verification_status: 'submitted',
-                verification_submitted_at: new Date().toISOString(),
+                verification_status: 'pending',
             })
             .eq('user_id', userId);
 

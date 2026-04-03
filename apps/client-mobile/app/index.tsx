@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { Loader } from "@/components/ui/loader";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
+import { buildPendingBookingRoute, resolveAuthenticatedRoute, type AuthRouteTarget } from '@/lib/auth-routing';
 
 const CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX = '@clientOnboardingCompleted:';
 
@@ -38,102 +39,43 @@ export default function Index() {
   } = usePendingBookingStore();
   const { setLocation } = useLocationStore();
 
-  const checkAndRestorePendingBooking = useCallback(() => {
-    if (!hasRestorablePendingBooking()) {
-      return false;
-    }
-
-    const pendingBooking = getPendingBooking();
-    if (pendingBooking) {
-      // Restore the location from pending booking
-      setLocation(pendingBooking.location);
-
-      // Keep the draft until the user completes booking or explicitly discards it.
-      markPendingBookingRestored();
-
-      // Navigate to confirm booking with all the saved data
-      router.replace({
-        pathname: '/(client)/confirm-booking',
-        params: {
-          taskerId: pendingBooking.tasker.id,
-          categoryId: pendingBooking.categoryId,
-          categoryName: pendingBooking.categoryName,
-          selectedDate: pendingBooking.selectedDate,
-          selectedTime: pendingBooking.selectedTime,
-          formResponses: JSON.stringify(pendingBooking.formResponses),
-          selectedFrequency: pendingBooking.frequency ?? 'once',
-        },
-      });
-      return true;
-    }
-    return false;
+  const getPendingBookingRoute = useCallback((): AuthRouteTarget | null => {
+    return buildPendingBookingRoute({
+      hasRestorablePendingBooking,
+      getPendingBooking,
+      markPendingBookingRestored,
+      setLocation,
+    });
   }, [
     getPendingBooking,
     hasRestorablePendingBooking,
     markPendingBookingRestored,
-    router,
     setLocation,
   ]);
 
   const routeAuthenticatedUser = useCallback(async () => {
     try {
-      // Check email verification
-      if (!isEmailVerified) {
-        hasRouted.current = true;
-        router.replace({
-          pathname: '/(auth)/verify-email',
-          params: { email: user?.email || '' },
-        });
-        setIsChecking(false);
-        return;
-      }
-
-      // Email verified - check role and onboarding
-      const isClient = userRole === 'customer';
-      const isProfessional = userRole === 'handy';
-
-      if (isProfessional) {
-        // Check professional onboarding status
-        try {
+      const route = await resolveAuthenticatedRoute({
+        isEmailVerified,
+        userRole,
+        hasCompletedOnboarding,
+        userEmail: user?.email,
+        userId: user?.id,
+        getLocalClientOnboardingCompleted: async (userId) => {
+          const localValue = await AsyncStorage.getItem(
+            `${CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX}${userId}`
+          );
+          return localValue === 'true';
+        },
+        getProfessionalOnboardingCompleted: async () => {
           const handyProfile = await getHandyProfile();
-          const onboardingComplete = handyProfile?.onboarding_completed || false;
+          return handyProfile?.onboarding_completed || false;
+        },
+        getPendingBookingRoute,
+      });
 
-          hasRouted.current = true;
-          if (!onboardingComplete) {
-            router.replace('/(auth)/(professional)/verify-info');
-          } else {
-            router.replace('/(professional)/(tabs)/dashboard');
-          }
-        } catch (error) {
-          console.error('Error checking professional onboarding:', error);
-          // Fail closed so incomplete professional accounts cannot bypass onboarding.
-          hasRouted.current = true;
-          router.replace('/(auth)/(professional)/verify-info');
-        }
-      } else if (isClient) {
-        const localOnboardingCompleted =
-          user?.id
-            ? await AsyncStorage.getItem(`${CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX}${user.id}`)
-            : null;
-
-        // Client - check onboarding first
-        if (!hasCompletedOnboarding && localOnboardingCompleted !== 'true') {
-          hasRouted.current = true;
-          router.replace('/(auth)/(client)/onboarding');
-        } else {
-          // Check for pending booking from before auth
-          const hasPendingBooking = checkAndRestorePendingBooking();
-          hasRouted.current = true;
-          if (!hasPendingBooking) {
-            // No pending booking, go to home
-            router.replace('/(client)/(tabs)/home');
-          }
-        }
-      } else {
-        // Unknown role - fail closed instead of misrouting into the client app.
-        hasRouted.current = true;
-        router.replace('/(auth)/role-selection');
-      }
+      hasRouted.current = true;
+      router.replace(route as Parameters<typeof router.replace>[0]);
     } catch (error) {
       console.error('Error routing authenticated user:', error);
       // Default to client home on error (user is authenticated)
@@ -143,7 +85,7 @@ export default function Index() {
       setIsChecking(false);
     }
   }, [
-    checkAndRestorePendingBooking,
+    getPendingBookingRoute,
     hasCompletedOnboarding,
     isEmailVerified,
     router,
@@ -173,9 +115,9 @@ export default function Index() {
       ]);
 
       if (hasSeenOnboarding === 'true' && hasAcceptedTerms === 'true') {
-        // Returning guest who finished onboarding and accepted terms
+        // Returning guest - show welcome screen (not sign-up directly)
         hasRouted.current = true;
-        router.replace('/(auth)/(client)/sign-up');
+        router.replace('/(auth)/(client)');
         setIsChecking(false);
       } else if (hasSeenOnboarding === 'true') {
         // Guest finished onboarding but still needs the mandatory terms screen
@@ -201,6 +143,13 @@ export default function Index() {
       }
     }
   }, [isAuthenticated, routeAuthenticatedUser, router, user]);
+
+  // Reset hasRouted when this screen gains focus (e.g. after sign-in calls router.replace('/'))
+  useFocusEffect(
+    useCallback(() => {
+      hasRouted.current = false;
+    }, [])
+  );
 
   useEffect(() => {
     // Wait for auth to finish loading before checking onboarding

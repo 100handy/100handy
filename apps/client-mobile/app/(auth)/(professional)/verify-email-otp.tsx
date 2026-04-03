@@ -6,6 +6,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { verifyEmailOTP, resendEmailOTP } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
 import { OtpInput, OtpInputRef } from 'react-native-otp-entry';
+import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getHandyProfile } from '@shared/supabase/profile';
+import { buildPendingBookingRoute, resolveAuthenticatedRoute } from '@/lib/auth-routing';
 
 export default function ProfessionalVerifyEmailOtp() {
   const params = useLocalSearchParams();
@@ -16,6 +20,9 @@ export default function ProfessionalVerifyEmailOtp() {
   const [canResend, setCanResend] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const toast = useToast();
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const pendingBookingStore = usePendingBookingStore();
+  const { setLocation } = useLocationStore();
 
   const otpRef = useRef<OtpInputRef>(null);
 
@@ -42,9 +49,31 @@ export default function ProfessionalVerifyEmailOtp() {
       const result = await verifyEmailOTP(email, otpCode);
 
       if (result.user) {
-        // Route through the root gate so onboarding and role routing stay in sync.
+        await checkAuth();
+        const { isEmailVerified, userRole, hasCompletedOnboarding, user } = useAuthStore.getState();
+        const route = await resolveAuthenticatedRoute({
+          isEmailVerified,
+          userRole,
+          hasCompletedOnboarding,
+          userEmail: user?.email,
+          userId: user?.id,
+          getLocalClientOnboardingCompleted: async (userId) =>
+            (await AsyncStorage.getItem(`@clientOnboardingCompleted:${userId}`)) === 'true',
+          getProfessionalOnboardingCompleted: async () => {
+            const handyProfile = await getHandyProfile();
+            return handyProfile?.onboarding_completed || false;
+          },
+          getPendingBookingRoute: () =>
+            buildPendingBookingRoute({
+              hasRestorablePendingBooking: pendingBookingStore.hasRestorablePendingBooking,
+              getPendingBooking: pendingBookingStore.getPendingBooking,
+              markPendingBookingRestored: pendingBookingStore.markPendingBookingRestored,
+              setLocation,
+            }),
+        });
+
         toast.success('Success', 'Email verified!');
-        router.replace('/');
+        router.replace(route as Parameters<typeof router.replace>[0]);
       }
     } catch (error) {
       console.error('Email OTP verification error:', error);

@@ -8,13 +8,18 @@ import { signIn } from '@shared/supabase/auth';
 import { type SignInFormData } from '@shared/schemas/auth';
 import AuthFooter from '@/components/auth/AuthFooter';
 import { useToast } from '@/components/ui/toast';
-import { useAuthStore } from '@shared/supabase';
+import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
 import Logo100Top from '@/assets/images/logo-100-top.svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getHandyProfile } from '@shared/supabase/profile';
+import { buildPendingBookingRoute, resolveAuthenticatedRoute } from '@/lib/auth-routing';
 
 export default function ClientSignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const { checkAuth } = useAuthStore();
+  const pendingBookingStore = usePendingBookingStore();
+  const { setLocation } = useLocationStore();
 
   const handleSignIn = async (data: SignInFormData): Promise<void> => {
     setIsLoading(true);
@@ -26,12 +31,33 @@ export default function ClientSignIn() {
         throw new Error('Authentication check failed');
       }
 
-      // Route through the root gate so role, verification, onboarding,
-      // and pending booking restore are resolved in one place.
-      router.replace('/');
+      const { isEmailVerified, userRole, hasCompletedOnboarding, user } = useAuthStore.getState();
+      const route = await resolveAuthenticatedRoute({
+        isEmailVerified,
+        userRole,
+        hasCompletedOnboarding,
+        userEmail: user?.email,
+        userId: user?.id,
+        getLocalClientOnboardingCompleted: async (userId) =>
+          (await AsyncStorage.getItem(`@clientOnboardingCompleted:${userId}`)) === 'true',
+        getProfessionalOnboardingCompleted: async () => {
+          const handyProfile = await getHandyProfile();
+          return handyProfile?.onboarding_completed || false;
+        },
+        getPendingBookingRoute: () =>
+          buildPendingBookingRoute({
+            hasRestorablePendingBooking: pendingBookingStore.hasRestorablePendingBooking,
+            getPendingBooking: pendingBookingStore.getPendingBooking,
+            markPendingBookingRestored: pendingBookingStore.markPendingBookingRestored,
+            setLocation,
+          }),
+      });
+
+      router.replace(route as Parameters<typeof router.replace>[0]);
     } catch (error) {
       console.error('Sign in error:', error);
       toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');
+    } finally {
       setIsLoading(false);
     }
   };

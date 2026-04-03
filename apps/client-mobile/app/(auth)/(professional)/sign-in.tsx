@@ -8,13 +8,18 @@ import { signIn } from '@shared/supabase/auth';
 import { type SignInFormData } from '@shared/schemas/auth';
 import AuthFooter from '@/components/auth/AuthFooter';
 import { useToast } from '@/components/ui/toast';
-import { useAuthStore } from '@shared/supabase';
+import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
 import Logo100Top from '@/assets/images/logo-100-top.svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getHandyProfile } from '@shared/supabase/profile';
+import { buildPendingBookingRoute, resolveAuthenticatedRoute } from '@/lib/auth-routing';
 
 export default function ProfessionalSignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const checkAuth = useAuthStore((state) => state.checkAuth);
+  const pendingBookingStore = usePendingBookingStore();
+  const { setLocation } = useLocationStore();
 
   const handleSignIn = async (data: SignInFormData): Promise<void> => {
     setIsLoading(true);
@@ -23,7 +28,7 @@ export default function ProfessionalSignIn() {
       // Update auth state
       const isAuthenticated = await checkAuth();
       if (isAuthenticated) {
-        const { userRole } = useAuthStore.getState();
+        const { isEmailVerified, userRole, hasCompletedOnboarding, user } = useAuthStore.getState();
 
         if (userRole === 'customer') {
           // Client user logging in through professional flow — keep the hint,
@@ -31,7 +36,28 @@ export default function ProfessionalSignIn() {
           toast.info('Client account', 'This account is registered as a client. Redirecting to your home screen.');
         }
 
-        router.replace('/');
+        const route = await resolveAuthenticatedRoute({
+          isEmailVerified,
+          userRole,
+          hasCompletedOnboarding,
+          userEmail: user?.email,
+          userId: user?.id,
+          getLocalClientOnboardingCompleted: async (userId) =>
+            (await AsyncStorage.getItem(`@clientOnboardingCompleted:${userId}`)) === 'true',
+          getProfessionalOnboardingCompleted: async () => {
+            const handyProfile = await getHandyProfile();
+            return handyProfile?.onboarding_completed || false;
+          },
+          getPendingBookingRoute: () =>
+            buildPendingBookingRoute({
+              hasRestorablePendingBooking: pendingBookingStore.hasRestorablePendingBooking,
+              getPendingBooking: pendingBookingStore.getPendingBooking,
+              markPendingBookingRestored: pendingBookingStore.markPendingBookingRestored,
+              setLocation,
+            }),
+        });
+
+        router.replace(route as Parameters<typeof router.replace>[0]);
       } else {
         throw new Error('Authentication check failed');
       }

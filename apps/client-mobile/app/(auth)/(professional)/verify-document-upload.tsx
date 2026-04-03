@@ -6,7 +6,7 @@ import { ChevronLeft, ShieldCheck, Camera, FileText } from 'lucide-react-native'
 import { router } from 'expo-router';
 import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
 import { supabase } from '@shared/supabase';
-import { completeOnboarding, getHandyProfile } from '@shared/supabase/profile';
+import { completeOnboarding, getHandyProfile, markVerificationSubmitted } from '@shared/supabase/profile';
 import { useToast } from '@/components/ui/toast';
 
 export default function VerifyDocumentUpload() {
@@ -64,6 +64,10 @@ export default function VerifyDocumentUpload() {
       const result = await present() as { status: string } | undefined;
 
       if (result?.status === 'FlowCompleted') {
+        const saved = await markVerificationSubmitted();
+        if (!saved) {
+          throw new Error('Failed to save verification status');
+        }
         await completeOnboarding();
         toast.success('Verification Submitted', 'Your identity verification has been submitted for review.');
         router.replace('/(professional)/(tabs)/dashboard');

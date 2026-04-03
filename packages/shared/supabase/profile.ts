@@ -835,6 +835,38 @@ export async function uploadVerificationDocument(
 }
 
 /**
+ * Mark Stripe Identity verification as submitted after the user completes the flow.
+ */
+export async function markVerificationSubmitted(): Promise<boolean> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Error getting authenticated user:', authError);
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('handy_profiles')
+      .update({
+        verification_status: 'submitted',
+        verification_submitted_at: new Date().toISOString(),
+      })
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error marking verification as submitted:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in markVerificationSubmitted:', error);
+    return false;
+  }
+}
+
+/**
  * Mark professional onboarding as completed
  */
 export async function completeOnboarding(): Promise<boolean> {

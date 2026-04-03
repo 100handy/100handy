@@ -1,128 +1,134 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, Dimensions } from 'react-native';
+import React, { useMemo } from 'react';
+import { Image, ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronRight } from 'lucide-react-native';
-import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Loader } from '@/components/ui/loader';
-import { STORAGE_KEYS } from '@/lib/storage-keys';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { Button, ButtonText } from '@/components/ui/button';
+import { router, useLocalSearchParams } from 'expo-router';
 
 export default function ClientWelcome() {
-  const [isChecking, setIsChecking] = useState(true);
-
-  useEffect(() => {
-    checkReturningUser();
-  }, []);
-
-  const checkReturningUser = async (): Promise<void> => {
-    try {
-      const [hasSeenOnboarding, hasAcceptedTerms] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING),
-        AsyncStorage.getItem(STORAGE_KEYS.HAS_ACCEPTED_TERMS),
-      ]);
-
-      // Returning user: has seen onboarding AND accepted terms before
-      if (hasSeenOnboarding === 'true' && hasAcceptedTerms === 'true') {
-        // Skip welcome, onboarding, terms - go directly to sign-up
-        router.replace('/(auth)/(client)/sign-up');
-        return;
-      }
-
-      // First-time user or incomplete flow - show welcome screen
-      setIsChecking(false);
-    } catch (error) {
-      console.error('Error checking returning user status:', error);
-      setIsChecking(false);
-    }
-  };
-
-  const handleGetStarted = (): void => {
-    router.push('/(auth)/(client)/onboarding');
-  };
-
-  if (isChecking) {
-    return <Loader />;
-  }
+  const params = useLocalSearchParams();
+  const ref = useMemo(() => {
+    const value = params.ref;
+    if (typeof value === 'string' && value.trim().length > 0) return value.trim();
+    return undefined;
+  }, [params.ref]);
 
   return (
-    <View className="flex-1 bg-white overflow-hidden">
-      {/* Giant decorative letters that extend beyond screen */}
-      <View className="absolute inset-0">
-        {/* "1 0 0" - Top row */}
-        <Text
-          className="absolute font-worksans-light"
-          style={{
-            color: '#30352D',
-            fontSize: SCREEN_HEIGHT * 0.22,
-            lineHeight: SCREEN_HEIGHT * 0.22,
-            top: SCREEN_HEIGHT * 0.08,
-            left: -SCREEN_WIDTH * 0.12,
-            letterSpacing: SCREEN_WIDTH * 0.06,
-          }}
+    <View className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-white">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
         >
-          100
-        </Text>
-
-        {/* "H A N" - Second row */}
-        <Text
-          className="absolute font-worksans-bold"
-          style={{
-            color: '#30352D',
-            fontSize: SCREEN_HEIGHT * 0.18,
-            lineHeight: SCREEN_HEIGHT * 0.18,
-            top: SCREEN_HEIGHT * 0.28,
-            left: -SCREEN_WIDTH * 0.08,
-            letterSpacing: SCREEN_WIDTH * 0.06,
-          }}
-        >
-          HAN
-        </Text>
-
-        {/* Faded "0" - Middle area */}
-        <Text
-          className="absolute font-worksans-light"
-          style={{
-            color: '#30352D',
-            fontSize: SCREEN_HEIGHT * 0.22,
-            lineHeight: SCREEN_HEIGHT * 0.22,
-            top: SCREEN_HEIGHT * 0.46,
-            left: -SCREEN_WIDTH * 0.28,
-            opacity: 0.12,
-          }}
-        >
-          0
-        </Text>
-
-        {/* "N D Y" - Bottom row */}
-        <Text
-          className="absolute font-worksans-bold"
-          style={{
-            color: '#30352D',
-            fontSize: SCREEN_HEIGHT * 0.18,
-            lineHeight: SCREEN_HEIGHT * 0.18,
-            top: SCREEN_HEIGHT * 0.68,
-            left: -SCREEN_WIDTH * 0.15,
-            letterSpacing: SCREEN_WIDTH * 0.06,
-          }}
-        >
-          NDY
-        </Text>
-      </View>
-
-      {/* Get Started Link - Bottom Right */}
-      <SafeAreaView className="flex-1" edges={['bottom']}>
-        <View className="flex-1 justify-end px-6 pb-8">
-          <Pressable onPress={handleGetStarted}>
-            <View className="flex-row items-center justify-end gap-1">
-              <Text className="text-[18px] font-worksans-medium" style={{ color: '#A0B194' }}>
-                Get started
-              </Text>
-              <ChevronRight size={18} color="#A0B194" />
+          <View className="flex-col flex-1 bg-white">
+          {/* Dark Top Section */}
+          <View className="flex-col pb-10" style={{ backgroundColor: '#333A31' }}>
+            {/* Country Label */}
+            <View className="items-center pt-4 pb-12">
+              <View className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
+                <Image
+                  source={require('@/assets/images/uk-flag.png')}
+                  className="w-7 h-4 mr-2"
+                  resizeMode="contain"
+                />
+                <Text className="text-white font-worksans-medium text-[15px]">
+                  United Kingdom
+                </Text>
+              </View>
             </View>
-          </Pressable>
+
+            {/* Logo Container */}
+            <View className="items-center">
+              <View className="bg-white rounded-[32px] shadow-lg overflow-hidden" style={{ width: 175, height: 175 }}>
+                {/* 100 HANDY Text */}
+                <View className="flex-col items-center pt-6 pb-3">
+                  <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider" style={{ color: '#30352D' }}>
+                    100
+                  </Text>
+                  <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider" style={{ color: '#30352D' }}>
+                    HANDY
+                  </Text>
+                </View>
+
+                {/* Task Button */}
+                <View className="items-center px-4 pb-4">
+                  <View className="bg-clay-orange rounded-full px-7 py-2.5 shadow-md" style={{ transform: [{ rotate: '-9deg' }] }}>
+                    <Text className="text-white text-[30px] font-worksans-bold tracking-wide">
+                      Task
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* By Text */}
+              <View className="flex-row items-center mt-3">
+                <Text className="font-worksans-medium text-[16px] mr-1.5 text-white">
+                  By
+                </Text>
+                <Text className="font-worksans-bold text-[16px] tracking-wide text-white">
+                  100 HANDY
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Light Bottom Section */}
+          <View className="flex-col flex-1 bg-white">
+            {/* Welcome Text */}
+            <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8" style={{ color: '#30352D' }}>
+              Welcome to 100 Handy Task
+            </Text>
+
+            {/* Buttons */}
+            <View className="px-5">
+              {/* Create Account Button */}
+              <Button
+                className="rounded-full shadow-md mb-4"
+                style={{ backgroundColor: '#C1856A' }}
+                onPress={() =>
+                  router.push({
+                    pathname: '/(auth)/(client)/sign-up',
+                    params: ref ? { ref } : {},
+                  } as Parameters<typeof router.push>[0])
+                }
+              >
+                <ButtonText className="text-[18px] font-worksans-bold text-white">
+                  Create Account
+                </ButtonText>
+              </Button>
+
+              {/* Sign In Button */}
+              <Pressable
+                className="rounded-full py-4 border-2 mb-10"
+                style={{ borderColor: '#C1856A' }}
+                onPress={() =>
+                  router.push({
+                    pathname: '/(auth)/(client)/sign-in',
+                    params: ref ? { ref } : {},
+                  } as Parameters<typeof router.push>[0])
+                }
+              >
+                <Text className="text-center text-[18px] font-worksans-bold" style={{ color: '#C1856A' }}>
+                  Sign in
+                </Text>
+              </Pressable>
+
+              {/* Terms and Privacy */}
+              <View className="pb-10">
+                <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
+                  By signing up, you agree to the{' '}
+                  <Text style={{ color: '#C1856A' }}>Terms of Service</Text>
+                  {'\n'}
+                  and have reviewed the{' '}
+                  <Text style={{ color: '#C1856A' }}>Privacy Policy.</Text>
+                  {'\n'}
+                  Manage <Text style={{ color: '#C1856A' }}>privacy settings</Text>
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
