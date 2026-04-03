@@ -36,14 +36,14 @@ const discoverLinks = [
 ];
 
 const serviceLinks = [
-  { label: "Furniture Assembly", href: "/all-services" },
-  { label: "TV & Wall Mounting", href: "/all-services" },
-  { label: "Home Repairs", href: "/all-services" },
-  { label: "Plumbing", href: "/all-services" },
-  { label: "Electrical", href: "/all-services" },
-  { label: "Cleaning", href: "/all-services" },
-  { label: "Packing & Moving", href: "/all-services" },
-  { label: "Outdoor Help", href: "/all-services" },
+  { label: "Furniture Assembly", href: "/services" },
+  { label: "TV & Wall Mounting", href: "/services" },
+  { label: "Home Repairs", href: "/services" },
+  { label: "Plumbing", href: "/services" },
+  { label: "Electrical", href: "/services" },
+  { label: "Cleaning", href: "/services" },
+  { label: "Packing & Moving", href: "/services" },
+  { label: "Outdoor Help", href: "/services" },
 ];
 
 const companyLinks = [

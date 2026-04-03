@@ -161,7 +161,7 @@ export function HelpSearch() {
     <>
       {/* Search Bar */}
       <div ref={wrapperRef} className="relative max-w-[592px] mx-auto mb-[10px]">
-        <div className="relative bg-white rounded-lg shadow-[0px_3px_6px_0px_rgba(0,0,0,0.16)]">
+        <div className="relative flex bg-white rounded-lg shadow-[0px_3px_6px_0px_rgba(0,0,0,0.16)]">
           <Search className="absolute left-[24px] top-1/2 -translate-y-1/2 w-[14.56px] h-[14.56px] text-brand-dark" />
           <input
             type="text"
@@ -172,8 +172,15 @@ export function HelpSearch() {
             }}
             onFocus={() => setIsOpen(true)}
             placeholder="Search"
-            className="w-full pl-[56px] pr-[30px] py-[19px] text-xl font-medium text-brand-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-terracotta"
+            className="flex-1 pl-[56px] pr-[16px] py-[19px] text-xl font-medium text-brand-dark rounded-l-lg focus:outline-none focus:ring-2 focus:ring-brand-terracotta"
           />
+          <button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            className="px-[24px] py-[19px] bg-brand-dark text-white text-base font-bold rounded-r-lg hover:bg-brand-dark/90 transition-colors"
+          >
+            Search
+          </button>
         </div>
 
         {/* Results dropdown */}

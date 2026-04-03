@@ -1,4 +1,4 @@
-import { BookOpen, Globe, CheckSquare, Handshake, User, Shield } from "lucide-react";
+import { BookOpen, Globe, CheckSquare, Handshake, User, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
@@ -61,7 +61,7 @@ export default function HelpPage() {
 
                         {/* Policy Center */}
                         <CategoryCard
-                            icon={<Shield className="w-[33.7px] h-[33.7px]" />}
+                            icon={<Handshake className="w-[50.79px] h-[32.09px]" />}
                             title="Policy Center"
                             href="/help/policies"
                             bgColor="bg-brand-terracotta"
@@ -69,7 +69,7 @@ export default function HelpPage() {
 
                         {/* Partnerships */}
                         <CategoryCard
-                            icon={<Handshake className="w-[50.79px] h-[32.09px]" />}
+                            icon={<Briefcase className="w-[33.7px] h-[33.7px]" />}
                             title="Partnerships"
                             href="/help/partnerships"
                             bgColor="bg-brand-terracotta"
