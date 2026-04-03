@@ -1,6 +1,8 @@
-import { Search, BookOpen, Globe, CheckSquare, Handshake, User } from "lucide-react";
+import { BookOpen, Globe, CheckSquare, Handshake, User, Shield } from "lucide-react";
+import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
+import { HelpSearch } from "@/components/help/help-search";
 
 export default function HelpPage() {
     return (
@@ -17,50 +19,19 @@ export default function HelpPage() {
                         Are you a 100 Handy Pro? Sign in to view additional resources.
                     </p>
 
-                    {/* Search Bar */}
-                    <div className="relative max-w-[592px] mx-auto mb-[10px]">
-                        <div className="relative bg-white rounded-lg shadow-[0px_3px_6px_0px_rgba(0,0,0,0.16)]">
-                            <Search className="absolute left-[24px] top-1/2 -translate-y-1/2 w-[14.56px] h-[14.56px] text-brand-dark" />
-                            <input
-                                type="text"
-                                placeholder="Search"
-                                className="w-full pl-[56px] pr-[30px] py-[19px] text-xl font-medium text-brand-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-terracotta"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Popular Searches */}
-                    <div className="mb-4">
-                        <p className="text-base font-bold text-brand-dark-alt leading-[1.221] mb-[14px]">Popular searches:</p>
-                        <div className="flex flex-wrap justify-center gap-[8px]">
-                            <span className="px-[16px] py-[10px] bg-brand-terracotta text-white text-[10px] font-bold leading-[1.221] rounded">
-                                Invoice
-                            </span>
-                            <span className="px-[18px] py-[10px] bg-brand-terracotta text-white text-[10px] font-bold leading-[1.221] rounded">
-                                Payment
-                            </span>
-                            <span className="px-[18px] py-[10px] bg-brand-terracotta text-white text-[10px] font-bold leading-[1.221] rounded">
-                                How to book
-                            </span>
-                            <span className="px-[24px] py-[10px] bg-brand-terracotta text-white text-[10px] font-bold leading-[1.221] rounded">
-                                Cancellation policy
-                            </span>
-                            <span className="px-[24px] py-[10px] bg-brand-terracotta text-white text-[10px] font-bold leading-[1.221] rounded">
-                                100Handy Assembly
-                            </span>
-                        </div>
-                    </div>
+                    <HelpSearch />
                 </div>
             </section>
 
             {/* Categories Section */}
             <section className="py-[111px] bg-white">
                 <div className="max-w-[1920px] mx-auto px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-[164px] gap-y-0 mb-[130px] justify-items-center">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-[164px] gap-y-[60px] mb-[60px] justify-items-center">
                         {/* Client */}
                         <CategoryCard
                             icon={<BookOpen className="w-[33.7px] h-[33.7px]" />}
                             title="Client"
+                            href="/help/client"
                             bgColor="bg-brand-terracotta"
                         />
 
@@ -68,6 +39,7 @@ export default function HelpPage() {
                         <CategoryCard
                             icon={<Globe className="w-[33.76px] h-[33.76px]" />}
                             title="100 Handy Pro"
+                            href="/help/pro"
                             bgColor="bg-brand-terracotta"
                         />
 
@@ -75,22 +47,31 @@ export default function HelpPage() {
                         <CategoryCard
                             icon={<CheckSquare className="w-[33.59px] h-[37.44px]" />}
                             title="Registration"
+                            href="/help/registration"
                             bgColor="bg-brand-terracotta"
                         />
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-[154px] gap-y-0 justify-items-center max-w-[616px] mx-auto">
                         {/* Account */}
                         <CategoryCard
                             icon={<User className="w-[32.06px] h-[32.09px]" />}
                             title="Account"
+                            href="/help/account"
                             bgColor="bg-brand-terracotta"
                         />
 
                         {/* Policy Center */}
                         <CategoryCard
-                            icon={<Handshake className="w-[50.79px] h-[32.09px]" />}
+                            icon={<Shield className="w-[33.7px] h-[33.7px]" />}
                             title="Policy Center"
+                            href="/help/policies"
+                            bgColor="bg-brand-terracotta"
+                        />
+
+                        {/* Partnerships */}
+                        <CategoryCard
+                            icon={<Handshake className="w-[50.79px] h-[32.09px]" />}
+                            title="Partnerships"
+                            href="/help/partnerships"
                             bgColor="bg-brand-terracotta"
                         />
                     </div>
@@ -118,14 +99,14 @@ export default function HelpPage() {
     );
 }
 
-function CategoryCard({ icon, title, bgColor }: { icon: React.ReactNode; title: string; bgColor: string }) {
+function CategoryCard({ icon, title, href, bgColor }: { icon: React.ReactNode; title: string; href: string; bgColor: string }) {
     return (
-        <div className="flex flex-col items-center text-center">
-            <div className={`w-[101px] h-[99px] ${bgColor} rounded-full flex items-center justify-center text-white mb-[40px]`}>
+        <Link href={href} className="flex flex-col items-center text-center group">
+            <div className={`w-[101px] h-[99px] ${bgColor} rounded-full flex items-center justify-center text-white mb-[40px] group-hover:opacity-85 transition-opacity`}>
                 {icon}
             </div>
-            <h3 className="text-xl font-bold text-brand-dark-alt leading-[1.221]">{title}</h3>
-        </div>
+            <h3 className="text-xl font-bold text-brand-dark-alt leading-[1.221] group-hover:text-brand-terracotta transition-colors">{title}</h3>
+        </Link>
     );
 }
 

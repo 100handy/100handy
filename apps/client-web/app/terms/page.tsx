@@ -3,82 +3,211 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Terms & Privacy | 100 Handy",
-  description: "Terms of service and privacy policy for 100 Handy.",
+  description:
+    "Terms of service, privacy policy, and platform rules for 100 Handy.",
 };
 
 const sections = [
   {
     id: "terms-of-service",
     title: "Terms of Service",
-    content: `Welcome to 100 Handy. By accessing or using our platform, you agree to be bound by these Terms of Service. Please read them carefully before using our services.
+    content: `The Terms of Service explain the legal agreement between 100 Handy and its users.
 
-These Terms of Service govern your use of the 100 Handy platform, including our website, mobile applications, and related services (collectively, the "Platform"). By creating an account or using the Platform, you confirm that you are at least 18 years old and have the legal capacity to enter into binding contracts.
+This includes:
 
-100 Handy operates as a marketplace that connects clients with independent service professionals ("100 Handy Pros"). We are not responsible for the quality, safety, or legality of services provided by 100 Handy Pros. All bookings are subject to availability and confirmation by the relevant 100 Handy Pro.`,
-  },
-  {
-    id: "user-responsibilities",
-    title: "User Responsibilities",
-    content: `As a user of 100 Handy, you agree to:
+• How the 100 Handy platform can be used
+• How service agreements are formed between Clients and 100 Handy Pros
+• Rules for booking services
+• Payment and fee policies
+• Cancellation and refund conditions
+• Responsibilities of both Clients and Pros
+• Platform rights and limitations
 
-- Provide accurate and complete information when creating your account and making bookings
-- Treat all 100 Handy Pros with respect and professionalism
-- Pay for services as agreed, using the Platform's payment system
-- Not engage in any fraudulent, abusive, or harmful behaviour on the Platform
-- Not attempt to circumvent the Platform to engage 100 Handy Pros directly outside of the Platform
-- Report any concerns or issues through the appropriate channels
-
-Failure to comply with these responsibilities may result in the suspension or termination of your account.`,
+All users must agree to the Terms of Service before using the platform.`,
   },
   {
     id: "privacy-policy",
     title: "Privacy Policy",
-    content: `At 100 Handy, we are committed to protecting your privacy and personal data. This Privacy Policy explains how we collect, use, and safeguard your information.
+    content: `The Privacy Policy explains how 100 Handy collects, uses, stores, and protects personal information.
 
-We collect information you provide directly, such as your name, email address, phone number, and payment details when you create an account or make a booking. We also collect information automatically, such as your device information, IP address, and usage data when you use our Platform.
+This includes:
 
-We use your information to facilitate bookings, process payments, communicate with you about your account and services, improve our Platform, and comply with legal obligations. We do not sell your personal data to third parties.`,
+• What personal data is collected
+• How your information is used
+• How data is stored securely
+• When information may be shared
+• Your rights regarding personal data
+• How to request updates or deletion of your data
+
+100 Handy is committed to protecting user privacy and handling information responsibly.`,
   },
   {
-    id: "cookie-policy",
-    title: "Cookie Policy",
-    content: `100 Handy uses cookies and similar tracking technologies to enhance your experience on our Platform. Cookies are small text files stored on your device that help us remember your preferences and understand how you use our services.
+    id: "service-protection",
+    title: "Service Protection Terms & Conditions",
+    content: `100 Handy may offer service protection measures designed to support Clients and Pros when issues occur.
 
-We use essential cookies that are necessary for the Platform to function, performance cookies that help us understand how visitors interact with our Platform, and preference cookies that remember your settings and preferences.
+This section explains:
 
-You can control cookie settings through your browser preferences. However, disabling certain cookies may affect the functionality of our Platform.`,
+• What types of issues may be covered
+• How to submit a claim
+• How claims are reviewed
+• What users must agree to before compensation is issued
+• Conditions that may limit coverage
+
+Protection policies help ensure fairness when unexpected issues arise.`,
   },
   {
-    id: "payment-terms",
-    title: "Payment Terms",
-    content: `All payments on 100 Handy are processed securely through our payment partners. By making a booking, you authorise 100 Handy to charge the payment method you provide.
+    id: "trust-and-safety",
+    title: "Trust & Safety",
+    content: `Keeping your account secure
 
-Payments are held securely until the service is completed. Upon completion, funds are released to the 100 Handy Pro. In the event of a dispute, payments may be held pending resolution.
+Protecting your account helps prevent unauthorised access.
 
-Cancellation policies vary depending on the service and the 100 Handy Pro. Please review the specific cancellation policy before confirming your booking.`,
+We recommend:
+
+• Using strong passwords
+• Keeping login details private
+• Updating passwords regularly
+• Logging out on shared devices
+• Reporting suspicious activity immediately
+
+If unusual activity is detected, security checks may be applied to protect your account.
+
+User safety guidance
+
+Safety is a priority for everyone using 100 Handy.
+
+Recommended safety practices include:
+
+• Keeping communication within the platform
+• Reporting unsafe behaviour immediately
+• Avoiding sharing sensitive personal information
+
+Following safety guidance helps create a trusted working environment.
+
+Background checks and verification
+
+100 Handy uses verification processes to support trust between users.
+
+These may include:
+
+• Identity verification
+• Profile checks
+• Background screening (where required)
+• Service-related credential verification
+
+Verification helps maintain platform quality and safety.`,
   },
   {
-    id: "intellectual-property",
-    title: "Intellectual Property",
-    content: `All content on the 100 Handy Platform, including but not limited to text, graphics, logos, images, and software, is the property of 100 Handy or its content suppliers and is protected by applicable intellectual property laws.
+    id: "platform-rules",
+    title: "Platform Rules",
+    content: `Acceptable use and platform rules
 
-You may not reproduce, distribute, modify, or create derivative works of any content from our Platform without prior written permission from 100 Handy.`,
+All users must follow platform rules when using 100 Handy.
+
+Acceptable use includes:
+
+• Providing accurate information
+• Communicating respectfully
+• Using the platform only for legitimate services
+• Following booking and payment procedures
+• Maintaining professional behaviour
+
+Prohibited activities include:
+
+• Fraudulent behaviour
+• Misuse of accounts
+• Harassment or threatening behaviour
+• Sexual misconduct, harassment, or inappropriate behaviour of any kind
+• Discrimination based on gender, race, religion, nationality, disability, sexual orientation, or any protected characteristic
+• Attempting to bypass platform processes
+• Providing false information
+
+Violations of these rules may lead to account action.
+
+Client and Pro responsibilities
+
+Both Clients and 100 Handy Pros have responsibilities when using the platform.
+
+Client responsibilities include:
+
+• Providing clear job descriptions
+• Giving accurate location details
+• Making payments as agreed
+• Respecting professional conduct
+
+100 Handy Pro responsibilities include:
+
+• Delivering services professionally
+• Communicating clearly
+• Arriving on time
+• Completing work as agreed
+• Following safety and service guidelines
+
+Shared responsibility helps maintain quality across the platform.
+
+Account action and enforcement
+
+If platform rules are broken, action may be taken to protect the platform and its users.
+
+Possible actions include:
+
+• Account warnings
+• Temporary suspension
+• Service restrictions
+• Permanent account termination
+
+Enforcement decisions are made based on the severity of the issue and user history.`,
   },
   {
-    id: "limitation-of-liability",
-    title: "Limitation of Liability",
-    content: `To the maximum extent permitted by law, 100 Handy shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of the Platform or services booked through the Platform.
+    id: "country-specific-policies",
+    title: "Country-Specific Policies",
+    content: `UK-specific legal and tax guidance
 
-100 Handy's total liability to you for any claims arising out of or relating to these Terms or your use of the Platform shall not exceed the amount you paid to 100 Handy in the twelve months preceding the claim.`,
+100 Handy Pros operating in the UK may have additional responsibilities.
+
+These may include:
+
+• Registering as self-employed or operating as a business
+• Managing tax responsibilities
+• Keeping records of earnings
+• Following local employment and service laws
+
+100 Handy Pros are responsible for ensuring compliance with local tax and legal obligations.
+
+Local service terms
+
+Some policies may vary depending on:
+
+• The region where services are delivered
+• The type of service being offered
+• Local safety or licensing requirements
+
+Users will be informed if additional conditions apply to specific services.
+
+Regulatory and compliance information
+
+100 Handy operates in accordance with applicable laws and regulations.
+
+This includes:
+
+• Consumer protection requirements
+• Data protection regulations
+• Platform safety standards
+• Regional service regulations
+
+Compliance ensures the platform operates responsibly and legally.`,
   },
   {
     id: "contact",
     title: "Contact Us",
-    content: `If you have any questions about these Terms of Service, Privacy Policy, or any other legal matters, please contact us:
+    content: `If you have questions about policies or need assistance with safety or compliance matters, you can contact our support team directly.
 
-Email: legal@100handy.com
+For policy-related enquiries, please email:
 
-We aim to respond to all enquiries within 5 business days.`,
+help@100handy.com
+
+Our team will review your message and respond with the appropriate guidance.`,
   },
 ];
 
@@ -122,13 +251,17 @@ export default function TermsPage() {
               </aside>
 
               {/* Article content */}
-              <article className="flex-1 max-w-3xl">
+              <article className="max-w-3xl flex-1">
                 {sections.map((section) => (
-                  <section key={section.id} id={section.id} className="mb-12 scroll-mt-8">
-                    <h2 className="mb-4 text-[28px] font-bold text-brand-dark-alt border-b border-gray-200 pb-3">
+                  <section
+                    key={section.id}
+                    id={section.id}
+                    className="mb-12 scroll-mt-8"
+                  >
+                    <h2 className="mb-4 border-b border-gray-200 pb-3 text-[28px] font-bold text-brand-dark-alt">
                       {section.title}
                     </h2>
-                    <div className="text-[16px] leading-relaxed text-brand-dark-alt/80 whitespace-pre-line">
+                    <div className="whitespace-pre-line text-[16px] leading-relaxed text-brand-dark-alt/80">
                       {section.content}
                     </div>
                   </section>

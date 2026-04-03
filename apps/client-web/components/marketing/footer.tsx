@@ -57,10 +57,10 @@ const companyLinks = [
 ];
 
 const legalLinks = [
-  { label: "Terms and Conditions", href: "/terms" },
-  { label: "Privacy Policy", href: "/terms" },
-  { label: "Cookie Settings", href: "/terms#cookie-policy" },
-  { label: "Legal Requirements", href: "/terms" },
+  { label: "Terms and Conditions", href: "/terms#terms-of-service" },
+  { label: "Privacy Policy", href: "/terms#privacy-policy" },
+  { label: "Cookie Settings", href: "/cookie-settings" },
+  { label: "Legal Requirements", href: "/terms#platform-rules" },
 ];
 
 export function Footer(): JSX.Element {
