@@ -32,9 +32,9 @@ export default function EditProfileScreen() {
     postcode: profile?.postcode || '',
   });
 
-  // Update form when profile loads or changes
+  // Update form when profile loads — but not while user is editing
   useEffect(() => {
-    if (profile) {
+    if (profile && !isEditing) {
       setFormData({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
@@ -42,7 +42,7 @@ export default function EditProfileScreen() {
         postcode: profile.postcode || '',
       });
     }
-  }, [profile]);
+  }, [profile, isEditing]);
 
   const handleSave = async () => {
     try {

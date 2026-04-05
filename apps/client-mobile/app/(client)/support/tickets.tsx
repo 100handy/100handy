@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, View, Text, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, MessageCircle, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react-native';
+import Header from '@/components/Header';
 import { useSupportStore } from '@shared/store/support';
 import { formatDistanceToNow } from 'date-fns';
 import { SupportTicket } from '@shared/supabase';
@@ -160,14 +161,7 @@ export default function TicketsScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <View className="flex-1">
         {/* Header */}
-        <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-gray-200">
-          <Pressable onPress={() => router.back()} className="flex-row items-center">
-            <ChevronLeft size={24} color="#30352D" />
-            <Text className="text-base text-[#30352D] ml-2">Support</Text>
-          </Pressable>
-          <Text className="text-lg font-bold text-[#30352D]">My Tickets</Text>
-          <View className="w-16" />
-        </View>
+        <Header title="My Tickets" onBackPress={() => router.back()} showBellIcon={false} />
 
         {/* Create New Ticket Button */}
         <View className="bg-white px-5 py-3 border-b border-gray-200">

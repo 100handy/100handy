@@ -2,7 +2,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, View, Text, Pressable, Switch, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import Header from '@/components/Header';
 import {
   usePrivacySettings,
   useUpdatePrivacySettings,
@@ -71,15 +71,7 @@ export default function PrivacySettingsScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <View className="flex-row items-center px-6 py-4 border-b border-gray-200">
-          <Pressable onPress={() => router.back()} className="flex-row items-center">
-            <ChevronLeft size={24} color="#333333" />
-            <Text className="text-base text-[#333333] ml-2">Profile</Text>
-          </Pressable>
-          <Text className="flex-1 text-center text-lg font-semibold text-[#333333] mr-16">
-            Privacy Settings
-          </Text>
-        </View>
+        <Header title="Privacy Settings" onBackPress={() => router.back()} showBellIcon={false} />
 
         <ScrollView className="flex-1">
           {isLoading ? (

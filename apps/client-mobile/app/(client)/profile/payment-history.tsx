@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Receipt } from 'lucide-react-native';
+import { Receipt } from 'lucide-react-native';
+import Header from '@/components/Header';
 import { useQuery } from '@tanstack/react-query';
 import { getClientPaymentHistory, type PaymentHistoryEntry } from '@shared/supabase/payments';
 import { useAuthStore } from '@shared/store/auth';
@@ -60,21 +61,14 @@ export default function PaymentHistoryScreen() {
 
   const { data: history, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['paymentHistory', user?.id],
-    queryFn: () => getClientPaymentHistory(user!.id),
+    queryFn: () => user?.id ? getClientPaymentHistory(user.id) : Promise.resolve([]),
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-row items-center px-5 py-4 border-b border-gray-200">
-        <Pressable onPress={() => router.back()} className="mr-3">
-          <ChevronLeft size={24} color="#30352D" />
-        </Pressable>
-        <Text className="text-lg font-worksans-semibold" style={{ color: '#30352D' }}>
-          Payment History
-        </Text>
-      </View>
+      <Header title="Payment History" onBackPress={() => router.back()} showBellIcon={false} />
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">

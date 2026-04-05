@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 
 import { Image } from 'expo-image';
-import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
+import { ScrollView, View, Text, Pressable, RefreshControl, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react-native';
 import { useAuthStore, switchToProfessionalRole } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
-import { useProfile } from '@shared/query';
+import { useProfile, useUnreadNotificationCount } from '@shared/query';
 import { queryClient } from '@shared/query/queryClient';
 import { useRouter } from 'expo-router';
 import { useToast } from '@/components/ui/toast';
@@ -52,8 +52,10 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { signOut, user, isLoading: authLoading, checkAuth } = useAuthStore();
   const { data: profile, isLoading, error, refetch } = useProfile();
-  const { navigateWithSecurityCheck } = useSecureNavigation();
+  const { navigateWithSecurityCheck, pendingRoute, isVerifying, verifyAndNavigate, cancelVerification } = useSecureNavigation();
+  const [verifyPassword, setVerifyPassword] = useState('');
   const toast = useToast();
+  const { data: unreadCount } = useUnreadNotificationCount(user?.id || '', 'customer');
   const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
@@ -210,9 +212,19 @@ export default function ProfileScreen() {
         <View className="flex-1">
           {/* Header with dark green background */}
           <View className="bg-[#333A31] pt-12 pb-6 px-6">
-            {/* Notification icon */}
-            <Pressable className="absolute top-3 right-6 z-10">
+            {/* Notification icon with badge */}
+            <Pressable
+              className="absolute top-3 right-6 z-10"
+              onPress={() => router.push('/(client)/notifications')}
+            >
               <Bell size={24} color="white" />
+              {!!unreadCount && unreadCount > 0 && (
+                <View className="absolute -top-1 -right-2 min-w-[18px] h-[18px] rounded-full items-center justify-center px-1" style={{ backgroundColor: '#C1856A' }}>
+                  <Text className="text-white text-[10px] font-bold">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
             </Pressable>
 
             {/* Profile Info */}
@@ -339,6 +351,51 @@ export default function ProfileScreen() {
       </Modal>
 
       <ReferralShareModal isOpen={showReferralModal} onClose={() => setShowReferralModal(false)} />
+
+      {/* Password Verification Modal (for 2FA-protected routes) */}
+      <Modal isOpen={!!pendingRoute} onClose={() => { cancelVerification(); setVerifyPassword(''); }}>
+        <ModalBackdrop />
+        <ModalContent className="bg-white" style={{ minHeight: '30%' }}>
+          <ModalBody>
+            <View className="flex-col w-full px-4 py-6">
+              <Text className="text-[#333A31] text-xl font-semibold mb-2">Verify Identity</Text>
+              <Text className="text-gray-600 text-sm mb-6">
+                Enter your password to access this section.
+              </Text>
+              <TextInput
+                value={verifyPassword}
+                onChangeText={setVerifyPassword}
+                placeholder="Password"
+                secureTextEntry
+                autoFocus
+                className="border border-gray-300 rounded-lg px-4 py-3 text-base mb-4"
+                style={{ color: '#333A31' }}
+              />
+              <Pressable
+                onPress={() => {
+                  verifyAndNavigate(verifyPassword);
+                  setVerifyPassword('');
+                }}
+                disabled={isVerifying || !verifyPassword}
+                className="w-full py-4 rounded-full items-center"
+                style={{ backgroundColor: isVerifying || !verifyPassword ? '#D1D5DB' : '#C1856A' }}
+              >
+                {isVerifying ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text className="text-white font-semibold text-base">Continue</Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => { cancelVerification(); setVerifyPassword(''); }}
+                className="w-full py-3 items-center mt-2"
+              >
+                <Text className="text-gray-500 text-base">Cancel</Text>
+              </Pressable>
+            </View>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 }

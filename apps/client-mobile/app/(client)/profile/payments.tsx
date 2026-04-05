@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, Platform, ActivityIndicator, Alert } from 'react-native';
+import { ScrollView, View, Text, Pressable, Platform, ActivityIndicator } from 'react-native';
+import { useToast } from '@/components/ui/toast';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useStripe } from '@stripe/stripe-react-native';
@@ -17,6 +18,7 @@ export default function PaymentsScreen() {
     const router = useRouter();
     const { initPaymentSheet, presentPaymentSheet } = useStripe();
     const [isWalletLoading, setIsWalletLoading] = useState(false);
+    const toast = useToast();
 
     const handleWalletPayment = async () => {
         setIsWalletLoading(true);
@@ -24,7 +26,7 @@ export default function PaymentsScreen() {
             // 1. Create SetupIntent to save the payment method
             const setupIntent = await createSetupIntent();
             if (!setupIntent) {
-                Alert.alert('Error', 'Failed to initialize payment. Please try again.');
+                toast.error('Error', 'Failed to initialize payment. Please try again.');
                 return;
             }
 
@@ -39,7 +41,7 @@ export default function PaymentsScreen() {
 
             if (initError) {
                 console.error('PaymentSheet init error:', initError);
-                Alert.alert('Error', initError.message);
+                toast.error('Error', initError.message);
                 return;
             }
 
@@ -49,18 +51,17 @@ export default function PaymentsScreen() {
             if (presentError) {
                 // User cancelled or error
                 if (presentError.code !== 'Canceled') {
-                    Alert.alert('Error', presentError.message);
+                    toast.error('Error', presentError.message);
                 }
                 return;
             }
 
             // Success - card was saved
-            Alert.alert('Success', 'Payment method added successfully!', [
-                { text: 'OK', onPress: () => router.push('/(client)/profile/payment-methods') }
-            ]);
+            toast.success('Success', 'Payment method added successfully!');
+            router.push('/(client)/profile/payment-methods');
         } catch (error) {
             console.error('Wallet payment error:', error);
-            Alert.alert('Error', 'Something went wrong. Please try again.');
+            toast.error('Error', 'Something went wrong. Please try again.');
         } finally {
             setIsWalletLoading(false);
         }
@@ -70,7 +71,7 @@ export default function PaymentsScreen() {
         <SafeAreaView className="flex-1 bg-white">
             {/* Header */}
             <Header 
-                title="Edit Payment" 
+                title="Payment"
                 onBackPress={() => router.back()} 
                 showBellIcon={false}
                 showFilterIcon={false}

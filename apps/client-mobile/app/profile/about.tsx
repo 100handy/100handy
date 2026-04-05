@@ -2,7 +2,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import Header from '@/components/Header';
 
 interface MenuItemProps {
   title: string;
@@ -47,43 +47,7 @@ export default function AboutScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <View
-          className="flex-row items-center justify-center px-4 bg-white border-b border-[#f0f0f0]"
-          style={{ height: 74, paddingHorizontal: 16 }}
-        >
-          <Pressable
-            onPress={() => router.back()}
-            className="flex-row items-center absolute left-6"
-            style={{ left: 23 }}
-          >
-            <ChevronLeft size={20} color="#30352d" />
-            <Text
-              className="text-[#30352d] ml-1"
-              style={{
-                fontFamily: 'Work Sans',
-                fontSize: 18,
-                fontWeight: '400' as const,
-                marginLeft: 4,
-              }}
-            >
-              Profile
-            </Text>
-          </Pressable>
-          <Text
-            className="text-[#30352d]"
-            style={{
-              fontFamily: 'Work Sans',
-              fontSize: 18,
-              fontWeight: '700' as const,
-              textAlign: 'center' as const,
-            }}
-          >
-            About
-          </Text>
-        </View>
-
-        {/* Separator line */}
-        <View className="h-[1px] bg-[#f0f0f0]" style={{ height: 1, backgroundColor: '#f0f0f0' }} />
+        <Header title="About" onBackPress={() => router.back()} showBellIcon={false} />
 
         <ScrollView className="flex-1">
           <View className="flex-col bg-white" style={{ paddingTop: 16 }}>

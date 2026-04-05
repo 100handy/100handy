@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import Header from '@/components/Header';
 import { useToast } from '@/components/ui/toast';
 import { signIn, updatePassword } from '@shared/supabase/auth';
 import { useAuthStore } from '@shared/supabase';
@@ -39,6 +39,11 @@ export default function ChangePasswordScreen() {
 
     if (newPassword.length < 8) {
       toast.error('Error', 'Password must be at least 8 characters');
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      toast.error('Error', 'Password must contain at least one uppercase letter and one number');
       return;
     }
 
@@ -82,15 +87,7 @@ export default function ChangePasswordScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <View className="flex-row items-center p-4 border-b border-[#E5E7EB]">
-          <Pressable onPress={() => router.back()} className="flex-row items-center">
-            <ChevronLeft size={24} color="#000000" />
-            <Text className="text-base ml-1 text-[#333A31]">Profile</Text>
-          </Pressable>
-          <Text className="flex-1 text-center text-lg font-worksans-semibold mr-12 text-[#333A31]">
-            Password
-          </Text>
-        </View>
+        <Header title="Change Password" onBackPress={() => router.back()} showBellIcon={false} />
 
         {/* Expandable rows */}
         <View className="flex-1">

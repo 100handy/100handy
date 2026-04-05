@@ -113,6 +113,21 @@ export default function ConversationScreen() {
     }
   };
 
+  if (!conversationId) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-base font-semibold text-[#30352D] mb-2 text-center">
+            Conversation not found
+          </Text>
+          <Pressable onPress={() => router.back()} className="px-6 py-3 rounded-full bg-[#C1856A]">
+            <Text className="text-white font-semibold">Go back</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (conversationLoading || messagesLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">

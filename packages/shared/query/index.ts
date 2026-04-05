@@ -204,3 +204,10 @@ export {
   useAccountBalance,
   accountBalanceKeys,
 } from './hooks/useAccountBalance';
+
+// Notification hooks and utilities
+export {
+  useNotifications,
+  useUnreadNotificationCount,
+  notificationKeys,
+} from './hooks/useNotifications';

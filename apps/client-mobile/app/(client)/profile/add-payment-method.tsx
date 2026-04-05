@@ -1,61 +1,52 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import Header from '@/components/Header';
 import { CardField, useConfirmSetupIntent } from '@stripe/stripe-react-native';
 import { createSetupIntent } from '@shared/supabase/payment-methods';
+import { useToast } from '@/components/ui/toast';
 
 export default function AddPaymentMethodScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [cardComplete, setCardComplete] = useState(false);
   const { confirmSetupIntent } = useConfirmSetupIntent();
+  const toast = useToast();
 
   const handleSaveCard = async () => {
     if (!cardComplete) {
-      Alert.alert('Error', 'Please enter valid card details');
+      toast.error('Error', 'Please enter valid card details');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Create SetupIntent
       const setupIntent = await createSetupIntent();
 
       if (!setupIntent) {
-        Alert.alert('Error', 'Failed to initialize payment setup. Please try again.');
+        toast.error('Error', 'Failed to initialize payment setup. Please try again.');
         setIsLoading(false);
         return;
       }
 
-      // Confirm SetupIntent with card details
       const { error } = await confirmSetupIntent(setupIntent.clientSecret, {
         paymentMethodType: 'Card',
       });
 
       if (error) {
         console.error('Error confirming setup intent:', error);
-        Alert.alert('Error', error.message || 'Failed to add payment method. Please try again.');
+        toast.error('Error', error.message || 'Failed to add payment method. Please try again.');
         setIsLoading(false);
         return;
       }
 
-      // Success! Navigate back to payment methods list
-      Alert.alert(
-        'Success',
-        'Payment method added successfully',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      toast.success('Success', 'Payment method added successfully');
+      router.back();
     } catch (error) {
       console.error('Error saving card:', error);
-      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      toast.error('Error', 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -64,18 +55,7 @@ export default function AddPaymentMethodScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()} disabled={isLoading}>
-          <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
-        </Pressable>
-        <Text
-          className="text-xl font-bold text-[#30352D]"
-          style={{ fontFamily: 'WorkSans_700Bold' }}
-        >
-          Add Payment Method
-        </Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <Header title="Add Payment Method" onBackPress={() => router.back()} showBellIcon={false} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="flex-col px-5 py-6 gap-6">

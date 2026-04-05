@@ -30,6 +30,7 @@ import {
 import { useRouter } from "expo-router";
 import { switchToCustomerRole, useAuthStore } from "@shared/supabase";
 import { useProfileStore } from "@shared/supabase";
+import { useUnreadNotificationCount } from "@shared/query";
 import { queryClient } from "@shared/query/queryClient";
 import * as ImagePicker from "expo-image-picker";
 import AddProfilePhotoModal from "@/components/modals/AddProfilePhotoModal";
@@ -48,6 +49,7 @@ export default function ProfessionalProfileScreen() {
   const { signOut, user, checkAuth } = useAuthStore();
   const { profile, fetchProfile, uploadAvatar } = useProfileStore();
   const toast = useToast();
+  const { data: unreadCount } = useUnreadNotificationCount(user?.id || '', 'handy');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [isSwitchingToClient, setIsSwitchingToClient] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -244,10 +246,32 @@ export default function ProfessionalProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       {/* Header */}
-      <View className="py-6 px-5 items-center border-b border-gray-100">
-        <Text className="font-worksans-bold text-2xl text-theme-font">
-          Profile
-        </Text>
+      <View className="py-6 px-5 border-b border-gray-100">
+        <View className="flex-row items-center justify-center">
+          <View style={{ width: 40 }} />
+          <Text className="flex-1 text-center font-worksans-bold text-2xl text-theme-font">
+            Profile
+          </Text>
+          <Pressable
+            onPress={() => router.push("/(professional)/notifications")}
+            style={{ width: 40 }}
+            className="items-end"
+          >
+            <View>
+              <Bell size={24} color="#333A31" />
+              {!!unreadCount && unreadCount > 0 && (
+                <View
+                  className="absolute -top-1 -right-2 min-w-[18px] h-[18px] rounded-full items-center justify-center px-1"
+                  style={{ backgroundColor: "#C1856A" }}
+                >
+                  <Text className="text-white text-[10px] font-bold">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView

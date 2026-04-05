@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import Header from '@/components/Header';
 import { StatusBar } from 'expo-status-bar';
 import { useAccountBalance, formatBalanceDisplay } from '@shared/supabase';
 
@@ -19,18 +19,7 @@ export default function RedemptionsScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row px-4 py-3 items-center border-b border-gray-200">
-        <Pressable
-          onPress={() => router.back()}
-          className="flex-row items-center"
-        >
-          <ChevronLeft size={24} color="#333A31" />
-          <Text className="text-lg text-[#333A31] ml-1">Ed...</Text>
-        </Pressable>
-        <Text className="text-lg font-bold text-[#333A31] ml-8">
-          Redemptions
-        </Text>
-      </View>
+      <Header title="Redemptions" onBackPress={() => router.back()} showBellIcon={false} />
 
       {/* Content */}
       <View className="flex-1">

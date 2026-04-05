@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, View, Text, Pressable, ActivityIndicator, Alert, RefreshControl } from 'react-native';
+import { useToast } from '@/components/ui/toast';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { ChevronLeft, Plus, Trash2, CheckCircle } from 'lucide-react-native';
+import { Plus, Trash2, CheckCircle } from 'lucide-react-native';
+import Header from '@/components/Header';
 import {
   listPaymentMethods,
   deletePaymentMethod,
@@ -23,6 +25,8 @@ export default function PaymentMethodsScreen() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
+  const toast = useToast();
 
   // Reload payment methods when screen comes into focus
   useFocusEffect(
@@ -65,8 +69,9 @@ export default function PaymentMethodsScreen() {
             const success = await deletePaymentMethod(paymentMethodId);
             if (success) {
               await loadPaymentMethods();
+              toast.success('Deleted', 'Payment method removed.');
             } else {
-              Alert.alert('Error', 'Failed to delete payment method. Please try again.');
+              toast.error('Error', 'Failed to delete payment method. Please try again.');
             }
           },
         },
@@ -75,13 +80,18 @@ export default function PaymentMethodsScreen() {
   };
 
   const handleSetDefault = async (paymentMethodId: string) => {
-    const success = await setDefaultPaymentMethod(paymentMethodId);
-    if (success) {
-      // Reload payment methods to get updated default status
-      await loadPaymentMethods();
-      Alert.alert('Success', 'Default payment method updated');
-    } else {
-      Alert.alert('Error', 'Failed to set default payment method. Please try again.');
+    if (settingDefaultId) return;
+    setSettingDefaultId(paymentMethodId);
+    try {
+      const success = await setDefaultPaymentMethod(paymentMethodId);
+      if (success) {
+        await loadPaymentMethods();
+        toast.success('Updated', 'Default payment method changed.');
+      } else {
+        toast.error('Error', 'Failed to set default payment method. Please try again.');
+      }
+    } finally {
+      setSettingDefaultId(null);
     }
   };
 
@@ -98,18 +108,7 @@ export default function PaymentMethodsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()}>
-          <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
-        </Pressable>
-        <Text
-          className="text-xl font-bold text-[#30352D]"
-          style={{ fontFamily: 'WorkSans_700Bold' }}
-        >
-          Payment Methods
-        </Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <Header title="Payment Methods" onBackPress={() => router.back()} showBellIcon={false} />
 
       <ScrollView
         className="flex-1"
@@ -211,9 +210,14 @@ export default function PaymentMethodsScreen() {
                         {!isDefault && (
                           <Pressable
                             onPress={() => handleSetDefault(method.id)}
+                            disabled={!!settingDefaultId}
                             className="p-2"
                           >
-                            <CheckCircle size={20} color="#C1856A" strokeWidth={2} />
+                            {settingDefaultId === method.id ? (
+                              <ActivityIndicator size="small" color="#C1856A" />
+                            ) : (
+                              <CheckCircle size={20} color="#C1856A" strokeWidth={2} />
+                            )}
                           </Pressable>
                         )}
                         <Pressable

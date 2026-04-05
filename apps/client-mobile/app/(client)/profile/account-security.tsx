@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Mail, Shield, ShieldOff } from 'lucide-react-native';
+import { Mail, Shield, ShieldOff } from 'lucide-react-native';
+import Header from '@/components/Header';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase, disable2FA, useAuthStore } from '@shared/supabase';
@@ -117,13 +118,7 @@ export default function AccountSecurityScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <View className="flex-row items-center p-4 border-b border-gray-200">
-          <Pressable onPress={() => router.back()} className="p-2">
-            <ChevronLeft size={24} color="#000000" />
-          </Pressable>
-          <Text className="flex-1 text-center text-lg font-semibold">Account Security</Text>
-          <View className="w-8" />
-        </View>
+        <Header title="Account Security" onBackPress={() => router.back()} showBellIcon={false} />
 
         {/* Content */}
         <View className="flex-col p-6 space-y-6 flex-1">

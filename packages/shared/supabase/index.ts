@@ -4,6 +4,7 @@ export * from './auth';
 export * from './profile';
 export * from './bookings';
 export * from './booking-validation';
+export * from './notifications';
 export * from './recurring-bookings';
 export * from './reviews';
 export * from './payments';
