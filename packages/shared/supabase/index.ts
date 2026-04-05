@@ -3,6 +3,7 @@ export * from './supabaseClient';
 export * from './auth';
 export * from './profile';
 export * from './bookings';
+export * from './booking-validation';
 export * from './recurring-bookings';
 export * from './reviews';
 export * from './payments';

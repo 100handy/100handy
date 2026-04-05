@@ -159,24 +159,70 @@ export async function createRecurringBookings(
 /**
  * Cancel all future bookings in a series
  */
-export async function cancelRecurringSeries(seriesId: string): Promise<boolean> {
+export async function cancelRecurringSeries(seriesId: string, customerId?: string): Promise<boolean> {
   try {
-    // Mark series as inactive
-    const { error: seriesError } = await supabase
+    // Step 1: Mark series as inactive (with ownership check if customerId provided)
+    let seriesQuery = supabase
       .from('recurring_booking_series')
       .update({ is_active: false, cancelled_at: new Date().toISOString() })
       .eq('id', seriesId);
+    if (customerId) {
+      seriesQuery = seriesQuery.eq('customer_id', customerId);
+    }
+    const { error: seriesError } = await seriesQuery;
 
     if (seriesError) throw seriesError;
 
-    // Cancel all pending/accepted bookings in the series
-    const { error } = await supabase
+    // Step 2: Find bookings with authorized payment holds to release
+    let holdQuery = supabase
+      .from('bookings')
+      .select('id, payment_intent_id, payment_status')
+      .eq('recurring_series_id', seriesId)
+      .in('status', ['pending', 'accepted'])
+      .eq('payment_status', 'authorized')
+      .not('payment_intent_id', 'is', null);
+    if (customerId) {
+      holdQuery = holdQuery.eq('customer_id', customerId);
+    }
+    const { data: holdBookings } = await holdQuery;
+
+    // Step 3: Cancel all pending/accepted bookings in the series
+    let cancelQuery = supabase
       .from('bookings')
       .update({ status: 'cancelled' })
       .eq('recurring_series_id', seriesId)
       .in('status', ['pending', 'accepted']);
+    if (customerId) {
+      cancelQuery = cancelQuery.eq('customer_id', customerId);
+    }
+    const { error } = await cancelQuery;
 
     if (error) throw error;
+
+    // Step 4: Release payment holds (best-effort, after status is cancelled)
+    if (holdBookings && holdBookings.length > 0) {
+      const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
+      for (const b of holdBookings) {
+        if (!b.payment_intent_id) continue;
+        try {
+          const released = await cancelPaymentIntent(b.payment_intent_id);
+          if (released) {
+            await updateBookingPaymentStatus(b.id, 'cancelled');
+          } else {
+            await logPaymentError(b.id, 'hold_release_failed', 'Payment hold was not released on series cancellation.', {
+              paymentIntentId: b.payment_intent_id,
+            });
+            await supabase
+              .from('bookings')
+              .update({ payment_hold_release_failed: true })
+              .eq('id', b.id);
+          }
+        } catch (e) {
+          console.error('Failed to release hold for booking in series:', b.id, e);
+        }
+      }
+    }
+
     return true;
   } catch (error) {
     console.error('Error cancelling recurring series:', error);

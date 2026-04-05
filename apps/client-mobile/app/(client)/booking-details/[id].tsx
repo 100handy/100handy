@@ -478,6 +478,16 @@ export default function BookingDetailScreen() {
             </Button>
           )}
 
+          {/* Payment hold release warning */}
+          {booking.status === 'cancelled' && booking.payment_hold_release_failed === true && (
+            <View className="bg-amber-50 rounded-lg border border-amber-200 p-4 flex-row items-start gap-3">
+              <AlertCircle size={20} color="#D97706" />
+              <Text className="text-sm font-worksans flex-1" style={{ color: '#92400E' }}>
+                Your card hold may take up to 7 days to be released automatically. Contact support if it persists.
+              </Text>
+            </View>
+          )}
+
           {/* In-progress cancellation info */}
           {booking.status === 'in_progress' && (
             <View className="bg-blue-50 rounded-lg border border-blue-200 p-4 flex-row items-start gap-3">
@@ -499,6 +509,9 @@ export default function BookingDetailScreen() {
         onClose={() => setShowCancelModal(false)}
         bookingId={booking.id}
         taskTitle={booking.task_title}
+        scheduledDate={booking.scheduled_date}
+        scheduledTime={booking.scheduled_time}
+        recurringSeriesId={booking.recurring_series_id}
       />
     </SafeAreaView>
   );

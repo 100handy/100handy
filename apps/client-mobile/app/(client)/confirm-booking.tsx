@@ -252,6 +252,12 @@ export default function ConfirmBookingScreen() {
       return;
     }
 
+    // Validate hourly rate is set
+    if (originalHourlyRateCents <= 0) {
+      toast.error('Pricing Error', 'This tasker has not set their hourly rate for this service. Please choose another tasker.');
+      return;
+    }
+
     // Validate that selected date+time is not in the past (with 5-min grace)
     const selectedDateTime = new Date(`${selectedDate}T${selectedTime}:00`);
     if (!isNaN(selectedDateTime.getTime()) && selectedDateTime.getTime() < Date.now() - 5 * 60 * 1000) {

@@ -86,6 +86,7 @@ export interface Booking {
   discount_percent?: number;
   discount_amount_cents?: number;
   original_hourly_rate_cents?: number;
+  payment_hold_release_failed?: boolean;
 }
 
 // Category interface - not exported to avoid conflict with query/index.ts export
@@ -133,6 +134,8 @@ export interface GetBookingsOptions {
   status?: BookingStatus | BookingStatus[];
   limit?: number;
   offset?: number;
+  /** Only return bookings on or after this date (YYYY-MM-DD) */
+  minDate?: string;
 }
 
 export async function getBookings(options: GetBookingsOptions = {}): Promise<BookingWithRelations[]> {
@@ -162,6 +165,11 @@ export async function getBookings(options: GetBookingsOptions = {}): Promise<Boo
       }
     }
 
+    // Filter by minimum date
+    if (options.minDate) {
+      query = query.gte('scheduled_date', options.minDate);
+    }
+
     // Apply pagination
     if (options.limit) {
       query = query.limit(options.limit);
@@ -185,9 +193,11 @@ export async function getBookings(options: GetBookingsOptions = {}): Promise<Boo
 }
 
 export async function getUpcomingBookings(userId: string): Promise<BookingWithRelations[]> {
+  const today = new Date().toISOString().split('T')[0]!;
   return getBookings({
     userId,
     status: ['pending', 'accepted', 'in_progress'],
+    minDate: today,
     limit: 50
   });
 }
@@ -405,26 +415,49 @@ export async function checkBookingConflict(
  * @param bookingId - The ID of the booking to cancel
  * @returns Promise<boolean> - true if successful, false otherwise
  */
-export async function cancelBooking(bookingId: string): Promise<boolean> {
+export async function cancelBooking(bookingId: string, customerId: string): Promise<boolean> {
   try {
-    // Best-effort release of authorization hold, if any.
-    // Taskrabbit-style: cancel booking before completion should release the hold.
+    // Read booking to get payment info and verify status
     const { data: booking } = await supabase
       .from('bookings')
       .select('payment_intent_id, payment_status, status')
       .eq('id', bookingId)
+      .eq('customer_id', customerId)
       .single();
 
-    // Do not release the payment hold for in-progress bookings — the hold
-    // is needed for capture on completion.
-    if (booking?.status === 'in_progress') {
-      console.warn(`Booking ${bookingId} is in_progress — skipping payment hold release`);
+    if (!booking) {
+      console.warn(`Booking ${bookingId} not found for customer ${customerId}`);
       return false;
     }
 
-    if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
+    if (booking.status === 'in_progress') {
+      console.warn(`Booking ${bookingId} is in_progress — cannot cancel`);
+      return false;
+    }
+
+    // Step 1: Update status to cancelled FIRST (atomic check via status filter)
+    // This prevents the race condition where hold is released but status update fails
+    const { data, error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', bookingId)
+      .eq('customer_id', customerId)
+      .in('status', ['pending', 'accepted'])
+      .select();
+
+    if (error) {
+      console.error(`Error cancelling booking ${bookingId}:`, error);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Booking ${bookingId} not cancelled - status may have changed`);
+      return false;
+    }
+
+    // Step 2: Release payment hold AFTER status is confirmed cancelled
+    if (booking.payment_intent_id && booking.payment_status === 'authorized') {
       try {
-        // Import dynamically to avoid circular dependency
         const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
         const released = await cancelPaymentIntent(booking.payment_intent_id);
         if (released) {
@@ -433,7 +466,6 @@ export async function cancelBooking(bookingId: string): Promise<boolean> {
           await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on cancellation. Customer hold will auto-expire in 7 days.', {
             paymentIntentId: booking.payment_intent_id,
           });
-          // Flag the booking so support can monitor it
           await supabase
             .from('bookings')
             .update({ payment_hold_release_failed: true })
@@ -450,23 +482,6 @@ export async function cancelBooking(bookingId: string): Promise<boolean> {
           // Already logged to console above
         }
       }
-    }
-
-    const { data, error } = await supabase
-      .from('bookings')
-      .update({ status: 'cancelled' })
-      .eq('id', bookingId)
-      .in('status', ['pending', 'accepted'])
-      .select();
-
-    if (error) {
-      console.error(`Error cancelling booking ${bookingId}:`, error);
-      return false;
-    }
-
-    if (!data || data.length === 0) {
-      console.warn(`Booking ${bookingId} not cancelled - status may not be pending or accepted`);
-      return false;
     }
 
     supabase.functions
@@ -679,7 +694,7 @@ export async function declineBooking(
   reason?: string
 ): Promise<boolean> {
   try {
-    // Best-effort release of authorization hold, if any (professional declined).
+    // Read booking to get payment info
     const { data: booking } = await supabase
       .from('bookings')
       .select('payment_intent_id, payment_status')
@@ -687,42 +702,15 @@ export async function declineBooking(
       .eq('handy_id', handyId)
       .single();
 
-    if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
-      try {
-        // Import dynamically to avoid circular dependency
-        const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
-        const released = await cancelPaymentIntent(booking.payment_intent_id);
-        if (released) {
-          await updateBookingPaymentStatus(bookingId, 'cancelled');
-        } else {
-          // Hold release failed - log for monitoring and flag booking
-          await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on decline. Customer hold will auto-expire in 7 days.', {
-            paymentIntentId: booking.payment_intent_id,
-          });
-          // Flag the booking so support can monitor it
-          await supabase
-            .from('bookings')
-            .update({ payment_hold_release_failed: true })
-            .eq('id', bookingId);
-        }
-      } catch (e) {
-        console.error('Failed to release authorization hold for declined booking:', bookingId, e);
-        // Best-effort log even if the above fails
-        try {
-          const { logPaymentError } = await import('./payments');
-          await logPaymentError(bookingId, 'hold_release_error', String(e), {
-            paymentIntentId: booking.payment_intent_id,
-          });
-        } catch {
-          // Already logged to console above
-        }
-      }
+    if (!booking) {
+      console.warn(`Booking ${bookingId} not found for handy ${handyId}`);
+      return false;
     }
 
+    // Step 1: Update status to cancelled FIRST
     const updateData: { status: BookingStatus; decline_reason?: string } = {
       status: 'cancelled',
     };
-
     if (reason) {
       updateData.decline_reason = reason;
     }
@@ -732,7 +720,7 @@ export async function declineBooking(
       .update(updateData)
       .eq('id', bookingId)
       .eq('handy_id', handyId)
-      .eq('status', 'pending') // Only decline if currently pending
+      .eq('status', 'pending')
       .select();
 
     if (error) {
@@ -743,6 +731,35 @@ export async function declineBooking(
     if (!data || data.length === 0) {
       console.warn(`Booking ${bookingId} not declined - status may not be pending`);
       return false;
+    }
+
+    // Step 2: Release payment hold AFTER status is confirmed cancelled
+    if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
+      try {
+        const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
+        const released = await cancelPaymentIntent(booking.payment_intent_id);
+        if (released) {
+          await updateBookingPaymentStatus(bookingId, 'cancelled');
+        } else {
+          await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on decline. Customer hold will auto-expire in 7 days.', {
+            paymentIntentId: booking.payment_intent_id,
+          });
+          await supabase
+            .from('bookings')
+            .update({ payment_hold_release_failed: true })
+            .eq('id', bookingId);
+        }
+      } catch (e) {
+        console.error('Failed to release authorization hold for declined booking:', bookingId, e);
+        try {
+          const { logPaymentError } = await import('./payments');
+          await logPaymentError(bookingId, 'hold_release_error', String(e), {
+            paymentIntentId: booking.payment_intent_id,
+          });
+        } catch {
+          // Already logged to console above
+        }
+      }
     }
 
     supabase.functions
@@ -914,7 +931,7 @@ export async function cancelAcceptedBooking(
   reason?: string
 ): Promise<boolean> {
   try {
-    // Get booking to release payment hold
+    // Read booking to get payment info
     const { data: booking } = await supabase
       .from('bookings')
       .select('payment_intent_id, payment_status')
@@ -928,23 +945,7 @@ export async function cancelAcceptedBooking(
       return false;
     }
 
-    // Release payment hold if authorized
-    if (booking.payment_intent_id && booking.payment_status === 'authorized') {
-      try {
-        const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
-        const released = await cancelPaymentIntent(booking.payment_intent_id);
-        if (released) {
-          await updateBookingPaymentStatus(bookingId, 'cancelled');
-        } else {
-          await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on professional cancellation.', {
-            paymentIntentId: booking.payment_intent_id,
-          });
-        }
-      } catch (e) {
-        console.error('Failed to release authorization hold:', bookingId, e);
-      }
-    }
-
+    // Step 1: Update status to cancelled FIRST
     const updateData: { status: BookingStatus; decline_reason?: string } = {
       status: 'cancelled',
     };
@@ -968,6 +969,27 @@ export async function cancelAcceptedBooking(
     if (!data || data.length === 0) {
       console.warn(`Booking ${bookingId} not cancelled - status may not be accepted`);
       return false;
+    }
+
+    // Step 2: Release payment hold AFTER status is confirmed cancelled
+    if (booking.payment_intent_id && booking.payment_status === 'authorized') {
+      try {
+        const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
+        const released = await cancelPaymentIntent(booking.payment_intent_id);
+        if (released) {
+          await updateBookingPaymentStatus(bookingId, 'cancelled');
+        } else {
+          await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on professional cancellation.', {
+            paymentIntentId: booking.payment_intent_id,
+          });
+          await supabase
+            .from('bookings')
+            .update({ payment_hold_release_failed: true })
+            .eq('id', bookingId);
+        }
+      } catch (e) {
+        console.error('Failed to release authorization hold:', bookingId, e);
+      }
     }
 
     supabase.functions
