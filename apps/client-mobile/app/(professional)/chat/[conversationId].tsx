@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { View, Text, Image, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, Image, ActivityIndicator, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, MoreVertical } from 'lucide-react-native';
@@ -43,7 +43,7 @@ export default function ProfessionalConversationScreen() {
 
   // Mutations
   const sendMessage = useSendConversationMessage();
-  const markAsRead = useMarkAsRead();
+  const { mutate: markAsRead } = useMarkAsRead();
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Determine other user (for professional, it's the client)
@@ -56,7 +56,7 @@ export default function ProfessionalConversationScreen() {
 
   const markConversationAsRead = useCallback(() => {
     if (conversationId) {
-      markAsRead.mutate(conversationId);
+      markAsRead(conversationId);
     }
   }, [conversationId, markAsRead]);
 
@@ -115,6 +115,47 @@ export default function ProfessionalConversationScreen() {
     }
   };
 
+  const handleViewProfile = useCallback(() => {
+    if (!otherUser?.user_id) {
+      Alert.alert('Profile unavailable', 'This profile cannot be opened right now.');
+      return;
+    }
+
+    router.push({
+      pathname: '/(professional)/profile/client-profile',
+      params: {
+        userId: otherUser.user_id,
+        name: otherUserName,
+      },
+    });
+  }, [otherUser?.user_id, otherUserName, router]);
+
+  const handleReportUser = useCallback(() => {
+    Alert.alert(
+      'Report user',
+      `Need help with ${otherUserName}? Contact support and include this conversation if needed.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Open Support',
+          onPress: () => router.push('/(professional)/profile/support'),
+        },
+      ]
+    );
+  }, [otherUserName, router]);
+
+  const handleMoreOptions = useCallback(() => {
+    Alert.alert(
+      otherUserName,
+      'Choose an action',
+      [
+        { text: 'View profile', onPress: handleViewProfile },
+        { text: 'Report user', onPress: handleReportUser },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  }, [handleReportUser, handleViewProfile, otherUserName]);
+
   if (conversationLoading || messagesLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
@@ -171,7 +212,7 @@ export default function ProfessionalConversationScreen() {
         </View>
 
         {/* More Options */}
-        <Pressable className="ml-2">
+        <Pressable className="ml-2" onPress={handleMoreOptions}>
           <MoreVertical size={20} color="#666666" />
         </Pressable>
       </View>

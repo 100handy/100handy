@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, TouchableOpacity, ActivityIndicator, Alert, View, Text, Pressable } from 'react-native';
+import { ScrollView, TouchableOpacity, ActivityIndicator, Alert, View, Text, Pressable, Image as RNImage } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 
-// Import gluestack-ui components
-import { Image } from 'expo-image';
 import { Input, InputField } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 
@@ -23,6 +21,7 @@ export default function EditProfileScreen() {
   const uploadAvatarMutation = useUploadAvatar();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   
   // Initialize formData with profile data if available, otherwise empty strings
   const [formData, setFormData] = useState({
@@ -43,6 +42,10 @@ export default function EditProfileScreen() {
       });
     }
   }, [profile, isEditing]);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [profile?.avatar_url]);
 
   const handleSave = async () => {
     try {
@@ -157,11 +160,12 @@ export default function EditProfileScreen() {
                 className="relative"
               >
                 <View className="w-32 h-32 rounded-full overflow-hidden bg-gray-200">
-                  {profile?.avatar_url ? (
-                    <Image
+                  {profile?.avatar_url && !avatarLoadFailed ? (
+                    <RNImage
                       source={{ uri: profile.avatar_url }}
-                      alt="Profile"
                       className="w-full h-full"
+                      resizeMode="cover"
+                      onError={() => setAvatarLoadFailed(true)}
                     />
                   ) : (
                     <View className="w-full h-full items-center justify-center bg-[#C1856A]">

@@ -82,7 +82,7 @@ export default function ProfileScreen() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.replace('/(auth)/(client)');
+      router.replace('/');
     } catch (error) {
       console.error('Sign out error:', error);
       toast.error('Error', 'Failed to sign out. Please try again.');

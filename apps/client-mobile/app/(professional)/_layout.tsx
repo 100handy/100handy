@@ -78,7 +78,7 @@ export default function ProfessionalLayout() {
   }
 
   if (!isAuthenticated) {
-    return <Redirect href="/(auth)/role-selection" />;
+    return <Redirect href="/(auth)/(client)" />;
   }
 
   if (!isEmailVerified) {
@@ -97,7 +97,7 @@ export default function ProfessionalLayout() {
   }
 
   if (userRole !== 'handy') {
-    return <Redirect href="/(auth)/role-selection" />;
+    return <Redirect href="/(auth)/(client)" />;
   }
 
   if (isOnboardingComplete === false) {

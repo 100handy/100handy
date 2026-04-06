@@ -3,31 +3,45 @@ import { ScrollView, View, Text, Pressable, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import { ChevronLeft, ShieldCheck, Camera, FileText } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
 import { supabase } from '@shared/supabase';
-import { completeOnboarding, getHandyProfile, markVerificationSubmitted } from '@shared/supabase/profile';
+import { completeOnboarding, getHandyProfile } from '@shared/supabase/profile';
 import { useToast } from '@/components/ui/toast';
 
 export default function VerifyDocumentUpload() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const toast = useToast();
+
+  const syncVerificationStatus = useCallback(async () => {
+    try {
+      setIsCheckingStatus(true);
+      const handyProfile = await getHandyProfile();
+      if (
+        handyProfile?.verification_status === 'submitted' ||
+        handyProfile?.verification_status === 'verified'
+      ) {
+        await completeOnboarding();
+        router.replace('/(professional)/(tabs)/dashboard');
+      }
+    } catch (error) {
+      console.error('Error checking verification status:', error);
+    } finally {
+      setIsCheckingStatus(false);
+    }
+  }, []);
 
   // Auto-skip if verification was already submitted/verified
   useEffect(() => {
-    const checkExistingVerification = async () => {
-      try {
-        const handyProfile = await getHandyProfile();
-        if (handyProfile?.verification_status === 'submitted' || handyProfile?.verification_status === 'verified') {
-          await completeOnboarding();
-          router.replace('/(professional)/(tabs)/dashboard');
-        }
-      } catch (error) {
-        console.error('Error checking verification status:', error);
-      }
-    };
-    checkExistingVerification();
-  }, []);
+    syncVerificationStatus();
+  }, [syncVerificationStatus]);
+
+  useFocusEffect(
+    useCallback(() => {
+      syncVerificationStatus();
+    }, [syncVerificationStatus])
+  );
 
   const fetchOptions = useCallback(async () => {
     try {
@@ -64,12 +78,12 @@ export default function VerifyDocumentUpload() {
       const result = await present() as { status: string } | undefined;
 
       if (result?.status === 'FlowCompleted') {
-        const saved = await markVerificationSubmitted();
-        if (!saved) {
-          throw new Error('Failed to save verification status');
-        }
+        await syncVerificationStatus();
         await completeOnboarding();
-        toast.success('Verification Submitted', 'Your identity verification has been submitted for review.');
+        toast.success(
+          'Verification received',
+          'Stripe completed the verification flow. Your status will update after the backend confirms the result.'
+        );
         router.replace('/(professional)/(tabs)/dashboard');
       } else if (result?.status === 'FlowCanceled') {
         // User canceled - stay on page
@@ -82,7 +96,7 @@ export default function VerifyDocumentUpload() {
     } finally {
       setIsLoading(false);
     }
-  }, [present, toast]);
+  }, [present, syncVerificationStatus, toast]);
 
   const handleSkipForNow = async (): Promise<void> => {
     try {
@@ -192,10 +206,10 @@ export default function VerifyDocumentUpload() {
                 className="rounded-full mb-3"
                 style={{ backgroundColor: '#C1856A' }}
                 onPress={handleVerifyWithStripe}
-                isDisabled={isLoading || stripeLoading}
+                isDisabled={isLoading || stripeLoading || isCheckingStatus}
               >
                 <ButtonText className="text-[18px] font-worksans-bold text-white">
-                  {isLoading || stripeLoading ? 'Loading...' : 'Start Verification'}
+                  {isLoading || stripeLoading || isCheckingStatus ? 'Loading...' : 'Start Verification'}
                 </ButtonText>
               </Button>
 

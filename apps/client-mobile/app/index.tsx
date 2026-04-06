@@ -109,20 +109,12 @@ export default function Index() {
       }
 
       // Priority 2: User is not authenticated - check guest onboarding state
-      const [hasSeenOnboarding, hasAcceptedTerms] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING),
-        AsyncStorage.getItem(STORAGE_KEYS.HAS_ACCEPTED_TERMS),
-      ]);
+      const hasSeenOnboarding = await AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING);
 
-      if (hasSeenOnboarding === 'true' && hasAcceptedTerms === 'true') {
-        // Returning guest - show welcome screen (not sign-up directly)
+      if (hasSeenOnboarding === 'true') {
+        // Returning signed-out user - always show the welcome/auth entry screen.
         hasRouted.current = true;
         router.replace('/(auth)/(client)');
-        setIsChecking(false);
-      } else if (hasSeenOnboarding === 'true') {
-        // Guest finished onboarding but still needs the mandatory terms screen
-        hasRouted.current = true;
-        router.replace('/(auth)/(client)/terms-and-privacy');
         setIsChecking(false);
       } else {
         // First time user - show welcome flow

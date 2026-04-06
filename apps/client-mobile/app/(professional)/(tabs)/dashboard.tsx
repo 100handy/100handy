@@ -21,7 +21,7 @@ import { useAuthStore } from '@shared/supabase';
 import { useProfileStore } from '@shared/supabase';
 import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
 import { supabase } from '@shared/supabase';
-import { getHandyProfile, getUserSkills, markVerificationSubmitted } from '@shared/supabase/profile';
+import { getHandyProfile, getUserSkills } from '@shared/supabase/profile';
 import { getConnectAccountStatus } from '@shared/supabase/payment-methods';
 import { useWorkArea, useWeeklyAvailability } from '@shared/supabase';
 import { useFocusEffect } from 'expo-router';
@@ -160,14 +160,10 @@ export default function ProfessionalDashboard() {
       const result = await present() as { status: string } | undefined;
 
       if (result?.status === 'FlowCompleted') {
-        const saved = await markVerificationSubmitted();
-        if (!saved) {
-          throw new Error('Failed to save verification status');
-        }
-        setVerificationStatus('submitted');
+        await fetchVerificationStatus();
         Alert.alert(
-          'Verification Submitted',
-          'Your identity verification has been submitted. We\'ll notify you once it\'s reviewed.'
+          'Verification received',
+          'Stripe finished the verification flow. Your status will update after the backend confirms the result.'
         );
       } else if (result?.status === 'FlowFailed') {
         Alert.alert('Verification Failed', 'Please try again.');
@@ -178,7 +174,7 @@ export default function ProfessionalDashboard() {
     } finally {
       setIsVerifying(false);
     }
-  }, [present, verificationStatus]);
+  }, [fetchVerificationStatus, present, verificationStatus]);
 
   // Check completion status for each task
   const hasProfilePhoto = !!profile?.avatar_url;

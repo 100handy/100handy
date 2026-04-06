@@ -15,11 +15,9 @@ export default function TaskerProfileScreen() {
   const params = useLocalSearchParams();
   const taskerId = params.taskerId as string;
 
-  // Task details from previous screens
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
   const formResponses = params.formResponses as string | undefined;
-  // Legacy params for backwards compatibility
   const taskSize = params.taskSize as string | undefined;
   const vehicleRequirement = params.vehicleRequirement as string | undefined;
 
@@ -36,13 +34,13 @@ export default function TaskerProfileScreen() {
   const reviews = apiReviews || [];
 
   const isLoading = profileLoading || reviewsLoading;
+  const showSelectActions = !!categoryId;
 
   const handleSelect = () => {
     setShowScheduleSheet(true);
   };
 
   const handleScheduleSelect = (date: string, time: string) => {
-    // Navigate to task-details screen with all task details
     router.push({
       pathname: '/(client)/task-details',
       params: {
@@ -51,7 +49,6 @@ export default function TaskerProfileScreen() {
         categoryName,
         selectedDate: date,
         selectedTime: time,
-        // Pass formResponses (new) or legacy params
         ...(formResponses ? { formResponses } : {}),
         ...(taskSize ? { taskSize } : {}),
         ...(vehicleRequirement ? { vehicleRequirement } : {}),
@@ -377,40 +374,43 @@ export default function TaskerProfileScreen() {
           </View>
         </View>
 
-        {/* Bottom spacing for fixed button */}
-        <View className="flex-col" style={{ height: 100 }} />
+        {showSelectActions ? (
+          <View className="flex-col" style={{ height: 100 }} />
+        ) : null}
       </ScrollView>
 
-      {/* Bottom Fixed Bar */}
-      <View className="flex-col px-5 py-4 bg-white border-t border-gray-200">
-        <View className="flex-row items-center justify-between">
-          <Text
-            className="text-base font-bold"
-            style={{ color: '#333A31' }}
-          >
-            £{(profile.hourly_rate_cents / 100).toFixed(2)} /hr
-          </Text>
-
-          <Pressable
-            onPress={handleSelect}
-            className="px-20 py-3 rounded-xl"
-            style={{ backgroundColor: '#C1856A' }}
-          >
-            <Text className="text-lg font-bold text-white">
-              Select
+      {showSelectActions ? (
+        <View className="flex-col px-5 py-4 bg-white border-t border-gray-200">
+          <View className="flex-row items-center justify-between">
+            <Text
+              className="text-base font-bold"
+              style={{ color: '#333A31' }}
+            >
+              £{(profile.hourly_rate_cents / 100).toFixed(2)} /hr
             </Text>
-          </Pressable>
-        </View>
-      </View>
 
-      {/* Schedule Selection Action Sheet */}
-      <ScheduleSelectionSheet
-        isOpen={showScheduleSheet}
-        onClose={() => setShowScheduleSheet(false)}
-        onSelectSchedule={handleScheduleSelect}
-        taskerName={profile?.display_name || 'Tasker'}
-        taskerId={taskerId}
-      />
+            <Pressable
+              onPress={handleSelect}
+              className="px-20 py-3 rounded-xl"
+              style={{ backgroundColor: '#C1856A' }}
+            >
+              <Text className="text-lg font-bold text-white">
+                Select
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+
+      {showSelectActions ? (
+        <ScheduleSelectionSheet
+          isOpen={showScheduleSheet}
+          onClose={() => setShowScheduleSheet(false)}
+          onSelectSchedule={handleScheduleSelect}
+          taskerName={profile?.display_name || 'Tasker'}
+          taskerId={taskerId}
+        />
+      ) : null}
 
       {/* Rating Filter Action Sheet */}
       <RatingFilterSheet

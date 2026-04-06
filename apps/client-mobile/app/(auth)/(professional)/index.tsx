@@ -1,16 +1,33 @@
-import React, { useMemo } from 'react';
-import { Image, ScrollView, View, Text, Pressable } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import { router, useLocalSearchParams } from 'expo-router';
+import { countryCodeToFlagEmoji, getWelcomeCountry } from '@/lib/welcome-country';
 
 export default function ProfessionalWelcome() {
   const params = useLocalSearchParams();
+  const [countryName, setCountryName] = useState('United Kingdom');
+  const [countryCode, setCountryCode] = useState('GB');
   const ref = useMemo(() => {
     const value = params.ref;
     if (typeof value === 'string' && value.trim().length > 0) return value.trim();
     return undefined;
   }, [params.ref]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getWelcomeCountry().then((country) => {
+      if (!isMounted) return;
+      setCountryName(country.countryName);
+      setCountryCode(country.countryCode);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <View className="flex-1 bg-brand-dark">
@@ -26,13 +43,11 @@ export default function ProfessionalWelcome() {
             {/* Country Label */}
             <View className="items-center pt-4 pb-12">
               <View className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
-                <Image
-                  source={require('@/assets/images/uk-flag.png')}
-                  className="w-7 h-4 mr-2"
-                  resizeMode="contain"
-                />
+                <Text className="mr-2 text-[18px]">
+                  {countryCodeToFlagEmoji(countryCode)}
+                </Text>
                 <Text className="text-white font-worksans-medium text-[15px]">
-                  United Kingdom
+                  {countryName}
                 </Text>
               </View>
             </View>
