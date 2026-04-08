@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import { router, useLocalSearchParams } from 'expo-router';
 import { countryCodeToFlagEmoji, getWelcomeCountry } from '@/lib/welcome-country';
+import AuthLogo from '@/components/auth/AuthLogo';
 
 export default function ClientWelcome() {
   const params = useLocalSearchParams();
@@ -39,7 +40,7 @@ export default function ClientWelcome() {
         >
           <View className="flex-col flex-1 bg-white">
           {/* Dark Top Section */}
-          <View className="flex-col pb-10" style={{ backgroundColor: '#333A31' }}>
+          <View className="flex-col pb-20" style={{ backgroundColor: '#333A31' }}>
             {/* Country Label */}
             <View className="items-center pt-4 pb-12">
               <View className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
@@ -52,45 +53,14 @@ export default function ClientWelcome() {
               </View>
             </View>
 
-            {/* Logo Container */}
-            <View className="items-center">
-              <View className="bg-white rounded-[32px] shadow-lg overflow-hidden" style={{ width: 175, height: 175 }}>
-                {/* 100 HANDY Text */}
-                <View className="flex-col items-center pt-6 pb-3">
-                  <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider" style={{ color: '#30352D' }}>
-                    100
-                  </Text>
-                  <Text className="text-[34px] font-worksans-bold leading-[36px] tracking-wider" style={{ color: '#30352D' }}>
-                    HANDY
-                  </Text>
-                </View>
-
-                {/* Task Button */}
-                <View className="items-center px-4 pb-4">
-                  <View className="bg-clay-orange rounded-full px-7 py-2.5 shadow-md" style={{ transform: [{ rotate: '-9deg' }] }}>
-                    <Text className="text-white text-[30px] font-worksans-bold tracking-wide">
-                      Task
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* By Text */}
-              <View className="flex-row items-center mt-3">
-                <Text className="font-worksans-medium text-[16px] mr-1.5 text-white">
-                  By
-                </Text>
-                <Text className="font-worksans-bold text-[16px] tracking-wide text-white">
-                  100 HANDY
-                </Text>
-              </View>
-            </View>
+            {/* Logo */}
+            <AuthLogo size="hero" color="#FFFFFF" />
           </View>
 
           {/* Light Bottom Section */}
-          <View className="flex-col flex-1 bg-white">
+          <View className="flex-col flex-1 bg-white mt-10">
             {/* Welcome Text */}
-            <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8" style={{ color: '#30352D' }}>
+            <Text className="text-2xl font-worksans-bold text-center px-8 pt-10 pb-8" style={{ color: '#30352D' }}>
               Welcome to 100 Handy Task
             </Text>
 

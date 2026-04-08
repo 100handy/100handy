@@ -1,12 +1,12 @@
-import React, { useState, useRef, type ReactNode } from 'react';
-import { View, Text, Pressable, Dimensions, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import React, { useState, type ReactNode } from 'react';
+import { View, Text, Pressable, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronRight, MapPin, Calendar } from 'lucide-react-native';
 import { router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import StarRating from '@/assets/images/star-rating.svg';
-import Logo100Top from '@/assets/images/logo-100-top.svg';
+import AuthLogo from '@/components/auth/AuthLogo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore, usePendingBookingStore, useLocationStore, supabase } from '@shared/supabase';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
@@ -251,7 +251,6 @@ const onboardingData = [
 
 export default function ClientOnboarding() {
   const [currentStep, setCurrentStep] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
   const totalSteps = onboardingData.length;
   const { isAuthenticated, updateOnboardingStatus, user } = useAuthStore();
   const { getPendingBooking, hasRestorablePendingBooking, markPendingBookingRestored } = usePendingBookingStore();
@@ -345,29 +344,17 @@ export default function ClientOnboarding() {
 
   const handleGotIt = async (): Promise<void> => {
     if (currentStep < totalSteps - 1) {
-      // Go to next screen
-      const nextIndex = currentStep + 1;
-      scrollViewRef.current?.scrollTo({ x: SCREEN_WIDTH * nextIndex, animated: true });
-      setCurrentStep(nextIndex);
+      setCurrentStep((step) => step + 1);
     } else {
       // Last screen, complete onboarding
       await completeOnboarding();
     }
   };
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollPosition / SCREEN_WIDTH);
-    if (index !== currentStep) {
-      setCurrentStep(index);
-    }
-  };
-
   const renderLogo = (): ReactNode => {
     return (
       <View className="mb-8" style={{ marginLeft: SCREEN_WIDTH * 0.0585 }}>
-        {/* @ts-ignore - SVG component type inference issue with react-native-svg-transformer */}
-        <Logo100Top width={200} height={96} />
+        <AuthLogo size="hero" />
       </View>
     ) as ReactNode;
   };
@@ -434,18 +421,7 @@ export default function ClientOnboarding() {
       {/* Bottom Section - White background with content */}
       <View style={{ flex: 1, backgroundColor: 'white' }}>
         {/* Main Content - Swipeable */}
-        <ScrollView
-          ref={scrollViewRef}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          {onboardingData.map((item) => renderSlide(item))}
-        </ScrollView>
+        {renderSlide(onboardingData[currentStep])}
 
         {/* Bottom Navigation */}
         <SafeAreaView edges={['bottom']}>
@@ -472,7 +448,7 @@ export default function ClientOnboarding() {
               <Pressable onPress={handleGotIt}>
                 <View className="flex-row items-center gap-1">
                   <Text className="text-[18px] font-worksans-medium" style={{ color: COLORS.sageGreenFigma }}>
-                    Got it
+                    {currentStep === totalSteps - 1 ? 'Get started' : 'Got it'}
                   </Text>
                   <ChevronRight size={18} color={COLORS.sageGreenFigma} />
                 </View>

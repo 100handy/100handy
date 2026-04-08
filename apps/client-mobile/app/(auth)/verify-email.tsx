@@ -29,7 +29,7 @@ export default function VerifyEmail() {
   };
 
   const handleBackToSignIn = () => {
-    router.replace('/(auth)/role-selection');
+    router.replace('/(auth)/(client)/sign-in');
   };
 
   return (
@@ -88,4 +88,3 @@ export default function VerifyEmail() {
     </SafeAreaView>
   );
 }
-

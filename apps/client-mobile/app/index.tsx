@@ -12,9 +12,8 @@ const CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX = '@clientOnboardingCompleted:';
 /**
  * Index Route - Entry Point
  * 
- * Checks if user has seen onboarding before:
- * - First time: Show welcome screens
- * - Returning: Wait for auth check, then route appropriately
+ * Routes authenticated users to their destination and signed-out users
+ * to the welcome screen at app start.
  * 
  * Authenticated users are routed to their appropriate home screen based on role.
  */
@@ -108,29 +107,19 @@ export default function Index() {
         return;
       }
 
-      // Priority 2: User is not authenticated - check guest onboarding state
-      const hasSeenOnboarding = await AsyncStorage.getItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING);
-
-      if (hasSeenOnboarding === 'true') {
-        // Returning signed-out user - always show the welcome/auth entry screen.
-        hasRouted.current = true;
-        router.replace('/(auth)/(client)');
-        setIsChecking(false);
-      } else {
-        // First time user - show welcome flow
-        hasRouted.current = true;
-        router.replace('/(auth)/(client)');
-        setIsChecking(false);
-      }
+      // Priority 2: User is not authenticated - always start on welcome.
+      hasRouted.current = true;
+      router.replace('/(auth)/welcome');
+      setIsChecking(false);
     } catch (error) {
       console.error('Error checking onboarding status:', error);
       // On error, check auth state first
       if (isAuthenticated && user) {
         await routeAuthenticatedUser();
       } else {
-        // Default to sign-up for errors (user has seen onboarding flow)
+        // Default to welcome for signed-out errors
         hasRouted.current = true;
-        router.replace('/(auth)/(client)/sign-up');
+        router.replace('/(auth)/welcome');
         setIsChecking(false);
       }
     }

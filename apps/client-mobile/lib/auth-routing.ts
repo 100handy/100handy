@@ -103,5 +103,5 @@ export async function resolveAuthenticatedRoute({
     return getPendingBookingRoute() ?? '/(client)/(tabs)/home';
   }
 
-  return '/(auth)/role-selection';
+  return '/(auth)/welcome';
 }

@@ -4,9 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { signUp } from '@shared/supabase/auth';
+import AuthLogo from '@/components/auth/AuthLogo';
 import SignUpForm from '@/components/auth/SignUpForm';
 import { useToast } from '@/components/ui/toast';
-import Logo100Top from '@/assets/images/logo-100-top.svg';
 
 export default function ProfessionalSignUp() {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +58,7 @@ export default function ProfessionalSignUp() {
 
           {/* Logo */}
           <View className="items-center my-10">
-            <Logo100Top width={150} height={72} />
+            <AuthLogo />
           </View>
 
           {/* Form Container */}

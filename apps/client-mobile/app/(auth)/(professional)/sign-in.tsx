@@ -7,9 +7,9 @@ import SignInForm from '@/components/auth/SignInForm';
 import { signIn } from '@shared/supabase/auth';
 import { type SignInFormData } from '@shared/schemas/auth';
 import AuthFooter from '@/components/auth/AuthFooter';
+import AuthLogo from '@/components/auth/AuthLogo';
 import { useToast } from '@/components/ui/toast';
 import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
-import Logo100Top from '@/assets/images/logo-100-top.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { buildPendingBookingRoute, resolveAuthenticatedRoute } from '@/lib/auth-routing';
@@ -96,7 +96,7 @@ export default function ProfessionalSignIn() {
 
               {/* Logo */}
               <View className="items-center my-12">
-                <Logo100Top width={150} height={72} />
+                <AuthLogo />
               </View>
 
               {/* Form Container */}

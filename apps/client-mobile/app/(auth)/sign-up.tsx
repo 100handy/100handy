@@ -5,7 +5,6 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectItem } from '@/components/ui/select';
 import { EyeIcon, EyeOffIcon, CheckIcon, ChevronDownIcon } from 'lucide-react-native';
 import { signUp } from '@shared/supabase/auth';
-import { useAuthStore } from '@shared/supabase';
 import { useRouter } from 'expo-router';
 
 import { useToast } from '@/components/ui/toast';
@@ -276,7 +275,7 @@ export default function Signup() {
                   Already have an account?
                   <Text
                     className="text-clayOrange font-worksans-medium"
-                    onPress={() => router.push('/(auth)/role-selection')}
+                    onPress={() => router.push('/(auth)/(client)/sign-in')}
                   > Log in</Text>
                 </Text>
               </View>
@@ -287,4 +286,3 @@ export default function Signup() {
     </ScrollView>
   );
 }
-

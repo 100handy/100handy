@@ -33,9 +33,9 @@ export default function ResetPassword() {
       await signOut();
       toast.success('Password updated', 'You can now sign in with your new password');
       
-      // Return to the role-neutral auth entry once the toast is visible.
+      // Return to the welcome entry once the toast is visible.
       setTimeout(() => {
-        router.replace('/(auth)/role-selection');
+        router.replace('/(auth)/welcome');
       }, 1500);
     } catch (error) {
       console.error('Password update error:', error);

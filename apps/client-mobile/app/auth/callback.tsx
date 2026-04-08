@@ -51,7 +51,7 @@ function getSafeErrorRoute(next: string | null, type: string | null): Href {
     return '/(auth)/(professional)';
   }
 
-  return '/(auth)/role-selection';
+  return '/(auth)/welcome';
 }
 
 export default function AuthCallback() {
