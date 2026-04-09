@@ -1,41 +1,82 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { isAuthPending } from "@/contexts/auth-routing";
 
 export default function LoginPage() {
-  const navigate = useNavigate()
-  const { signIn, user, isAdmin } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const {
+    signIn,
+    user,
+    session,
+    isAdmin,
+    loading: authLoading,
+    roleResolved,
+  } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Redirect to dashboard if already logged in as admin
+  const from = location.state?.from || "/dashboard";
+  const redirectReason = location.state?.reason;
+
+  const redirectMessage =
+    redirectReason === "unauthorized"
+      ? "You do not have permission to access that page."
+      : null;
+
+  const authPending = isAuthPending({
+    loading: authLoading,
+    roleResolved,
+    user,
+    session,
+    isAdmin,
+  });
+
   useEffect(() => {
-    if (user && isAdmin) {
-      navigate('/dashboard', { replace: true })
+    if (!authLoading && roleResolved && user && session && isAdmin) {
+      navigate(from, { replace: true });
     }
-  }, [user, isAdmin, navigate])
+  }, [authLoading, roleResolved, user, session, isAdmin, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
-      const result = await signIn(email, password)
-      setLoading(false)
+      const result = await signIn(email, password);
+      setLoading(false);
 
       if (result.error) {
-        setError(result.error.message || 'Failed to sign in. Please check your credentials.')
+        setError(
+          result.error.message ||
+            "Failed to sign in. Please check your credentials.",
+        );
       } else {
-        navigate('/dashboard')
+        // Redirect to the page they were trying to access, or dashboard
+        navigate(from, { replace: true });
       }
     } catch {
-      setError('An unexpected error occurred. Please try again.')
+      setError("An unexpected error occurred. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
+  };
+
+  if (authPending) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Restoring session...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -66,7 +107,16 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-white/5 dark:bg-black/10 rounded-lg p-8 shadow-2xl shadow-black/10">
-            <h2 className="text-2xl font-bold text-center mb-6">Administrator Login</h2>
+            <h2 className="text-2xl font-bold text-center mb-6">
+              Administrator Login
+            </h2>
+
+            {/* Session expiry or redirect message */}
+            {redirectMessage && (
+              <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                <p className="text-sm text-yellow-500">{redirectMessage}</p>
+              </div>
+            )}
 
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
@@ -90,7 +140,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  disabled={loading}
+                  disabled={loading || authLoading}
                   className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
@@ -110,7 +160,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  disabled={loading}
+                  disabled={loading || authLoading}
                   className="w-full rounded-lg border-0 bg-background-light/50 dark:bg-background-dark/50 p-4 text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <div className="mt-2 text-right">
@@ -126,7 +176,7 @@ export default function LoginPage() {
               <div>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || authLoading}
                   className="w-full h-12 px-6 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
@@ -135,7 +185,7 @@ export default function LoginPage() {
                       <span>Signing in...</span>
                     </>
                   ) : (
-                    'Login'
+                    "Login"
                   )}
                 </button>
               </div>
@@ -144,5 +194,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

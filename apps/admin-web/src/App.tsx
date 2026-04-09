@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
+import { resolveInitialRoute } from '@/contexts/auth-routing'
 import LoginPage from '@/pages/login'
 import ForgotPasswordPage from '@/pages/forgot-password'
 import VerifyCodePage from '@/pages/verify-code'
@@ -45,11 +47,41 @@ import PopupsPage from '@/pages/notifications/popups'
 import SupportCentre from '@/pages/support/support-centre'
 import AnnouncementsPage from '@/pages/dashboard/announcements'
 
+function AuthBootstrapScreen() {
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Restoring session...
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function RootRedirect() {
+  const { user, session, isAdmin, loading, roleResolved } = useAuth()
+  const destination = resolveInitialRoute({
+    loading,
+    roleResolved,
+    user,
+    session,
+    isAdmin,
+  })
+
+  if (!destination) {
+    return <AuthBootstrapScreen />
+  }
+
+  return <Navigate to={destination} replace />
+}
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-code" element={<VerifyCodePage />} />

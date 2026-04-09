@@ -1,197 +1,310 @@
-import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react'
-import type { User, Session, AuthError } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
-import type { UserRole } from '@/lib/database.types'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  type ReactNode,
+} from "react";
+import type { User, Session, AuthError } from "@supabase/supabase-js";
+
+import type { UserRole } from "@/lib/database.types";
+import { queryClient } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
+
+import {
+  deriveBootstrapAuthState,
+  getSessionRole,
+} from "./auth-state";
 
 interface Profile {
-  user_id: string
-  role: UserRole
-  first_name: string | null
-  last_name: string | null
-  phone: string | null
-  avatar_url: string | null
+  user_id: string;
+  role: UserRole;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  avatar_url: string | null;
 }
 
 interface AuthContextType {
-  user: User | null
-  session: Session | null
-  profile: Profile | null
-  isAdmin: boolean
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
-  signOut: () => Promise<void>
-  refreshSession: () => Promise<void>
+  user: User | null;
+  session: Session | null;
+  profile: Profile | null;
+  isAdmin: boolean;
+  loading: boolean;
+  roleResolved: boolean;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: AuthError | null }>;
+  signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
+const PROFILE_FETCH_TIMEOUT_MS = 10000;
+const SESSION_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const signingInRef = useRef(false)
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [roleResolved, setRoleResolved] = useState(false);
 
-  // Fetch user profile and check admin status
-  const fetchProfile = async (userId: string) => {
+  const signingInRef = useRef(false);
+  const sessionCheckIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
+
+  const applyBootstrapState = useCallback((nextSession: Session | null) => {
+    const nextState = deriveBootstrapAuthState(nextSession);
+
+    setUser(nextState.user);
+    setSession(nextState.session);
+    setIsAdmin(nextState.isAdmin);
+    setRoleResolved(nextState.roleResolved);
+    setLoading(nextState.loading);
+
+    if (!nextState.user) {
+      setProfile(null);
+    }
+  }, []);
+
+  const clearAuthState = useCallback(() => {
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setIsAdmin(false);
+    setRoleResolved(true);
+    setLoading(false);
+    queryClient.clear();
+  }, []);
+
+  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     try {
-      // Add a 5-second timeout to detect hangs
       const queryPromise = supabase
-        .from('profiles')
-        .select('user_id, role, first_name, last_name, phone, avatar_url')
-        .eq('user_id', userId)
-        .single()
+        .from("profiles")
+        .select("user_id, role, first_name, last_name, phone, avatar_url")
+        .eq("user_id", userId)
+        .single();
 
-      const timeoutPromise = new Promise<{
-        data: Profile | null
-        error: Error | null
-      }>((_, reject) => {
-        setTimeout(() => reject(new Error('Fetch profile timed out')), 5000)
-      })
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Fetch profile timed out")),
+          PROFILE_FETCH_TIMEOUT_MS,
+        );
+      });
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise])
+      const { data, error } = await Promise.race([
+        queryPromise,
+        timeoutPromise,
+      ]);
 
       if (error || !data) {
-        console.error('Error fetching profile:', error ?? 'No data returned')
-        return null
+        console.error("[Auth] Error fetching profile:", error ?? "No data returned");
+        setRoleResolved(true);
+        return null;
       }
 
-      setProfile(data)
-      setIsAdmin(data.role === 'admin')
-      return data
+      setProfile(data);
+      setIsAdmin(data.role === "admin");
+      setRoleResolved(true);
+      return data;
     } catch (error) {
-      console.error('Error in fetchProfile:', error)
-      return null
+      console.error("[Auth] Error in fetchProfile:", error);
+      setRoleResolved(true);
+      return null;
     }
-  }
+  }, []);
 
-  // Sign in with email and password
-  const signIn = async (email: string, password: string) => {
-    signingInRef.current = true
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+  const reconcileAdminAccess = useCallback(
+    async (nextSession: Session, strict = false) => {
+      const fallbackRole = getSessionRole(nextSession.user);
+      const resolvedProfile = await fetchProfile(nextSession.user.id);
 
-      if (error) return { error }
+      if (!resolvedProfile) {
+        if (strict && fallbackRole !== "admin") {
+          await supabase.auth.signOut();
+          clearAuthState();
+        }
+        return null;
+      }
 
-      if (data.user) {
-        // Fetch profile and check if user is admin
-        const profile = await fetchProfile(data.user.id)
+      if (resolvedProfile.role !== "admin") {
+        await supabase.auth.signOut();
+        clearAuthState();
+        return null;
+      }
 
-        if (!profile || profile.role !== 'admin') {
-          // User is not an admin, sign them out
-          await supabase.auth.signOut()
+      return resolvedProfile;
+    },
+    [clearAuthState, fetchProfile],
+  );
+
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      signingInRef.current = true;
+      setLoading(true);
+      setRoleResolved(false);
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          return { error };
+        }
+
+        if (!data.session || !data.user) {
+          clearAuthState();
           return {
             error: {
-              message: 'Access denied. Admin privileges required.',
-              name: 'AuthorizationError',
+              message: "No session returned after sign in",
+              name: "UnknownError",
+              status: 500,
+            } as AuthError,
+          };
+        }
+
+        applyBootstrapState(data.session);
+
+        const resolvedProfile = await reconcileAdminAccess(data.session, true);
+
+        if (!resolvedProfile) {
+          return {
+            error: {
+              message: "Access denied. Admin privileges required.",
+              name: "AuthorizationError",
               status: 403,
             } as AuthError,
-          }
+          };
         }
-      }
 
-      return { error: null }
-    } catch (error) {
-      console.error('Sign in error:', error)
-      return {
-        error: {
-          message: 'An unexpected error occurred during sign in',
-          name: 'UnknownError',
-          status: 500,
-        } as AuthError,
+        return { error: null };
+      } catch (error) {
+        console.error("[Auth] Sign in error:", error);
+        return {
+          error: {
+            message: "An unexpected error occurred during sign in",
+            name: "UnknownError",
+            status: 500,
+          } as AuthError,
+        };
+      } finally {
+        signingInRef.current = false;
+        setLoading(false);
       }
+    },
+    [applyBootstrapState, clearAuthState, reconcileAdminAccess],
+  );
+
+  const signOut = useCallback(async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("[Auth] Sign out error:", error);
     } finally {
-      signingInRef.current = false
+      clearAuthState();
     }
-  }
+  }, [clearAuthState]);
 
-  // Sign out
-  const signOut = async () => {
+  const refreshSession = useCallback(async () => {
     try {
-      await supabase.auth.signOut()
-      setUser(null)
-      setSession(null)
-      setProfile(null)
-      setIsAdmin(false)
-    } catch (error) {
-      console.error('Sign out error:', error)
-    }
-  }
+      const { data, error } = await supabase.auth.refreshSession();
 
-  // Refresh session
-  const refreshSession = async () => {
-    try {
-      const { data, error } = await supabase.auth.refreshSession()
-      if (error) throw error
-
-      if (data.session) {
-        setSession(data.session)
-        setUser(data.user)
-
-        if (data.user) {
-          await fetchProfile(data.user.id)
-        }
+      if (error) {
+        throw error;
       }
-    } catch (error) {
-      console.error('Session refresh error:', error)
-    }
-  }
 
-  // Initialize auth state and set up auth listener
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+      if (!data.session) {
+        clearAuthState();
+        return;
+      }
 
-      if (session?.user) {
-        fetchProfile(session.user.id).finally(() => {
-          setLoading(false)
-        })
+      applyBootstrapState(data.session);
+
+      if (getSessionRole(data.session.user) === null) {
+        await reconcileAdminAccess(data.session);
       } else {
-        setLoading(false)
+        void reconcileAdminAccess(data.session);
       }
-    })
+    } catch (error) {
+      console.error("[Auth] Session refresh error:", error);
+      clearAuthState();
+    }
+  }, [applyBootstrapState, clearAuthState, reconcileAdminAccess]);
 
-    // Listen for auth changes
+  useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-
-      // Skip INITIAL_SESSION - we handle that in getSession().then() above
-      // Also skip if signIn is handling this to prevent race condition
-      if (event === 'INITIAL_SESSION' || signingInRef.current) {
-        return
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (signingInRef.current && event !== "SIGNED_OUT") {
+        return;
       }
 
-      if (session?.user) {
-        try {
-          await fetchProfile(session.user.id)
-        } catch (err) {
-          console.error('Error fetching profile in onAuthStateChange:', err)
-        }
-      } else {
-        setProfile(null)
-        setIsAdmin(false)
+      if (event === "SIGNED_OUT") {
+        clearAuthState();
+        return;
       }
 
-      setLoading(false)
-    })
+      applyBootstrapState(nextSession);
+
+      if (nextSession?.user) {
+        void reconcileAdminAccess(nextSession);
+      }
+    });
 
     return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
+      subscription.unsubscribe();
+    };
+  }, [applyBootstrapState, clearAuthState, reconcileAdminAccess]);
+
+  useEffect(() => {
+    sessionCheckIntervalRef.current = setInterval(async () => {
+      try {
+        const {
+          data: { session: currentSession },
+          error,
+        } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error("[Auth] Session check error:", error);
+          clearAuthState();
+          return;
+        }
+
+        if (!currentSession) {
+          clearAuthState();
+          return;
+        }
+
+        const expiresAt = currentSession.expires_at ?? 0;
+        const now = Math.floor(Date.now() / 1000);
+
+        if (expiresAt - now <= 300) {
+          await refreshSession();
+        }
+      } catch (error) {
+        console.error("[Auth] Periodic session check failed:", error);
+      }
+    }, SESSION_CHECK_INTERVAL_MS);
+
+    return () => {
+      if (sessionCheckIntervalRef.current) {
+        clearInterval(sessionCheckIntervalRef.current);
+      }
+    };
+  }, [clearAuthState, refreshSession]);
 
   const value: AuthContextType = {
     user,
@@ -199,22 +312,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     profile,
     isAdmin,
     loading,
+    roleResolved,
     signIn,
     signOut,
     refreshSession,
-  }
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// Custom hook to use auth context
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
 
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error("useAuth must be used within an AuthProvider");
   }
 
-  return context
+  return context;
 }

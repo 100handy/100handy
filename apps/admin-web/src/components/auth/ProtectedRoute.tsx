@@ -1,38 +1,43 @@
-import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
-/**
- * ProtectedRoute component
- *
- * Wraps routes that require authentication and admin privileges.
- * Redirects to login if not authenticated or not an admin.
- */
+import { useAuth } from "@/contexts/AuthContext";
+
 export function ProtectedRoute() {
-  const { user, isAdmin, loading } = useAuth()
+  const { user, session, isAdmin, loading, roleResolved } = useAuth();
+  const location = useLocation();
 
-  // Show loading state while checking authentication
-  if (loading) {
+  if (loading || (!!session && !!user && !roleResolved)) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Loading access...
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
-  // Redirect to login if not authenticated
-  if (!user) {
-    return <Navigate to="/login" replace />
+  if (!user || !session) {
+    return (
+      <Navigate
+        replace
+        to="/login"
+        state={{ from: location.pathname, reason: "unauthenticated" }}
+      />
+    );
   }
 
-  // Redirect to login if not an admin
   if (!isAdmin) {
-    // Could also redirect to an "access denied" page
-    return <Navigate to="/login" replace />
+    return (
+      <Navigate
+        replace
+        to="/login"
+        state={{ from: location.pathname, reason: "unauthorized" }}
+      />
+    );
   }
 
-  // Render protected content
-  return <Outlet />
+  return <Outlet />;
 }
