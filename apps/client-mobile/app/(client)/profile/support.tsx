@@ -176,6 +176,7 @@ export default function SupportScreen() {
                 value={deletePassword}
                 onChangeText={setDeletePassword}
                 placeholder="Password"
+                placeholderTextColor="#9CA3AF"
                 secureTextEntry
                 autoFocus
                 className="border border-gray-300 rounded-lg px-4 py-3 text-base mb-4"

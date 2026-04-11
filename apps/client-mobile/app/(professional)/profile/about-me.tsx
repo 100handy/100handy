@@ -78,6 +78,7 @@ export default function AboutMeScreen() {
             <View className="flex-col gap-2">
               <TextInput
                 placeholder="For example, what supplies are needed, where to park, or timing restrictions."
+                placeholderTextColor="#9CA3AF"
                 value={text}
                 onChangeText={(value) => {
                   if (value.length <= MAX_CHARACTERS) {

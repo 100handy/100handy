@@ -154,13 +154,16 @@ export type InputFieldProps = TextInputProps &
   };
 
 const InputField = React.forwardRef<React.ElementRef<typeof TextInput>, InputFieldProps>(
-  ({ className, variant, size, ...props }, ref) => {
+  ({ className, variant, size, placeholderTextColor, ...props }, ref) => {
     const context = React.useContext(InputContext);
 
     return (
       <TextInput
         ref={ref}
         editable={!context.isDisabled}
+        // NativeWind's placeholder: modifier doesn't reliably set placeholder color
+        // on real iOS devices — explicit prop is required
+        placeholderTextColor={placeholderTextColor ?? '#9CA3AF'}
         className={cn(
           inputFieldVariants({
             variant: variant || context.variant || undefined,
