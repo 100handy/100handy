@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { FlatList, View, Text, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -13,7 +13,7 @@ import {
   Play,
   Briefcase,
 } from 'lucide-react-native';
-import { useAuthStore } from '@shared/supabase';
+import { useAuthStore, subscribeToHandyBookings, unsubscribeFromBookingUpdates } from '@shared/supabase';
 import {
   useHandyBookings,
   type BookingWithCustomer,
@@ -195,6 +195,17 @@ export default function ProfessionalJobs() {
       }
     }, [user?.id, refetch])
   );
+
+  // Realtime: auto-refresh when new bookings arrive or status changes
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = subscribeToHandyBookings(user.id, () => {
+      refetch();
+    });
+    return () => {
+      unsubscribeFromBookingUpdates(channel);
+    };
+  }, [user?.id, refetch]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

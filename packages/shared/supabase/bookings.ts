@@ -366,16 +366,24 @@ export async function checkBookingConflict(
   handyId: string,
   scheduledDate: string,
   scheduledTime: string,
-  estimatedHours: number = 1
+  estimatedHours: number = 1,
+  options?: { excludeBookingId?: string; statuses?: BookingStatus[] }
 ): Promise<boolean> {
   try {
-    // Single query to get all active bookings for this handy on the given date
-    const { data, error } = await supabase
+    const statuses = options?.statuses || ['pending', 'accepted', 'in_progress'];
+
+    let query = supabase
       .from('bookings')
       .select('id, scheduled_time, estimated_hours')
       .eq('handy_id', handyId)
       .eq('scheduled_date', scheduledDate)
-      .in('status', ['pending', 'accepted', 'in_progress']);
+      .in('status', statuses);
+
+    if (options?.excludeBookingId) {
+      query = query.neq('id', options.excludeBookingId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error checking booking conflict:', error);
@@ -686,37 +694,68 @@ export async function getCompletedBookingsForHandy(
  * Accept a pending booking request
  * Changes status from 'pending' to 'accepted'
  */
-export async function acceptBooking(bookingId: string, handyId: string): Promise<boolean> {
+export async function acceptBooking(
+  bookingId: string,
+  handyId: string
+): Promise<{ success: boolean; conflict?: boolean }> {
   try {
+    // Read booking details for conflict check
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('scheduled_date, scheduled_time, estimated_hours, status')
+      .eq('id', bookingId)
+      .eq('handy_id', handyId)
+      .single();
+
+    if (!booking) {
+      return { success: false };
+    }
+
+    if (booking.status !== 'pending') {
+      return { success: false };
+    }
+
+    // Check for scheduling conflicts with committed bookings only
+    const hasConflict = await checkBookingConflict(
+      handyId,
+      booking.scheduled_date,
+      booking.scheduled_time,
+      booking.estimated_hours || 1,
+      { excludeBookingId: bookingId, statuses: ['accepted', 'in_progress'] }
+    );
+
+    if (hasConflict) {
+      console.warn(`Booking ${bookingId} conflicts with existing schedule for handy ${handyId}`);
+      return { success: false, conflict: true };
+    }
+
     const { data, error } = await supabase
       .from('bookings')
       .update({ status: 'accepted' })
       .eq('id', bookingId)
       .eq('handy_id', handyId)
-      .eq('status', 'pending') // Only accept if currently pending
+      .eq('status', 'pending')
       .select();
 
     if (error) {
       console.error(`Error accepting booking ${bookingId}:`, error);
-      return false;
+      return { success: false };
     }
 
     if (!data || data.length === 0) {
-      console.warn(`Booking ${bookingId} not accepted - status may not be pending`);
-      return false;
+      return { success: false };
     }
 
-    // Best-effort push notification to the other party.
     supabase.functions
       .invoke('send-push-notification', {
         body: { event: 'booking_status', bookingId, status: 'accepted' },
       })
       .catch(() => undefined);
 
-    return true;
+    return { success: true };
   } catch (error) {
     console.error('Error in acceptBooking:', error);
-    return false;
+    return { success: false };
   }
 }
 
@@ -913,7 +952,7 @@ export async function completeBooking(
         const paymentResult = await retryPaymentProcessing(
           bookingId,
           booking.payment_intent_id,
-          3 // 3 retry attempts with exponential backoff
+          5 // 5 retry attempts with exponential backoff (~62s window)
         );
 
         if (!paymentResult.success) {
@@ -1111,4 +1150,40 @@ export function subscribeToBookingUpdates(
  */
 export async function unsubscribeFromBookingUpdates(channel: RealtimeChannel): Promise<void> {
   await supabase.removeChannel(channel);
+}
+
+/**
+ * Subscribe to new bookings for a professional via Supabase Realtime.
+ * Listens for INSERT and UPDATE events on bookings where handy_id matches,
+ * so the pro's job list auto-refreshes when new bookings arrive.
+ */
+export function subscribeToHandyBookings(
+  handyId: string,
+  onNewBooking: () => void
+): RealtimeChannel {
+  const channel = supabase
+    .channel(`handy-bookings:${handyId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'bookings',
+        filter: `handy_id=eq.${handyId}`,
+      },
+      () => onNewBooking()
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'bookings',
+        filter: `handy_id=eq.${handyId}`,
+      },
+      () => onNewBooking()
+    )
+    .subscribe();
+
+  return channel;
 }

@@ -221,9 +221,8 @@ export function useAcceptBooking() {
   return useMutation({
     mutationFn: ({ bookingId, handyId }: { bookingId: string; handyId: string }) =>
       acceptBooking(bookingId, handyId),
-    onSuccess: (success, { bookingId }) => {
-      if (success) {
-        // Invalidate all booking lists to refresh data
+    onSuccess: (result, { bookingId }) => {
+      if (result.success) {
         queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
         queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) });
       }

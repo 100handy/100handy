@@ -221,10 +221,12 @@ export default function JobDetailsScreen() {
     if (!id || !user?.id) return;
     setActionLoading('accept');
     try {
-      const success = await acceptMutation.mutateAsync({ bookingId: id, handyId: user.id });
-      if (success) {
+      const result = await acceptMutation.mutateAsync({ bookingId: id, handyId: user.id });
+      if (result.success) {
         toast.success('Job accepted!');
         router.back();
+      } else if (result.conflict) {
+        toast.error('Schedule Conflict', 'You already have a booking at this time. Decline or reschedule the other job first.');
       } else {
         toast.error('Failed to accept job');
       }
@@ -309,8 +311,8 @@ export default function JobDetailsScreen() {
                   toast.success('Job completed! Payment processed successfully.');
                   router.back();
                 } else if (result.payoutFailed || result.error) {
-                  toast.success('Job completed!');
-                  toast.warning('Payment processing failed. You can retry from this screen.');
+                  toast.success('Job marked as complete.');
+                  toast.warning('Payout failed', 'The client has been charged but your payout could not be processed. Tap "Retry Payment" to try again.');
                   setPaymentDetails((prev) => ({
                     ...prev,
                     payoutStatus: 'failed',
@@ -645,7 +647,7 @@ export default function JobDetailsScreen() {
               <View className="bg-[#FFF3CD] px-4 py-3 rounded-xl mb-3 flex-row items-center">
                 <DollarSign color="#856404" size={18} strokeWidth={1.5} />
                 <Text className="font-worksans text-[13px] text-[#856404] ml-2 flex-1">
-                  Payment to you failed. Tap below to retry.
+                  The client was charged but your payout failed. Tap below to retry the transfer to your account.
                 </Text>
               </View>
               <ActionButton

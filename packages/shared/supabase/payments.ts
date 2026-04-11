@@ -322,7 +322,7 @@ export async function logPaymentError(
 export async function retryPaymentProcessing(
   bookingId: string,
   paymentIntentId: string,
-  maxRetries: number = 3
+  maxRetries: number = 5
 ): Promise<{
   success: boolean;
   captureResult?: CaptureResult;
@@ -348,7 +348,7 @@ export async function retryPaymentProcessing(
         if (!captureResult || !captureResult.success) {
           lastError = 'Failed to capture payment';
           if (attempt < maxRetries) {
-            await sleep(1000 * Math.pow(2, attempt - 1)); // 1s, 2s, 4s
+            await sleep(2000 * Math.pow(2, attempt - 1)); // 2s, 4s, 8s, 16s, 32s
             continue;
           }
           // Final attempt failed - release hold and mark payment as failed
@@ -371,7 +371,7 @@ export async function retryPaymentProcessing(
       if (!payoutResult || !payoutResult.success) {
         lastError = 'Payment captured but payout to professional failed';
         if (attempt < maxRetries) {
-          await sleep(1000 * Math.pow(2, attempt - 1));
+          await sleep(2000 * Math.pow(2, attempt - 1));
           continue;
         }
         // Final payout attempt failed
@@ -394,7 +394,7 @@ export async function retryPaymentProcessing(
       const message = error instanceof Error ? error.message : 'Unknown error';
       lastError = message;
       if (attempt < maxRetries) {
-        await sleep(1000 * Math.pow(2, attempt - 1));
+        await sleep(2000 * Math.pow(2, attempt - 1));
         continue;
       }
     }
