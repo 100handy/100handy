@@ -7,6 +7,9 @@ import { Eye, EyeOff } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signInSchema, type SignInFormData } from '@shared/schemas/auth';
+import { useOAuthSignIn } from '@/lib/useOAuthSignIn';
+import GoogleLogo from '@/assets/images/google-logo.svg';
+import AppleLogo from '@/assets/images/apple-logo.svg';
 
 interface SignInFormProps {
   onSubmit: (data: SignInFormData) => void;
@@ -20,6 +23,7 @@ export default function SignInForm({
   userRole,
 }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const { signInWithGoogle, signInWithApple } = useOAuthSignIn();
 
   const {
     control,
@@ -133,6 +137,31 @@ export default function SignInForm({
           <Text style={{ color: '#C1856A' }}>Reset it</Text>
         </Text>
       </Pressable>
+
+      {/* OAuth divider */}
+      <View className="flex-row items-center mb-4">
+        <View className="flex-1 h-px bg-gray-200" />
+        <Text className="mx-3 text-xs font-worksans uppercase text-gray-400">Or continue with</Text>
+        <View className="flex-1 h-px bg-gray-200" />
+      </View>
+
+      {/* OAuth buttons */}
+      <View className="flex-row gap-3 mb-4">
+        <Pressable
+          onPress={signInWithGoogle}
+          className="flex-1 flex-row items-center justify-center border border-gray-200 rounded-full py-3 gap-2"
+        >
+          <GoogleLogo width={18} height={18} />
+          <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>Google</Text>
+        </Pressable>
+        <Pressable
+          onPress={signInWithApple}
+          className="flex-1 flex-row items-center justify-center border border-gray-200 rounded-full py-3 gap-2"
+        >
+          <AppleLogo width={18} height={18} />
+          <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>Apple</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

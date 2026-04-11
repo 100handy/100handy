@@ -38,6 +38,8 @@ export const supabaseAuth: {
   verifyEmailOTP: (email: string, token: string, callbacks?: AuthCallbacks) => Promise<unknown>;
   resendEmailOTP: (email: string, callbacks?: AuthCallbacks) => Promise<unknown>;
   verifyPasswordResetOTP: (email: string, token: string, callbacks?: AuthCallbacks) => Promise<unknown>;
+  signInWithGoogle: () => Promise<unknown>;
+  signInWithApple: () => Promise<unknown>;
 } = {
   signUp: {
     email: async (
@@ -428,5 +430,27 @@ export const supabaseAuth: {
       });
       throw error;
     }
+  },
+
+  signInWithGoogle: async () => {
+    const supabase = createClient();
+    const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo },
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  signInWithApple: async () => {
+    const supabase = createClient();
+    const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo },
+    });
+    if (error) throw error;
+    return data;
   },
 };

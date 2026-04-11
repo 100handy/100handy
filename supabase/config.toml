@@ -139,6 +139,7 @@ enable_confirmations = false
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin`, `notion`, `twitch`,
 # `twitter`, `slack`, `spotify`, `workos`, `zoom`.
+# OAuth providers are configured via the Supabase dashboard, not here.
 # [auth.external.apple]
 # enabled = false
 # client_id = ""

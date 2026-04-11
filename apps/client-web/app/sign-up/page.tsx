@@ -125,6 +125,22 @@ function SignUpForm() {
 
   const email = watch("email");
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await authClient.signInWithGoogle();
+    } catch {
+      toast.error("Google sign-in failed. Please try again.");
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    try {
+      await authClient.signInWithApple();
+    } catch {
+      toast.error("Apple sign-in failed. Please try again.");
+    }
+  };
+
   const onSubmit = async (formData: SignUpFormData) => {
     if (!agreedToTerms) {
       toast.error("Please agree to the Terms of Service and Privacy Policy");
@@ -186,6 +202,38 @@ function SignUpForm() {
                   <span className="font-bold">HANDY</span>
                 </h1>
               </Link>
+            </div>
+
+            {/* OAuth buttons */}
+            <div className="mb-4 grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={handleGoogleSignIn}
+                className="h-11 border-gray-200 hover:bg-gray-50"
+              >
+                <img src="/images/google-logo.svg" alt="" className="mr-2 h-4 w-4" />
+                Google
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={handleAppleSignIn}
+                className="h-11 border-gray-200 hover:bg-gray-50"
+              >
+                <img src="/images/apple-logo.svg" alt="" className="mr-2 h-4 w-4" />
+                Apple
+              </Button>
+            </div>
+
+            {/* OAuth / email divider */}
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-3 text-gray-400">Or sign up with email</span>
+              </div>
             </div>
 
             {/* Form */}

@@ -1,7 +1,6 @@
 import { type EmailOtpType } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -10,19 +9,21 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
 
-  const cookieStore = await cookies()
-  
+  // Create redirect response first so auth cookies are set directly on it
+  const redirectTo = new URL(next, request.url)
+  let response = NextResponse.redirect(redirectTo)
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
+            response.cookies.set(name, value, options)
           )
         },
       },
@@ -35,25 +36,30 @@ export async function GET(request: NextRequest) {
       type,
       token_hash,
     })
-    
+
     if (!error) {
-      return NextResponse.redirect(new URL(next, request.url))
+      return response
     }
-    
-    console.error('Auth callback error:', error)
-  }
-  
-  // Handle code flow (OAuth, PKCE)
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (!error) {
-      return NextResponse.redirect(new URL(next, request.url))
-    }
-    
+
     console.error('Auth callback error:', error)
   }
 
-  // If no code/token_hash or error, redirect to sign-in
-  return NextResponse.redirect(new URL('/sign-in', request.url))
+  // Handle code flow (OAuth, PKCE)
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (!error) {
+      return response
+    }
+
+    console.error('Auth callback error:', error)
+  }
+
+  // If no code/token_hash or error, redirect to sign-in with error context
+  const signInUrl = new URL('/sign-in', request.url)
+  const errorDesc = searchParams.get('error_description')
+  if (errorDesc) {
+    signInUrl.searchParams.set('error', errorDesc)
+  }
+  return NextResponse.redirect(signInUrl)
 }

@@ -2,7 +2,7 @@
 
 import { Button } from "@100handy/ui/components/button";
 import { Input } from "@100handy/ui/components/input";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
@@ -18,10 +18,17 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get("redirect");
+  const authError = searchParams.get("error");
   const safeRedirect =
     redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
       ? redirectParam
       : "/dashboard";
+
+  useEffect(() => {
+    if (authError) {
+      toast.error(decodeURIComponent(authError));
+    }
+  }, [authError]);
 
   const {
     register,
@@ -35,6 +42,22 @@ function SignInForm() {
       password: "",
     },
   });
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await authClient.signInWithGoogle();
+    } catch {
+      toast.error("Google sign-in failed. Please try again.");
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    try {
+      await authClient.signInWithApple();
+    } catch {
+      toast.error("Apple sign-in failed. Please try again.");
+    }
+  };
 
   const onSubmit = async (data: SignInFormData) => {
     await authClient.signIn.email(
@@ -164,6 +187,38 @@ function SignInForm() {
               </Button>
             </div>
           </form>
+
+          {/* OAuth divider */}
+          <div className="relative mt-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-3 text-gray-400">Or continue with</span>
+            </div>
+          </div>
+
+          {/* OAuth buttons */}
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleGoogleSignIn}
+              className="h-11 border-gray-200 hover:bg-gray-50"
+            >
+              <img src="/images/google-logo.svg" alt="" className="mr-2 h-4 w-4" />
+              Google
+            </Button>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleAppleSignIn}
+              className="h-11 border-gray-200 hover:bg-gray-50"
+            >
+              <img src="/images/apple-logo.svg" alt="" className="mr-2 h-4 w-4" />
+              Apple
+            </Button>
+          </div>
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
