@@ -61,7 +61,7 @@ export default function ClientWelcome() {
           <View className="flex-col flex-1 bg-white mt-10">
             {/* Welcome Text */}
             <Text className="text-2xl font-worksans-bold text-center px-8 pt-10 pb-8" style={{ color: '#30352D' }}>
-              Welcome to 100 Handy Task
+              Welcome to 100 Handy
             </Text>
 
             {/* Buttons */}
