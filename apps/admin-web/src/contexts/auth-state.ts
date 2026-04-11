@@ -2,7 +2,7 @@ import type { Session, User } from "@supabase/supabase-js";
 
 import type { UserRole } from "@/lib/database.types";
 
-interface RoleMetadata {
+interface UserRoleMetadata {
   role?: UserRole;
 }
 
@@ -15,7 +15,9 @@ export interface BootstrapAuthState {
 }
 
 export function getSessionRole(user: User | null): UserRole | null {
-  const role = (user?.user_metadata as RoleMetadata | undefined)?.role;
+  const appRole = (user?.app_metadata as UserRoleMetadata | undefined)?.role;
+  const userRole = (user?.user_metadata as UserRoleMetadata | undefined)?.role;
+  const role = appRole ?? userRole;
 
   if (role === "admin" || role === "customer" || role === "handy") {
     return role;

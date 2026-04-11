@@ -196,6 +196,9 @@ export function useCreateUser() {
         email: input.email,
         password: input.password,
         email_confirm: true,
+        app_metadata: {
+          role: input.role || 'customer',
+        },
         user_metadata: {
           firstName: input.firstName,
           lastName: input.lastName,
