@@ -16,8 +16,8 @@ import { TaskSummary } from "@/components/confirm-booking/task-summary";
 import { LocationAutocomplete } from "@/components/LocationAutocomplete";
 import { DynamicFormRenderer } from "@/components/booking";
 import { findOrCreateAddress } from "@/lib/supabase/addresses";
-import { createBooking } from "@/lib/supabase/bookings";
-import { createPaymentIntent } from "@/lib/stripe/payment";
+import { createBooking, getEstimatedHours, MINIMUM_BOOKING_HOURS } from "@/lib/supabase/bookings";
+import { createPaymentIntent, cancelPaymentIntent } from "@/lib/stripe/payment";
 import { createClient } from "@/lib/supabase";
 import type { FormResponse, PendingBookingData, Category, HandymanProfile, AvailabilitySlot } from "@shared/supabase";
 import { usePendingBookingStore, useLocationStore, useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds } from "@shared/supabase";
@@ -454,11 +454,11 @@ function TaskFormContent() {
       setLoading(true);
       setError(null);
 
-      // Calculate the amount for authorization hold (minimum 2 hours)
+      // Calculate the amount for authorization hold
       const taskSize = formResponses.task_size as string | undefined;
-      const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'large' ? 4 : 2.5; // Default to medium
-      const minimumHours = Math.max(2, estimatedHours); // Minimum 2 hours
-      const amount = handyman.hourly_rate_cents * minimumHours;
+      const estimatedHours = getEstimatedHours(taskSize);
+      const holdHours = Math.max(MINIMUM_BOOKING_HOURS, estimatedHours);
+      const amount = handyman.hourly_rate_cents * holdHours;
 
       // Create payment intent for authorization hold
       const paymentIntent = await createPaymentIntent({
@@ -500,7 +500,14 @@ function TaskFormContent() {
 
     // Payment authorization successful! Now create the booking
     if (!userId || !selectedHandyman || !category || !addressId) {
-      setError('Missing required booking information');
+      // Release the authorization hold since we can't create the booking
+      try {
+        await cancelPaymentIntent({ paymentIntentId: authorizedPaymentIntentId });
+      } catch (releaseErr) {
+        console.error('Failed to release payment hold:', releaseErr);
+      }
+      setPaymentAuthorized(false);
+      setError('Missing required booking information. Your payment hold has been released.');
       return;
     }
 
@@ -508,9 +515,7 @@ function TaskFormContent() {
       setIsSubmitting(true);
       setError(null);
 
-      // Estimate hours based on task size from form responses
-      const taskSize = formResponses.task_size as string | undefined;
-      const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'large' ? 4 : 2.5; // Default to medium
+      const estimatedHours = getEstimatedHours(formResponses.task_size as string | undefined);
 
       const booking = await createBooking({
         customer_id: userId,
@@ -535,11 +540,25 @@ function TaskFormContent() {
         // Navigate to booking confirmation page
         router.push(`/bookings/${booking.id}`);
       } else {
-        setError('Failed to create booking. Please try again.');
+        // Release the authorization hold since booking was not created
+        try {
+          await cancelPaymentIntent({ paymentIntentId: authorizedPaymentIntentId });
+        } catch (releaseErr) {
+          console.error('Failed to release payment hold:', releaseErr);
+        }
+        setPaymentAuthorized(false);
+        setError('Failed to create booking. Your payment hold has been released. Please try again.');
       }
     } catch (err) {
       console.error('Error creating booking:', err);
-      setError('Failed to create booking. Please try again.');
+      // Release the authorization hold since booking failed
+      try {
+        await cancelPaymentIntent({ paymentIntentId: authorizedPaymentIntentId });
+      } catch (releaseErr) {
+        console.error('Failed to release payment hold:', releaseErr);
+      }
+      setPaymentAuthorized(false);
+      setError('Failed to create booking. Your payment hold has been released. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -571,9 +590,8 @@ function TaskFormContent() {
 
   const steps = [
     { number: 1, label: "Describe your task", active: getCurrentStep() === 1 },
-    { number: 2, label: "", active: getCurrentStep() === 2 },
+    { number: 2, label: "Browse Pros", active: getCurrentStep() === 2 },
     { number: 3, label: "Confirm details", active: getCurrentStep() === 3 },
-    { number: 4, label: "", active: false },
   ];
 
   return (

@@ -27,6 +27,17 @@ const getTaskSizeLabel = (size: string) => {
   }
 };
 
+const formatScheduledDate = (dateStr: string) => {
+  if (!dateStr) return dateStr;
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
 const getVehicleLabel = (vehicle: string) => {
   switch (vehicle) {
     case 'not-needed': return 'Vehicle not needed';
@@ -37,8 +48,8 @@ const getVehicleLabel = (vehicle: string) => {
 };
 
 export function TaskSummary({
-  handymanName = "Mike W.",
-  handymanAvatar = "/images/tasker-placeholder.jpg",
+  handymanName = "Handyman",
+  handymanAvatar,
   scheduledDate = "Fri, Oct 3",
   scheduledTime = "16:00",
   address = "London, England E7 9EU",
@@ -56,14 +67,20 @@ export function TaskSummary({
     <div className="rounded-2xl border border-gray-200 bg-white p-6">
       {/* Professional Profile */}
       <div className="mb-6 flex items-center gap-4">
-        <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-200">
-          <Image
-            src={handymanAvatar}
-            alt={handymanName}
-            width={64}
-            height={64}
-            className="h-full w-full object-cover"
-          />
+        <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-200 flex items-center justify-center">
+          {handymanAvatar ? (
+            <Image
+              src={handymanAvatar}
+              alt={handymanName}
+              width={64}
+              height={64}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-2xl font-medium text-gray-600">
+              {handymanName.charAt(0)}
+            </span>
+          )}
         </div>
         <div>
           <p className="text-[18px] font-medium text-brand-dark">{handymanName}</p>
@@ -74,7 +91,7 @@ export function TaskSummary({
       <div className="mb-6 space-y-3">
         <div className="flex items-start gap-3">
           <Calendar className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-dark" />
-          <p className="text-[18px] text-brand-dark">{scheduledDate} at {scheduledTime}</p>
+          <p className="text-[18px] text-brand-dark">{formatScheduledDate(scheduledDate)} at {scheduledTime}</p>
         </div>
 
         <div className="flex items-start gap-3">
@@ -144,7 +161,7 @@ export function TaskSummary({
         </p>
 
         <p className="text-brand-dark">
-          <span className="font-medium text-brand-terracotta">Learn more</span>
+          <a href="/help/cancellation-policy" className="font-medium text-brand-terracotta hover:underline">Learn more</a>
           <span> about our cancellation policy.</span>
         </p>
       </div>

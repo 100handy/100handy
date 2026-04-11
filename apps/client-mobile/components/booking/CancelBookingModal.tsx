@@ -56,9 +56,13 @@ export function CancelBookingModal({
     cancelBooking(
       { bookingId, customerId: user.id },
       {
-        onSuccess: (success) => {
-          if (success) {
-            toast.success('Booking Cancelled', 'Your booking has been cancelled successfully.');
+        onSuccess: (result) => {
+          if (result.success) {
+            if (result.cancellationFeeCharged) {
+              toast.success('Booking Cancelled', 'A one-hour cancellation fee has been charged as the booking was within 24 hours of the scheduled start time.');
+            } else {
+              toast.success('Booking Cancelled', 'Your booking has been cancelled successfully.');
+            }
             onClose();
             setTimeout(() => {
               router.back();
@@ -132,7 +136,7 @@ export function CancelBookingModal({
           )}
 
           <Text className="text-sm font-worksans" style={{ color: '#6B7280' }}>
-            This action cannot be undone. Any authorized payment will be released.
+            This action cannot be undone.
           </Text>
         </ModalBody>
 

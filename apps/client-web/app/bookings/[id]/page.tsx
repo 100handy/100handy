@@ -7,6 +7,14 @@ import { Footer } from "@/components/marketing/footer";
 import Link from "next/link";
 import { getBooking, cancelBooking, type Booking } from "@/lib/supabase/bookings";
 import { createClient } from "@/lib/supabase";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function BookingDetailsPage() {
   const params = useParams();
@@ -17,6 +25,7 @@ export default function BookingDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   useEffect(() => {
     const checkAuthAndLoadBooking = async () => {
@@ -56,18 +65,21 @@ export default function BookingDetailsPage() {
   }, [bookingId, router]);
 
   const handleCancelBooking = async () => {
-    if (!booking || !confirm('Are you sure you want to cancel this booking?')) {
-      return;
-    }
+    if (!booking) return;
+    setShowCancelDialog(false);
 
     try {
       setIsCancelling(true);
-      const success = await cancelBooking(booking.id);
+      const result = await cancelBooking(booking.id, booking.customer_id);
 
-      if (success) {
+      if (result.success) {
         // Refresh booking data
         const updatedBooking = await getBooking(booking.id);
         setBooking(updatedBooking);
+
+        if (result.cancellationFeeCharged) {
+          setError('Booking cancelled. A one-hour cancellation fee has been charged as the booking was within 24 hours of the scheduled start time.');
+        }
       } else {
         setError('Failed to cancel booking. Please try again.');
       }
@@ -110,7 +122,7 @@ export default function BookingDetailsPage() {
       case 'accepted':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'in_progress':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'completed':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'cancelled':
@@ -182,10 +194,10 @@ export default function BookingDetailsPage() {
                 We couldn't find the booking you're looking for.
               </p>
               <Link
-                href="/"
+                href="/my-tasks"
                 className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white px-6 py-3 rounded-lg font-medium"
               >
-                Return to Home
+                Back to My Tasks
               </Link>
             </div>
           </div>
@@ -237,6 +249,17 @@ export default function BookingDetailsPage() {
       {/* Main Content */}
       <main className="flex-1 py-8">
         <div className="max-w-[800px] mx-auto px-4 sm:px-8">
+          {/* Back Navigation */}
+          <Link
+            href="/my-tasks"
+            className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-brand-dark mb-6"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to My Tasks
+          </Link>
+
           <div className="space-y-6">
             {/* Booking Details Card */}
             <div className="bg-white rounded-lg border border-gray-200 p-8">
@@ -361,7 +384,7 @@ export default function BookingDetailsPage() {
             {booking.status === 'pending' && (
               <div className="flex gap-4">
                 <button
-                  onClick={handleCancelBooking}
+                  onClick={() => setShowCancelDialog(true)}
                   disabled={isCancelling}
                   className="flex-1 bg-white border border-red-300 text-red-700 hover:bg-red-50 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -369,6 +392,32 @@ export default function BookingDetailsPage() {
                 </button>
               </div>
             )}
+
+            {/* Cancel Confirmation Dialog */}
+            <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Cancel Booking</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to cancel this booking? If the booking is within 24 hours of the scheduled start time, a one-hour cancellation fee may be charged.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <button
+                    onClick={() => setShowCancelDialog(false)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                  >
+                    Keep Booking
+                  </button>
+                  <button
+                    onClick={handleCancelBooking}
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition-colors"
+                  >
+                    Yes, Cancel
+                  </button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             {/* Next Steps */}
             {booking.status === 'pending' && (

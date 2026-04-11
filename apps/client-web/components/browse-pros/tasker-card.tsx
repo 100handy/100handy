@@ -32,8 +32,9 @@ export function TaskerCard({
   // Convert cents to pounds for display
   const hourlyRate = handyman.hourly_rate_cents / 100;
   const displayName = handyman.display_name || `${handyman.first_name} ${handyman.last_name?.charAt(0) || ''}.`;
-  const minimumHours = 2; // Default minimum
-  const vehicleType = "Car"; // Default - can be enhanced later
+  // TODO: Read from handyman profile once minimum_hours and vehicle_type columns are added
+  const minimumHours = 2;
+  const vehicleType = "Car";
 
   return (
     <>

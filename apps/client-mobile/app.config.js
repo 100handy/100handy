@@ -21,7 +21,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.oxdpr.handy',
-      buildNumber: '5',
+      buildNumber: '6',
       // TODO: Replace with actual production domain for Universal Links
       associatedDomains: ['applinks:auth.yourdomain.com'],
       infoPlist: {

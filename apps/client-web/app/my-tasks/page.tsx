@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase";
 
 export default function MyTasksPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"current" | "completed">("current");
+  const [activeTab, setActiveTab] = useState<"current" | "completed" | "cancelled">("current");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +50,8 @@ export default function MyTasksPage() {
   const filteredBookings = bookings.filter(booking => {
     if (activeTab === "completed") {
       return booking.status === "completed";
+    } else if (activeTab === "cancelled") {
+      return booking.status === "cancelled";
     } else {
       // Current includes: pending, accepted, in_progress
       return ["pending", "accepted", "in_progress"].includes(booking.status);
@@ -94,6 +96,19 @@ export default function MyTasksPage() {
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-dark" />
               )}
             </button>
+            <button
+              onClick={() => setActiveTab("cancelled")}
+              className={`pb-3 font-medium text-base relative ${
+                activeTab === "cancelled"
+                  ? "text-brand-dark"
+                  : "text-gray-500 hover:text-brand-dark"
+              }`}
+            >
+              Cancelled
+              {activeTab === "cancelled" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-dark" />
+              )}
+            </button>
           </div>
 
           {/* Loading State */}
@@ -126,13 +141,17 @@ export default function MyTasksPage() {
               <h2 className="text-brand-dark font-bold text-3xl sm:text-4xl mb-4">
                 {activeTab === "current"
                   ? "Have something else on your to-do list?"
-                  : "No completed tasks yet"
+                  : activeTab === "completed"
+                  ? "No completed tasks yet"
+                  : "No cancelled tasks"
                 }
               </h2>
               <p className="text-brand-dark text-lg mb-8">
                 {activeTab === "current"
                   ? "Book your next task or manage future to-dos with 100 Handy"
-                  : "Once you complete a task, it will appear here"
+                  : activeTab === "completed"
+                  ? "Once you complete a task, it will appear here"
+                  : "Cancelled tasks will appear here"
                 }
               </p>
               {activeTab === "current" && (

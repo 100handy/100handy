@@ -415,7 +415,10 @@ export async function checkBookingConflict(
  * @param bookingId - The ID of the booking to cancel
  * @returns Promise<boolean> - true if successful, false otherwise
  */
-export async function cancelBooking(bookingId: string, customerId: string): Promise<boolean> {
+export async function cancelBooking(
+  bookingId: string,
+  customerId: string
+): Promise<{ success: boolean; cancellationFeeCharged: boolean }> {
   try {
     // Read booking to get payment info and verify status
     const { data: booking } = await supabase
@@ -427,12 +430,12 @@ export async function cancelBooking(bookingId: string, customerId: string): Prom
 
     if (!booking) {
       console.warn(`Booking ${bookingId} not found for customer ${customerId}`);
-      return false;
+      return { success: false, cancellationFeeCharged: false };
     }
 
     if (booking.status === 'in_progress') {
       console.warn(`Booking ${bookingId} is in_progress — cannot cancel`);
-      return false;
+      return { success: false, cancellationFeeCharged: false };
     }
 
     // Step 1: Update status to cancelled FIRST (atomic check via status filter)
@@ -443,40 +446,73 @@ export async function cancelBooking(bookingId: string, customerId: string): Prom
       .eq('id', bookingId)
       .eq('customer_id', customerId)
       .in('status', ['pending', 'accepted'])
-      .select();
+      .select('payment_intent_id, payment_status, scheduled_date, scheduled_time, hourly_rate_cents');
 
     if (error) {
       console.error(`Error cancelling booking ${bookingId}:`, error);
-      return false;
+      return { success: false, cancellationFeeCharged: false };
     }
 
     if (!data || data.length === 0) {
       console.warn(`Booking ${bookingId} not cancelled - status may have changed`);
-      return false;
+      return { success: false, cancellationFeeCharged: false };
     }
 
-    // Step 2: Release payment hold AFTER status is confirmed cancelled
-    if (booking.payment_intent_id && booking.payment_status === 'authorized') {
+    const updatedBooking = data[0];
+    let cancellationFeeCharged = false;
+
+    // Step 2: Handle payment hold
+    if (updatedBooking?.payment_intent_id && updatedBooking.payment_status === 'authorized') {
+      // Check if cancellation is within 24 hours of scheduled start
+      const isWithin24Hours = (() => {
+        if (!updatedBooking.scheduled_date || !updatedBooking.scheduled_time) return false;
+        const scheduledStart = new Date(`${updatedBooking.scheduled_date}T${updatedBooking.scheduled_time}`);
+        const hoursUntilStart = (scheduledStart.getTime() - Date.now()) / (1000 * 60 * 60);
+        return hoursUntilStart >= 0 && hoursUntilStart < 24;
+      })();
+
       try {
-        const { cancelPaymentIntent, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
-        const released = await cancelPaymentIntent(booking.payment_intent_id);
-        if (released) {
-          await updateBookingPaymentStatus(bookingId, 'cancelled');
+        const { cancelPaymentIntent, capturePayment, updateBookingPaymentStatus, logPaymentError } = await import('./payments');
+
+        if (isWithin24Hours && updatedBooking.hourly_rate_cents > 0) {
+          // Charge 1-hour cancellation fee
+          const captured = await capturePayment(updatedBooking.payment_intent_id, updatedBooking.hourly_rate_cents);
+          if (captured?.success) {
+            await updateBookingPaymentStatus(bookingId, 'captured');
+            cancellationFeeCharged = true;
+          } else {
+            // Capture failed — release hold instead, don't block cancellation
+            await logPaymentError(bookingId, 'cancellation_fee_capture_failed',
+              'Could not capture cancellation fee. Releasing hold instead.', {
+                paymentIntentId: updatedBooking.payment_intent_id,
+              });
+            const released = await cancelPaymentIntent(updatedBooking.payment_intent_id);
+            if (released) {
+              await updateBookingPaymentStatus(bookingId, 'cancelled');
+            }
+          }
         } else {
-          await logPaymentError(bookingId, 'hold_release_failed', 'Payment hold was not released on cancellation. Customer hold will auto-expire in 7 days.', {
-            paymentIntentId: booking.payment_intent_id,
-          });
-          await supabase
-            .from('bookings')
-            .update({ payment_hold_release_failed: true })
-            .eq('id', bookingId);
+          // Outside 24h window — release the authorization hold
+          const released = await cancelPaymentIntent(updatedBooking.payment_intent_id);
+          if (released) {
+            await updateBookingPaymentStatus(bookingId, 'cancelled');
+          } else {
+            await logPaymentError(bookingId, 'hold_release_failed',
+              'Payment hold was not released on cancellation. Customer hold will auto-expire in 7 days.', {
+                paymentIntentId: updatedBooking.payment_intent_id,
+              });
+            await supabase
+              .from('bookings')
+              .update({ payment_hold_release_failed: true })
+              .eq('id', bookingId);
+          }
         }
       } catch (e) {
-        console.error('Failed to release authorization hold for booking:', bookingId, e);
+        console.error('Failed to process payment for cancelled booking:', bookingId, e);
         try {
           const { logPaymentError } = await import('./payments');
           await logPaymentError(bookingId, 'hold_release_error', String(e), {
-            paymentIntentId: booking.payment_intent_id,
+            paymentIntentId: updatedBooking.payment_intent_id,
           });
         } catch {
           // Already logged to console above
@@ -490,10 +526,10 @@ export async function cancelBooking(bookingId: string, customerId: string): Prom
       })
       .catch(() => undefined);
 
-    return true;
+    return { success: true, cancellationFeeCharged };
   } catch (error) {
     console.error('Error in cancelBooking:', error);
-    return false;
+    return { success: false, cancellationFeeCharged: false };
   }
 }
 

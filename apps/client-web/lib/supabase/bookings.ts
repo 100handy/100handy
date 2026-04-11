@@ -1,6 +1,6 @@
 import { createClient } from '../supabase';
 import type { FormResponse } from '@shared/supabase';
-import { cancelPaymentIntent as cancelStripePaymentIntent } from '../stripe/payment';
+import { cancelPaymentIntent as cancelStripePaymentIntent, capturePayment } from '../stripe/payment';
 
 export interface CreateBookingData {
   customer_id: string;
@@ -54,6 +54,21 @@ export interface Booking {
     country: string;
   };
 }
+
+/**
+ * Get estimated hours from task size form response.
+ * Used by both payment authorization and booking creation.
+ */
+export function getEstimatedHours(taskSize: string | undefined): number {
+  switch (taskSize) {
+    case 'small': return 1;
+    case 'large': return 4;
+    default: return 2.5; // medium or unspecified
+  }
+}
+
+/** Minimum hours for payment authorization hold */
+export const MINIMUM_BOOKING_HOURS = 2;
 
 /**
  * Create a new booking
@@ -115,33 +130,18 @@ export async function getBooking(bookingId: string): Promise<Booking | null> {
     return null;
   }
 
-  // Fetch customer profile
-  const { data: customer } = await supabase
-    .from('profiles')
-    .select('first_name, last_name')
-    .eq('user_id', booking.customer_id)
-    .single();
+  // Fetch related data in parallel
+  const [customerResult, handyResult, categoryResult, addressResult] = await Promise.allSettled([
+    supabase.from('profiles').select('first_name, last_name').eq('user_id', booking.customer_id).single(),
+    supabase.from('profiles').select('first_name, last_name').eq('user_id', booking.handy_id).single(),
+    supabase.from('categories').select('name').eq('id', booking.category_id).single(),
+    supabase.from('addresses').select('street, apartment, postcode, city, country').eq('id', booking.address_id).single(),
+  ]);
 
-  // Fetch handyman profile
-  const { data: handy } = await supabase
-    .from('profiles')
-    .select('first_name, last_name')
-    .eq('user_id', booking.handy_id)
-    .single();
-
-  // Fetch category
-  const { data: category } = await supabase
-    .from('categories')
-    .select('name')
-    .eq('id', booking.category_id)
-    .single();
-
-  // Fetch address
-  const { data: address } = await supabase
-    .from('addresses')
-    .select('street, apartment, postcode, city, country')
-    .eq('id', booking.address_id)
-    .single();
+  const customer = customerResult.status === 'fulfilled' ? customerResult.value.data : null;
+  const handy = handyResult.status === 'fulfilled' ? handyResult.value.data : null;
+  const category = categoryResult.status === 'fulfilled' ? categoryResult.value.data : null;
+  const address = addressResult.status === 'fulfilled' ? addressResult.value.data : null;
 
   // Combine data
   return {
@@ -174,41 +174,48 @@ export async function getUserBookings(userId: string): Promise<Booking[]> {
 
   if (!bookings || bookings.length === 0) return [];
 
-  // Get all unique IDs
-  const handyIds = [...new Set(bookings.map(b => b.handy_id))];
+  return enrichBookingsWithRelations(supabase, bookings, 'handy');
+}
+
+/**
+ * Enrich bookings with profile, category, and address data in parallel.
+ * @param lookupRole - 'handy' to look up handy profiles, 'customer' to look up customer profiles
+ */
+async function enrichBookingsWithRelations(
+  supabase: ReturnType<typeof createClient>,
+  bookings: any[],
+  lookupRole: 'handy' | 'customer'
+): Promise<Booking[]> {
+  const lookupIds = [...new Set(bookings.map(b => lookupRole === 'handy' ? b.handy_id : b.customer_id))];
   const categoryIds = [...new Set(bookings.map(b => b.category_id))];
   const addressIds = [...new Set(bookings.map(b => b.address_id))];
 
-  // Fetch related data
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('user_id, first_name, last_name')
-    .in('user_id', handyIds);
+  // Fetch related data in parallel (gracefully degrade on failure)
+  const [profilesResult, categoriesResult, addressesResult] = await Promise.allSettled([
+    supabase.from('profiles').select('user_id, first_name, last_name').in('user_id', lookupIds),
+    supabase.from('categories').select('id, name').in('id', categoryIds),
+    supabase.from('addresses').select('id, street, apartment, postcode, city, country').in('id', addressIds),
+  ]);
 
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('id, name')
-    .in('id', categoryIds);
-
-  const { data: addresses } = await supabase
-    .from('addresses')
-    .select('id, street, apartment, postcode, city, country')
-    .in('id', addressIds);
+  const profiles = profilesResult.status === 'fulfilled' ? profilesResult.value.data : null;
+  const categories = categoriesResult.status === 'fulfilled' ? categoriesResult.value.data : null;
+  const addresses = addressesResult.status === 'fulfilled' ? addressesResult.value.data : null;
 
   // Create lookup maps
   const profileMap = new Map(profiles?.map(p => [p.user_id, p]));
   const categoryMap = new Map(categories?.map(c => [c.id, c]));
   const addressMap = new Map(addresses?.map(a => [a.id, a]));
 
-  // Combine data
   return bookings.map(booking => {
-    const handy = profileMap.get(booking.handy_id);
+    const profileId = lookupRole === 'handy' ? booking.handy_id : booking.customer_id;
+    const profile = profileMap.get(profileId);
     const category = categoryMap.get(booking.category_id);
     const address = addressMap.get(booking.address_id);
+    const profileName = profile ? `${profile.first_name} ${profile.last_name}` : '';
 
     return {
       ...booking,
-      handy_name: handy ? `${handy.first_name} ${handy.last_name}` : '',
+      ...(lookupRole === 'handy' ? { handy_name: profileName } : { customer_name: profileName }),
       category_name: category?.name || '',
       address: address ? {
         street: address.street,
@@ -242,51 +249,7 @@ export async function getHandymanBookings(handyId: string): Promise<Booking[]> {
 
   if (!bookings || bookings.length === 0) return [];
 
-  // Get all unique IDs
-  const customerIds = [...new Set(bookings.map(b => b.customer_id))];
-  const categoryIds = [...new Set(bookings.map(b => b.category_id))];
-  const addressIds = [...new Set(bookings.map(b => b.address_id))];
-
-  // Fetch related data
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('user_id, first_name, last_name')
-    .in('user_id', customerIds);
-
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('id, name')
-    .in('id', categoryIds);
-
-  const { data: addresses } = await supabase
-    .from('addresses')
-    .select('id, street, apartment, postcode, city, country')
-    .in('id', addressIds);
-
-  // Create lookup maps
-  const profileMap = new Map(profiles?.map(p => [p.user_id, p]));
-  const categoryMap = new Map(categories?.map(c => [c.id, c]));
-  const addressMap = new Map(addresses?.map(a => [a.id, a]));
-
-  // Combine data
-  return bookings.map(booking => {
-    const customer = profileMap.get(booking.customer_id);
-    const category = categoryMap.get(booking.category_id);
-    const address = addressMap.get(booking.address_id);
-
-    return {
-      ...booking,
-      customer_name: customer ? `${customer.first_name} ${customer.last_name}` : '',
-      category_name: category?.name || '',
-      address: address ? {
-        street: address.street,
-        apartment: address.apartment,
-        postcode: address.postcode,
-        city: address.city,
-        country: address.country,
-      } : undefined,
-    } as Booking;
-  });
+  return enrichBookingsWithRelations(supabase, bookings, 'customer');
 }
 
 /**
@@ -315,43 +278,153 @@ export async function updateBooking(
 
 /**
  * Cancel a booking
+ * @param bookingId - The ID of the booking to cancel
+ * @param customerId - The customer's user ID (ownership check)
  */
-export async function cancelBooking(bookingId: string): Promise<boolean> {
+export async function cancelBooking(
+  bookingId: string,
+  customerId: string
+): Promise<{ success: boolean; cancellationFeeCharged: boolean }> {
   const supabase = createClient();
 
-  // Best-effort release of authorization hold, if any.
   try {
+    // Read booking first to verify ownership and status
     const { data: booking } = await supabase
       .from('bookings')
-      .select('payment_intent_id, payment_status')
+      .select('payment_intent_id, payment_status, status')
       .eq('id', bookingId)
+      .eq('customer_id', customerId)
       .single();
 
-    if (booking?.payment_intent_id && booking.payment_status === 'authorized') {
-      const released = await cancelStripePaymentIntent({ paymentIntentId: booking.payment_intent_id });
-      if (released?.success) {
-        await supabase
-          .from('bookings')
-          .update({ payment_status: 'cancelled' })
-          .eq('id', bookingId);
+    if (!booking) {
+      console.warn(`Booking ${bookingId} not found for customer ${customerId}`);
+      return { success: false, cancellationFeeCharged: false };
+    }
+
+    if (booking.status === 'in_progress') {
+      console.warn(`Booking ${bookingId} is in_progress — cannot cancel`);
+      return { success: false, cancellationFeeCharged: false };
+    }
+
+    // Step 1: Update status to cancelled FIRST (atomic check via status filter)
+    const { data, error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', bookingId)
+      .eq('customer_id', customerId)
+      .in('status', ['pending', 'accepted'])
+      .select('payment_intent_id, payment_status, scheduled_date, scheduled_time, hourly_rate_cents');
+
+    if (error) {
+      console.error(`Error cancelling booking ${bookingId}:`, error);
+      return { success: false, cancellationFeeCharged: false };
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Booking ${bookingId} not cancelled — status may have changed`);
+      return { success: false, cancellationFeeCharged: false };
+    }
+
+    const updatedBooking = data[0];
+    let cancellationFeeCharged = false;
+
+    // Step 2: Handle payment hold
+    if (updatedBooking?.payment_intent_id && updatedBooking.payment_status === 'authorized') {
+      // Check if cancellation is within 24 hours of scheduled start
+      const isWithin24Hours = (() => {
+        if (!updatedBooking.scheduled_date || !updatedBooking.scheduled_time) return false;
+        const scheduledStart = new Date(`${updatedBooking.scheduled_date}T${updatedBooking.scheduled_time}`);
+        const hoursUntilStart = (scheduledStart.getTime() - Date.now()) / (1000 * 60 * 60);
+        return hoursUntilStart >= 0 && hoursUntilStart < 24;
+      })();
+
+      try {
+        if (isWithin24Hours && updatedBooking.hourly_rate_cents > 0) {
+          // Charge 1-hour cancellation fee
+          const captured = await capturePayment({
+            paymentIntentId: updatedBooking.payment_intent_id,
+            amount: updatedBooking.hourly_rate_cents,
+          });
+          if (captured?.success) {
+            await supabase
+              .from('bookings')
+              .update({ payment_status: 'captured' })
+              .eq('id', bookingId);
+            cancellationFeeCharged = true;
+          } else {
+            // Capture failed — release hold instead, don't block cancellation
+            await logPaymentErrorLocal(supabase, bookingId, 'cancellation_fee_capture_failed',
+              'Could not capture cancellation fee. Releasing hold instead.',
+              { paymentIntentId: updatedBooking.payment_intent_id });
+            const released = await cancelStripePaymentIntent({ paymentIntentId: updatedBooking.payment_intent_id });
+            if (released?.success) {
+              await supabase
+                .from('bookings')
+                .update({ payment_status: 'cancelled' })
+                .eq('id', bookingId);
+            }
+          }
+        } else {
+          // Release the authorization hold
+          const released = await cancelStripePaymentIntent({ paymentIntentId: updatedBooking.payment_intent_id });
+          if (released?.success) {
+            await supabase
+              .from('bookings')
+              .update({ payment_status: 'cancelled' })
+              .eq('id', bookingId);
+          } else {
+            // Hold release failed — flag for manual review
+            await logPaymentErrorLocal(supabase, bookingId, 'hold_release_failed',
+              'Payment hold was not released on cancellation. Will auto-expire in ~7 days.',
+              { paymentIntentId: updatedBooking.payment_intent_id });
+            await supabase
+              .from('bookings')
+              .update({ payment_hold_release_failed: true })
+              .eq('id', bookingId);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to process payment for cancelled booking:', bookingId, e);
+        await logPaymentErrorLocal(supabase, bookingId, 'hold_release_error', String(e), {
+          paymentIntentId: updatedBooking.payment_intent_id,
+        });
       }
     }
+
+    // Step 3: Send push notification (fire-and-forget)
+    supabase.functions
+      .invoke('send-push-notification', {
+        body: { event: 'booking_status', bookingId, status: 'cancelled' },
+      })
+      .catch(() => undefined);
+
+    return { success: true, cancellationFeeCharged };
+  } catch (error) {
+    console.error('Error in cancelBooking:', error);
+    return { success: false, cancellationFeeCharged: false };
+  }
+}
+
+/**
+ * Log a payment error to the payment_errors table (best-effort).
+ */
+async function logPaymentErrorLocal(
+  supabase: ReturnType<typeof createClient>,
+  bookingId: string,
+  errorType: string,
+  errorMessage: string,
+  metadata?: Record<string, unknown>
+): Promise<void> {
+  try {
+    await supabase.from('payment_errors').insert({
+      booking_id: bookingId,
+      error_type: errorType,
+      error_message: errorMessage,
+      metadata: metadata || {},
+    });
   } catch (e) {
-    console.error('Failed to release authorization hold for booking:', bookingId, e);
+    console.error('Failed to log payment error:', e);
   }
-
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status: 'cancelled' })
-    .eq('id', bookingId)
-    .in('status', ['pending', 'accepted']);
-
-  if (error) {
-    console.error(`Error cancelling booking ${bookingId}:`, error);
-    return false;
-  }
-
-  return true;
 }
 
 /**
@@ -419,51 +492,7 @@ export async function getUserBookingsByStatus(
 
   if (!bookings || bookings.length === 0) return [];
 
-  // Get all unique IDs
-  const handyIds = [...new Set(bookings.map(b => b.handy_id))];
-  const categoryIds = [...new Set(bookings.map(b => b.category_id))];
-  const addressIds = [...new Set(bookings.map(b => b.address_id))];
-
-  // Fetch related data
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('user_id, first_name, last_name')
-    .in('user_id', handyIds);
-
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('id, name')
-    .in('id', categoryIds);
-
-  const { data: addresses } = await supabase
-    .from('addresses')
-    .select('id, street, apartment, postcode, city, country')
-    .in('id', addressIds);
-
-  // Create lookup maps
-  const profileMap = new Map(profiles?.map(p => [p.user_id, p]));
-  const categoryMap = new Map(categories?.map(c => [c.id, c]));
-  const addressMap = new Map(addresses?.map(a => [a.id, a]));
-
-  // Combine data
-  return bookings.map(booking => {
-    const handy = profileMap.get(booking.handy_id);
-    const category = categoryMap.get(booking.category_id);
-    const address = addressMap.get(booking.address_id);
-
-    return {
-      ...booking,
-      handy_name: handy ? `${handy.first_name} ${handy.last_name}` : '',
-      category_name: category?.name || '',
-      address: address ? {
-        street: address.street,
-        apartment: address.apartment,
-        postcode: address.postcode,
-        city: address.city,
-        country: address.country,
-      } : undefined,
-    } as Booking;
-  });
+  return enrichBookingsWithRelations(supabase, bookings, 'handy');
 }
 
 /**

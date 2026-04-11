@@ -143,8 +143,8 @@ export function useCancelBooking() {
   return useMutation({
     mutationFn: ({ bookingId, customerId }: { bookingId: string; customerId: string }) =>
       cancelBooking(bookingId, customerId),
-    onSuccess: (success, { bookingId }) => {
-      if (success) {
+    onSuccess: (result, { bookingId }) => {
+      if (result.success) {
         queryClient.invalidateQueries({ queryKey: bookingKeys.detail(bookingId) });
         queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
       }

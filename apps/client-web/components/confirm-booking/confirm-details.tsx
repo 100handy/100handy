@@ -66,38 +66,7 @@ export function ConfirmDetails({
         )}
       </div>
 
-      {/* Promo Code */}
-      <div className="mb-8">
-        <button className="text-[16px] font-bold text-brand-terracotta hover:underline">
-          Do you have a promo code?
-        </button>
-      </div>
-
-      {/* Divider */}
-      <div className="my-8 h-px bg-gray-200" />
-
-      {/* Pricing Details */}
-      <div className="space-y-2 text-[16px]">
-        <p className="text-brand-dark">
-          <span>Pricing is inclusive of a </span>
-          <span className="font-medium text-brand-terracotta">£10.68/hr Trust & Support fee.</span>
-          <span className="font-medium text-brand-terracotta"> Pricing includes VAT </span>
-          <span>which is billed on the Trust & Support Fee and our Service Fee.</span>
-        </p>
-
-        <p className="text-brand-dark">
-          You will not be billed until your task is complete. Tasks have a one-hour minimum. You can cancel or reschedule anytime.
-        </p>
-
-        <p className="text-brand-dark">
-          If you cancel your task within 24 hours of the scheduled start time, you may be billed a one-hour cancellation fee at the Pro's hourly rate.
-        </p>
-
-        <p className="text-brand-dark">
-          <span className="font-medium text-brand-terracotta">Learn more</span>
-          <span> about our cancellation policy.</span>
-        </p>
-      </div>
+      {/* Pricing details are shown in the TaskSummary sidebar */}
     </div>
   );
 }
