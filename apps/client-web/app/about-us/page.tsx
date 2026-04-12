@@ -8,25 +8,16 @@ import { getPageContent } from "@/lib/cms";
 
 export const dynamic = 'force-dynamic'
 
-// Data for the leadership team to avoid repetition
-const leadershipTeam = [
-  { name: "Berkay Dasha", role: "Chief Executive Officer", image: "/team/1.jpg" },
-  { name: "Amara Osei", role: "Chief Technology Officer", image: "/team/2.jpg" },
-  { name: "Liam Chen", role: "Chief Operating Officer", image: "/team/3.jpg" },
-  { name: "Sofia Petrov", role: "Chief Marketing Officer", image: "/team/4.jpg" },
-  { name: "Daniel Mora", role: "Chief Financial Officer", image: "/team/5.jpg" },
-  { name: "Priya Sharma", role: "VP of Engineering", image: "/team/6.jpg" },
-  { name: "Marcus Webb", role: "VP of Product", image: "/team/7.jpg" },
-  { name: "Elena Rossi", role: "Head of Design", image: "/team/8.jpg" },
-  { name: "James Okoro", role: "Head of Operations", image: "/team/9.jpg" },
-];
-
-// NOTE: For the images to work, create a `public/team` directory
-// and add 9 placeholder images named 1.jpg, 2.jpg, etc.
-// You can get them from a site like unsplash.com.
-
 export default async function AboutUsPage() {
   const c = await getPageContent('about-us')
+
+  const names = ['Berkay Dasha', 'Amara Osei', 'Liam Chen', 'Sofia Petrov', 'Daniel Mora', 'Priya Sharma', 'Marcus Webb', 'Elena Rossi', 'James Okoro']
+  const roles = ['Chief Executive Officer', 'Chief Technology Officer', 'Chief Operating Officer', 'Chief Marketing Officer', 'Chief Financial Officer', 'VP of Engineering', 'VP of Product', 'Head of Design', 'Head of Operations']
+  const leadershipTeam = names.map((name, i) => ({
+    name: c(`leadership.member_${i + 1}_name`, name),
+    role: c(`leadership.member_${i + 1}_role`, roles[i]!),
+    image: c(`leadership.member_${i + 1}_image`, `/team/${i + 1}.jpg`),
+  }))
 
   return (
     <>

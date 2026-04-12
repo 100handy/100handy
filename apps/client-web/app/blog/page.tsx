@@ -47,7 +47,7 @@ export default async function BlogPage() {
           {/* Background image - covers entire section */}
           <div className="absolute inset-0 overflow-hidden">
             <Image
-              src="/images/hero/heroimage2.jpeg"
+              src={c('hero.image', '/images/hero/heroimage2.jpeg')}
               alt="100 Handy Blog"
               fill
               className="object-cover opacity-30"
