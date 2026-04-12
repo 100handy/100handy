@@ -1,7 +1,10 @@
 import { Header, Footer } from "@/components/layout";
+import { getPageContent } from "@/lib/cms";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: "Blog | 100 Handy",
@@ -32,7 +35,9 @@ const blogPosts = [
   },
 ];
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const c = await getPageContent('blog')
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -53,10 +58,10 @@ export default function BlogPage() {
 
             <div className="relative z-10 text-center">
               <h1 className="mb-6 text-[67px] font-bold leading-none text-white">
-                Blog
+                {c('hero.title', 'Blog')}
               </h1>
               <p className="text-[22px] text-white/80">
-                Tips, guides, and stories from the 100 Handy community
+                {c('hero.subtitle', 'Tips, guides, and stories from the 100 Handy community')}
               </p>
             </div>
           </div>

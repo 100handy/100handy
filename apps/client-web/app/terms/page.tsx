@@ -1,5 +1,8 @@
 import { Header, Footer } from "@/components/layout";
+import { getPageContent } from "@/lib/cms";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Terms & Privacy | 100 Handy",
@@ -7,11 +10,16 @@ export const metadata: Metadata = {
     "Terms of service, privacy policy, and platform rules for 100 Handy.",
 };
 
-const sections = [
-  {
-    id: "terms-of-service",
-    title: "Terms of Service",
-    content: `The Terms of Service explain the legal agreement between 100 Handy and its users.
+export default async function TermsPage() {
+  const c = await getPageContent("terms");
+
+  const sections = [
+    {
+      id: "terms-of-service",
+      title: c("terms_of_service.title", "Terms of Service"),
+      content: c(
+        "terms_of_service.content",
+        `The Terms of Service explain the legal agreement between 100 Handy and its users.
 
 This includes:
 
@@ -24,11 +32,14 @@ This includes:
 • Platform rights and limitations
 
 All users must agree to the Terms of Service before using the platform.`,
-  },
-  {
-    id: "privacy-policy",
-    title: "Privacy Policy",
-    content: `The Privacy Policy explains how 100 Handy collects, uses, stores, and protects personal information.
+      ),
+    },
+    {
+      id: "privacy-policy",
+      title: c("privacy_policy.title", "Privacy Policy"),
+      content: c(
+        "privacy_policy.content",
+        `The Privacy Policy explains how 100 Handy collects, uses, stores, and protects personal information.
 
 This includes:
 
@@ -40,11 +51,17 @@ This includes:
 • How to request updates or deletion of your data
 
 100 Handy is committed to protecting user privacy and handling information responsibly.`,
-  },
-  {
-    id: "service-protection",
-    title: "Service Protection Terms & Conditions",
-    content: `100 Handy may offer service protection measures designed to support Clients and Pros when issues occur.
+      ),
+    },
+    {
+      id: "service-protection",
+      title: c(
+        "service_protection.title",
+        "Service Protection Terms & Conditions",
+      ),
+      content: c(
+        "service_protection.content",
+        `100 Handy may offer service protection measures designed to support Clients and Pros when issues occur.
 
 This section explains:
 
@@ -55,11 +72,14 @@ This section explains:
 • Conditions that may limit coverage
 
 Protection policies help ensure fairness when unexpected issues arise.`,
-  },
-  {
-    id: "trust-and-safety",
-    title: "Trust & Safety",
-    content: `Keeping your account secure
+      ),
+    },
+    {
+      id: "trust-and-safety",
+      title: c("trust_and_safety.title", "Trust & Safety"),
+      content: c(
+        "trust_and_safety.content",
+        `Keeping your account secure
 
 Protecting your account helps prevent unauthorised access.
 
@@ -97,11 +117,14 @@ These may include:
 • Service-related credential verification
 
 Verification helps maintain platform quality and safety.`,
-  },
-  {
-    id: "platform-rules",
-    title: "Platform Rules",
-    content: `Acceptable use and platform rules
+      ),
+    },
+    {
+      id: "platform-rules",
+      title: c("platform_rules.title", "Platform Rules"),
+      content: c(
+        "platform_rules.content",
+        `Acceptable use and platform rules
 
 All users must follow platform rules when using 100 Handy.
 
@@ -158,11 +181,14 @@ Possible actions include:
 • Permanent account termination
 
 Enforcement decisions are made based on the severity of the issue and user history.`,
-  },
-  {
-    id: "country-specific-policies",
-    title: "Country-Specific Policies",
-    content: `UK-specific legal and tax guidance
+      ),
+    },
+    {
+      id: "country-specific-policies",
+      title: c("country_specific.title", "Country-Specific Policies"),
+      content: c(
+        "country_specific.content",
+        `UK-specific legal and tax guidance
 
 100 Handy Pros operating in the UK may have additional responsibilities.
 
@@ -197,21 +223,23 @@ This includes:
 • Regional service regulations
 
 Compliance ensures the platform operates responsibly and legally.`,
-  },
-  {
-    id: "contact",
-    title: "Contact Us",
-    content: `If you have questions about policies or need assistance with safety or compliance matters, you can contact our support team directly.
+      ),
+    },
+    {
+      id: "contact",
+      title: c("contact_section.title", "Contact Us"),
+      content: c(
+        "contact_section.content",
+        `If you have questions about policies or need assistance with safety or compliance matters, you can contact our support team directly.
 
 For policy-related enquiries, please email:
 
 help@100handy.com
 
 Our team will review your message and respond with the appropriate guidance.`,
-  },
-];
-
-export default function TermsPage() {
+      ),
+    },
+  ];
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -220,10 +248,10 @@ export default function TermsPage() {
         <section className="bg-brand-dark py-12">
           <div className="mx-auto max-w-[1920px] px-8">
             <h1 className="text-[42px] font-bold text-white">
-              Terms &amp; Privacy
+              {c("hero.title", "Terms & Privacy")}
             </h1>
             <p className="mt-3 text-[18px] text-white/80">
-              Last updated: March 2026
+              {c("hero.last_updated", "Last updated: March 2026")}
             </p>
           </div>
         </section>

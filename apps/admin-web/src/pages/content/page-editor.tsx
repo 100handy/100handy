@@ -24,7 +24,8 @@ export default function PageEditorPage() {
       expanded[sectionKey] = true
       for (const fieldKey of Object.keys(section.fields)) {
         const key = `${sectionKey}.${fieldKey}`
-        initial[key] = savedContent?.[key] ?? ''
+        const placeholder = section.fields[fieldKey]?.placeholder ?? ''
+        initial[key] = savedContent?.[key] ?? placeholder
       }
     }
     setFormValues(initial)
@@ -104,7 +105,7 @@ export default function PageEditorPage() {
             </Link>
             <div className="flex items-center gap-3">
               <a
-                href={pageDef.slug}
+                href={`${import.meta.env.VITE_SITE_URL || ''}${pageDef.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"

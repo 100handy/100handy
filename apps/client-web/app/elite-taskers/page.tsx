@@ -2,31 +2,19 @@ import { Header, Footer } from "@/components/layout";
 import { Star, Clock, Award } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getPageContent } from "@/lib/cms";
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: "100 Handy Star - Elite 100 Handy Pros | 100 Handy",
   description: "Our top-rated 100 Handy Pros, ready when you are. The 100 Handy Star badge highlights Pros who consistently deliver outstanding workmanship.",
 };
 
-const benefits = [
-  {
-    title: "Consistently high ratings",
-    description: "Customers regularly leave glowing reviews for 100 Handy Stars - because they go above and beyond to ensure the job is completed to the highest standard, showcasing their expertise.",
-    icon: Star,
-  },
-  {
-    title: "Reliable and responsive",
-    description: "On-time arrivals, quick replies, and updates you can count on - so you're never left guessing.",
-    icon: Clock,
-  },
-  {
-    title: "Experienced and active",
-    description: "100 Handy Stars complete a high number of tasks and bring real, hands-on experience to every booking.",
-    icon: Award,
-  },
-];
+const icons = [Star, Clock, Award];
 
-export default function EliteTaskersPage() {
+export default async function EliteTaskersPage() {
+  const c = await getPageContent('elite-taskers')
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -37,16 +25,16 @@ export default function EliteTaskersPage() {
             <div className="mx-auto max-w-4xl text-center">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-brand-terracotta/20 px-4 py-2">
                 <Star className="h-5 w-5 fill-white text-white" />
-                <span className="text-[14px] font-semibold text-white">100 Handy Star</span>
+                <span className="text-[14px] font-semibold text-white">{c('hero.badge', '100 Handy Star')}</span>
               </div>
               <h1 className="text-[52px] font-bold leading-tight text-white">
-                The 100 Handy Star
+                {c('hero.title', 'The 100 Handy Star')}
               </h1>
               <p className="mt-6 text-[24px] leading-relaxed text-white/90">
-                Our top-rated 100 Handy Pros, ready when you are.
+                {c('hero.subtitle', 'Our top-rated 100 Handy Pros, ready when you are.')}
               </p>
               <p className="mt-6 text-[18px] leading-relaxed text-white/70">
-                The 100 Handy Star badge highlights 100 Handy Pros who consistently deliver outstanding workmanship, clear communication, and a smooth customer experience - task after task.
+                {c('hero.description', 'The 100 Handy Star badge highlights 100 Handy Pros who consistently deliver outstanding workmanship, clear communication, and a smooth customer experience - task after task.')}
               </p>
             </div>
           </div>
@@ -56,27 +44,24 @@ export default function EliteTaskersPage() {
         <section className="bg-white py-20">
           <div className="mx-auto max-w-[1920px] px-8">
             <h2 className="mb-16 text-center text-[36px] font-bold text-brand-dark-alt">
-              Why Customers Choose a 100 Handy Star
+              {c('benefits.title', 'Why Customers Choose a 100 Handy Star')}
             </h2>
 
             <div className="mx-auto max-w-5xl">
               <div className="grid gap-12 md:grid-cols-3">
-                {benefits.map((benefit) => {
-                  const Icon = benefit.icon;
-                  return (
-                    <div key={benefit.title} className="text-center">
-                      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-brand-terracotta">
-                        <Icon className="h-10 w-10 text-white" />
-                      </div>
-                      <h3 className="mb-4 text-[24px] font-bold text-brand-dark-alt">
-                        {benefit.title}
-                      </h3>
-                      <p className="text-[16px] leading-relaxed text-brand-dark-alt/80">
-                        {benefit.description}
-                      </p>
+                {icons.map((Icon, i) => (
+                  <div key={i} className="text-center">
+                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-brand-terracotta">
+                      <Icon className="h-10 w-10 text-white" />
                     </div>
-                  );
-                })}
+                    <h3 className="mb-4 text-[24px] font-bold text-brand-dark-alt">
+                      {c(`benefits.benefit_${i + 1}_title`, ['Consistently high ratings', 'Reliable and responsive', 'Experienced and active'][i]!)}
+                    </h3>
+                    <p className="text-[16px] leading-relaxed text-brand-dark-alt/80">
+                      {c(`benefits.benefit_${i + 1}_description`, ['Customers regularly leave glowing reviews for 100 Handy Stars - because they go above and beyond to ensure the job is completed to the highest standard, showcasing their expertise.', 'On-time arrivals, quick replies, and updates you can count on - so you\'re never left guessing.', '100 Handy Stars complete a high number of tasks and bring real, hands-on experience to every booking.'][i]!)}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -87,7 +72,7 @@ export default function EliteTaskersPage() {
           <div className="mx-auto max-w-[1920px] px-8">
             <div className="mx-auto max-w-3xl text-center">
               <p className="text-[20px] leading-relaxed text-brand-dark-alt">
-                They&apos;re also trusted and dependable, with a strong record of following 100 Handy&apos;s Marketplace Guidelines.
+                {c('trust.statement', 'They\'re also trusted and dependable, with a strong record of following 100 Handy\'s Marketplace Guidelines.')}
               </p>
             </div>
           </div>
@@ -141,16 +126,16 @@ export default function EliteTaskersPage() {
                 {/* Content */}
                 <div>
                   <h2 className="mb-6 text-[36px] font-bold text-brand-dark-alt">
-                    How Do I Hire a 100 Handy Star?
+                    {c('hire.title', 'How Do I Hire a 100 Handy Star?')}
                   </h2>
                   <p className="mb-8 text-[18px] leading-relaxed text-brand-dark-alt/80">
-                    It&apos;s simple. When you search for a service, look for the Star badge on a 100 Handy Pro&apos;s profile or in your search results. Then compare reviews, rates, and availability to book the right match.
+                    {c('hire.description', 'It\'s simple. When you search for a service, look for the Star badge on a 100 Handy Pro\'s profile or in your search results. Then compare reviews, rates, and availability to book the right match.')}
                   </p>
                   <Link
                     href="/dashboard"
                     className="inline-block rounded-lg bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
                   >
-                    Find your Star today
+                    {c('hire.cta', 'Find your Star today')}
                   </Link>
                 </div>
               </div>

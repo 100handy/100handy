@@ -1,4 +1,5 @@
 import { Header, Footer } from "@/components/layout";
+import { getPageContent } from "@/lib/cms";
 import { Heart } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -7,7 +8,11 @@ export const metadata: Metadata = {
   description: "Learn about how 100 Handy gives back to the community.",
 };
 
-export default function ForGoodPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function ForGoodPage() {
+  const c = await getPageContent('for-good');
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -18,16 +23,16 @@ export default function ForGoodPage() {
             <div className="mx-auto max-w-4xl text-center">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-brand-terracotta/20 px-4 py-2">
                 <Heart className="h-5 w-5 text-brand-terracotta" />
-                <span className="text-[14px] font-semibold text-brand-terracotta">100 Handy Cares</span>
+                <span className="text-[14px] font-semibold text-brand-terracotta">{c('hero.badge', '100 Handy Cares')}</span>
               </div>
               <h1 className="text-[52px] font-bold leading-tight text-white">
-                100 Handy Cares
+                {c('hero.title', '100 Handy Cares')}
               </h1>
               <p className="mt-8 text-[20px] leading-relaxed text-white/70">
-                Content coming soon.
+                {c('hero.paragraph', 'Content coming soon.')}
               </p>
               <p className="mt-4 text-[18px] leading-relaxed text-white/50">
-                We&apos;re working on sharing our community initiatives and giving-back programs. Check back soon to learn how 100 Handy is making a positive impact in neighborhoods across the country.
+                {c('hero.supporting_text', 'We\'re working on sharing our community initiatives and giving-back programs. Check back soon to learn how 100 Handy is making a positive impact in neighborhoods across the country.')}
               </p>
             </div>
           </div>
