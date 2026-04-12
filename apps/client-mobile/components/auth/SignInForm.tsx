@@ -13,17 +13,34 @@ import AppleLogo from '@/assets/images/apple-logo.svg';
 
 interface SignInFormProps {
   onSubmit: (data: SignInFormData) => void;
+  onOAuthSuccess: () => Promise<void>;
   isLoading: boolean;
   userRole: 'professional' | 'client';
 }
 
 export default function SignInForm({
   onSubmit,
+  onOAuthSuccess,
   isLoading,
   userRole,
 }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const { signInWithGoogle, signInWithApple } = useOAuthSignIn();
+
+  const handleOAuth = async (provider: () => Promise<boolean>) => {
+    setOauthLoading(true);
+    try {
+      const success = await provider();
+      if (success) {
+        await onOAuthSuccess();
+      }
+    } catch (error) {
+      console.error('OAuth sign-in error:', error);
+    } finally {
+      setOauthLoading(false);
+    }
+  };
 
   const {
     control,
@@ -148,15 +165,19 @@ export default function SignInForm({
       {/* OAuth buttons */}
       <View className="flex-row gap-3 mb-4">
         <Pressable
-          onPress={signInWithGoogle}
+          onPress={() => handleOAuth(signInWithGoogle)}
+          disabled={oauthLoading}
           className="flex-1 flex-row items-center justify-center border border-gray-200 rounded-full py-3 gap-2"
+          style={{ opacity: oauthLoading ? 0.5 : 1 }}
         >
           <GoogleLogo width={18} height={18} />
           <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>Google</Text>
         </Pressable>
         <Pressable
-          onPress={signInWithApple}
+          onPress={() => handleOAuth(signInWithApple)}
+          disabled={oauthLoading}
           className="flex-1 flex-row items-center justify-center border border-gray-200 rounded-full py-3 gap-2"
+          style={{ opacity: oauthLoading ? 0.5 : 1 }}
         >
           <AppleLogo width={18} height={18} />
           <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>Apple</Text>

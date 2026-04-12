@@ -21,46 +21,47 @@ export default function ProfessionalSignIn() {
   const pendingBookingStore = usePendingBookingStore();
   const { setLocation } = useLocationStore();
 
+  const navigateAfterAuth = async () => {
+    const isAuthenticated = await checkAuth();
+    if (!isAuthenticated) {
+      throw new Error('Authentication check failed');
+    }
+
+    const { isEmailVerified, userRole, hasCompletedOnboarding, user } = useAuthStore.getState();
+
+    if (userRole === 'customer') {
+      toast.info('Client account', 'This account is registered as a client. Redirecting to your home screen.');
+    }
+
+    const route = await resolveAuthenticatedRoute({
+      isEmailVerified,
+      userRole,
+      hasCompletedOnboarding,
+      userEmail: user?.email,
+      userId: user?.id,
+      getLocalClientOnboardingCompleted: async (userId) =>
+        (await AsyncStorage.getItem(`@clientOnboardingCompleted:${userId}`)) === 'true',
+      getProfessionalOnboardingCompleted: async () => {
+        const handyProfile = await getHandyProfile();
+        return handyProfile?.onboarding_completed || false;
+      },
+      getPendingBookingRoute: () =>
+        buildPendingBookingRoute({
+          hasRestorablePendingBooking: pendingBookingStore.hasRestorablePendingBooking,
+          getPendingBooking: pendingBookingStore.getPendingBooking,
+          markPendingBookingRestored: pendingBookingStore.markPendingBookingRestored,
+          setLocation,
+        }),
+    });
+
+    router.replace(route as Parameters<typeof router.replace>[0]);
+  };
+
   const handleSignIn = async (data: SignInFormData): Promise<void> => {
     setIsLoading(true);
     try {
       await signIn(data.email, data.password);
-      // Update auth state
-      const isAuthenticated = await checkAuth();
-      if (isAuthenticated) {
-        const { isEmailVerified, userRole, hasCompletedOnboarding, user } = useAuthStore.getState();
-
-        if (userRole === 'customer') {
-          // Client user logging in through professional flow — keep the hint,
-          // but let the root gate decide the final destination.
-          toast.info('Client account', 'This account is registered as a client. Redirecting to your home screen.');
-        }
-
-        const route = await resolveAuthenticatedRoute({
-          isEmailVerified,
-          userRole,
-          hasCompletedOnboarding,
-          userEmail: user?.email,
-          userId: user?.id,
-          getLocalClientOnboardingCompleted: async (userId) =>
-            (await AsyncStorage.getItem(`@clientOnboardingCompleted:${userId}`)) === 'true',
-          getProfessionalOnboardingCompleted: async () => {
-            const handyProfile = await getHandyProfile();
-            return handyProfile?.onboarding_completed || false;
-          },
-          getPendingBookingRoute: () =>
-            buildPendingBookingRoute({
-              hasRestorablePendingBooking: pendingBookingStore.hasRestorablePendingBooking,
-              getPendingBooking: pendingBookingStore.getPendingBooking,
-              markPendingBookingRestored: pendingBookingStore.markPendingBookingRestored,
-              setLocation,
-            }),
-        });
-
-        router.replace(route as Parameters<typeof router.replace>[0]);
-      } else {
-        throw new Error('Authentication check failed');
-      }
+      await navigateAfterAuth();
     } catch (error) {
       console.error('Sign in error:', error);
       toast.error('Sign in failed', error instanceof Error ? error.message : 'Invalid email or password');
@@ -102,6 +103,7 @@ export default function ProfessionalSignIn() {
               {/* Form Container */}
               <SignInForm
                 onSubmit={handleSignIn}
+                onOAuthSuccess={navigateAfterAuth}
                 isLoading={isLoading}
                 userRole="professional"
               />
