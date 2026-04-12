@@ -161,14 +161,14 @@ export function TransactionsTab() {
                 <Button
                   onClick={handleDownloadPDF}
                   disabled={!selectedYear}
-                  className="bg-[#2D6A4F] hover:bg-[#2D6A4F]/90 text-white px-8 disabled:bg-gray-300 disabled:text-gray-500"
+                  className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 disabled:bg-gray-300 disabled:text-gray-500"
                 >
                   PDF
                 </Button>
                 <Button
                   onClick={handleDownloadCSV}
                   disabled={!selectedYear}
-                  className="bg-[#2D6A4F] hover:bg-[#2D6A4F]/90 text-white px-8 disabled:bg-gray-300 disabled:text-gray-500"
+                  className="bg-brand-terracotta hover:bg-brand-coral text-white px-8 disabled:bg-gray-300 disabled:text-gray-500"
                 >
                   CSV
                 </Button>

@@ -27,9 +27,6 @@ export default function AccountPage() {
   const [pendingSection, setPendingSection] = useState<string | null>(null);
   const { isTwoFactorEnabled, canAccessSection, refreshTwoFactorStatus } = useSecureNavigation();
 
-  // Sections that require 2FA to access
-  const protectedSections = ["balance", "transactions"];
-
   const menuItems = [
     { id: "profile", label: "Profile" },
     { id: "password", label: "Password" },
@@ -45,7 +42,7 @@ export default function AccountPage() {
   ];
 
   const handleSectionChange = (sectionId: string) => {
-    const isProtected = protectedSections.includes(sectionId);
+    const isProtected = menuItems.find((item) => item.id === sectionId)?.requiresSecurity;
 
     if (isProtected && !canAccessSection(true)) {
       // Store the section they want to access
@@ -124,7 +121,7 @@ export default function AccountPage() {
       <Header />
 
       {/* Main Content */}
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-8 py-6 sm:py-12">
+      <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-8 py-6 sm:py-12">
         <h1 className="text-brand-dark font-bold text-2xl sm:text-[34px] mb-6 sm:mb-8">Your Account</h1>
 
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-0">
@@ -169,7 +166,7 @@ export default function AccountPage() {
           </aside>
 
           {/* Main Content Area */}
-          <div className="flex-1 bg-white border border-gray-300 rounded-lg lg:border-l-0 lg:rounded-l-none lg:rounded-r-lg p-4 sm:p-6 lg:p-8">
+          <div className="flex-1 min-w-0 bg-white border border-gray-300 rounded-lg lg:border-l-0 lg:rounded-l-none lg:rounded-r-lg p-4 sm:p-6 lg:p-8">
             {renderContent()}
           </div>
         </div>

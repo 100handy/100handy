@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { CreditCard, Plus, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { AddPaymentMethodModal } from "@/components/AddPaymentMethodModal";
 import {
   getOrCreateStripeCustomer,
@@ -19,24 +25,21 @@ export function BillingTab() {
   const [loading, setLoading] = useState(true);
   const [addCardModalOpen, setAddCardModalOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
-  const [customerId, setCustomerId] = useState(() => {
-    // Try to get cached customer ID
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('stripe_customer_id') || "";
-    }
-    return "";
-  });
+  const [customerId, setCustomerId] = useState("");
+  const [deleteCardId, setDeleteCardId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadPaymentMethods();
+    const cached = localStorage.getItem('stripe_customer_id') || "";
+    setCustomerId(cached);
+    loadPaymentMethods(cached);
   }, []);
 
-  const loadPaymentMethods = async () => {
+  const loadPaymentMethods = async (cachedId?: string) => {
     try {
       setLoading(true);
 
       // Use cached customer ID if available, otherwise fetch
-      let stripeCustomerId = customerId;
+      let stripeCustomerId = cachedId ?? customerId;
       if (!stripeCustomerId) {
         stripeCustomerId = await getOrCreateStripeCustomer();
         setCustomerId(stripeCustomerId);
@@ -81,17 +84,16 @@ export function BillingTab() {
     }
   };
 
-  const handleDeleteCard = async (paymentMethodId: string) => {
-    if (!confirm("Are you sure you want to remove this card?")) {
-      return;
-    }
-
+  const handleConfirmDeleteCard = async () => {
+    if (!deleteCardId) return;
     try {
-      await deletePaymentMethod(paymentMethodId);
+      await deletePaymentMethod(deleteCardId);
       toast.success("Card removed successfully");
       await loadPaymentMethods();
     } catch (error: any) {
       toast.error(error.message || "Failed to remove card");
+    } finally {
+      setDeleteCardId(null);
     }
   };
 
@@ -199,7 +201,7 @@ export function BillingTab() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDeleteCard(pm.id)}
+                    onClick={() => setDeleteCardId(pm.id)}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -222,6 +224,33 @@ export function BillingTab() {
         clientSecret={clientSecret}
         onSuccess={loadPaymentMethods}
       />
+
+      {/* Delete Card Confirmation Dialog */}
+      <Dialog open={!!deleteCardId} onOpenChange={(open) => !open && setDeleteCardId(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-brand-dark text-xl font-semibold">Remove Card</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <p className="text-brand-dark text-sm text-center">Are you sure you want to remove this card?</p>
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                onClick={() => setDeleteCardId(null)}
+                variant="outline"
+                className="text-brand-dark border-gray-300 hover:bg-gray-50 px-8"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmDeleteCard}
+                className="bg-brand-terracotta hover:bg-brand-coral text-white px-8"
+              >
+                Remove
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -26,10 +26,6 @@ export function PasswordTab() {
   };
 
   const handlePasswordChange = async () => {
-    await performPasswordChange();
-  };
-
-  const performPasswordChange = async () => {
     if (newPassword !== confirmPassword) {
       toast.error("Passwords do not match");
       return;

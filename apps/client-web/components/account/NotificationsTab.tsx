@@ -106,7 +106,7 @@ export function NotificationsTab() {
                   Email
                 </th>
                 <th className="text-center py-3 px-2 sm:px-4 text-brand-dark font-semibold text-sm sm:text-base">
-                  Sms
+                  SMS
                 </th>
                 <th className="text-center py-3 px-2 sm:px-4 text-brand-dark font-semibold text-sm sm:text-base">
                   Push Notification
