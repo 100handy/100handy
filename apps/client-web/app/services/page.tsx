@@ -118,7 +118,7 @@ function ServicesHero() {
           src="/images/services/hero.jpeg"
           alt="Services Hero"
           fill
-          className="object-cover opacity-70"
+          className="object-cover opacity-40"
           priority
           sizes="100vw"
         />

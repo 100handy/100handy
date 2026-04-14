@@ -50,7 +50,7 @@ export default async function BlogPage() {
               src={c('hero.image', '/images/hero/heroimage2.jpeg')}
               alt="100 Handy Blog"
               fill
-              className="object-cover opacity-70"
+              className="object-cover opacity-40"
               sizes="100vw"
               priority
             />

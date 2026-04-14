@@ -136,7 +136,7 @@ const HeroSection = () => {
           alt="Services by City"
           fill
           priority
-          className="object-cover opacity-30"
+          className="object-cover opacity-40"
           sizes="100vw"
         />
       </div>

@@ -45,7 +45,7 @@ const HeroSection = () => {
           src="/images/hero/partnerheroimage.png"
           alt="Partner with 100 Handy"
           fill
-          className="object-cover opacity-70"
+          className="object-cover opacity-40"
           priority
           sizes="100vw"
         />

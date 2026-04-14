@@ -24,50 +24,8 @@ export const servicesData: Record<string, Record<string, ServiceData>> = {
       contentImage: "/images/services/assembly/furniture-assembly.jpeg",
       longDescription:
         "Unboxing new furniture feels exciting until you're staring at a mountain of panels, tiny screws, and instructions that somehow skip step 6. Furniture assembly often takes far longer than you think. What looks like a \"quick 30-minute job\" can turn into an entire evening of trial and error, missing tools, and pieces that don't line up the way you expected. Our Pros make it easy to skip the frustration and get it done right. Hire a skilled Pro for furniture assembly and enjoy a smooth, hassle-free setup - whether it's a single chair, a full bedroom set, or a tricky flat-pack build. Search in the app or on our website, compare an operative by reviews, skills, and pricing, then book a time that fits your schedule. Less time building. More time enjoying your space.",
-      benefits: [
-        {
-          title: "Trusted & Vetted Pros",
-          description:
-            "Every Pro on 100 Handy is background-checked, reviewed, and rated by real users.",
-        },
-        {
-          title: "Seamless Booking",
-          description:
-            "Find, hire, and pay your Pro seamlessly through our secure platform.",
-        },
-        {
-          title: "Reliable Service",
-          description:
-            "From IKEA to custom furniture, Pros can handle all your assembly needs.",
-        },
-        {
-          title: "Happiness Pledge",
-          description:
-            "We stand by the quality of our services. If something isn't right, we'll work to make it right.",
-        },
-      ],
-      tasks: [
-        {
-          title: "Furniture Assembly",
-          description: "Assembly of all types of furniture pieces.",
-        },
-        {
-          title: "IKEA Assembly",
-          description: "Expert assembly of IKEA furniture collections.",
-        },
-        {
-          title: "Office Furniture Assembly",
-          description: "Setting up your home office or workspace.",
-        },
-        {
-          title: "Wardrobe Assembly",
-          description: "Closet systems and wardrobes assembled with care.",
-        },
-        {
-          title: "Crib Assembly",
-          description: "Safe and secure assembly for baby furniture.",
-        },
-      ],
+      benefits: [],
+      tasks: [],
       faqs: [
         {
           question: "What tools do I need for furniture assembly?",

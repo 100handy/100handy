@@ -37,14 +37,14 @@ const discoverLinks = [
 ];
 
 const serviceLinks = [
-  { label: "Furniture Assembly", href: "/services" },
-  { label: "TV & Wall Mounting", href: "/services" },
-  { label: "Home Repairs", href: "/services" },
-  { label: "Plumbing", href: "/services" },
-  { label: "Electrical", href: "/services" },
-  { label: "Cleaning", href: "/services" },
-  { label: "Packing & Moving", href: "/services" },
-  { label: "Outdoor Help", href: "/services" },
+  { label: "Furniture Assembly", href: "/services/furniture-assembly/furniture-assembly" },
+  { label: "TV & Wall Mounting", href: "/services/tv-wall-mounting/tv-mounting" },
+  { label: "Home Repairs", href: "/services/home-repairs/minor-home-repairs" },
+  { label: "Plumbing", href: "/services/plumbing/leak-fixing" },
+  { label: "Electrical", href: "/services/electrical/light-installation" },
+  { label: "Cleaning", href: "/services/cleaning/sparkle-clean" },
+  { label: "Packing & Moving", href: "/services/packing-moving/moving-help" },
+  { label: "Outdoor Help", href: "/services/outdoor/great-outdoors" },
 ];
 
 const companyLinks = [

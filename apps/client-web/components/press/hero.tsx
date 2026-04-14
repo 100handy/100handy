@@ -12,7 +12,7 @@ export function PressHero(): React.JSX.Element {
           alt="100 Handy Press"
           fill
           priority
-          className="object-cover opacity-30"
+          className="object-cover opacity-40"
           sizes="100vw"
         />
       </div>
