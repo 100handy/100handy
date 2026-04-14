@@ -43,24 +43,25 @@ export default async function BlogPage() {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative bg-brand-dark">
-          {/* Background image - covers entire section */}
-          <div className="absolute inset-0 overflow-hidden">
+        <section className="relative h-[470px] bg-gray-900">
+          {/* Background image */}
+          <div className="absolute inset-0">
             <Image
               src={c('hero.image', '/images/hero/heroimage2.jpeg')}
               alt="100 Handy Blog"
               fill
-              className="object-cover opacity-30"
+              className="object-cover opacity-70"
               sizes="100vw"
+              priority
             />
           </div>
-          <div className="relative flex min-h-[470px] items-center justify-center">
-
-            <div className="relative z-10 text-center">
-              <h1 className="mb-6 text-[67px] font-bold leading-none text-white">
+          {/* White card overlay */}
+          <div className="relative h-full flex items-center justify-center">
+            <div className="bg-white rounded-2xl px-12 py-10 text-center max-w-2xl mx-auto shadow-xl">
+              <h1 className="text-[56px] font-bold text-brand-dark-alt mb-4 leading-tight">
                 {c('hero.title', 'Blog')}
               </h1>
-              <p className="text-[22px] text-white/80">
+              <p className="text-[22px] text-brand-dark-alt font-medium">
                 {c('hero.subtitle', 'Tips, guides, and stories from the 100 Handy community')}
               </p>
             </div>

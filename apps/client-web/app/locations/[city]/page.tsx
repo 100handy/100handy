@@ -183,7 +183,7 @@ export default async function CityPage({ params }: CityPageProps) {
       <section className="bg-white py-20">
         <div className="max-w-[1920px] mx-auto px-8">
           <h2 className="text-brand-dark-alt font-bold text-[37px] mb-12">
-            Popular services in {cityInfo.name}
+            Popular Services in {cityInfo.name}
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

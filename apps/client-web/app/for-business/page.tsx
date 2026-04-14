@@ -39,27 +39,25 @@ const taskTypes = [
 
 const HeroSection = () => {
   return (
-    <section className="relative">
-      <div className="absolute inset-0 overflow-hidden">
+    <section className="relative h-[470px] bg-gray-900">
+      <div className="absolute inset-0">
         <Image
           src="/images/hero/partnerheroimage.png"
           alt="Partner with 100 Handy"
           fill
-          className="object-cover"
+          className="object-cover opacity-70"
           priority
           sizes="100vw"
         />
-        {/* White overlay */}
-        <div className="absolute inset-0 bg-white/70" />
       </div>
 
-      <div className="relative flex min-h-[470px] items-center justify-center">
-        <div className="relative z-10 mx-auto max-w-4xl px-8 text-center">
-          <h1 className="mb-6 text-[48px] font-bold leading-tight text-brand-dark">
+      <div className="relative h-full flex items-center justify-center">
+        <div className="bg-white rounded-2xl px-12 py-10 text-center max-w-2xl mx-auto shadow-xl">
+          <h1 className="mb-4 text-[40px] font-bold leading-tight text-brand-dark-alt">
             Boost sales — without adding operational load
           </h1>
-          <p className="mb-10 text-[22px] leading-relaxed text-brand-dark/80">
-            100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation — so customers get a complete &quot;buy-to-done&quot; experience.
+          <p className="mb-8 text-[18px] leading-relaxed text-brand-dark-alt/80">
+            100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation.
           </p>
           <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px] h-auto">
             Get in touch to learn more

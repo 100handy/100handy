@@ -20,7 +20,7 @@ export function GetHelpToday() {
     <section className="bg-white py-16">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-12 text-center text-[34px] font-bold text-brand-dark-alt">
-          Get help today
+          Get Help Today
         </h2>
 
         <div className="flex flex-wrap items-center justify-center gap-3">

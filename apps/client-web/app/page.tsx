@@ -6,7 +6,6 @@ import { Stats } from "@/components/marketing/stats";
 import { PopularProjects } from "@/components/marketing/popular-projects";
 import { Testimonials } from "@/components/marketing/testimonials";
 import { Guarantees } from "@/components/marketing/guarantees";
-import { HowItWorks } from "@/components/marketing/how-it-works";
 import { GetHelpToday } from "@/components/marketing/get-help-today";
 import { PendingBookingBanner } from "@/components/pending-booking-banner";
 
@@ -24,7 +23,6 @@ export default function HomePage() {
         <PopularProjects />
         <Testimonials />
         <Guarantees />
-        <HowItWorks />
         <GetHelpToday />
       </main>
       <Footer />

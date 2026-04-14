@@ -5,23 +5,24 @@ import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { FAQSection } from "@/components/location-service/faq-section";
+import { getCategoryIcon } from "@/components/icons/category-icons";
 
 // Service data mapping
 const serviceData: Record<string, { name: string; description: string; category: string }> = {
   "furniture-assembly": {
     name: "Furniture Assembly",
     description: "Need someone to put together furniture? Hire a 100 Handy Pro to assemble your furniture and leave the building to them.",
-    category: "Handyman"
+    category: "Assembly"
   },
   "tv-mounting": {
     name: "TV Mounting",
     description: "Mount your TV safely and professionally with expert help from local 100 Handy Pros.",
-    category: "Handyman"
+    category: "Mounting"
   },
   "handyman": {
     name: "Handyman",
     description: "If you're looking for local handyman services to help with home maintenance projects, just search \"handyman near me\" on 100 Handy.",
-    category: "Services"
+    category: "Home Repairs"
   },
   "home-cleaning": {
     name: "Home Cleaning",
@@ -36,12 +37,12 @@ const serviceData: Record<string, { name: string; description: string; category:
   "home-repairs-and-fixes": {
     name: "Home Repairs & Fixes",
     description: "Small issues can become big headaches. Our pros handle quick fixes and touch-ups that keep your home feeling solid, smooth, and well maintained.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "home-repairs": {
     name: "Home Repairs",
     description: "From minor fixes to major repairs, our skilled 100 Handy Pros can handle all your home maintenance needs.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "plumbing": {
     name: "Plumbing",
@@ -71,12 +72,12 @@ const serviceData: Record<string, { name: string; description: string; category:
   "outdoor": {
     name: "Outdoor Services",
     description: "From quick tidy-ups to full garden care, our outdoor pros help you keep things clean, trimmed, and looking their best.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "great-outdoors": {
     name: "The Great Outdoors",
     description: "From quick tidy-ups to full garden care, our outdoor pros help you keep things clean, trimmed, and looking their best—season after season.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   // Assembly sub-services
   "ikea-assembly": {
@@ -149,47 +150,47 @@ const serviceData: Record<string, { name: string; description: string; category:
   "minor-home-repairs": {
     name: "Minor Home Repairs",
     description: "Quick fixes and small repairs handled efficiently by experienced 100 Handy Pros.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "door-cabinet-furniture-repairs": {
     name: "Door, Cabinet, and Furniture Repairs",
     description: "Professional repair services for doors, cabinets, and furniture. Our 100 Handy Pros restore them to working order.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "door-cabinet-and-furniture-repairs": {
     name: "Door, Cabinet, and Furniture Repairs",
     description: "Professional repair services for doors, cabinets, and furniture. Our 100 Handy Pros restore them to working order.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "window-blinds-repair": {
     name: "Window and Blinds Repair",
     description: "Expert window and blinds repair by trusted 100 Handy Pros in your area.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "window-and-blinds-repair": {
     name: "Window and Blinds Repair",
     description: "Expert window and blinds repair by trusted 100 Handy Pros in your area.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "sealing-and-caulking": {
     name: "Sealing and Caulking",
     description: "Professional sealing and caulking services to keep your home watertight and well-maintained.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "flooring-and-tiling": {
     name: "Flooring and Tiling Help",
     description: "Get help with flooring and tiling projects from experienced 100 Handy Pros.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "flooring-and-tiling-help": {
     name: "Flooring and Tiling Help",
     description: "Get help with flooring and tiling projects from experienced 100 Handy Pros.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   "light-carpentry": {
     name: "Light Carpentry",
     description: "Skilled carpentry for shelving, trim, minor woodwork, and more. Our 100 Handy Pros handle it with care.",
-    category: "Repairs"
+    category: "Home Repairs"
   },
   // Plumbing sub-services
   "leak-fixing": {
@@ -334,47 +335,47 @@ const serviceData: Record<string, { name: string; description: string; category:
   "gardening": {
     name: "Gardening",
     description: "Professional gardening services from local 100 Handy Pros to keep your garden looking beautiful.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "lawn-care": {
     name: "Lawn Care",
     description: "Expert lawn care services. Our 100 Handy Pros keep your lawn healthy and well-maintained.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "landscaping": {
     name: "Landscaping",
     description: "Transform your outdoor space with professional landscaping from experienced 100 Handy Pros.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "leaf-raking-removal": {
     name: "Leaf Raking and Removal",
     description: "Efficient leaf raking and removal services to keep your garden tidy all year round.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "leaf-raking-and-removal": {
     name: "Leaf Raking and Removal",
     description: "Efficient leaf raking and removal services to keep your garden tidy all year round.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "roof-gutter-cleaning": {
     name: "Roof and Gutter Cleaning",
     description: "Professional roof and gutter cleaning to prevent blockages and water damage.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "roof-and-gutter-cleaning": {
     name: "Roof and Gutter Cleaning",
     description: "Professional roof and gutter cleaning to prevent blockages and water damage.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "branch-hedge-trimming": {
     name: "Branch and Hedge Trimming",
     description: "Expert branch and hedge trimming to keep your garden neat and well-shaped.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
   "branch-and-hedge-trimming": {
     name: "Branch and Hedge Trimming",
     description: "Expert branch and hedge trimming to keep your garden neat and well-shaped.",
-    category: "Outdoor"
+    category: "Outdoor help"
   },
 };
 
@@ -595,16 +596,20 @@ function LocationServiceContent({ city, service, citySlug, taskers }: LocationSe
                 </div>
               </div>
 
-              <Link href="/task-form" className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+              <Link href={`/task-form?category=${encodeURIComponent(service.category)}`} className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
                 Book Now
               </Link>
             </div>
 
             <div className="flex items-center justify-center">
-              <svg width="289" height="220" viewBox="0 0 289 220" className="text-brand-sage">
-                <circle cx="50" cy="50" r="50" fill="currentColor" opacity="0.6" />
-                <polygon points="145,0 289,220 0,220" fill="currentColor" opacity="0.6" />
-              </svg>
+              {(() => {
+                const ServiceIcon = getCategoryIcon(service.name);
+                return (
+                  <div className="flex h-52 w-52 items-center justify-center rounded-full bg-white/10">
+                    <ServiceIcon className="h-28 w-28 text-white" />
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -712,7 +717,7 @@ function LocationServiceContent({ city, service, citySlug, taskers }: LocationSe
             </div>
 
             <div className="mt-10 text-center">
-              <Link href="/task-form" className="inline-block bg-brand-terracotta hover:bg-brand-terracotta/90 text-white font-semibold py-3 px-10 rounded-md transition-colors text-[20px]">
+              <Link href={`/task-form?category=${encodeURIComponent(service.category)}`} className="inline-block bg-brand-terracotta hover:bg-brand-terracotta/90 text-white font-semibold py-3 px-10 rounded-md transition-colors text-[20px]">
                 Book Now
               </Link>
             </div>

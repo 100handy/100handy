@@ -112,11 +112,11 @@ const searchIndex: SearchEntry[] = [
 ];
 
 const popularSearches = [
-  "Invoice",
-  "Payment",
-  "How to book",
-  "Cancellation policy",
-  "100Handy Assembly",
+  "Booking",
+  "Reports",
+  "Hire a Hand",
+  "Cancellation Policy",
+  "Delivery Services",
 ];
 
 export function HelpSearch() {

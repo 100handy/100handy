@@ -40,7 +40,6 @@ import {
   HangingPicturesAndArtWorkIcon,
   HeavyLiftingAndLoadingIcon,
   IkeaAssemblyIcon,
-  LandscapingIcon,
   LawnCareIcon,
   LeafRakingAndRemovalIcon,
   LeakFixingIcon,
