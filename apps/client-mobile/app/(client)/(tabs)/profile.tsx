@@ -292,7 +292,7 @@ export default function ProfileScreen() {
               disabled={isSwitchingToProfessional}
             >
               <Globe size={20} color="#C1856A" strokeWidth={1.5} />
-              <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Go 100Task</Text>
+              <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Become a 100Handy Pro</Text>
             </Pressable>
 
             {/* Sign Out Button */}

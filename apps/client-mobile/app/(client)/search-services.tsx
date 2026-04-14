@@ -1,91 +1,36 @@
 import React, { useState } from 'react';
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
+import { Input, InputField, InputSlot } from '@/components/ui/input';
 import {
   ChevronLeft,
   Search,
   ChevronRight,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useCategories } from '@shared/supabase';
+import { useCategoriesByLevel } from '@shared/supabase';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { getCategoryIcon } from '@/lib/category-icons';
-
-// Determine group based on category name
-const getCategoryGroup = (categoryName: string): string => {
-  const name = categoryName.toLowerCase();
-
-  // Beauty & Grooming keywords
-  if (
-    name.includes('hair') ||
-    name.includes('nail') ||
-    name.includes('face') ||
-    name.includes('beauty') ||
-    name.includes('massage') ||
-    name.includes('spa') ||
-    name.includes('grooming') ||
-    name.includes('wax') ||
-    name.includes('treatment')
-  ) {
-    return 'Beauty & Grooming';
-  }
-
-  // Experiences keywords
-  if (
-    name.includes('entertainment') ||
-    name.includes('music') ||
-    name.includes('creative') ||
-    name.includes('art') ||
-    name.includes('relaxation') ||
-    name.includes('luxury') ||
-    name.includes('dining') ||
-    name.includes('food') ||
-    name.includes('fitness') ||
-    name.includes('event') ||
-    name.includes('photography') ||
-    name.includes('experience')
-  ) {
-    return 'Experiences';
-  }
-
-  // Default to Services
-  return 'Services';
-};
 
 export default function SearchServicesScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showBookingSheet, setShowBookingSheet] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState({ id: '', name: '' });
-  const { data: categories, isLoading, isError } = useCategories();
+  const { data: categories, isLoading, isError } = useCategoriesByLevel(1);
 
-  // Transform database categories to include icon and group
-  const transformedCategories = React.useMemo(() => {
+  // Attach icon and filter by search query
+  const filteredCategories = React.useMemo(() => {
     if (!categories) return [];
-
-    return categories.map(category => ({
+    const withIcon = categories.map(category => ({
       ...category,
       icon: getCategoryIcon(category.name),
-      group: getCategoryGroup(category.name),
     }));
-  }, [categories]);
-
-  // Filter categories based on search query
-  const filteredCategories = searchQuery.trim()
-    ? transformedCategories.filter((category) =>
-        category.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : transformedCategories;
-
-  // Group categories by their group
-  const groupedCategories = filteredCategories.reduce((acc, category) => {
-    if (!acc[category.group]) {
-      acc[category.group] = [];
-    }
-    acc[category.group].push(category);
-    return acc;
-  }, {} as Record<string, typeof transformedCategories>);
+    if (!searchQuery.trim()) return withIcon;
+    return withIcon.filter(c =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [categories, searchQuery]);
 
   const handleCategoryPress = (categoryId: string, categoryName: string) => {
     setSelectedCategory({ id: categoryId, name: categoryName });
@@ -137,42 +82,30 @@ export default function SearchServicesScreen() {
               Please try again later
             </Text>
           </View>
-        ) : Object.keys(groupedCategories).length > 0 ? (
-          <View className="flex-col py-4">
-            {Object.entries(groupedCategories).map(([group, categoryList]) => (
-              <View className="flex-col mb-6" key={group}>
-                {/* Group Header */}
-                <Text className="font-worksans-bold text-[16px] text-[#30352D] px-5 mb-3">
-                  {group}
-                </Text>
-
-                {/* Category Items */}
-                <View className="flex-col">
-                  {categoryList.map((category) => {
-                    const Icon = category.icon;
-                    return (
-                      <Pressable
-                        key={category.id}
-                        className="px-5 py-4 border-b border-gray-100"
-                        onPress={() => handleCategoryPress(category.id, category.name)}
-                      >
-                        <View className="flex-row items-center justify-between">
-                          <View className="flex-row items-center gap-3 flex-1">
-                            <View className="w-10 h-10 bg-[#F5F5F5] rounded-full items-center justify-center">
-                              <Icon size={20} color="#30352D" strokeWidth={1.5} />
-                            </View>
-                            <Text className="font-worksans text-[15px] text-[#30352D] flex-1">
-                              {category.name}
-                            </Text>
-                          </View>
-                          <ChevronRight size={20} color="#BDBDBD" strokeWidth={2} />
-                        </View>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-            ))}
+        ) : filteredCategories.length > 0 ? (
+          <View className="flex-col py-2">
+            {filteredCategories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <Pressable
+                  key={category.id}
+                  className="px-5 py-4 border-b border-gray-100"
+                  onPress={() => handleCategoryPress(category.id, category.name)}
+                >
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-3 flex-1">
+                      <View className="w-10 h-10 bg-[#F5F5F5] rounded-full items-center justify-center">
+                        <Icon size={20} color="#30352D" strokeWidth={1.5} />
+                      </View>
+                      <Text className="font-worksans text-[15px] text-[#30352D] flex-1">
+                        {category.name}
+                      </Text>
+                    </View>
+                    <ChevronRight size={20} color="#BDBDBD" strokeWidth={2} />
+                  </View>
+                </Pressable>
+              );
+            })}
           </View>
         ) : (
           <View className="flex-col items-center justify-center py-20 px-6">

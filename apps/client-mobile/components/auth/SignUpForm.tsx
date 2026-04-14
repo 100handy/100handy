@@ -4,7 +4,6 @@ import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { ChevronDown, X, Eye, EyeOff } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { type SignUpData, signUpWithPhone } from '@shared/supabase/auth';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signUpSchema, validatePostcode, type SignUpFormData } from '@shared/schemas/auth';
@@ -73,7 +72,6 @@ export default function SignUpForm({
 
   // Check if form is truly valid (including custom postcode validation)
   const isFormValid = isValid && !postcodeError;
-
   const handleSignUp = (formData: SignUpFormData): void => {
     const fullPhone = `+${callingCode}${formData.phone}`;
     const metadata = {
@@ -338,7 +336,7 @@ export default function SignUpForm({
       {/* Help Text */}
       <Text className="text-[12px] font-worksans-medium mb-5 leading-5" style={{ color: '#30352D' }}>
         Your phone and postcode help us match and{'\n'}
-        connect you with the right Taskers.
+        connect you with the right 100 Handy Pros.
       </Text>
 
       {/* Signup Button */}
@@ -362,8 +360,8 @@ export default function SignUpForm({
       {/* Terms and Privacy */}
       <View className="mb-6">
         <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
-          By singing up, you agree to the{' '}
-          <Text style={{ color: '#C1856A' }}>Term of service</Text>
+          By signing up, you agree to the{' '}
+          <Text style={{ color: '#C1856A' }}>Terms of Service</Text>
           {'\n'}
           and have reviewed the{' '}
           <Text style={{ color: '#C1856A' }}>Privacy Policy.</Text>

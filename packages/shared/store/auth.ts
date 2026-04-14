@@ -299,9 +299,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = session?.user;
       const metadata = user?.user_metadata;
       const isAuthenticated = !!user;
-
-      // Fetch authoritative role from DB
-      const dbRole = user?.id ? await fetchProfileRole(user.id) : null;
+      const fallbackRole = (metadata?.role as 'customer' | 'handy' | null | undefined) ?? null;
+      const resolvedRole =
+        fallbackRole || !user?.id ? fallbackRole : await fetchProfileRole(user.id);
 
       set({
         user: user || null,
@@ -310,10 +310,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isEmailVerified: !!user?.email_confirmed_at,
         isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
-        userRole: dbRole ?? (metadata?.role || null),
+        userRole: resolvedRole,
         isRoleResolved: true,
         isLoading: false
       });
+
+      if (user?.id && fallbackRole) {
+        fetchProfileRole(user.id).then((dbRole) => {
+          if (get().user?.id !== user.id) return;
+          set({
+            userRole: dbRole ?? fallbackRole,
+            isRoleResolved: true,
+          });
+        });
+      }
 
       return isAuthenticated;
     } catch (error) {

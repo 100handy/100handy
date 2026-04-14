@@ -379,7 +379,7 @@ export default function ClientOnboarding() {
   return (
     <View className="flex-1 bg-white">
       {/* Top Section - Geometric Shapes (fixed height) */}
-      <View style={{ height: GEOMETRIC_HEIGHT, overflow: 'hidden', position: 'relative' }}>
+      <View style={{ height: GEOMETRIC_HEIGHT, overflow: 'hidden', position: 'relative', backgroundColor: '#30352D' }}>
         {/* Top Left Sage Green Shape - Rectangle 92 (rotated) */}
         <View className="absolute" style={{ top: -80, left: -180, width: 434, height: 300, transform: [{ rotate: '302deg' }] }}>
           <Svg width="434" height="300" viewBox="0 0 435 301" fill="none">

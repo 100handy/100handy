@@ -61,7 +61,7 @@ export default function ProfessionalWelcome() {
           <View className="flex-col flex-1 bg-white">
             {/* Welcome Text */}
             <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8 text-brand-dark-alt">
-              Welcome to 100 Handy Task
+              Welcome to 100 Handy Pros
             </Text>
 
             {/* Create Account Button */}

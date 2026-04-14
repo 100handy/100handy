@@ -48,7 +48,7 @@ export default function Sidebar() {
     const isContentActive = location.pathname.startsWith('/content')
 
     return (
-        <aside className="w-64 flex-shrink-0 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 flex flex-col">
+        <aside className="w-64 flex-shrink-0 bg-white dark:bg-background-dark border-r border-slate-200 dark:border-slate-800 flex flex-col sticky top-0 h-screen overflow-y-auto">
             <div className="flex items-center gap-4 h-16 border-b border-slate-200 dark:border-slate-800 px-6">
                 <div className="size-8 text-primary">
                     <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">

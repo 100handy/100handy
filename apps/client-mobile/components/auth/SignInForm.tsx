@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { router } from 'expo-router';
@@ -27,6 +27,7 @@ export default function SignInForm({
   const [showPassword, setShowPassword] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
   const { signInWithGoogle, signInWithApple } = useOAuthSignIn();
+  const isBusy = isLoading || oauthLoading;
 
   const handleOAuth = async (provider: () => Promise<boolean>) => {
     setOauthLoading(true);
@@ -66,7 +67,7 @@ export default function SignInForm({
             <View>
               <Input
                 variant="outline"
-                className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
+                className="h-14 rounded-2xl border border-[#B89E96] bg-[#FCF8F5] px-4"
               >
                 <InputField
                   className="font-worksans text-[15px]"
@@ -99,7 +100,7 @@ export default function SignInForm({
             <View>
               <Input
                 variant="outline"
-                className="border-0 border-b border-gray-300 rounded-none px-0 h-10 flex-row items-center"
+                className="h-14 flex-row items-center rounded-2xl border border-[#B89E96] bg-[#FCF8F5] px-4"
               >
                 <InputField
                   className="font-worksans text-[15px] flex-1"
@@ -136,7 +137,7 @@ export default function SignInForm({
           backgroundColor: isValid ? '#C1856A' : '#E5E7EB',
         }}
         onPress={handleSubmit(onSubmit)}
-        isDisabled={!isValid || isLoading}
+        isDisabled={!isValid || isBusy}
       >
         {isLoading && <ButtonSpinner color={isValid ? 'white' : '#B7B7B7'} />}
         <ButtonText
@@ -170,8 +171,14 @@ export default function SignInForm({
           className="flex-1 flex-row items-center justify-center border border-gray-200 rounded-full py-3 gap-2"
           style={{ opacity: oauthLoading ? 0.5 : 1 }}
         >
-          <GoogleLogo width={18} height={18} />
-          <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>Google</Text>
+          {oauthLoading ? (
+            <ActivityIndicator size="small" color="#30352D" />
+          ) : (
+            <GoogleLogo width={18} height={18} />
+          )}
+          <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
+            {oauthLoading ? 'Connecting...' : 'Google'}
+          </Text>
         </Pressable>
         <Pressable
           onPress={() => handleOAuth(signInWithApple)}

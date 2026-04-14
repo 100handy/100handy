@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable } from 'react-native';
+import AuthLogo from '@/components/auth/AuthLogo';
 import {
   MapPin,
   Search,
@@ -148,10 +149,7 @@ export function ServicesHomeScreen() {
           {/* Header Section */}
           <View className="bg-white px-5 pt-4 pb-4 flex-col">
             <View className="items-center justify-between flex-row">
-              <View className="gap-0 flex-col">
-                <Text className="text-xs text-gray-500" style={{ fontWeight: '400' }}>100</Text>
-                <Text className="text-2xl text-stone-900" style={{ fontWeight: '700', letterSpacing: 0.5 }}>HANDY</Text>
-              </View>
+              <AuthLogo size="auth" color="#30352D" />
               <Pressable onPress={() => router.push('/(client)/location')}>
                 <View className="items-end gap-0 flex-col">
                   <View className="items-center gap-1 flex-row">

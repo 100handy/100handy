@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ButtonText } from '@/components/ui/button';
 import { router, useLocalSearchParams } from 'expo-router';
 import { countryCodeToFlagEmoji, getWelcomeCountry } from '@/lib/welcome-country';
 import AuthLogo from '@/components/auth/AuthLogo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 export default function ClientWelcome() {
   const params = useLocalSearchParams();
@@ -30,6 +31,19 @@ export default function ClientWelcome() {
     };
   }, []);
 
+  const handleNotNow = async (): Promise<void> => {
+    try {
+      await Promise.all([
+        AsyncStorage.setItem(STORAGE_KEYS.HAS_SEEN_ONBOARDING, 'true'),
+        AsyncStorage.setItem(STORAGE_KEYS.HAS_ACCEPTED_TERMS, 'true'),
+      ]);
+    } catch (error) {
+      console.error('Error saving onboarding status:', error);
+    } finally {
+      router.replace('/(client)/(tabs)/home');
+    }
+  };
+
   return (
     <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1 bg-white">
@@ -42,7 +56,7 @@ export default function ClientWelcome() {
           {/* Dark Top Section */}
           <View className="flex-col pb-20" style={{ backgroundColor: '#333A31' }}>
             {/* Country Label */}
-            <View className="items-center pt-4 pb-12">
+            <View className="flex-row items-center justify-between px-5 pt-4 pb-12">
               <View className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
                 <Text className="mr-2 text-[18px]">
                   {countryCodeToFlagEmoji(countryCode)}
@@ -51,6 +65,11 @@ export default function ClientWelcome() {
                   {countryName}
                 </Text>
               </View>
+              <Pressable onPress={handleNotNow} className="px-1 py-2">
+                <Text className="text-[15px] font-worksans-medium text-white">
+                  Not now
+                </Text>
+              </Pressable>
             </View>
 
             {/* Logo */}
@@ -67,8 +86,8 @@ export default function ClientWelcome() {
             {/* Buttons */}
             <View className="px-5">
               {/* Create Account Button */}
-              <Button
-                className="rounded-full shadow-md mb-4"
+              <Pressable
+                className="rounded-full py-4 mb-4 shadow-md"
                 style={{ backgroundColor: '#C1856A' }}
                 onPress={() =>
                   router.push({
@@ -77,10 +96,10 @@ export default function ClientWelcome() {
                   } as Parameters<typeof router.push>[0])
                 }
               >
-                <ButtonText className="text-[18px] font-worksans-bold text-white">
+                <Text className="text-center text-[18px] font-worksans-bold text-white">
                   Create Account
-                </ButtonText>
-              </Button>
+                </Text>
+              </Pressable>
 
               {/* Sign In Button */}
               <Pressable
@@ -109,6 +128,21 @@ export default function ClientWelcome() {
                   {'\n'}
                   Manage <Text style={{ color: '#C1856A' }}>privacy settings</Text>
                 </Text>
+                <Pressable
+                  className="mt-5"
+                  onPress={() =>
+                    router.push({
+                      pathname: '/(auth)/(professional)',
+                      params: ref ? { ref } : {},
+                    } as Parameters<typeof router.push>[0])
+                  }
+                >
+                  <Text className="text-center text-[14px] font-worksans-medium" style={{ color: '#30352D' }}>
+                    Looking to sign up as a{' '}
+                    <Text style={{ color: '#C1856A' }}>100Handy Pro</Text>
+                    ?
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </View>

@@ -6,7 +6,7 @@ export default function AuthFooter() {
     <View>
       <Text className="text-center text-[12px] font-worksans-medium leading-[18px]" style={{ color: '#30352D' }}>
         By signing up, you agree to the{' '}
-        <Text style={{ color: '#C1856A' }}>Term of service</Text>
+        <Text style={{ color: '#C1856A' }}>Terms of Service</Text>
         {'\n'}
         and have reviewed the{' '}
         <Text style={{ color: '#C1856A' }}>Privacy Policy.</Text>

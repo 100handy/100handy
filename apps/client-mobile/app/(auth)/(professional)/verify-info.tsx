@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, Platform } from 'react-native';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -183,6 +184,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
 export default function VerifyInformation() {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const toast = useToast();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -383,19 +385,40 @@ export default function VerifyInformation() {
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
                   Date of birth
                 </Text>
-                <Input
-                  variant="outline"
-                  className="border-0 border-b border-gray-300 rounded-none px-0 h-9"
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  className="border-b border-gray-300 py-2"
                 >
-                  <InputField
+                  <Text
                     className="font-worksans text-[15px]"
-                    style={{ color: '#30352D' }}
-                    value={formData.dateOfBirth}
-                    onChangeText={(value) => handleInputChange('dateOfBirth', value)}
-                    placeholder="dd/mm/yyyy"
-                    placeholderTextColor="#9CA3AF"
+                    style={{ color: formData.dateOfBirth ? '#30352D' : '#9CA3AF' }}
+                  >
+                    {formData.dateOfBirth || 'Select date of birth'}
+                  </Text>
+                </Pressable>
+                {showDatePicker && (
+                  <DateTimePicker
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    value={
+                      formData.dateOfBirth
+                        ? new Date(convertDateFormat(formData.dateOfBirth))
+                        : new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+                    }
+                    maximumDate={new Date()}
+                    onChange={(event: DateTimePickerEvent, date?: Date) => {
+                      if (Platform.OS === 'android') setShowDatePicker(false);
+                      if (event.type === 'dismissed') { setShowDatePicker(false); return; }
+                      if (date) {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear();
+                        handleInputChange('dateOfBirth', `${day}/${month}/${year}`);
+                        if (Platform.OS === 'ios') setShowDatePicker(false);
+                      }
+                    }}
                   />
-                </Input>
+                )}
               </View>
 
               {/* Street Number and Name */}

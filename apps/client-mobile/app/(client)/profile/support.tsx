@@ -55,15 +55,14 @@ export default function SupportScreen() {
 
   const handleBecomeTasker = () => {
     Alert.alert(
-      'Become a Tasker',
-      'Interested in earning money by helping others? Join our community of skilled taskers!',
+      'Become a 100Handy Pro',
+      'Interested in earning money by helping others? Join our community of skilled 100Handy Pros!',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Learn More',
           onPress: () => {
-            // Navigate to tasker onboarding or open registration URL
-            Linking.openURL('https://100handy.com/become-tasker');
+            Linking.openURL('https://100handy.com/become-pro');
           }
         }
       ]
@@ -135,7 +134,7 @@ export default function SupportScreen() {
             />
 
             <MenuItem
-              title="Become a Tasker"
+              title="Become a 100Handy Pro"
               onPress={handleBecomeTasker}
             />
 
