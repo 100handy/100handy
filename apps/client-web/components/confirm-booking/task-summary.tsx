@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Calendar, MapPin, Clock, Truck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface TaskSummaryProps {
   handymanName?: string;
@@ -112,12 +113,14 @@ export function TaskSummary({
 
       {/* Edit Task Button */}
       {onEdit && (
-        <button
+        <Button
+          variant="terracotta-outline"
+          size="full"
+          className="mb-6"
           onClick={onEdit}
-          className="mb-6 w-full rounded-full border border-brand-terracotta bg-white px-4 py-2.5 text-[16px] font-medium text-brand-terracotta transition-colors hover:bg-brand-terracotta/5"
         >
           Edit Task
-        </button>
+        </Button>
       )}
 
       {/* Task Details */}
@@ -168,13 +171,14 @@ export function TaskSummary({
 
       {/* Confirm Button */}
       {onConfirm && (
-        <button
+        <Button
+          variant="terracotta"
+          size="full"
           onClick={onConfirm}
           disabled={isSubmitting}
-          className="w-full rounded-full bg-brand-terracotta px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Creating booking...' : 'Confirm and Chat'}
-        </button>
+        </Button>
       )}
     </div>
   );

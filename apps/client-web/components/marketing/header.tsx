@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -30,12 +31,9 @@ export function Header() {
           >
             Sign up / Log in
           </Link>
-          <Link
-            href="/become-100-handy-pro"
-            className="px-4 py-2 rounded-full bg-brand-terracotta text-white font-medium text-[16px] hover:bg-brand-terracotta/90 transition-colors"
-          >
-            Become a Pro
-          </Link>
+          <Button variant="terracotta" size="sm" asChild>
+            <Link href="/become-100-handy-pro">Become a Pro</Link>
+          </Button>
         </nav>
 
         {/* Mobile Hamburger */}
@@ -66,13 +64,9 @@ export function Header() {
             >
               Sign up / Log in
             </Link>
-            <Link
-              href="/become-100-handy-pro"
-              onClick={() => setMobileOpen(false)}
-              className="px-4 py-3 rounded-full bg-brand-terracotta text-white font-medium text-[16px] text-center hover:bg-brand-terracotta/90 transition-colors"
-            >
-              Become a Pro
-            </Link>
+            <Button variant="terracotta" size="sm" asChild className="text-center">
+              <Link href="/become-100-handy-pro" onClick={() => setMobileOpen(false)}>Become a Pro</Link>
+            </Button>
           </div>
         </nav>
       )}

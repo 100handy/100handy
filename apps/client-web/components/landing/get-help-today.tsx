@@ -27,7 +27,7 @@ export function LandingGetHelpToday(): React.JSX.Element {
           {services.map((service, index) => (
             <button
               key={index}
-              className="rounded-full border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+              className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
             >
               {service}
             </button>

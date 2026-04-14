@@ -1,6 +1,7 @@
 import { Header, Footer } from "@/components/layout";
 import { ValuesCarousel } from "@/components/careers";
 import { getPageContent } from "@/lib/cms";
+import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 
 export const dynamic = 'force-dynamic'
@@ -28,12 +29,9 @@ export default async function CareersPage() {
                 {c('hero.paragraph', "Join the team that is redefining how the world gets work done. We're connecting neighbors, empowering professionals, and simplifying lives - one click at a time.")}
               </p>
               <div className="mt-10">
-                <a
-                  href="#open-roles"
-                  className="inline-block rounded-full bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
-                >
-                  See Open Roles
-                </a>
+                <Button variant="terracotta" size="lg" asChild>
+                  <a href="#open-roles">See Open Roles</a>
+                </Button>
               </div>
             </div>
           </div>
@@ -94,12 +92,9 @@ export default async function CareersPage() {
               <p className="mb-8 text-[18px] leading-relaxed text-brand-dark-alt/80">
                 {c('roles.paragraph', "We're always looking for talented people to join our team. Check back soon for open positions, or reach out to us directly.")}
               </p>
-              <a
-                href="mailto:careers@100handy.com"
-                className="inline-block rounded-full border-2 border-brand-terracotta px-8 py-4 text-[18px] font-semibold text-brand-terracotta transition-colors hover:bg-brand-terracotta hover:text-white"
-              >
-                Contact Us
-              </a>
+              <Button variant="terracotta-outline" size="lg" asChild>
+                <a href="mailto:careers@100handy.com">Contact Us</a>
+              </Button>
             </div>
           </div>
         </section>

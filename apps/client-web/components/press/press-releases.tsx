@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const pressReleases = [
   {
@@ -51,9 +52,9 @@ export function PressReleases(): React.JSX.Element {
         </div>
 
         <div className="mt-12 text-center">
-          <button className="rounded-full bg-brand-terracotta px-6 py-2.5 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/90">
+          <Button variant="terracotta" size="md" className="font-bold">
             Explore
-          </button>
+          </Button>
         </div>
       </div>
     </section>

@@ -304,7 +304,7 @@ export function SelectDateTimeModal({
               <button
                 onClick={handleConfirm}
                 disabled={!selectedTime}
-                className={`w-full rounded-full bg-brand-terracotta px-6 py-3 font-semibold text-white transition-colors ${
+                className={`w-full rounded-xl bg-brand-terracotta px-6 py-3 font-semibold text-white transition-colors ${
                   selectedTime ? "hover:bg-brand-terracotta/85" : "opacity-70"
                 }`}
               >

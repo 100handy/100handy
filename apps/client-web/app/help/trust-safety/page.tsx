@@ -122,7 +122,7 @@ const MainContent = () => {
             {/* CTA Cards */}
             <div className="grid md:grid-cols-2 gap-8">
                  <div className="border border-gray-200 rounded-lg p-8 text-center flex flex-col items-center justify-center min-h-[180px]">
-                    <div className="w-12 h-12 rounded-full bg-brand-terracotta flex items-center justify-center mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-brand-terracotta flex items-center justify-center mb-4">
                          <MailIcon />
                     </div>
                     <h3 className="text-[20px] font-bold text-brand-dark-alt">Can't find what you need?</h3>

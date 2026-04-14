@@ -4,6 +4,7 @@ import { useAuthContext } from '@/components/providers/auth-provider';
 import { createClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Button } from "@/components/ui/button";
 
 export function UserMenu() {
   const { user, isAuthenticated, loading } = useAuthContext();
@@ -31,12 +32,9 @@ export function UserMenu() {
         >
           Sign In
         </Link>
-        <Link
-          href="/sign-up"
-          className="px-4 py-2 text-sm font-medium text-white bg-brand-terracotta rounded-full hover:bg-brand-terracotta/90"
-        >
-          Sign Up
-        </Link>
+        <Button variant="terracotta" size="sm" asChild>
+          <Link href="/sign-up">Sign Up</Link>
+        </Button>
       </div>
     );
   }

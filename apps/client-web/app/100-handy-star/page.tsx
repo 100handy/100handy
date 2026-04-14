@@ -1,6 +1,7 @@
 import { Header, Footer } from "@/components/layout";
 import { Star, Clock, Award } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -74,7 +75,7 @@ export default function EliteTaskersPage() {
                   const Icon = benefit.icon;
                   return (
                     <div key={benefit.title} className="text-center">
-                      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-brand-terracotta/10">
+                      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl bg-brand-terracotta/10">
                         <Icon className="h-10 w-10 text-brand-terracotta" />
                       </div>
                       <h3 className="mb-4 text-[24px] font-bold text-brand-dark-alt">
@@ -159,12 +160,9 @@ export default function EliteTaskersPage() {
                     search results. Then compare reviews, rates, and
                     availability to book the right match.
                   </p>
-                  <Link
-                    href="/dashboard"
-                    className="inline-block rounded-full bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
-                  >
-                    Find your Star today
-                  </Link>
+                  <Button variant="terracotta" size="lg" asChild>
+                    <Link href="/dashboard">Find your Star today</Link>
+                  </Button>
                 </div>
               </div>
             </div>

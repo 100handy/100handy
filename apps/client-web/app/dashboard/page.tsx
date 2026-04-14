@@ -87,7 +87,7 @@ function DashboardContent() {
                   <button
                     key={category.id}
                     onClick={() => handleCategoryClick(category.name)}
-                    className="px-6 py-2 rounded-full border transition-colors bg-white text-brand-dark border-gray-300 hover:border-brand-terracotta hover:text-brand-terracotta"
+                    className="px-6 py-2 rounded-xl border transition-colors bg-white text-brand-dark border-gray-300 hover:border-brand-terracotta hover:text-brand-terracotta"
                   >
                     {category.name}
                   </button>
@@ -132,7 +132,7 @@ function DashboardContent() {
                 {accountTypes.map((type) => (
                   <button
                     key={type}
-                    className="px-8 py-2.5 rounded-full border-2 border-gray-300 bg-white text-brand-terracotta font-medium hover:bg-brand-terracotta hover:text-white hover:border-brand-terracotta transition-colors"
+                    className="px-8 py-2.5 rounded-xl border-2 border-gray-300 bg-white text-brand-terracotta font-medium hover:bg-brand-terracotta hover:text-white hover:border-brand-terracotta transition-colors"
                   >
                     {type}
                   </button>

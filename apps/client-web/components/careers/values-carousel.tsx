@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const values = [
   {
@@ -106,7 +107,7 @@ export function ValuesCarousel(): React.JSX.Element {
                   key={value.title}
                   className="w-[85%] flex-shrink-0 snap-start rounded-2xl bg-white p-8 shadow-sm sm:w-[70%] md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
                 >
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-brand-terracotta/10 text-[16px] font-bold text-brand-terracotta">
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-terracotta/10 text-[16px] font-bold text-brand-terracotta">
                     {index + 1}
                   </div>
                   <h3 className="mb-4 text-[24px] font-bold text-brand-dark-alt">
@@ -147,12 +148,9 @@ export function ValuesCarousel(): React.JSX.Element {
           </div>
 
           <div className="mt-12 text-center">
-            <a
-              href="#open-roles"
-              className="inline-block rounded-full bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
-            >
-              See Open Roles
-            </a>
+            <Button variant="terracotta" size="lg" asChild>
+              <a href="#open-roles">See Open Roles</a>
+            </Button>
           </div>
         </div>
       </div>

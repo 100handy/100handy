@@ -3,6 +3,7 @@ import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { MessageIcon, SendEmailIcon, PhoneIcon, HelpIcon } from "@/components/icons";
 import { getPageContent } from "@/lib/cms";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = 'force-dynamic'
 
@@ -84,9 +85,9 @@ const ContactUsContent = ({ breadcrumb, title, card1Title, card1Text, card2Title
                          </div>
                     </div>
                     <div>
-                        <button type="submit" className="w-auto bg-brand-terracotta text-white font-semibold px-8 py-3 rounded-full hover:bg-brand-terracotta/85 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-terracotta">
+                        <Button variant="terracotta" size="lg" type="submit">
                             Submit
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </div>

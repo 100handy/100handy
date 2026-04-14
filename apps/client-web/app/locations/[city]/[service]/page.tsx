@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { FAQSection } from "@/components/location-service/faq-section";
 import { getCategoryIcon } from "@/components/icons/category-icons";
@@ -596,9 +597,9 @@ function LocationServiceContent({ city, service, citySlug, taskers }: LocationSe
                 </div>
               </div>
 
-              <Link href={`/task-form?category=${encodeURIComponent(service.category)}`} className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px]">
-                Book Now
-              </Link>
+              <Button variant="terracotta" size="lg" asChild>
+                <Link href={`/task-form?category=${encodeURIComponent(service.category)}`}>Book Now</Link>
+              </Button>
             </div>
 
             <div className="flex items-center justify-center">
@@ -717,9 +718,9 @@ function LocationServiceContent({ city, service, citySlug, taskers }: LocationSe
             </div>
 
             <div className="mt-10 text-center">
-              <Link href={`/task-form?category=${encodeURIComponent(service.category)}`} className="inline-block bg-brand-terracotta hover:bg-brand-terracotta/90 text-white font-semibold py-3 px-10 rounded-full transition-colors text-[20px]">
-                Book Now
-              </Link>
+              <Button variant="terracotta" size="lg" asChild>
+                <Link href={`/task-form?category=${encodeURIComponent(service.category)}`}>Book Now</Link>
+              </Button>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { Header, Footer } from "@/components/layout";
 import { Star, Clock, Award } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 import { getPageContent } from "@/lib/cms";
 
@@ -23,7 +24,7 @@ export default async function EliteTaskersPage() {
         <section className="bg-brand-dark py-20">
           <div className="mx-auto max-w-[1920px] px-8">
             <div className="mx-auto max-w-4xl text-center">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-brand-terracotta/20 px-4 py-2">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-xl bg-brand-terracotta/20 px-4 py-2">
                 <Star className="h-5 w-5 fill-white text-white" />
                 <span className="text-[14px] font-semibold text-white">{c('hero.badge', '100 Handy Star')}</span>
               </div>
@@ -51,7 +52,7 @@ export default async function EliteTaskersPage() {
               <div className="grid gap-12 md:grid-cols-3">
                 {icons.map((Icon, i) => (
                   <div key={i} className="text-center">
-                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-brand-terracotta">
+                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl bg-brand-terracotta">
                       <Icon className="h-10 w-10 text-white" />
                     </div>
                     <h3 className="mb-4 text-[24px] font-bold text-brand-dark-alt">
@@ -131,12 +132,9 @@ export default async function EliteTaskersPage() {
                   <p className="mb-8 text-[18px] leading-relaxed text-brand-dark-alt/80">
                     {c('hire.description', 'It\'s simple. When you search for a service, look for the Star badge on a 100 Handy Pro\'s profile or in your search results. Then compare reviews, rates, and availability to book the right match.')}
                   </p>
-                  <Link
-                    href="/dashboard"
-                    className="inline-block rounded-full bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
-                  >
-                    {c('hire.cta', 'Find your Star today')}
-                  </Link>
+                  <Button variant="terracotta" size="lg" asChild>
+                    <Link href="/dashboard">{c('hire.cta', 'Find your Star today')}</Link>
+                  </Button>
                 </div>
               </div>
             </div>

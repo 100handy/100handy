@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 export function WhatsHappening(): React.JSX.Element {
   return (
@@ -16,9 +17,9 @@ export function WhatsHappening(): React.JSX.Element {
             <p className="mb-8 text-[20px] leading-relaxed text-brand-dark-alt">
               We bring people together. It's at the heart of everything we do. We know that for every person who needs their radiator fixed before winter, the nursery set up for their newborn, or a TV mounted in time for game day, there's someone nearby who is ready, willing, and able to help.
             </p>
-            <button className="rounded-full bg-brand-terracotta px-6 py-2.5 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/90">
+            <Button variant="terracotta" size="md" className="font-bold">
               Read the Blog
-            </button>
+            </Button>
           </div>
 
           {/* Right side - Illustration */}

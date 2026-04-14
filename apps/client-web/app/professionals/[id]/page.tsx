@@ -222,7 +222,7 @@ export default function ProfessionalDetailPage({
                   {reviews.map((review) => (
                     <div key={review.id} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-brand-terracotta flex items-center justify-center text-white font-medium">
+                        <div className="w-10 h-10 rounded-xl bg-brand-terracotta flex items-center justify-center text-white font-medium">
                           C
                         </div>
                         <div className="flex-1 min-w-0">

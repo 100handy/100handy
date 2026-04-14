@@ -1,6 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/ui/logo";
+import { Button } from "@/components/ui/button";
 
 export function PressKit(): React.JSX.Element {
   return (
@@ -21,9 +22,9 @@ export function PressKit(): React.JSX.Element {
               <p className="mb-8 text-[20px] leading-relaxed text-brand-dark-alt">
                 Download 100Handy logos, brand visuals, and app screenshots.
               </p>
-              <button className="rounded-full bg-brand-terracotta px-6 py-2.5 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/90">
+              <Button variant="terracotta" size="md" className="font-bold">
                 Download press kit
-              </button>
+              </Button>
             </div>
           </div>
         </div>

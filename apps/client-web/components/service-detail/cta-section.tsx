@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface CTASectionProps {
   categoryName?: string;
@@ -45,12 +46,9 @@ export function CTASection({ categoryName, ctaImage }: CTASectionProps): React.J
             <h2 className="mb-8 text-[39px] font-bold text-brand-dark-alt">
               Ready to hire a 100 Handy Pro?
             </h2>
-            <Link
-              href={href}
-              className="rounded-full bg-brand-terracotta px-14 py-[14px] text-[20px] font-medium text-white transition-colors hover:bg-brand-terracotta/90"
-            >
-              Find help now
-            </Link>
+            <Button variant="terracotta" size="lg" asChild>
+              <Link href={href}>Find help now</Link>
+            </Button>
           </div>
         </div>
       </div>

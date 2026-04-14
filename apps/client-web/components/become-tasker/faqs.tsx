@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const faqs = [
   {
@@ -85,12 +86,9 @@ export function TaskerFAQs(): React.JSX.Element {
           <h3 className="mb-6 text-[28px] font-bold text-brand-dark-alt">
             Ready to create an extra source of income?
           </h3>
-          <Link
-            href="/sign-up?type=pro"
-            className="inline-block rounded-full bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
-          >
-            Get started
-          </Link>
+          <Button variant="terracotta" size="lg" asChild>
+            <Link href="/sign-up?type=pro">Get started</Link>
+          </Button>
         </div>
       </div>
     </section>

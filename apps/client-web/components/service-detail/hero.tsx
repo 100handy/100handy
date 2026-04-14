@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface ServiceHeroProps {
   title: string;
@@ -46,12 +47,9 @@ export function ServiceHero({ title, description, heroImage }: ServiceHeroProps)
           <p className="mb-8 text-[22px] leading-relaxed text-brand-dark-alt">
             {description}
           </p>
-          <Link
-            href="/task-form"
-            className="inline-block rounded-full bg-brand-terracotta px-12 py-4 text-[22px] font-medium text-white transition-colors hover:bg-brand-terracotta/90"
-          >
-            Book Now
-          </Link>
+          <Button variant="terracotta" size="xl" asChild>
+            <Link href="/task-form">Book Now</Link>
+          </Button>
         </div>
       </div>
     </section>

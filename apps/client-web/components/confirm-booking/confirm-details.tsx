@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { StripeCardElement } from "../payment/stripe-card-element";
 
 interface ConfirmDetailsProps {
@@ -42,14 +43,15 @@ export function ConfirmDetails({
               </svg>
               <p className="text-green-800 text-sm">Payment authorized successfully. Your card has been held.</p>
             </div>
-            <button
+            <Button
+              variant="terracotta"
+              size="full"
               type="button"
               onClick={() => onPaymentSuccess(authorizedPaymentId)}
               disabled={isSubmitting}
-              className="w-full rounded-full bg-brand-terracotta px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Processing...' : 'Complete Booking'}
-            </button>
+            </Button>
           </div>
         ) : clientSecret ? (
           <StripeCardElement

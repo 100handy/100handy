@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePendingBookingStore, useLocationStore } from "@shared/supabase";
 import { useAuthContext } from "@/components/providers/auth-provider";
+import { Button } from "@/components/ui/button";
 
 export function PendingBookingBanner() {
   const router = useRouter();
@@ -89,12 +90,13 @@ export function PendingBookingBanner() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              variant="terracotta"
+              size="sm"
               onClick={handleContinueBooking}
-              className="rounded-full bg-brand-terracotta px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-terracotta/90"
             >
               Continue Booking
-            </button>
+            </Button>
             <button
               onClick={handleDismiss}
               className="text-sm text-gray-500 hover:text-gray-700 transition-colors"

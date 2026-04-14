@@ -175,7 +175,7 @@ export function Services() {
                 <button
                   key={subCategory.id}
                   onClick={() => handleSubCategoryClick(subCategory)}
-                  className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+                  className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
                 >
                   <SubIcon className="h-5 w-5 shrink-0" />
                   {subCategory.name}
@@ -189,7 +189,7 @@ export function Services() {
                 <button
                   key={name}
                   onClick={() => router.push(`/task-form?category=${encodeURIComponent(name)}`)}
-                  className="rounded-full border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+                  className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
                 >
                   {name}
                 </button>

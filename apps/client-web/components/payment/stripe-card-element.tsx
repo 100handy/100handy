@@ -8,6 +8,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
+import { Button } from "@/components/ui/button";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -110,17 +111,18 @@ function PaymentForm({ clientSecret, onSuccess, onError, isSubmitting }: Payment
           <p className="text-red-800 text-sm">{elementError}</p>
         </div>
       )}
-      <button
+      <Button
+        variant="terracotta"
+        size="full"
         type="submit"
         disabled={!stripe || isSubmitting || isConfirming || confirmFailed || !!elementError}
-        className="w-full rounded-full bg-brand-terracotta px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {confirmFailed
           ? 'Payment failed — go back and retry'
           : isSubmitting || isConfirming
             ? 'Processing...'
             : 'Authorize Payment'}
-      </button>
+      </Button>
       <p className="text-xs text-gray-600 text-center">
         Your card will be authorized but not charged until the task is completed
       </p>

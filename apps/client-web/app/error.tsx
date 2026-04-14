@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 
 export default function Error({
@@ -27,18 +28,12 @@ export default function Error({
           homepage.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button
-            onClick={reset}
-            className="px-6 py-3 bg-brand-terracotta text-white font-semibold rounded-full hover:bg-brand-terracotta/85 transition-colors"
-          >
+          <Button variant="terracotta" size="md" onClick={reset}>
             Try Again
-          </button>
-          <Link
-            href="/"
-            className="px-6 py-3 border border-gray-300 text-brand-dark-alt font-semibold rounded-full hover:bg-gray-50 transition-colors"
-          >
-            Go Home
-          </Link>
+          </Button>
+          <Button variant="outline" size="md" asChild>
+            <Link href="/">Go Home</Link>
+          </Button>
         </div>
       </div>
     </div>

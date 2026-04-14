@@ -227,14 +227,14 @@ export function DateRangePickerModal({
         <div className="mt-3 flex gap-2">
           <button
             onClick={handleClear}
-            className="flex-1 rounded-full border border-gray-300 px-3 py-2 text-sm font-medium text-brand-dark-alt transition-colors hover:bg-gray-50"
+            className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium text-brand-dark-alt transition-colors hover:bg-gray-50"
           >
             Clear
           </button>
           <button
             onClick={handleApply}
             disabled={!startDate || !endDate}
-            className="flex-1 rounded-full bg-brand-terracotta px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded-xl bg-brand-terracotta px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Apply
           </button>

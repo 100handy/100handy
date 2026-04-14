@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const categories = [
   "Cleaning Jobs",
@@ -35,7 +36,7 @@ export function TaskerHero(): React.JSX.Element {
             {categories.map((category) => (
               <span
                 key={category}
-                className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-[14px] font-medium text-white"
+                className="rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-[14px] font-medium text-white"
               >
                 {category}
               </span>
@@ -44,12 +45,9 @@ export function TaskerHero(): React.JSX.Element {
 
           {/* CTA Button */}
           <div className="mt-10">
-            <Link
-              href="/sign-up?type=pro"
-              className="inline-block rounded-full bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
-            >
-              Get Started
-            </Link>
+            <Button variant="terracotta" size="lg" asChild>
+              <Link href="/sign-up?type=pro">Get Started</Link>
+            </Button>
           </div>
         </div>
       </div>

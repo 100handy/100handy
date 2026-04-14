@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 export default function WallpaperingNearMe() {
@@ -177,9 +178,9 @@ export default function WallpaperingNearMe() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-terracotta focus:border-transparent transition-all"
                   />
                 </div>
-                <button className="w-full bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3.5 rounded-full transition-colors shadow-md hover:shadow-lg">
+                <Button variant="terracotta" size="full">
                   Get quote in secs
-                </button>
+                </Button>
               </div>
 
               {/* Right Side - Features */}
@@ -279,9 +280,9 @@ export default function WallpaperingNearMe() {
             </div>
 
             <div className="text-center">
-              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-full px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
+              <Button variant="terracotta-outline" size="md">
                 See all
-              </button>
+              </Button>
             </div>
           </div>
         </section>
@@ -412,9 +413,9 @@ export default function WallpaperingNearMe() {
             </div>
 
             <div className="text-center">
-              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-full px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
+              <Button variant="terracotta-outline" size="md">
                 See all
-              </button>
+              </Button>
             </div>
           </div>
         </section>
@@ -607,9 +608,9 @@ export default function WallpaperingNearMe() {
             </div>
 
             <div className="text-center">
-              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-full px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
+              <Button variant="terracotta-outline" size="md">
                 See more services
-              </button>
+              </Button>
             </div>
           </div>
         </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@100handy/ui/components/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@100handy/ui/components/input";
 import { useState, Suspense } from "react";
 import Image from "next/image";
@@ -174,14 +174,10 @@ function ResetPasswordForm() {
                 {/* Submit Button */}
                 <div className="pt-2">
                   <Button
+                    variant="terracotta"
+                    size="full"
                     type="submit"
                     disabled={loading || !isValid}
-                    className={`w-full h-12 text-[18px] font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed rounded-md shadow-sm ${
-                      !loading && isValid
-                        ? "bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90"
-                        : "bg-gray-100 border border-gray-200 text-gray-400 hover:bg-gray-100"
-                    }`}
-                    variant="outline"
                   >
                     {loading ? (
                       <Loader2 size={20} className="animate-spin" />
@@ -239,9 +235,9 @@ function ResetPasswordForm() {
 
                 {/* Action Button */}
                 <Button
+                  variant="terracotta"
+                  size="full"
                   onClick={() => router.push("/sign-in")}
-                  className="w-full h-12 bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90 text-[18px] font-bold rounded-full shadow-sm"
-                  variant="outline"
                 >
                   Go to Sign In
                 </Button>

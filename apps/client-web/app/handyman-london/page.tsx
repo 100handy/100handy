@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 
 // --- Data --- //
 const taskers = [
@@ -145,9 +146,9 @@ const HeroSection = () => {
               </div>
             </div>
 
-            <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px]">
+            <Button variant="terracotta" size="lg" className="font-semibold">
               Book Now
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center justify-center">
@@ -366,9 +367,9 @@ const ReviewsSection = () => {
         </div>
 
         <div className="text-center">
-          <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px]">
+          <Button variant="terracotta" size="lg" className="font-semibold">
             Get started
-          </button>
+          </Button>
         </div>
       </div>
     </section>
