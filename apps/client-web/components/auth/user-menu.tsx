@@ -33,7 +33,7 @@ export function UserMenu() {
         </Link>
         <Link
           href="/sign-up"
-          className="px-4 py-2 text-sm font-medium text-white bg-brand-terracotta rounded-md hover:bg-brand-terracotta/90"
+          className="px-4 py-2 text-sm font-medium text-white bg-brand-terracotta rounded-full hover:bg-brand-terracotta/90"
         >
           Sign Up
         </Link>

@@ -132,7 +132,7 @@ function DashboardContent() {
                 {accountTypes.map((type) => (
                   <button
                     key={type}
-                    className="px-8 py-2.5 rounded-lg border-2 border-gray-300 bg-white text-brand-terracotta font-medium hover:bg-brand-terracotta hover:text-white hover:border-brand-terracotta transition-colors"
+                    className="px-8 py-2.5 rounded-full border-2 border-gray-300 bg-white text-brand-terracotta font-medium hover:bg-brand-terracotta hover:text-white hover:border-brand-terracotta transition-colors"
                   >
                     {type}
                   </button>

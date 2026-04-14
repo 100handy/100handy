@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Logo } from "@/components/ui/logo";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -104,10 +105,7 @@ function SignInForm() {
           {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/">
-              <h1 className="text-[40px] text-brand-dark-alt">
-                <span className="font-light">100</span>
-                <span className="font-bold">HANDY</span>
-              </h1>
+              <Logo size="lg" className="h-12 w-auto mx-auto" />
             </Link>
           </div>
 

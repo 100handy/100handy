@@ -51,7 +51,7 @@ export function PressReleases(): React.JSX.Element {
         </div>
 
         <div className="mt-12 text-center">
-          <button className="rounded-md bg-brand-terracotta px-6 py-2.5 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/90">
+          <button className="rounded-full bg-brand-terracotta px-6 py-2.5 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/90">
             Explore
           </button>
         </div>

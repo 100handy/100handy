@@ -145,7 +145,7 @@ const HeroSection = () => {
               </div>
             </div>
 
-            <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+            <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px]">
               Book Now
             </button>
           </div>
@@ -366,7 +366,7 @@ const ReviewsSection = () => {
         </div>
 
         <div className="text-center">
-          <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+          <button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px]">
             Get started
           </button>
         </div>

@@ -596,7 +596,7 @@ function LocationServiceContent({ city, service, citySlug, taskers }: LocationSe
                 </div>
               </div>
 
-              <Link href={`/task-form?category=${encodeURIComponent(service.category)}`} className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px]">
+              <Link href={`/task-form?category=${encodeURIComponent(service.category)}`} className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px]">
                 Book Now
               </Link>
             </div>
@@ -717,7 +717,7 @@ function LocationServiceContent({ city, service, citySlug, taskers }: LocationSe
             </div>
 
             <div className="mt-10 text-center">
-              <Link href={`/task-form?category=${encodeURIComponent(service.category)}`} className="inline-block bg-brand-terracotta hover:bg-brand-terracotta/90 text-white font-semibold py-3 px-10 rounded-md transition-colors text-[20px]">
+              <Link href={`/task-form?category=${encodeURIComponent(service.category)}`} className="inline-block bg-brand-terracotta hover:bg-brand-terracotta/90 text-white font-semibold py-3 px-10 rounded-full transition-colors text-[20px]">
                 Book Now
               </Link>
             </div>

@@ -6,6 +6,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Loader2, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
@@ -85,10 +86,7 @@ export default function ForgotPassword() {
 
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-[40px] text-brand-dark-alt">
-              <span className="font-light">100</span>
-              <span className="font-bold">HANDY</span>
-            </h1>
+            <Logo size="lg" className="h-12 w-auto mx-auto" />
           </div>
 
           {/* Title & Description */}

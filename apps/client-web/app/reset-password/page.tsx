@@ -8,6 +8,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { Logo } from "@/components/ui/logo";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -76,10 +77,7 @@ function ResetPasswordForm() {
         <div className="bg-white rounded-[12px] shadow-2xl px-12 py-10">
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-[40px] text-brand-dark-alt">
-              <span className="font-light">100</span>
-              <span className="font-bold">HANDY</span>
-            </h1>
+            <Logo size="lg" className="h-12 w-auto mx-auto" />
           </div>
 
           {!success ? (
@@ -242,7 +240,7 @@ function ResetPasswordForm() {
                 {/* Action Button */}
                 <Button
                   onClick={() => router.push("/sign-in")}
-                  className="w-full h-12 bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90 text-[18px] font-bold rounded-md shadow-sm"
+                  className="w-full h-12 bg-brand-terracotta text-white border-brand-terracotta hover:bg-brand-terracotta/90 text-[18px] font-bold rounded-full shadow-sm"
                   variant="outline"
                 >
                   Go to Sign In

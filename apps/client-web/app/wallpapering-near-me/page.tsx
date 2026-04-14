@@ -177,7 +177,7 @@ export default function WallpaperingNearMe() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-terracotta focus:border-transparent transition-all"
                   />
                 </div>
-                <button className="w-full bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3.5 rounded-md transition-colors shadow-md hover:shadow-lg">
+                <button className="w-full bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3.5 rounded-full transition-colors shadow-md hover:shadow-lg">
                   Get quote in secs
                 </button>
               </div>
@@ -279,7 +279,7 @@ export default function WallpaperingNearMe() {
             </div>
 
             <div className="text-center">
-              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-md px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
+              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-full px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
                 See all
               </button>
             </div>
@@ -412,7 +412,7 @@ export default function WallpaperingNearMe() {
             </div>
 
             <div className="text-center">
-              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-md px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
+              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-full px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
                 See all
               </button>
             </div>
@@ -607,7 +607,7 @@ export default function WallpaperingNearMe() {
             </div>
 
             <div className="text-center">
-              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-md px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
+              <button className="text-brand-terracotta border-2 border-brand-terracotta rounded-full px-10 py-2.5 hover:bg-brand-terracotta hover:text-white transition-all font-semibold">
                 See more services
               </button>
             </div>

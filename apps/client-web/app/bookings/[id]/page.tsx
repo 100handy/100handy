@@ -195,7 +195,7 @@ export default function BookingDetailsPage() {
               </p>
               <Link
                 href="/my-tasks"
-                className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white px-6 py-3 rounded-lg font-medium"
+                className="inline-block bg-brand-terracotta hover:bg-brand-coral text-white px-6 py-3 rounded-full font-medium"
               >
                 Back to My Tasks
               </Link>
@@ -386,7 +386,7 @@ export default function BookingDetailsPage() {
                 <button
                   onClick={() => setShowCancelDialog(true)}
                   disabled={isCancelling}
-                  className="flex-1 bg-white border border-red-300 text-red-700 hover:bg-red-50 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-white border border-red-300 text-red-700 hover:bg-red-50 px-6 py-3 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isCancelling ? 'Cancelling...' : 'Cancel Booking'}
                 </button>

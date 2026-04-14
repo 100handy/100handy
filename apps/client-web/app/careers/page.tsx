@@ -30,7 +30,7 @@ export default async function CareersPage() {
               <div className="mt-10">
                 <a
                   href="#open-roles"
-                  className="inline-block rounded-lg bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
+                  className="inline-block rounded-full bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
                 >
                   See Open Roles
                 </a>
@@ -96,7 +96,7 @@ export default async function CareersPage() {
               </p>
               <a
                 href="mailto:careers@100handy.com"
-                className="inline-block rounded-lg border-2 border-brand-terracotta px-8 py-4 text-[18px] font-semibold text-brand-terracotta transition-colors hover:bg-brand-terracotta hover:text-white"
+                className="inline-block rounded-full border-2 border-brand-terracotta px-8 py-4 text-[18px] font-semibold text-brand-terracotta transition-colors hover:bg-brand-terracotta hover:text-white"
               >
                 Contact Us
               </a>

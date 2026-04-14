@@ -46,7 +46,7 @@ export function ConfirmDetails({
               type="button"
               onClick={() => onPaymentSuccess(authorizedPaymentId)}
               disabled={isSubmitting}
-              className="w-full rounded-lg bg-brand-terracotta px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-full bg-brand-terracotta px-4 py-3 text-[16px] font-bold text-white transition-colors hover:bg-brand-terracotta/85 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Processing...' : 'Complete Booking'}
             </button>

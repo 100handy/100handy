@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 
 export default function WelcomePage() {
   return (
@@ -21,9 +22,7 @@ export default function WelcomePage() {
       <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 sm:p-12 w-full max-w-md mx-4">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-brand-dark-alt font-bold text-4xl sm:text-5xl font-display">
-            100<span className="font-normal">HANDY</span>
-          </h1>
+          <Logo size="lg" className="h-12 w-auto mx-auto" />
         </div>
 
         {/* Welcome Text */}

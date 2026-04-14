@@ -101,7 +101,7 @@ export function Services() {
       <div className="mx-auto max-w-[1920px] px-8">
         {/* Main Categories with Icons Above */}
         <div className="mb-6">
-          <div className="flex items-center justify-center gap-10 flex-wrap">
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-y-6 gap-x-4 justify-items-center">
             {loadingMainCategories ? (
               <>
                 {Array.from({ length: 8 }).map((_, i) => (

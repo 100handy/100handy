@@ -4,7 +4,6 @@ import {
   FlexibleWork,
   WhatIsHandy,
   GettingStarted,
-  TaskerTestimonial,
   TaskerFAQs,
 } from "@/components/become-tasker";
 
@@ -17,7 +16,6 @@ export default function BecomeTaskerPage(): React.JSX.Element {
         <FlexibleWork />
         <WhatIsHandy />
         <GettingStarted />
-        <TaskerTestimonial />
         <TaskerFAQs />
       </main>
       <Footer />

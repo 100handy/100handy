@@ -4,6 +4,7 @@
 // The code works correctly at runtime. This is a known issue that will be resolved in future library updates.
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import Link from "next/link";
+import { Logo } from "@/components/ui/logo";
 import type { JSX } from "react";
 
 // TikTok icon (lucide doesn't include TikTok)
@@ -70,10 +71,8 @@ export function Footer(): JSX.Element {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
           {/* Logo, Follow us, and Social - left side */}
           <div className="flex flex-col">
-            <Link href="/" className="mb-4">
-              <span className="text-[28px] font-bold text-white md:text-[32px]">
-                100<span className="font-normal">HANDY</span>
-              </span>
+            <Link href="/" className="mb-4 inline-block">
+              <Logo variant="cream" size="lg" />
             </Link>
             <p className="mb-4 text-sm text-gray-400">Follow us we&apos;re friendly</p>
             <div className="flex gap-3">

@@ -84,7 +84,7 @@ const ContactUsContent = ({ breadcrumb, title, card1Title, card1Text, card2Title
                          </div>
                     </div>
                     <div>
-                        <button type="submit" className="w-auto bg-brand-terracotta text-white font-semibold px-8 py-3 rounded-md hover:bg-brand-terracotta/85 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-terracotta">
+                        <button type="submit" className="w-auto bg-brand-terracotta text-white font-semibold px-8 py-3 rounded-full hover:bg-brand-terracotta/85 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-terracotta">
                             Submit
                         </button>
                     </div>

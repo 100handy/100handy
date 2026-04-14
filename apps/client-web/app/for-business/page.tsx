@@ -59,7 +59,7 @@ const HeroSection = () => {
           <p className="mb-8 text-[18px] leading-relaxed text-brand-dark-alt/80">
             100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation.
           </p>
-          <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px] h-auto">
+          <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px] h-auto">
             Get in touch to learn more
           </Button>
         </div>
@@ -93,7 +93,7 @@ const BenefitsSection = () => {
         </div>
 
         <div className="text-center">
-          <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-md transition-colors text-[20px] h-auto mb-4">
+          <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px] h-auto mb-4">
             Get in touch to learn more
           </Button>
           <div className="flex justify-center">
@@ -347,7 +347,7 @@ const FormSection = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-4 px-12 rounded-md transition-colors text-[20px] h-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-4 px-12 rounded-full transition-colors text-[20px] h-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Submitting..." : "Submit"}
               </Button>

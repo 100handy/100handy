@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/marketing/footer";
 import Link from "next/link";
+import { Logo } from "@/components/ui/logo";
 import {
   TaskerCard,
   BrowseFilters,
@@ -601,10 +602,8 @@ function TaskFormContent() {
         <div className="max-w-[1920px] mx-auto px-4 sm:px-8">
           <div className="flex items-center justify-between h-[70px]">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-brand-dark-alt font-bold text-lg sm:text-xl font-display">
-                100<span className="font-normal">HANDY</span>
-              </span>
+            <Link href="/" className="flex items-center">
+              <Logo />
             </Link>
 
             {/* Progress Stepper */}

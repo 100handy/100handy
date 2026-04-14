@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { Menu, X } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 interface HeaderProps {
   currentPage?: "get-e10" | "book-task" | "my-tasks" | "account";
@@ -52,10 +53,8 @@ export default function Header({ currentPage }: HeaderProps) {
     <header className="bg-white border-b border-gray-200">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-8">
         <div className="flex items-center justify-between h-[70px]">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-brand-dark-alt font-bold text-lg sm:text-xl font-display">
-              100<span className="font-normal">HANDY</span>
-            </span>
+          <Link href="/" className="flex items-center">
+            <Logo />
           </Link>
 
           {/* Desktop Navigation */}
@@ -86,7 +85,7 @@ export default function Header({ currentPage }: HeaderProps) {
               ))}
               <Link
                 href="/become-100-handy-pro"
-                className="px-4 py-2 rounded-md bg-brand-terracotta text-white font-medium text-base hover:bg-brand-terracotta/90 transition-colors"
+                className="px-4 py-2 rounded-full bg-brand-terracotta text-white font-medium text-base hover:bg-brand-terracotta/90 transition-colors"
               >
                 Become a Pro
               </Link>
@@ -136,7 +135,7 @@ export default function Header({ currentPage }: HeaderProps) {
                 <Link
                   href="/become-100-handy-pro"
                   onClick={closeMobile}
-                  className="mt-2 px-4 py-3 rounded-md bg-brand-terracotta text-white font-medium text-center hover:bg-brand-terracotta/90 transition-colors"
+                  className="mt-2 px-4 py-3 rounded-full bg-brand-terracotta text-white font-medium text-center hover:bg-brand-terracotta/90 transition-colors"
                 >
                   Become a Pro
                 </Link>

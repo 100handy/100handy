@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/ui/logo";
 
 export default function Error({
   error,
@@ -17,10 +18,7 @@ export default function Error({
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="text-center max-w-md">
-        <h1 className="text-[40px] text-brand-dark-alt mb-6">
-          <span className="font-light">100</span>
-          <span className="font-bold">HANDY</span>
-        </h1>
+        <Logo size="lg" className="h-12 w-auto mx-auto mb-6" />
         <h2 className="text-2xl font-semibold text-brand-dark-alt mb-3">
           Something went wrong
         </h2>
@@ -31,13 +29,13 @@ export default function Error({
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
-            className="px-6 py-3 bg-brand-terracotta text-white font-semibold rounded-md hover:bg-brand-terracotta/85 transition-colors"
+            className="px-6 py-3 bg-brand-terracotta text-white font-semibold rounded-full hover:bg-brand-terracotta/85 transition-colors"
           >
             Try Again
           </button>
           <Link
             href="/"
-            className="px-6 py-3 border border-gray-300 text-brand-dark-alt font-semibold rounded-md hover:bg-gray-50 transition-colors"
+            className="px-6 py-3 border border-gray-300 text-brand-dark-alt font-semibold rounded-full hover:bg-gray-50 transition-colors"
           >
             Go Home
           </Link>

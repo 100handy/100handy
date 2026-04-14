@@ -46,7 +46,7 @@ export function TaskerHero(): React.JSX.Element {
           <div className="mt-10">
             <Link
               href="/sign-up?type=pro"
-              className="inline-block rounded-lg bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
+              className="inline-block rounded-full bg-brand-terracotta px-8 py-4 text-[18px] font-semibold text-white transition-colors hover:bg-brand-terracotta/90"
             >
               Get Started
             </Link>
