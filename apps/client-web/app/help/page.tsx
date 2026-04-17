@@ -1,8 +1,13 @@
-import { BookOpen, Globe, CheckSquare, Handshake, User, Briefcase } from "lucide-react";
+import type { Metadata } from "next";
+import { BookOpen, Globe, CheckSquare, Handshake, User } from "lucide-react";
 import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpSearch } from "@/components/help/help-search";
+
+export const metadata: Metadata = {
+  title: "Help | 100 Handy",
+};
 
 export default function HelpPage() {
     return (
@@ -41,10 +46,10 @@ export default function HelpPage() {
                         <polygon points="1440,0 1920,0 1920,320" fill="#C1856A" />
 
                         {/* Sage green — right band (prominent, asymmetric) */}
-                        <polygon points="1280,0 1580,0 1680,700 1720,1760 1380,1760 1340,700" fill="#A0B194" />
+                        <polygon points="1380,0 1580,0 1680,700 1720,1760 1480,1760 1440,700" fill="#A0B194" />
 
                         {/* Sage green — bottom-right extension (lighter) */}
-                        <polygon points="1340,700 1380,1760 1180,1760 1240,900" fill="#A0B194" fillOpacity="0.45" />
+                        <polygon points="1440,700 1480,1760 1280,1760 1340,900" fill="#A0B194" fillOpacity="0.45" />
 
                         {/* === CENTER === */}
                         {/* White content area — asymmetric: tighter left, wider right */}
@@ -52,8 +57,8 @@ export default function HelpPage() {
                     </svg>
                 </div>
 
-                {/* Hero Section */}
-                <section className="relative z-10 pt-[98px] pb-[112px]">
+                {/* Hero Section — z-30 so the search dropdown floats above the category circles below */}
+                <section className="relative z-30 pt-[98px] pb-[112px]">
                     <div className="max-w-[1920px] mx-auto px-8 text-center">
                         <h1 className="text-[68px] font-bold text-brand-dark-alt leading-[1.221] mb-[39px]">
                             How can we help?
@@ -69,6 +74,7 @@ export default function HelpPage() {
                 {/* Categories Section */}
                 <section className="relative z-10 py-[111px]">
                     <div className="max-w-[900px] mx-auto px-8">
+                        {/* Top row: 3 circles */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-[80px] gap-y-[60px] mb-[60px] justify-items-center">
                             <CategoryCard
                                 icon={<BookOpen className="w-[33.7px] h-[33.7px]" />}
@@ -78,7 +84,7 @@ export default function HelpPage() {
                             />
                             <CategoryCard
                                 icon={<Globe className="w-[33.76px] h-[33.76px]" />}
-                                title="Tasker"
+                                title="100 Handy Pro"
                                 href="/help/pro"
                                 bgColor="bg-brand-terracotta"
                             />
@@ -88,6 +94,9 @@ export default function HelpPage() {
                                 href="/help/registration"
                                 bgColor="bg-brand-terracotta"
                             />
+                        </div>
+                        {/* Bottom row: 2 circles centred */}
+                        <div className="flex justify-center gap-x-[80px] mb-[60px]">
                             <CategoryCard
                                 icon={<User className="w-[32.06px] h-[32.09px]" />}
                                 title="Account"
@@ -108,14 +117,18 @@ export default function HelpPage() {
                 <section className="relative z-10 py-[83px]">
                     <div className="max-w-[1920px] mx-auto px-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-[29px] max-w-[1076px] mx-auto">
-                            <CTACard
-                                title="Can't find what you need? →"
-                                description="Contact us and we'll get back to you as soon as we can."
-                            />
-                            <CTACard
-                                title="Ready to book a task? →"
-                                description="Head over to our website to see our available categories!"
-                            />
+                            <Link href="/contact">
+                                <CTACard
+                                    title="Can't find what you need? →"
+                                    description="Contact us and we'll get back to you as soon as we can."
+                                />
+                            </Link>
+                            <Link href="/services">
+                                <CTACard
+                                    title="Ready to book a task? →"
+                                    description="Head over to our website to see our available categories!"
+                                />
+                            </Link>
                         </div>
                     </div>
                 </section>

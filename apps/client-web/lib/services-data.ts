@@ -195,54 +195,6 @@ export const servicesData: Record<string, Record<string, ServiceData>> = {
       contentImage: "/images/services/mounting/tv-mounting.jpeg",
       longDescription:
         "We are aware that it is a nerve-wracking task to mount a TV, and it may be physically challenging. The fact that something that appears to be an easy task turns into a nightmare of having to move heavy things, deal with incomprehensible brackets, and the possibility of digging a hole in the wrong location is not new. The last thing one wants to have after purchasing a beautiful new 4K TV is to have a hard time adjusting it, or, even worse, trashing your wall or even the gadget itself. Choose from a range of popular services, all completed with the right fixings, tools, and care for your walls. 100 Handy will provide you with a chance to skip that stress and a chance to avoid jeopardizing your time by matching you with a skilled worker who provides expert services in TV installation.",
-      benefits: [
-        {
-          title: "Professional Installation",
-          description:
-            "Pros have the right tools and experience to mount your TV safely.",
-        },
-        {
-          title: "Cable Management",
-          description:
-            "Hide cables and wires for a clean, professional look.",
-        },
-        {
-          title: "Wall Assessment",
-          description:
-            "Pros can assess your wall type and use appropriate mounting hardware.",
-        },
-        {
-          title: "Happiness Guarantee",
-          description:
-            "All backed by the 100 Handy Happiness Guarantee.",
-        },
-      ],
-      tasks: [
-        {
-          title: "TV Mounting",
-          description:
-            "Flat, tilt, or full-motion brackets; all TV sizes.",
-        },
-        {
-          title: "Put Up Shelves",
-          description:
-            "Floating shelves, storage units, display shelves.",
-        },
-        {
-          title: "Hanging Pictures and Artwork",
-          description: "Secure and level hanging for all wall art.",
-        },
-        {
-          title: "Light Installation",
-          description:
-            "Ceiling lights, wall lights, fittings, LED features.",
-        },
-        {
-          title: "Install Curtains and Blinds",
-          description:
-            "Measured, aligned, and installed for smooth operation.",
-        },
-      ],
       faqs: [
         {
           question: "How long does TV mounting take?",
@@ -1331,7 +1283,7 @@ export const servicesData: Record<string, Record<string, ServiceData>> = {
       ],
     },
     clean: {
-      title: "Clean",
+      title: "Domestic Cleaning",
       description:
         "A clean home improves comfort and wellbeing. Our professional cleaners maintain hygiene and freshness in every room.",
       category: "cleaning",

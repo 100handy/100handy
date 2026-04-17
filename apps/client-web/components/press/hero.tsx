@@ -1,7 +1,4 @@
-"use client";
-
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 
 export function PressHero(): React.JSX.Element {
   return (
@@ -21,12 +18,9 @@ export function PressHero(): React.JSX.Element {
       {/* Content */}
       <div className="relative h-full flex items-center justify-center">
         <div className="relative z-10 text-center">
-          <h1 className="mb-8 text-[67px] font-bold leading-none text-white">
+          <h1 className="text-[67px] font-bold leading-none text-white">
             Press
           </h1>
-          <Button variant="terracotta" size="md" className="font-bold">
-            Get the latest
-          </Button>
         </div>
       </div>
     </section>

@@ -101,7 +101,7 @@ export function HelpArticleLayout({
 
           {/* CTA Cards */}
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="border border-gray-200 rounded-lg p-8 text-center flex flex-col items-center justify-center min-h-[180px]">
+            <Link href="/contact" className="border border-gray-200 rounded-lg p-8 text-center flex flex-col items-center justify-center min-h-[180px] hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 rounded-xl bg-brand-terracotta flex items-center justify-center mb-4">
                 <MailIcon />
               </div>
@@ -111,8 +111,8 @@ export function HelpArticleLayout({
               <p className="text-base text-brand-dark-alt mt-2">
                 Contact us and we&apos;ll get back to you as soon as we can.
               </p>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-8 text-center flex flex-col items-center justify-center min-h-[180px]">
+            </Link>
+            <Link href="/services" className="border border-gray-200 rounded-lg p-8 text-center flex flex-col items-center justify-center min-h-[180px] hover:shadow-lg transition-shadow">
               <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-4">
                 <LogoIcon />
               </div>
@@ -122,7 +122,7 @@ export function HelpArticleLayout({
               <p className="text-base text-brand-dark-alt mt-2">
                 Head over to our website to see our available categories!
               </p>
-            </div>
+            </Link>
           </div>
         </main>
       </div>

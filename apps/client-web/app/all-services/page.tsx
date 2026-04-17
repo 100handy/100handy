@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
@@ -31,15 +32,39 @@ const services = [
 
 // --- Components --- //
 
+const AllServicesHero = () => {
+  return (
+    <section className="relative h-[400px] md:h-[500px] bg-gray-900">
+      <div className="absolute inset-0">
+        <Image
+          src="/images/services/hero.jpeg"
+          alt="All Services"
+          fill
+          className="object-cover opacity-40"
+          priority
+          sizes="100vw"
+        />
+      </div>
+      <div className="relative h-full flex items-center justify-center">
+        <div className="bg-white rounded-2xl px-12 py-10 text-center max-w-2xl mx-auto shadow-xl">
+          <h1 className="text-[48px] md:text-[56px] font-bold text-brand-dark-alt mb-4 leading-tight">
+            Find the Best Home Services Pros Nearby
+          </h1>
+          <p className="text-[22px] md:text-[26px] text-brand-dark-alt font-medium">
+            Hire a trusted 100 Handy Pro today.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const ServicesSection = () => {
   return (
     <section className="bg-white py-20">
       <div className="max-w-[1920px] mx-auto px-8">
-        <h1 className="text-[44px] font-bold text-brand-dark-alt mb-16">
-          Find the Best Home Services Pros Nearby
-        </h1>
 
-        <div className="space-y-6">
+        <div className="space-y-6 mt-12">
           {services.map((service) => (
             <div key={service.name}>
               <Link
@@ -70,6 +95,7 @@ export default function AllServicesPage() {
   return (
     <div className="bg-white min-h-screen">
       <Header />
+      <AllServicesHero />
       <ServicesSection />
       <Footer />
       <HelpButton />

@@ -76,7 +76,7 @@
       [
         "@stripe/stripe-react-native",
         {
-          "merchantIdentifier": "merchant.com.yourco.handy",
+          "merchantIdentifier": "merchant.com.oxdpr.handy",
           "enableGooglePay": true
         }
       ]

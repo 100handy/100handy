@@ -89,7 +89,7 @@ export function ProfileTab() {
       await authClient.signOut({
         onSuccess: () => {
           toast.success("Signed out successfully");
-          router.push("/sign-in");
+          router.push("/");
         },
         onError: (ctx) => {
           toast.error(ctx.error.message || "Failed to sign out");

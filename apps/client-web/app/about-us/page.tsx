@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout";
@@ -8,6 +9,11 @@ import { getPageContent } from "@/lib/cms";
 
 export const dynamic = 'force-dynamic'
 
+export const metadata: Metadata = {
+  title: "About Us | 100 Handy",
+};
+
+// TODO: replace decorative hero with OxD-supplied hero image (PDF layout feedback 2026-04-16)
 export default async function AboutUsPage() {
   const c = await getPageContent('about-us')
 

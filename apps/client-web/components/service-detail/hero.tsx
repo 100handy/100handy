@@ -8,9 +8,10 @@ interface ServiceHeroProps {
   title: string;
   description: string;
   heroImage?: string;
+  bookingCategory?: string;
 }
 
-export function ServiceHero({ title, description, heroImage }: ServiceHeroProps): React.JSX.Element {
+export function ServiceHero({ title, description, heroImage, bookingCategory }: ServiceHeroProps): React.JSX.Element {
   return (
     <section className="relative bg-brand-dark">
       <div className="relative flex min-h-[530px] items-center justify-center">
@@ -48,7 +49,7 @@ export function ServiceHero({ title, description, heroImage }: ServiceHeroProps)
             {description}
           </p>
           <Button variant="terracotta" size="xl" asChild>
-            <Link href="/task-form">Book Now</Link>
+            <Link href={bookingCategory ? `/task-form?category=${encodeURIComponent(bookingCategory)}&step=1` : "/task-form"}>Book Now</Link>
           </Button>
         </div>
       </div>

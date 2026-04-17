@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
-import { GiftIcon, HelpIcon, FacebookIcon, TwitterIcon, InstagramIcon, LinkedInIcon } from "@/components/icons";
+import { GiftIcon, HelpIcon } from "@/components/icons";
 
 // --- Components --- //
 
 const ReferralContent = () => {
-    const referralLink = "https://www.100handy.co.uk/s/graswfij";
+    const referralLink = "https://www.100handy.com/s/graswfij";
     const [buttonText, setButtonText] = useState("Copy link");
 
     const copyToClipboard = () => {

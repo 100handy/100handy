@@ -59,9 +59,6 @@ const HeroSection = () => {
           <p className="mb-8 text-[18px] leading-relaxed text-brand-dark-alt/80">
             100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation.
           </p>
-          <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px] h-auto">
-            Get in touch to learn more
-          </Button>
         </div>
       </div>
     </section>
@@ -92,16 +89,6 @@ const BenefitsSection = () => {
           ))}
         </div>
 
-        <div className="text-center">
-          <Button className="bg-brand-terracotta hover:bg-brand-coral text-white font-semibold py-3 px-8 rounded-full transition-colors text-[20px] h-auto mb-4">
-            Get in touch to learn more
-          </Button>
-          <div className="flex justify-center">
-            <svg className="w-12 h-16 text-brand-terracotta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
-        </div>
       </div>
     </section>
   );

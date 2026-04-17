@@ -234,20 +234,13 @@ function SignInForm() {
           {/* Terms Text */}
           <div className="mt-4 text-center">
             <p className="text-[13px] text-brand-dark-alt leading-relaxed">
-              By logging in, you agree to the{" "}
+              I agree to the{" "}
               <Link href="/terms" className="text-brand-terracotta hover:underline">
                 Terms of Service
-              </Link>
-              <br />
+              </Link>{" "}
               and have reviewed the{" "}
-              <Link href="/terms" className="text-brand-terracotta hover:underline">
+              <Link href="/legal" className="text-brand-terracotta hover:underline">
                 Privacy Policy
-              </Link>
-              .
-              <br />
-              Manage{" "}
-              <Link href="/cookie-settings" className="text-brand-terracotta hover:underline">
-                privacy settings
               </Link>
               .
             </p>

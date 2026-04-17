@@ -53,7 +53,7 @@ const companyLinks = [
   { label: "Press", href: "/press" },
   { label: "Blog", href: "/blog" },
   { label: "Partner", href: "/partner" },
-  { label: "HandyCare", href: "/handycare" },
+  { label: "HandyCares", href: "/handycare" },
   { label: "Help", href: "/help" },
 ];
 

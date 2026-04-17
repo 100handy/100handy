@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Search } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface SearchEntry {
@@ -112,11 +113,10 @@ const searchIndex: SearchEntry[] = [
 ];
 
 const popularSearches = [
-  "Booking",
-  "Reports",
-  "Hire a Hand",
-  "Cancellation Policy",
-  "Delivery Services",
+  { label: "Getting Started & Booking", href: "/help/client#getting-started" },
+  { label: "100 Handy Pro", href: "/help/pro" },
+  { label: "Registration", href: "/help/registration" },
+  { label: "Account", href: "/help/account" },
 ];
 
 export function HelpSearch() {
@@ -152,11 +152,6 @@ export function HelpSearch() {
     router.push(href);
   }
 
-  function handlePopularClick(term: string) {
-    setQuery(term);
-    setIsOpen(true);
-  }
-
   return (
     <>
       {/* Search Bar */}
@@ -185,7 +180,7 @@ export function HelpSearch() {
 
         {/* Results dropdown */}
         {isOpen && query.trim().length >= 2 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-[0px_4px_12px_rgba(0,0,0,0.15)] z-50 max-h-[400px] overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-[0px_4px_12px_rgba(0,0,0,0.15)] z-[60] max-h-[400px] overflow-y-auto">
             {results.length > 0 ? (
               <ul>
                 {results.map((result, i) => (
@@ -219,14 +214,14 @@ export function HelpSearch() {
           Popular searches:
         </p>
         <div className="flex flex-wrap justify-center gap-[8px]">
-          {popularSearches.map((term) => (
-            <button
-              key={term}
-              onClick={() => handlePopularClick(term)}
+          {popularSearches.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
               className="px-[18px] py-[10px] bg-brand-terracotta text-white text-[10px] font-bold leading-[1.221] rounded hover:bg-brand-terracotta/85 transition-colors"
             >
-              {term}
-            </button>
+              {item.label}
+            </Link>
           ))}
         </div>
       </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { Search } from "lucide-react";
-import Image from "next/image";
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
@@ -12,7 +11,6 @@ function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { data: allCategories, isLoading: loading } = useCategories();
 
   // Derive display categories from the hook data
@@ -25,10 +23,18 @@ function DashboardContent() {
   const filteredCategories = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return categories;
-    return categories.filter((category) =>
-      category.name.toLowerCase().includes(query)
-    );
-  }, [categories, searchQuery]);
+    if (!allCategories) return [];
+    const byId = new Map(allCategories.map((c) => [c.id, c]));
+    return allCategories
+      .filter((c) => c.level === 1)
+      .filter((c) => {
+        const parent = c.parent_id ? byId.get(c.parent_id) : null;
+        return (
+          c.name.toLowerCase().includes(query) ||
+          (parent?.name.toLowerCase().includes(query) ?? false)
+        );
+      });
+  }, [categories, searchQuery, allCategories]);
 
   useEffect(() => {
     const initialSearch = searchParams.get("search");
@@ -38,7 +44,6 @@ function DashboardContent() {
   }, [searchParams]);
 
   const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category);
     // Navigate to task form with the selected category
     router.push(`/task-form?category=${encodeURIComponent(category)}`);
   };
@@ -93,7 +98,7 @@ function DashboardContent() {
                   </button>
                 ))}
                 <button
-                  onClick={() => router.push('/all-services')}
+                  onClick={() => router.push('/services')}
                   className="px-6 py-2 rounded-full bg-white text-brand-terracotta border border-gray-300 hover:border-brand-terracotta font-medium"
                 >
                   See more

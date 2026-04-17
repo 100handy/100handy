@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Header, Footer } from "@/components/layout";
 import {
   PressHero,
@@ -7,6 +8,10 @@ import {
   MediaResources,
   WhatsHappening,
 } from "@/components/press";
+
+export const metadata: Metadata = {
+  title: "Press | 100 Handy",
+};
 
 export default function PressPage(): React.JSX.Element {
   return (

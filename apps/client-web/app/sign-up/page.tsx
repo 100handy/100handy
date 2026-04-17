@@ -424,6 +424,20 @@ function SignUpForm() {
                 </label>
               </div>
 
+              {/* GDPR Marketing Opt-out */}
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="marketing-optout"
+                  className="mt-0.5 data-[state=checked]:bg-brand-terracotta data-[state=checked]:border-brand-terracotta"
+                />
+                <label
+                  htmlFor="marketing-optout"
+                  className="text-[15px] font-light text-brand-dark-alt leading-relaxed cursor-pointer select-none"
+                >
+                  I do not want to receive promotional emails and notifications from 100Handy
+                </label>
+              </div>
+
               {/* Submit Button */}
               <div className="pt-1">
                 <Button

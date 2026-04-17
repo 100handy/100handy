@@ -300,8 +300,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const metadata = user?.user_metadata;
       const isAuthenticated = !!user;
       const fallbackRole = (metadata?.role as 'customer' | 'handy' | null | undefined) ?? null;
-      const resolvedRole =
-        fallbackRole || !user?.id ? fallbackRole : await fetchProfileRole(user.id);
 
       set({
         user: user || null,
@@ -310,12 +308,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isEmailVerified: !!user?.email_confirmed_at,
         isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
-        userRole: resolvedRole,
-        isRoleResolved: true,
+        userRole: fallbackRole,
+        isRoleResolved: !user,
         isLoading: false
       });
 
-      if (user?.id && fallbackRole) {
+      // Fetch authoritative DB role asynchronously (non-blocking for faster navigation)
+      if (user?.id) {
         fetchProfileRole(user.id).then((dbRole) => {
           if (get().user?.id !== user.id) return;
           set({

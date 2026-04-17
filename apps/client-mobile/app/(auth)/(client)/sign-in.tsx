@@ -17,17 +17,24 @@ import { buildPendingBookingRoute, resolveAuthenticatedRoute } from '@/lib/auth-
 export default function ClientSignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
-  const { checkAuth } = useAuthStore();
   const pendingBookingStore = usePendingBookingStore();
   const { setLocation } = useLocationStore();
 
   const navigateAfterAuth = async () => {
-    const isAuthenticated = await checkAuth();
+    // Wait for auth listener (triggered by setSession) instead of calling checkAuth()
+    // which redundantly re-fetches the session and profile role
+    let attempts = 0;
+    while (!useAuthStore.getState().isAuthenticated && attempts < 20) {
+      await new Promise((r) => setTimeout(r, 100));
+      attempts++;
+    }
+
+    const { isAuthenticated, isEmailVerified, userRole, hasCompletedOnboarding, user } =
+      useAuthStore.getState();
     if (!isAuthenticated) {
       throw new Error('Authentication check failed');
     }
 
-    const { isEmailVerified, userRole, hasCompletedOnboarding, user } = useAuthStore.getState();
     const route = await resolveAuthenticatedRoute({
       isEmailVerified,
       userRole,

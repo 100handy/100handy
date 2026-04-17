@@ -6,8 +6,6 @@ import { HelpIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { FurnitureAssemblyIcon } from "@/components/icons/categories/FurnitureAssemblyIcon";
 import { TvMountingIcon } from "@/components/icons/categories/TvMountingIcon";
-import { MinorHomeRepairsIcon } from "@/components/icons/categories/MinorHomeRepairsIcon";
-import { CleanIcon } from "@/components/icons/categories/CleanIcon";
 import { MovingHelpIcon } from "@/components/icons/categories/MovingHelpIcon";
 import { LightCarpentryIcon } from "@/components/icons/categories/LightCarpentryIcon";
 import { LeakFixingIcon } from "@/components/icons/categories/LeakFixingIcon";
@@ -104,8 +102,6 @@ type IconComponent = React.ComponentType<{ className?: string }>;
 const serviceIconMap: Record<string, IconComponent> = {
   "furniture-assembly": FurnitureAssemblyIcon,
   "tv-mounting": TvMountingIcon,
-  "handyman": MinorHomeRepairsIcon,
-  "home-cleaning": CleanIcon,
   "help-moving": MovingHelpIcon,
   "home-repairs-and-fixes": LightCarpentryIcon,
   "plumbing": LeakFixingIcon,
@@ -118,8 +114,6 @@ const serviceIconMap: Record<string, IconComponent> = {
 const services = [
   { slug: "furniture-assembly", name: "Furniture Assembly" },
   { slug: "tv-mounting", name: "TV Mounting" },
-  { slug: "handyman", name: "Handyman" },
-  { slug: "home-cleaning", name: "Home Cleaning" },
   { slug: "help-moving", name: "Help Moving" },
   { slug: "home-repairs-and-fixes", name: "Home Repairs & Fixes" },
   { slug: "plumbing", name: "Plumbing" },

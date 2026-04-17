@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { FAQSection } from "@/components/location-service/faq-section";
 import { getCategoryIcon } from "@/components/icons/category-icons";
+import { getBookingCategoryForCityService } from "@/lib/booking-categories";
 
 // Service data mapping
 const serviceData: Record<string, { name: string; description: string; category: string }> = {
@@ -26,8 +27,8 @@ const serviceData: Record<string, { name: string; description: string; category:
     category: "Home Repairs"
   },
   "home-cleaning": {
-    name: "Home Cleaning",
-    description: "Get professional home cleaning services from trusted 100 Handy Pros in your area.",
+    name: "Domestic Cleaning",
+    description: "Get professional domestic cleaning services from trusted 100 Handy Pros in your area.",
     category: "Cleaning"
   },
   "help-moving": {
@@ -262,8 +263,8 @@ const serviceData: Record<string, { name: string; description: string; category:
     category: "Cleaning"
   },
   "clean": {
-    name: "Home Cleaning",
-    description: "Professional home cleaning from trusted 100 Handy Pros. A cleaner space changes everything.",
+    name: "Domestic Cleaning",
+    description: "Professional domestic cleaning from trusted 100 Handy Pros. A cleaner space changes everything.",
     category: "Cleaning"
   },
   "party-clean-up": {
@@ -537,7 +538,8 @@ interface LocationServiceContentProps {
   }>;
 }
 
-function LocationServiceContent({ city, service, citySlug, taskers }: LocationServiceContentProps) {
+function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers }: LocationServiceContentProps) {
+  const bookingCategory = getBookingCategoryForCityService(serviceSlug) ?? service.name;
   return (
     <div className="bg-white min-h-screen">
       <Header />
@@ -598,7 +600,7 @@ function LocationServiceContent({ city, service, citySlug, taskers }: LocationSe
               </div>
 
               <Button variant="terracotta" size="lg" asChild>
-                <Link href={`/task-form?category=${encodeURIComponent(service.category)}`}>Book Now</Link>
+                <Link href={`/task-form?category=${encodeURIComponent(bookingCategory)}&step=1`}>Book Now</Link>
               </Button>
             </div>
 
@@ -719,7 +721,7 @@ function LocationServiceContent({ city, service, citySlug, taskers }: LocationSe
 
             <div className="mt-10 text-center">
               <Button variant="terracotta" size="lg" asChild>
-                <Link href={`/task-form?category=${encodeURIComponent(service.category)}`}>Book Now</Link>
+                <Link href={`/task-form?category=${encodeURIComponent(bookingCategory)}&step=1`}>Book Now</Link>
               </Button>
             </div>
           </div>

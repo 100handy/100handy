@@ -11,6 +11,7 @@ import {
 import { notFound } from "next/navigation";
 import { servicesData } from "@/lib/services-data";
 import type { ServiceData } from "@/lib/services-data";
+import { getBookingCategoryForService } from "@/lib/booking-categories";
 import type { Metadata } from "next";
 
 // Allow dynamic paths beyond the statically generated ones
@@ -43,14 +44,16 @@ function findServiceKey(
   );
 }
 
-function getServiceData(category: string, service: string): ServiceData | null {
+function getServiceData(category: string, service: string): { data: ServiceData; categoryKey: string; serviceKey: string } | null {
   const categoryKey = findCategoryKey(category);
   if (!categoryKey) return null;
   const categoryData = servicesData[categoryKey];
   if (!categoryData) return null;
   const serviceKey = findServiceKey(categoryData, service);
   if (!serviceKey) return null;
-  return categoryData[serviceKey] ?? null;
+  const data = categoryData[serviceKey];
+  if (!data) return null;
+  return { data, categoryKey, serviceKey };
 }
 
 interface ServicePageProps {
@@ -62,25 +65,28 @@ interface ServicePageProps {
 
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
   const { category, service } = await params;
-  const data = getServiceData(category, service);
+  const resolved = getServiceData(category, service);
 
-  if (!data) {
+  if (!resolved) {
     return { title: "Service Not Found | 100 Handy" };
   }
 
   return {
-    title: `${data.title} | 100 Handy`,
-    description: data.description,
+    title: `${resolved.data.title} | 100 Handy`,
+    description: resolved.data.description,
   };
 }
 
 export default async function ServiceDetailPage({ params }: ServicePageProps) {
   const { category, service } = await params;
-  const serviceData = getServiceData(category, service);
+  const resolved = getServiceData(category, service);
 
-  if (!serviceData) {
+  if (!resolved) {
     notFound();
   }
+
+  const { data: serviceData, categoryKey, serviceKey } = resolved;
+  const bookingCategory = getBookingCategoryForService(categoryKey, serviceKey) ?? serviceData.title;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -90,6 +96,7 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
           title={serviceData.title}
           description={serviceData.description}
           heroImage={serviceData.heroImage}
+          bookingCategory={bookingCategory}
         />
         <Breadcrumb
           category={serviceData.categoryDisplay}
@@ -105,7 +112,7 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
         />
         <ServiceHowItWorks />
         <CTASection
-          categoryName={serviceData.title}
+          categoryName={bookingCategory}
           ctaImage={serviceData.contentImage}
         />
         <FAQs service={serviceData.title} faqs={serviceData.faqs} />
