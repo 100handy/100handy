@@ -125,7 +125,7 @@ export function getCategoryIcon(categoryName: string): IconComponent {
   if (name.includes("full service")) return FullServiceMoversIcon;
   if (name.includes("garden")) return GardeningIcon;
   if (name.includes("lawn")) return LawnCareIcon;
-  if (name.includes("landscape")) return LandscapingIcon;
+  if (name.includes("landscap")) return LandscapingIcon;
   if (name.includes("leaf") || name.includes("raking"))
     return LeafRakingAndRemovalIcon;
   if (name.includes("gutter") || name.includes("roof"))
