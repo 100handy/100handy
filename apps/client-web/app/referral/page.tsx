@@ -27,7 +27,7 @@ const ReferralContent = () => {
                             Refer a friend to 100Handy. They get £10 off their first task. You get £10 off when they complete it.
                         </p>
                     </div>
-                    <div className="bg-brand-cream/50 p-6 rounded-full">
+                    <div className="bg-brand-cream/50 p-3 rounded-full">
                         <GiftIcon />
                     </div>
                 </div>

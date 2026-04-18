@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { MessageSquare } from "lucide-react";
-import { PolygonIcon, CircleIcon } from "@/components/icons";
 import { getPageContent } from "@/lib/cms";
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +12,6 @@ export const metadata: Metadata = {
   title: "About Us | 100 Handy",
 };
 
-// TODO: replace decorative hero with OxD-supplied hero image (PDF layout feedback 2026-04-16)
 export default async function AboutUsPage() {
   const c = await getPageContent('about-us')
 
@@ -31,25 +29,22 @@ export default async function AboutUsPage() {
       
       <main>
         {/* Hero Section */}
-        <section className="bg-brand-dark min-h-[280px] py-12 px-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
-          {/* Decorative Icons */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="relative">
-              <PolygonIcon
-                className="absolute -top-8 -left-8 opacity-30"
-                size={96}
-              />
-              <CircleIcon
-                className="absolute -bottom-4 -right-4 opacity-40"
-                size={96}
-              />
-            </div>
+        <section className="relative h-[470px] bg-[#3D4539]">
+          <div className="absolute inset-0 overflow-hidden">
+            <Image
+              src="/images/about/about-us.png"
+              alt="Two professionals using a spirit level to hang a shelf"
+              fill
+              priority
+              className="object-cover opacity-40"
+              sizes="100vw"
+            />
           </div>
-
-          {/* Hero Text */}
-          <h1 className="text-[38px] font-bold text-white relative z-10">
-            {c('hero.title', 'About Us')}
-          </h1>
+          <div className="relative h-full flex items-center justify-center">
+            <h1 className="text-[67px] font-bold leading-none text-white">
+              {c('hero.title', 'About Us')}
+            </h1>
+          </div>
         </section>
 
         {/* Content Section */}

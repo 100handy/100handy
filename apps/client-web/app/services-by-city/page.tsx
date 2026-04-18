@@ -141,11 +141,11 @@ const HeroSection = () => {
         />
       </div>
       <div className="relative flex min-h-[470px] items-center justify-center">
-        <div className="relative z-10 text-center px-8">
-          <h1 className="text-[67px] font-bold leading-none text-white mb-6">
+        <div className="relative z-10 bg-white rounded-2xl px-12 py-10 text-center max-w-2xl mx-8 shadow-xl">
+          <h1 className="text-[48px] md:text-[56px] font-bold text-brand-dark-alt mb-4 leading-tight">
             Services by City
           </h1>
-          <p className="text-[22px] text-white/80">
+          <p className="text-[22px] md:text-[26px] text-brand-dark-alt font-medium">
             Find trusted 100 Handy Pros in your area
           </p>
         </div>

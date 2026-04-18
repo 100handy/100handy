@@ -2,20 +2,106 @@ import type { SVGProps } from "react";
 
 export function LandscapingIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" fill="currentColor" {...props}>
-      <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="111.81" y="27.53" width="21.06" height="81.41" rx="10.53" ry="10.53"/>
-  <g>
-    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M98.03,83.84c.98.31-.27-.09-.45-.15-5.21-1.87-10.67-7.2-11.3-12.98-1.1-10.11,10.81-19.07,17.58-17.3,7.32,1.91,10.45,16.89,5.98,24.3-.03.05-.34.54-.12.19"/>
-    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M111.48,74.1c7.18,15.17,4.91,28.04-3.3,30.81-6.33,2.14-15.08-1.78-19.56-8.57-5.3-8.04-1-19.25-.63-20.39"/>
-  </g>
-  <g>
-    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M78.15,90.98c-.88.21.24-.06.41-.1,4.67-1.26,6.04-2.21,6.76-6.37,1.33-7.69-8.76-18.46-14.75-16.89-6.98,1.82-13.31,15.71-9.3,20.71.03.03.3.36.1.13"/>
-    <path fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" d="M83.78,88.03c.33.77,4.19,8.34-.57,13.77-4.01,4.59-11.85,7.23-17.52,5.79-7.48-1.91-5.05-18.79,1.35-24.28.13-.11.9-.71.49-.4"/>
-  </g>
-  <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="72.23" y="95.55" width="1.12" height="35.63" rx=".56" ry=".56"/>
-  <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="122.41" y="79.72" width="1.12" height="51.46" rx=".56" ry=".56"/>
-  <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="101.84" y="91.01" width="1.12" height="40.17" rx=".56" ry=".56"/>
-  <rect fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="3px" x="79.61" y="77.89" width=".78" height="108.37" rx=".39" ry=".39" transform="translate(212.08 52.08) rotate(90)"/>
+    <svg
+      id="Layer_1"
+      data-name="Layer 1"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 160 160"
+      {...props}
+    >
+      <rect
+        fill="none"
+        stroke="currentColor"
+        strokeMiterlimit={10}
+        strokeWidth={3}
+        x={111.81}
+        y={27.53}
+        width={21.06}
+        height={81.41}
+        rx={10.53}
+        ry={10.53}
+      />
+      <g>
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeMiterlimit={10}
+          strokeWidth={3}
+          d="M98.03,83.84c.98.31-.27-.09-.45-.15-5.21-1.87-10.67-7.2-11.3-12.98-1.1-10.11,10.81-19.07,17.58-17.3,7.32,1.91,10.45,16.89,5.98,24.3-.03.05-.34.54-.12.19"
+        />
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeMiterlimit={10}
+          strokeWidth={3}
+          d="M111.48,74.1c7.18,15.17,4.91,28.04-3.3,30.81-6.33,2.14-15.08-1.78-19.56-8.57-5.3-8.04-1-19.25-.63-20.39"
+        />
+      </g>
+      <g>
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeMiterlimit={10}
+          strokeWidth={3}
+          d="M78.15,90.98c-.88.21.24-.06.41-.1,4.67-1.26,6.04-2.21,6.76-6.37,1.33-7.69-8.76-18.46-14.75-16.89-6.98,1.82-13.31,15.71-9.3,20.71.03.03.3.36.1.13"
+        />
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeMiterlimit={10}
+          strokeWidth={3}
+          d="M83.78,88.03c.33.77,4.19,8.34-.57,13.77-4.01,4.59-11.85,7.23-17.52,5.79-7.48-1.91-5.05-18.79,1.35-24.28.13-.11.9-.71.49-.4"
+        />
+      </g>
+      <rect
+        fill="none"
+        stroke="currentColor"
+        strokeMiterlimit={10}
+        strokeWidth={3}
+        x={72.23}
+        y={95.55}
+        width={1.12}
+        height={35.63}
+        rx={0.56}
+        ry={0.56}
+      />
+      <rect
+        fill="none"
+        stroke="currentColor"
+        strokeMiterlimit={10}
+        strokeWidth={3}
+        x={122.41}
+        y={79.72}
+        width={1.12}
+        height={51.46}
+        rx={0.56}
+        ry={0.56}
+      />
+      <rect
+        fill="none"
+        stroke="currentColor"
+        strokeMiterlimit={10}
+        strokeWidth={3}
+        x={101.84}
+        y={91.01}
+        width={1.12}
+        height={40.17}
+        rx={0.56}
+        ry={0.56}
+      />
+      <rect
+        fill="none"
+        stroke="currentColor"
+        strokeMiterlimit={10}
+        strokeWidth={3}
+        x={79.61}
+        y={77.89}
+        width={0.78}
+        height={108.37}
+        rx={0.39}
+        ry={0.39}
+        transform="translate(212.08 52.08) rotate(90)"
+      />
     </svg>
   );
 }

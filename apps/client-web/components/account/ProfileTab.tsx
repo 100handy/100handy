@@ -8,7 +8,6 @@ import { TwoFactorDialog } from "@/components/TwoFactorDialog";
 import { useProfile } from "@/hooks/use-profile";
 import { useSecureNavigation } from "@/hooks/use-secure-navigation";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
 export function ProfileTab() {
@@ -86,17 +85,12 @@ export function ProfileTab() {
 
   const handleLogOut = async () => {
     try {
-      await authClient.signOut({
-        onSuccess: () => {
-          toast.success("Signed out successfully");
-          router.push("/");
-        },
-        onError: (ctx) => {
-          toast.error(ctx.error.message || "Failed to sign out");
-        },
-      });
+      await fetch('/api/auth/signout', { method: 'POST' });
+      toast.success("Signed out successfully");
+      router.push("/");
     } catch (error) {
       console.error("Sign out error:", error);
+      toast.error("Failed to sign out");
     }
   };
 

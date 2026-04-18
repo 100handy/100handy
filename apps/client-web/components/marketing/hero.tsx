@@ -41,13 +41,22 @@ export function Hero() {
     }));
   }, [allCategories]);
 
+  const parentNameById = useMemo(() => {
+    if (!allCategories) return {};
+    return Object.fromEntries(
+      allCategories.filter((c) => c.level === 0).map((c) => [c.id, c.name.toLowerCase()])
+    );
+  }, [allCategories]);
+
   const matches = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
-    return subcategories.filter((c) =>
-      c.name.toLowerCase().includes(q)
-    );
-  }, [searchQuery, subcategories]);
+    return subcategories.filter((c) => {
+      if (c.name.toLowerCase().includes(q)) return true;
+      if (c.parent_id && parentNameById[c.parent_id]?.includes(q)) return true;
+      return false;
+    });
+  }, [searchQuery, subcategories, parentNameById]);
 
   useEffect(() => {
     setHighlightedIndex(0);

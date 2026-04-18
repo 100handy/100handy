@@ -3,7 +3,7 @@ import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { MessageIcon, SendEmailIcon, PhoneIcon, HelpIcon } from "@/components/icons";
 import { getPageContent } from "@/lib/cms";
-import { Button } from "@/components/ui/button";
+import { ContactForm } from "@/components/contact/ContactForm";
 
 export const dynamic = 'force-dynamic'
 
@@ -52,44 +52,7 @@ const ContactUsContent = ({ breadcrumb, title, card1Title, card1Text, card2Title
                     </p>
                 </div>
 
-                <form className="space-y-6 max-w-2xl mx-auto">
-                    <div>
-                        <label htmlFor="about" className="block text-sm font-medium text-brand-dark-alt mb-2">Tell us about you</label>
-                        <select id="about" name="about" className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-terracotta">
-                            <option>-</option>
-                            <option>General Inquiry</option>
-                            <option>Booking Help</option>
-                            <option>Billing Issue</option>
-                            <option>Feedback</option>
-                        </select>
-                    </div>
-                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-brand-dark-alt mb-2">Your email address</label>
-                        <input type="email" id="email" name="email" className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-terracotta" />
-                    </div>
-                     <div>
-                        <label htmlFor="subject" className="block text-sm font-medium text-brand-dark-alt mb-2">Subject</label>
-                        <input type="text" id="subject" name="subject" className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-terracotta" />
-                    </div>
-                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-brand-dark-alt mb-2">Description</label>
-                        <textarea id="description" name="description" rows={6} className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-terracotta"></textarea>
-                    </div>
-                    <div>
-                         <label htmlFor="attachments" className="block text-sm font-medium text-brand-dark-alt mb-2">Attachments (optional)</label>
-                         <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:border-brand-terracotta">
-                            <input type="file" id="attachments" name="attachments" className="sr-only" multiple />
-                            <p className="text-sm text-gray-500">
-                                <label htmlFor="attachments" className="font-medium text-brand-terracotta hover:underline cursor-pointer">Add file</label> or drop files here
-                            </p>
-                         </div>
-                    </div>
-                    <div>
-                        <Button variant="terracotta" size="lg" type="submit">
-                            Submit
-                        </Button>
-                    </div>
-                </form>
+                <ContactForm />
             </div>
         </main>
     );

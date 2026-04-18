@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuthContext } from '@/components/providers/auth-provider';
-import { createClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
@@ -11,8 +10,7 @@ export function UserMenu() {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await fetch('/api/auth/signout', { method: 'POST' });
     router.push('/');
     router.refresh();
   };

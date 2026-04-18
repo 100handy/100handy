@@ -247,16 +247,16 @@ function getCategoryContent(categoryName: string): CategoryContent {
 }
 
 const categoryImages: Record<string, string> = {
-  Assembly: "/images/homepage-hero-services/assembly.png",
-  "Furniture Assembly": "/images/homepage-hero-services/assembly.png",
-  Mounting: "/images/homepage-hero-services/mounting.jpeg",
-  "TV & Wall Mounting": "/images/homepage-hero-services/mounting.jpeg",
+  Assembly: "/images/homepage-hero-services/assembly.webp",
+  "Furniture Assembly": "/images/homepage-hero-services/assembly.webp",
+  Mounting: "/images/homepage-hero-services/mounting.webp",
+  "TV & Wall Mounting": "/images/homepage-hero-services/mounting.webp",
   "Home Repairs": "/images/homepage-hero-services/homerepair.png",
   "Home Repairs & Fixes": "/images/homepage-hero-services/homerepair.png",
   Plumbing: "/images/homepage-hero-services/plumbing.jpeg",
   Plumbers: "/images/homepage-hero-services/plumbing.jpeg",
-  Electrical: "/images/homepage-hero-services/electrical.jpeg",
-  Electricians: "/images/homepage-hero-services/electrical.jpeg",
+  Electrical: "/images/homepage-hero-services/electrical.webp",
+  Electricians: "/images/homepage-hero-services/electrical.webp",
   Cleaning: "/images/homepage-hero-services/cleaning.png",
   "Sparkle Clean": "/images/homepage-hero-services/cleaning.png",
   Moving: "/images/homepage-hero-services/moving.jpeg",
@@ -271,7 +271,7 @@ function getCategoryImage(categoryName: string): string {
     Object.entries(categoryImages).find(([key]) =>
       categoryName.toLowerCase().includes(key.toLowerCase())
     )?.[1] ??
-    "/images/homepage-hero-services/assembly.png"
+    "/images/homepage-hero-services/assembly.webp"
   );
 }
 

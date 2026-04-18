@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { requestAccountDeletion } from "@/lib/supabase/account";
-import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
 export function DeleteAccountTab() {
@@ -23,9 +22,8 @@ export function DeleteAccountTab() {
       toast.success("Account deletion request submitted. Our team will contact you shortly.");
       setDeleteAccountDialogOpen(false);
       // Sign out after requesting deletion
-      await authClient.signOut({
-        onSuccess: () => router.push("/sign-in"),
-      });
+      await fetch('/api/auth/signout', { method: 'POST' });
+      router.push("/sign-in");
     } catch (error: any) {
       toast.error(error.message || "Failed to request account deletion");
     }
