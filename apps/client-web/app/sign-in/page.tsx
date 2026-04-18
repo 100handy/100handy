@@ -239,7 +239,7 @@ function SignInForm() {
                 Terms of Service
               </Link>{" "}
               and have reviewed the{" "}
-              <Link href="/legal" className="text-brand-terracotta hover:underline">
+              <Link href="/terms" className="text-brand-terracotta hover:underline">
                 Privacy Policy
               </Link>
               .

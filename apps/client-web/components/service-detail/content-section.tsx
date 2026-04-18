@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Check } from "lucide-react";
 
 interface ContentSectionProps {
   title: string;
@@ -11,7 +10,7 @@ interface ContentSectionProps {
   contentImage?: string;
 }
 
-export function ContentSection({ title, longDescription, benefits, tasks, contentImage }: ContentSectionProps): React.JSX.Element {
+export function ContentSection({ title, longDescription, contentImage }: ContentSectionProps): React.JSX.Element {
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-[1920px] px-8">
@@ -32,19 +31,6 @@ export function ContentSection({ title, longDescription, benefits, tasks, conten
             <p className="mb-8 text-[20px] leading-relaxed text-brand-dark-alt">
               {longDescription}
             </p>
-
-            {benefits && benefits.length > 0 && (
-              <>
-                <h3 className="mb-8 text-[39px] font-bold leading-tight text-brand-dark-alt">
-                  Why Choose 100Handy for {title}?
-                </h3>
-                {benefits.map((benefit, index) => (
-                  <p key={index} className="mb-4 text-[20px] leading-relaxed text-brand-dark-alt">
-                    <span className="font-bold">{benefit.title}</span> – {benefit.description}
-                  </p>
-                ))}
-              </>
-            )}
           </div>
 
           {/* Right column - Image or decorative card */}
@@ -70,37 +56,6 @@ export function ContentSection({ title, longDescription, benefits, tasks, conten
             </div>
           )}
         </div>
-
-        {/* What Kind of Tasks section - only show when tasks exist */}
-        {tasks && tasks.length > 0 && (
-          <div className="mt-16">
-            <h3 className="mb-6 text-[39px] font-bold leading-tight text-brand-dark-alt">
-              What Kind of {title}
-              <br />
-              Can a 100 Handy Pro Help With?
-            </h3>
-            <p className="mb-6 text-[20px] text-brand-dark-alt">
-              100 Handy Pros are skilled in a variety of {title.toLowerCase()} services, including:
-            </p>
-
-            <div className="space-y-4">
-              {tasks.map((task, index) => (
-                <p key={index} className="text-[20px] text-brand-dark-alt">
-                  <Check className="mr-2 inline h-5 w-5 text-brand-dark-alt" strokeWidth={2} />
-                  <span className="font-bold">{task.title}</span> – {task.description}
-                </p>
-              ))}
-            </div>
-
-            <p className="mt-8 text-[20px] text-brand-dark-alt">
-              No wonder more people trust 100Handy as the go-to solution for professional, affordable services that fit your schedule.
-            </p>
-
-            <p className="mt-6 text-[20px] text-brand-dark-alt">
-              A licensed contractor? Be sure to check your 100 Handy Pro's qualifications when booking to ensure they meet your project's requirements.
-            </p>
-          </div>
-        )}
       </div>
     </section>
   );

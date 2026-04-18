@@ -11,8 +11,8 @@ interface CTASectionProps {
 
 export function CTASection({ categoryName, ctaImage }: CTASectionProps): React.JSX.Element {
   const href = categoryName
-    ? `/task-form?category=${encodeURIComponent(categoryName)}`
-    : "/dashboard";
+    ? `/task-form?category=${encodeURIComponent(categoryName)}&step=1`
+    : "/services";
 
   return (
     <section className="bg-[#F5EBE5] py-16">

@@ -15,7 +15,7 @@ Evidence column shows what was checked.
 
 | # | Issue | Status | Evidence | Test URL |
 |---|---|---|---|---|
-| 1 | Page titles capitalised properly | [x] | All 6 Title Case: `About Us\|Help\|Press\|For Business\|Refer a Friend\|Careers \| 100 Handy` | `/about-us` `/help` `/press` `/for-business` `/referral` `/careers` |
+| 1 | Page titles capitalised properly | [x] | Revalidated on local dev server: `About Us\|Help\|Press\|For Business\|Refer a Friend\|Careers \| 100 Handy` | `/about-us` `/help` `/press` `/for-business` `/referral` `/careers` |
 | 2 | Book Now on services links to booking page | [x] | All 52 service pages emit `?category=<DB name>&step=1` | `/services/*/*` |
 | 3 | Background behind Services by City hero text | [x] | Hero rendered with card panel + dark overlay | `/services-by-city` |
 | 4 | Grey overlay opacity uniform on hero banners | [x] | All 5 hero pages use `opacity-40` overlay class | `/press` `/services-by-city` `/for-business` `/services/cleaning/clean` `/services/tv-wall-mounting/tv-mounting` |
@@ -37,7 +37,7 @@ Evidence column shows what was checked.
 
 | # | Issue | Status | Evidence | Test URL |
 |---|---|---|---|---|
-| 9 | Hero image changed (OxD PR) | [ ] | Awaiting OxD asset; `// TODO: replace with OxD hero image` marker in place | `/about-us` |
+| 9 | Hero image changed (OxD PR) | [ ] | Still outstanding after 2026-04-17 browser pass: decorative hero remains in screenshot, and `// TODO: replace with OxD hero image` is still present in `app/about-us/page.tsx` | `/about-us` |
 
 ---
 
@@ -49,7 +49,7 @@ Evidence column shows what was checked.
 | 11 | Green panel alignment (yellow square area) | [~] | SVG positioning looks proportional in screenshot; design judgment | `/help` |
 | 12 | "Tasker" replaced with "100 Handy Pro" | [x] | Page text: `100 Handy Pro` present, `Tasker` absent | `/help` |
 | 13 | Search dropdown not overlaid by circles | [x] | **Fixed 2026-04-17.** Original `z-[60]` on dropdown was trapped inside Hero Section's `relative z-10` stacking context, so the sibling Categories Section (also `z-10`) painted later and covered the dropdown. Bumped Hero Section to `z-30` at `app/help/page.tsx:61`. Re-tested: dropdown items ("Notification preferences", "Managing linked details") now render above the circle icons. | `/help` → type "booking" |
-| 14 | Popular searches: 4 new pills linked | [x] | Screenshot + DOM: "Getting Started & Booking", "100 Handy Pro", "Registration", "Account" visible | `/help` |
+| 14 | Popular searches: 4 new pills linked | [x] | Revalidated via local DOM + screenshot: "Getting Started & Booking", "100 Handy Pro", "Registration", "Account" visible | `/help` |
 | 15 | "Can't find what you need?" → /contact, "Ready to book a task?" → /services | [x] | Both hrefs exactly match | `/help` |
 | 16 | Same CTA cards on all help sub-pages | [x] | All 5 sub-pages have `cantFind→/contact`, `readyToBook→/services` | `/help/client` `/help/pro` `/help/registration` `/help/account` `/help/policies` |
 
@@ -98,39 +98,39 @@ Evidence column shows what was checked.
 
 | # | Issue | Status | Evidence | Test URL |
 |---|---|---|---|---|
-| 28 | T&Cs section uniform | [x] | Page contains `Terms of Service` + `Privacy Policy` | `/sign-in` |
+| 28 | T&Cs section uniform | [x] | Revalidated in browser: page contains `Terms of Service` + `Privacy Policy` | `/sign-in` |
 
 ## SIGN UP (PDF p.8)
 
 | # | Issue | Status | Evidence | Test URL |
 |---|---|---|---|---|
-| 29 | GDPR opt-out checkbox present | [x] | Label text present: "I do not want to receive promotional emails and notifications from 100Handy" | `/sign-up` |
+| 29 | GDPR opt-out checkbox present | [x] | Revalidated in browser: label text present: "I do not want to receive promotional emails and notifications from 100Handy" | `/sign-up` |
 
 ## REFERRAL (PDF p.8)
 
 | # | Issue | Status | Evidence | Test URL |
 |---|---|---|---|---|
-| 30 | `.co.uk` → `.com` | [x] | Referral share URL: `https://www.100handy.com/s/graswfij` — no `.co.uk` anywhere | `/referral` |
+| 30 | `.co.uk` → `.com` | [x] | Revalidated in browser: readonly referral input value is `https://www.100handy.com/s/graswfij`; no `.co.uk` anywhere on page | `/referral` |
 | 31 | Gift icon changed | [x] | Confirmed per original checklist | `/referral` |
 
 ## PARTNER / FOR BUSINESS (PDF p.9)
 
 | # | Issue | Status | Evidence | Test URL |
 |---|---|---|---|---|
-| 32 | "Get in touch to learn more" removed, only "Submit" remains | [x] | DOM scan: 0 occurrences of the CTA, `Submit` button present | `/for-business` |
+| 32 | "Get in touch to learn more" removed, only "Submit" remains | [x] | Revalidated in browser: 0 occurrences of the CTA text, `Submit` button present | `/for-business` |
 
 ## PRESS (PDF p.10)
 
 | # | Issue | Status | Evidence | Test URL |
 |---|---|---|---|---|
-| 33 | "Get the latest" button removed | [x] | Page text does not contain "Get the latest" | `/press` |
+| 33 | "Get the latest" button removed | [x] | Revalidated in browser: page text does not contain "Get the latest" | `/press` |
 | 34 | "Read the Blog" links to `/blog` | [x] | Href exactly `/blog` | `/press` |
 
 ## BLOG (PDF p.8)
 
 | # | Issue | Status | Evidence | Test URL |
 |---|---|---|---|---|
-| 35 | Individual blog page layout completed | [x] | Confirmed on original checklist | `/blog` |
+| 35 | Individual blog page layout completed | [x] | Revalidated in browser: `/blog` loads with `Blog | 100 Handy` title and blog content visible | `/blog` |
 
 ---
 
