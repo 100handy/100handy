@@ -1,31 +1,46 @@
 import React from 'react';
-import { View } from 'react-native';
-import Logo100Top from '@/assets/images/logo-100-top.svg';
+import { Image, ImageSourcePropType, View } from 'react-native';
 
-const LOGO_ASPECT_RATIO = 771 / 372;
+// Two logo variants matching the web:
+//   'green' — dark olive green text, used on light/white backgrounds
+//   'cream' — pale cream text, used on dark/green backgrounds
+type LogoVariant = 'green' | 'cream';
 
-const LOGO_DIMENSIONS = {
-  auth: 150,
-  hero: 200,
+const LOGOS: Record<LogoVariant, ImageSourcePropType> = {
+  green: require('@/assets/images/100handy-green.png') as ImageSourcePropType,
+  cream: require('@/assets/images/100handy-cream.png') as ImageSourcePropType,
+};
+
+// PNG source dimensions: 2084 x 834
+const LOGO_ASPECT_RATIO = 2084 / 834;
+
+const LOGO_WIDTHS = {
+  compact: 130,
+  auth: 180,
+  hero: 240,
 } as const;
 
 type AuthLogoProps = {
-  size?: keyof typeof LOGO_DIMENSIONS;
+  size?: keyof typeof LOGO_WIDTHS;
+  variant?: LogoVariant;
   className?: string;
-  color?: string;
 };
 
 export default function AuthLogo({
   size = 'auth',
+  variant = 'green',
   className = 'items-center',
-  color,
 }: AuthLogoProps) {
-  const width = LOGO_DIMENSIONS[size];
+  const width = LOGO_WIDTHS[size];
   const height = width / LOGO_ASPECT_RATIO;
 
   return (
     <View className={className}>
-      <Logo100Top width={width} height={height} color={color ?? '#30352D'} />
+      <Image
+        source={LOGOS[variant]}
+        style={{ width, height }}
+        resizeMode="contain"
+      />
     </View>
   );
 }

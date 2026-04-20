@@ -149,7 +149,7 @@ export default function SkillExperienceScreen() {
                 className="text-base text-gray-600"
                 style={{ fontFamily: 'WorkSans_400Regular' }}
               >
-                Let clients know what skills and tools you have and why you're the best Tasker for
+                Let clients know what skills and tools you have and why you're the best pro for
                 the job.
               </Text>
             </View>

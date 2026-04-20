@@ -79,10 +79,10 @@ export default function BookingSuccessScreen() {
             />
             <View className="flex-col flex-1">
               <Text className="text-sm text-gray-600 mb-1">
-                Your Tasker
+                Your 100Handy Pro
               </Text>
               <Text className="text-base font-semibold text-[#30352D]">
-                {taskerName || 'Tasker'}
+                {taskerName || '100Handy Pro'}
               </Text>
             </View>
           </View>
@@ -123,7 +123,7 @@ export default function BookingSuccessScreen() {
               <>
                 <MessageCircle size={20} color="#FFFFFF" strokeWidth={2} />
                 <Text className="text-base font-semibold text-white">
-                  Chat with {taskerName?.split(' ')[0] || 'Tasker'}
+                  Chat with {taskerName?.split(' ')[0] || '100Handy Pro'}
                 </Text>
               </>
             )}

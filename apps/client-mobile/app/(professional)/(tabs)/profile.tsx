@@ -176,7 +176,7 @@ export default function ProfessionalProfileScreen() {
     },
     {
       icon: <FileText color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Tasker profile",
+      label: "Pro profile",
       onPress: () => router.push("/(professional)/profile/tasker-profile"),
     },
     {

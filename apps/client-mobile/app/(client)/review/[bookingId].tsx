@@ -185,7 +185,7 @@ export default function ClientReviewScreen() {
           <TextInput
             value={comment}
             onChangeText={setComment}
-            placeholder="Share your experience with this tasker..."
+            placeholder="Share your experience with this pro..."
             placeholderTextColor="#9CA3AF"
             multiline
             numberOfLines={4}
@@ -193,7 +193,7 @@ export default function ClientReviewScreen() {
             className="bg-[#F5F5F5] p-4 rounded-xl font-worksans text-[14px] text-[#30352D] min-h-[120px]"
           />
           <Text className="font-worksans text-[12px] text-[#6B6B6B] mt-2">
-            Your review will be visible on the tasker's profile
+            Your review will be visible on the pro's profile
           </Text>
         </View>
 

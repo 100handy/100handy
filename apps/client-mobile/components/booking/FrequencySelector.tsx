@@ -20,7 +20,7 @@ export function FrequencySelector({
     <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
       <Text className="text-base font-semibold text-[#30352D] mb-1">Frequency</Text>
       <Text className="text-sm text-gray-600 mb-4">
-        Save time and money by setting up a repeat cleaning with your Tasker.
+        Save time and money by setting up a repeat cleaning with your 100Handy Pro.
       </Text>
       {disabledMessage ? (
         <Text className="text-sm mb-4" style={{ color: '#C1856A' }}>

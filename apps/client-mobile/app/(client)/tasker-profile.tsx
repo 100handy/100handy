@@ -70,7 +70,7 @@ export default function TaskerProfileScreen() {
               <ChevronLeft size={24} color="#000000" strokeWidth={2} />
             </Pressable>
             <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
-              Tasker Profile
+              Pro Profile
             </Text>
           </View>
         </View>
@@ -91,7 +91,7 @@ export default function TaskerProfileScreen() {
               <ChevronLeft size={24} color="#000000" strokeWidth={2} />
             </Pressable>
             <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
-              Tasker Profile
+              Pro Profile
             </Text>
           </View>
         </View>
@@ -100,7 +100,7 @@ export default function TaskerProfileScreen() {
             Profile not found
           </Text>
           <Text className="text-sm text-gray-600 text-center">
-            This tasker&apos;s profile could not be loaded
+            This pro&apos;s profile could not be loaded
           </Text>
         </View>
       </SafeAreaView>
@@ -117,7 +117,7 @@ export default function TaskerProfileScreen() {
           </Pressable>
 
           <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
-            Tasker Profile
+            Pro Profile
           </Text>
         </View>
       </View>
@@ -146,7 +146,7 @@ export default function TaskerProfileScreen() {
                   style={{ backgroundColor: '#7EC04B' }}
                 >
                   <Text className="text-xs font-semibold text-white">
-                    ⚡ Super Tasker
+                    ⚡ Super Pro
                   </Text>
                 </View>
               )}
@@ -189,7 +189,7 @@ export default function TaskerProfileScreen() {
               className="text-xs font-light mb-1"
               style={{ color: '#6B6B6B', lineHeight: 16 }}
             >
-              {profile.experience_years} years of experience as a professional tasker.
+              {profile.experience_years} years of experience as a professional 100Handy Pro.
             </Text>
           )}
 
@@ -407,7 +407,7 @@ export default function TaskerProfileScreen() {
           isOpen={showScheduleSheet}
           onClose={() => setShowScheduleSheet(false)}
           onSelectSchedule={handleScheduleSelect}
-          taskerName={profile?.display_name || 'Tasker'}
+          taskerName={profile?.display_name || '100Handy Pro'}
           taskerId={taskerId}
         />
       ) : null}

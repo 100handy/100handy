@@ -448,7 +448,7 @@ function VehicleRequirementStep({
   return (
     <SelectionStep
       title={title}
-      question="Does your Tasker need a vehicle?"
+      question="Does your 100Handy Pro need a vehicle?"
       description="Some tasks may require transportation of equipment or materials."
       options={vehicleOptions}
       selectedOptions={selectedVehicle ? [selectedVehicle] : []}

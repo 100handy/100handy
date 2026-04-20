@@ -325,7 +325,7 @@ export default function SelectTaskerScreen() {
         ) : taskers.length === 0 ? (
           <View className="flex-col items-center justify-center py-20 px-6">
             <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
-              No taskers found
+              No pros found
             </Text>
             <Text className="text-sm text-gray-600 text-center">
               Try adjusting your filters or search in a different category

@@ -13,10 +13,10 @@ interface EmptyStateProps {
 }
 
 function TaskersEmptyState({ activeTab }: EmptyStateProps) {
-  const title = activeTab === 'favourite' ? "No Favourite Taskers" : "No Past Taskers";
+  const title = activeTab === 'favourite' ? "No Favourite Pros" : "No Past Pros";
   const description = activeTab === 'favourite' 
-    ? "Browse and book taskers to add them\nto your favourites."
-    : "Your previously booked taskers\nwill appear here.";
+    ? "Browse and book pros to add them\nto your favourites."
+    : "Your previously booked pros\nwill appear here.";
 
   return (
     <View className="flex-col items-center justify-center py-12 px-8">
@@ -102,7 +102,7 @@ const TaskersScreen = () => {
       <View className="flex-col flex-1">
         {/* Header */}
         <View className="items-center py-4 border-b border-gray-200">
-          <Text className="text-lg font-bold text-[#30352d]">Taskers</Text>
+          <Text className="text-lg font-bold text-[#30352d]">Pros</Text>
         </View>
 
         {/* Tabs */}
@@ -119,7 +119,7 @@ const TaskersScreen = () => {
               className="text-sm font-bold"
               style={{ color: '#333a31' }}
             >
-              Favourite Taskers
+              Favourite Pros
             </Text>
           </Pressable>
           <Pressable
@@ -134,7 +134,7 @@ const TaskersScreen = () => {
               className="text-sm font-bold"
               style={{ color: '#333a31' }}
             >
-              Past Taskers
+              Past Pros
             </Text>
           </Pressable>
         </View>
@@ -153,7 +153,7 @@ const TaskersScreen = () => {
                 Please sign in
               </Text>
               <Text className="text-sm text-[#666666] text-center mb-6">
-                You need to be signed in to view your taskers.
+                You need to be signed in to view your pros.
               </Text>
               <Pressable
                 onPress={() => router.push('/(auth)/(client)/sign-in')}
@@ -163,11 +163,11 @@ const TaskersScreen = () => {
               </Pressable>
             </View>
           ) : isLoading ? (
-            <Loader text="Loading taskers..." />
+            <Loader text="Loading pros..." />
           ) : isError ? (
             <View className="flex-col items-center justify-center py-12 px-8">
               <Text className="text-lg font-medium text-[#333a31] mb-2">
-                Error loading taskers
+                Error loading pros
               </Text>
               <Text className="text-sm text-[#666] text-center mb-4">
                 Something went wrong. Please try again.

@@ -70,7 +70,7 @@ export default function AboutMeScreen() {
                 className="text-sm text-[#666666] leading-5" 
                 style={{ fontFamily: 'WorkSans_400Regular' }}
               >
-                Why are you a Tasker? Tell your story..
+                Why are you a 100Handy Pro? Tell your story..
               </Text>
             </View>
 
@@ -88,7 +88,6 @@ export default function AboutMeScreen() {
                 multiline
                 numberOfLines={8}
                 maxLength={MAX_CHARACTERS}
-                placeholderTextColor="#999999"
                 className="min-h-[200px] border border-[#E5E5E5] rounded-lg p-4 text-base text-brand-dark"
                 style={{
                   fontFamily: 'WorkSans_400Regular',

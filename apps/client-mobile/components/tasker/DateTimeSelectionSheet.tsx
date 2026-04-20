@@ -194,7 +194,7 @@ export default function DateTimeSelectionSheet({
           <View className="items-start gap-2 mt-4 px-2 flex-row">
             <Check size={18} color="#82BE56" strokeWidth={2} className="mt-0.5" />
             <Text className="flex-1 text-xs text-gray-600 leading-relaxed">
-              Next, confirm your details to get connected with your Tasker.
+              Next, confirm your details to get connected with your 100Handy Pro.
             </Text>
           </View>
         </ScrollView>

@@ -114,7 +114,7 @@ export default function MessagesScreen() {
         No messages yet
       </Text>
       <Text className="text-base text-gray-600 mt-2 text-center">
-        Start a conversation with your tasker after booking
+        Start a conversation with your 100Handy Pro after booking
       </Text>
     </View>
   );

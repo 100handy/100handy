@@ -285,7 +285,7 @@ export default function ProfileScreen() {
               </Pressable>
             ))}
 
-            {/* Go 100Task */}
+            {/* Become a 100Handy Pro */}
             <Pressable
               className="flex-row items-center px-6 py-5 border-b border-gray-100"
               onPress={handleGo100Task}

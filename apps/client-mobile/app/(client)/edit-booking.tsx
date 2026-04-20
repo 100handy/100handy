@@ -111,7 +111,7 @@ export default function EditBookingScreen() {
 
   const taskerName = booking.handy_profile
     ? `${booking.handy_profile.first_name ?? ''} ${booking.handy_profile.last_name ?? ''}`.trim()
-    : 'Tasker';
+    : '100Handy Pro';
 
   const taskSize = (formResponses?.task_size ?? booking.form_responses?.task_size) as string | undefined;
   const estimatedHours = taskSize === 'small' ? 1 : taskSize === 'large' ? 4 : 2.5;
@@ -158,7 +158,7 @@ export default function EditBookingScreen() {
 
             if (daySlots.length === 0) {
               setIsSaving(false);
-              toast.error('Not Available', 'The tasker is not available on this day.');
+              toast.error('Not Available', 'The 100Handy Pro is not available on this day.');
               return;
             }
 
@@ -176,7 +176,7 @@ export default function EditBookingScreen() {
 
             if (!fits) {
               setIsSaving(false);
-              toast.error('Time Not Available', 'The selected time does not fit within the tasker\'s availability.');
+              toast.error('Time Not Available', 'The selected time does not fit within the 100Handy Pro\'s availability.');
               return;
             }
           }
@@ -190,7 +190,7 @@ export default function EditBookingScreen() {
           );
           if (hasConflict) {
             setIsSaving(false);
-            toast.error('Time Conflict', 'The tasker has another booking at this time.');
+            toast.error('Time Conflict', 'The 100Handy Pro has another booking at this time.');
             return;
           }
         }

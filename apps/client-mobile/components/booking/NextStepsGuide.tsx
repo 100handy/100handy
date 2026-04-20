@@ -17,7 +17,7 @@ const stepsByStatus: Record<string, { title: string; steps: string[] }> = {
     ],
   },
   accepted: {
-    title: 'Your tasker has accepted!',
+    title: 'Your 100Handy Pro has accepted!',
     steps: [
       "They'll arrive at the scheduled time",
       'You can message them to coordinate details',
@@ -27,7 +27,7 @@ const stepsByStatus: Record<string, { title: string; steps: string[] }> = {
   in_progress: {
     title: 'Your task is underway!',
     steps: [
-      'The tasker is working on your job',
+      'Your 100Handy Pro is working on your job',
       "You'll be notified when the task is complete",
       'You can message them if you have any questions',
     ],
@@ -44,7 +44,7 @@ const stepsByStatus: Record<string, { title: string; steps: string[] }> = {
     title: 'Booking cancelled',
     steps: [
       'Any authorized payment has been released',
-      'You can book another tasker anytime',
+      'You can book another pro anytime',
     ],
   },
 };

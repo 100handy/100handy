@@ -232,7 +232,7 @@ export function ScheduleSelectionSheet({
               No Availability Set
             </Text>
             <Text className="text-sm text-gray-600 mt-2 text-center">
-              {taskerName} hasn't set their availability yet. Please try another tasker or contact them directly.
+              {taskerName} hasn't set their availability yet. Please try another pro or contact them directly.
             </Text>
             <Pressable
               onPress={onClose}

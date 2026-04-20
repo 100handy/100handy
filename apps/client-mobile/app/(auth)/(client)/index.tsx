@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { countryCodeToFlagEmoji, getWelcomeCountry } from '@/lib/welcome-country';
@@ -73,7 +73,7 @@ export default function ClientWelcome() {
             </View>
 
             {/* Logo */}
-            <AuthLogo size="hero" color="#FFFFFF" />
+            <AuthLogo size="hero" variant="cream" />
           </View>
 
           {/* Light Bottom Section */}
@@ -87,8 +87,8 @@ export default function ClientWelcome() {
             <View className="px-5">
               {/* Create Account Button */}
               <Pressable
-                className="rounded-full py-4 mb-4 shadow-md"
-                style={{ backgroundColor: '#C1856A' }}
+                className="rounded-full py-4 mb-4 border-2"
+                style={{ backgroundColor: '#C1856A', borderColor: '#C1856A' }}
                 onPress={() =>
                   router.push({
                     pathname: '/(auth)/(client)/sign-up',
@@ -120,19 +120,27 @@ export default function ClientWelcome() {
               {/* Terms and Privacy */}
               <View className="pb-10">
                 <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
-                  By signing up, you agree to the{' '}
-                  <Text style={{ color: '#C1856A' }}>Terms of Service</Text>
-                  {'\n'}
-                  and have reviewed the{' '}
-                  <Text style={{ color: '#C1856A' }}>Privacy Policy.</Text>
-                  {'\n'}
-                  Manage <Text style={{ color: '#C1856A' }}>privacy settings</Text>
+                  I agree to the{' '}
+                  <Text
+                    style={{ color: '#C1856A' }}
+                    onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+                  >
+                    Terms of Service
+                  </Text>
+                  {' '}and have reviewed the{' '}
+                  <Text
+                    style={{ color: '#C1856A' }}
+                    onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+                  >
+                    Privacy Policy
+                  </Text>
+                  .
                 </Text>
                 <Pressable
                   className="mt-5"
                   onPress={() =>
                     router.push({
-                      pathname: '/(auth)/(professional)',
+                      pathname: '/(auth)/(professional)/sign-up',
                       params: ref ? { ref } : {},
                     } as Parameters<typeof router.push>[0])
                   }

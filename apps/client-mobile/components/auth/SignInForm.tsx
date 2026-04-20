@@ -67,7 +67,7 @@ export default function SignInForm({
             <View>
               <Input
                 variant="outline"
-                className="h-14 rounded-2xl border border-[#B89E96] bg-[#FCF8F5] px-4"
+                className="h-14 rounded-2xl border-2 border-[#8B7355] bg-[#FCF8F5] px-4"
               >
                 <InputField
                   className="font-worksans text-[15px]"
@@ -100,7 +100,7 @@ export default function SignInForm({
             <View>
               <Input
                 variant="outline"
-                className="h-14 flex-row items-center rounded-2xl border border-[#B89E96] bg-[#FCF8F5] px-4"
+                className="h-14 flex-row items-center rounded-2xl border-2 border-[#8B7355] bg-[#FCF8F5] px-4"
               >
                 <InputField
                   className="font-worksans text-[15px] flex-1"

@@ -8,7 +8,7 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useCategoriesByLevel } from '@shared/supabase';
+import { useGroupedSubcategories } from '@shared/supabase';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { getCategoryIcon } from '@/lib/category-icons';
 
@@ -17,20 +17,26 @@ export default function SearchServicesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showBookingSheet, setShowBookingSheet] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState({ id: '', name: '' });
-  const { data: categories, isLoading, isError } = useCategoriesByLevel(1);
+  const { data: groupedCategories, isLoading, isError } = useGroupedSubcategories();
 
-  // Attach icon and filter by search query
+  // Flatten grouped subcategories into a single list, excluding parent/main categories
+  // Only subcategories (those with a parent_id) are included
   const filteredCategories = React.useMemo(() => {
-    if (!categories) return [];
-    const withIcon = categories.map(category => ({
-      ...category,
-      icon: getCategoryIcon(category.name),
-    }));
-    if (!searchQuery.trim()) return withIcon;
-    return withIcon.filter(c =>
+    if (!groupedCategories) return [];
+    const allSubcategories = groupedCategories
+      .filter(group => group.name.toLowerCase() !== 'experiences')
+      .flatMap(group => group.subcategories)
+      .filter(category => category.parent_id) // Only subcategories (has parent)
+      .map(category => ({
+        ...category,
+        name: category.name.toLowerCase() === 'clean' ? 'Domestic Cleaning' : category.name,
+        icon: getCategoryIcon(category.name),
+      }));
+    if (!searchQuery.trim()) return allSubcategories;
+    return allSubcategories.filter(c =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [categories, searchQuery]);
+  }, [groupedCategories, searchQuery]);
 
   const handleCategoryPress = (categoryId: string, categoryName: string) => {
     setSelectedCategory({ id: categoryId, name: categoryName });

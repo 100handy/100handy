@@ -30,12 +30,12 @@ export default function PaymentsScreen() {
                 return;
             }
 
-            // 2. Initialize PaymentSheet with wallet support
+            // 2. Initialize PaymentSheet with wallet support (only pass platform-relevant config)
             const { error: initError } = await initPaymentSheet({
                 setupIntentClientSecret: setupIntent.clientSecret,
                 merchantDisplayName: '100Handy',
-                applePay: { merchantCountryCode: 'GB' },
-                googlePay: { merchantCountryCode: 'GB', testEnv: __DEV__ },
+                ...(Platform.OS === 'ios' ? { applePay: { merchantCountryCode: 'GB' } } : {}),
+                ...(Platform.OS === 'android' ? { googlePay: { merchantCountryCode: 'GB', testEnv: __DEV__ } } : {}),
                 style: 'automatic',
             });
 

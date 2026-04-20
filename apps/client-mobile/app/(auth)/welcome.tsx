@@ -1,12 +1,14 @@
 import React from 'react';
-import { View, Pressable, Text, Dimensions } from 'react-native';
+import { View, Pressable, Text, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import Svg, { Polygon, Rect } from 'react-native-svg';
-import Logo100Top from '@/assets/images/logo-100-top.svg';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// PNG source dimensions: 2084 x 834
+const LOGO_ASPECT_RATIO = 2084 / 834;
 
 function GeometricBackground() {
   // Full-screen geometric shapes matching Figma 484:431
@@ -55,8 +57,8 @@ export default function WelcomeSplash() {
     router.push('/(auth)/(client)');
   };
 
-  const logoWidth = SCREEN_WIDTH * 0.42;
-  const logoHeight = logoWidth * (372 / 771);
+  const logoWidth = SCREEN_WIDTH * 0.65;
+  const logoHeight = logoWidth / LOGO_ASPECT_RATIO;
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#333A31' }}>
@@ -67,7 +69,11 @@ export default function WelcomeSplash() {
           {/* Logo + Welcome centered in lower-middle area */}
           <View className="flex-1 items-center justify-end" style={{ paddingBottom: SCREEN_HEIGHT * 0.22 }}>
             <View className="items-center">
-              <Logo100Top width={logoWidth} height={logoHeight} color="#FFFFFF" />
+              <Image
+                source={require('@/assets/images/100handy-cream.png')}
+                style={{ width: logoWidth, height: logoHeight }}
+                resizeMode="contain"
+              />
               <Text
                 className="font-worksans-light text-[32px] mt-3"
                 style={{ color: '#FFFFFF' }}

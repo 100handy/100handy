@@ -650,7 +650,7 @@ export default function AnalyticsScreen() {
                       className="text-brand-dark-alt text-sm leading-5"
                       style={{ fontFamily: 'WorkSans_400Regular' }}
                     >
-                      There's always room to grow as a Tasker! The more tasks you complete with high ratings,
+                      There's always room to grow as a 100Handy Pro! The more tasks you complete with high ratings,
                       the better your search position will become. Regularly refusing tasks can cause you to
                       place lower in search results.
                     </Text>

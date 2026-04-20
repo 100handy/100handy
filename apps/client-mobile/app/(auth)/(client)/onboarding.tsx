@@ -102,7 +102,7 @@ const onboardingData = [
     description: (
       <>
         <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          Chat with your Tasker to schedule
+          Chat with your 100Handy Pro to schedule
         </Text>
         <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
           The job and get it done.

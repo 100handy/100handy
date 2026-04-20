@@ -59,10 +59,10 @@ function StatusBanner({ status, taskerName }: { status: BookingStatus; taskerNam
           </View>
           <View className="flex-1">
             <Text className="text-base font-worksans-semibold mb-1" style={{ color: '#1E40AF' }}>
-              Tasker Accepted!
+              Pro Accepted!
             </Text>
             <Text className="text-sm font-worksans" style={{ color: '#1D4ED8' }}>
-              {taskerName || 'Your tasker'} has accepted your booking and will arrive at the
+              {taskerName || 'Your 100Handy Pro'} has accepted your booking and will arrive at the
               scheduled time.
             </Text>
           </View>
@@ -83,7 +83,7 @@ function StatusBanner({ status, taskerName }: { status: BookingStatus; taskerNam
               Task In Progress!
             </Text>
             <Text className="text-sm font-worksans" style={{ color: '#1D4ED8' }}>
-              Your tasker is currently working on your job.
+              Your 100Handy Pro is currently working on your job.
             </Text>
           </View>
         </View>
@@ -435,7 +435,7 @@ export default function BookingDetailScreen() {
               <View className="flex-row items-center gap-2">
                 <MessageCircle size={18} color="white" />
                 <ButtonText className="font-worksans-semibold" style={{ color: 'white' }}>
-                  Contact Tasker
+                  Contact Pro
                 </ButtonText>
               </View>
             </Button>
@@ -493,7 +493,7 @@ export default function BookingDetailScreen() {
             <View className="bg-blue-50 rounded-lg border border-blue-200 p-4 flex-row items-start gap-3">
               <Info size={20} color="#1D4ED8" />
               <Text className="text-sm font-worksans flex-1" style={{ color: '#1E40AF' }}>
-                This booking is in progress and cannot be cancelled. Contact your tasker if you need to discuss any changes.
+                This booking is in progress and cannot be cancelled. Contact your 100Handy Pro if you need to discuss any changes.
               </Text>
             </View>
           )}

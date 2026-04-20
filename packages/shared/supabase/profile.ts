@@ -716,7 +716,18 @@ export async function switchToCustomerRole(): Promise<boolean> {
  */
 export async function updateVerificationData(data: VerificationData): Promise<boolean> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    let { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    // Heal stale-token window that can appear right after a role-switch rotates the JWT:
+    // refresh the session once and retry getUser before giving up.
+    if (authError || !user) {
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (!refreshError) {
+        const retry = await supabase.auth.getUser();
+        user = retry.data.user;
+        authError = retry.error;
+      }
+    }
 
     if (authError || !user) {
       console.error('Error getting authenticated user:', authError);

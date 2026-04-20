@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Linking } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { ChevronDown, X, Eye, EyeOff } from 'lucide-react-native';
@@ -360,13 +360,21 @@ export default function SignUpForm({
       {/* Terms and Privacy */}
       <View className="mb-6">
         <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
-          By signing up, you agree to the{' '}
-          <Text style={{ color: '#C1856A' }}>Terms of Service</Text>
-          {'\n'}
-          and have reviewed the{' '}
-          <Text style={{ color: '#C1856A' }}>Privacy Policy.</Text>
-          {'\n'}
-          Manage <Text style={{ color: '#C1856A' }}>privacy settings</Text>
+          I agree to the{' '}
+          <Text
+            style={{ color: '#C1856A' }}
+            onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+          >
+            Terms of Service
+          </Text>
+          {' '}and have reviewed the{' '}
+          <Text
+            style={{ color: '#C1856A' }}
+            onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+          >
+            Privacy Policy
+          </Text>
+          .
         </Text>
       </View>
 

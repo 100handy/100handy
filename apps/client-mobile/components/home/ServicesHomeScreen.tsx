@@ -123,7 +123,9 @@ export function ServicesHomeScreen() {
 
   const chipRows = useMemo(() => {
     if (!groupedCategories || groupedCategories.length === 0) return [];
-    const allSubcategories = groupedCategories.flatMap(group => group.subcategories);
+    const allSubcategories = groupedCategories
+      .filter(group => group.name.toLowerCase() !== 'experiences')
+      .flatMap(group => group.subcategories);
     const chipsPerRow = 3;
     const rows: Category[][] = [];
     for (let i = 0; i < Math.min(allSubcategories.length, 15); i += chipsPerRow) {
@@ -149,7 +151,7 @@ export function ServicesHomeScreen() {
           {/* Header Section */}
           <View className="bg-white px-5 pt-4 pb-4 flex-col">
             <View className="items-center justify-between flex-row">
-              <AuthLogo size="auth" color="#30352D" />
+              <AuthLogo size="compact" variant="green" />
               <Pressable onPress={() => router.push('/(client)/location')}>
                 <View className="items-end gap-0 flex-col">
                   <View className="items-center gap-1 flex-row">
@@ -242,14 +244,16 @@ export function ServicesHomeScreen() {
                 <Text className="text-sm text-gray-600 mt-3">Loading categories...</Text>
               </View>
             ) : groupedCategories && groupedCategories.length > 0 ? (
-              groupedCategories.map((group) => (
-                <CategorySection
-                  key={group.id}
-                  title={group.name}
-                  subcategories={group.subcategories}
-                  onSelectCategory={handleServicePress}
-                />
-              ))
+              groupedCategories
+                .filter((group) => group.name.toLowerCase() !== 'experiences')
+                .map((group) => (
+                  <CategorySection
+                    key={group.id}
+                    title={group.name.toLowerCase() === 'clean' ? 'Domestic Cleaning' : group.name}
+                    subcategories={group.subcategories}
+                    onSelectCategory={handleServicePress}
+                  />
+                ))
             ) : (
               <View className="items-center justify-center py-12 px-6 flex-col">
                 <Text className="text-base font-semibold text-gray-900 mb-2 text-center">

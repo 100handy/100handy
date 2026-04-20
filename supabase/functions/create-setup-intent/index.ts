@@ -27,9 +27,12 @@ serve(async (req) => {
     }
 
     // Create a SetupIntent for saving payment method without charging
+    // Use automatic_payment_methods to support card, Apple Pay, and Google Pay
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
-      payment_method_types: ['card'],
+      automatic_payment_methods: {
+        enabled: true,
+      },
       usage: 'off_session', // Allow charging without customer present
       metadata: {
         platform: '100handy',

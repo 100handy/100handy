@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ButtonText } from '@/components/ui/button';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -54,7 +54,7 @@ export default function ProfessionalWelcome() {
             </View>
 
             {/* Logo */}
-            <AuthLogo size="hero" color="#FFFFFF" />
+            <AuthLogo size="hero" variant="cream" />
           </View>
 
           {/* Light Bottom Section */}
@@ -98,13 +98,21 @@ export default function ProfessionalWelcome() {
               {/* Terms and Privacy */}
               <View className="pb-10">
                 <Text className="text-center text-[15px] font-worksans-medium leading-[22px] text-brand-dark-alt">
-                  By signing up, you agree to the{' '}
-                  <Text className="text-brand-terracotta">Terms of Service</Text>
-                  {'\n'}
-                  and have reviewed the{' '}
-                  <Text className="text-brand-terracotta">Privacy Policy.</Text>
-                  {'\n'}
-                  Manage <Text className="text-brand-terracotta">privacy settings</Text>
+                  I agree to the{' '}
+                  <Text
+                    className="text-brand-terracotta"
+                    onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+                  >
+                    Terms of Service
+                  </Text>
+                  {' '}and have reviewed the{' '}
+                  <Text
+                    className="text-brand-terracotta"
+                    onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+                  >
+                    Privacy Policy
+                  </Text>
+                  .
                 </Text>
               </View>
             </View>

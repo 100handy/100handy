@@ -193,7 +193,7 @@ export default function ConfirmBookingScreen() {
       tasker: {
         id: taskerId,
         userId: profile.user_id,
-        displayName: profile.display_name || 'Tasker',
+        displayName: profile.display_name || '100Handy Pro',
         avatarUrl: profile.avatar_url,
         hourlyRateCents: profile.hourly_rate_cents,
         verified: profile.verified || false,
@@ -243,7 +243,7 @@ export default function ConfirmBookingScreen() {
 
     // Check if profile and location are loaded
     if (!profile) {
-      Alert.alert('Error', 'Tasker profile not loaded');
+      Alert.alert('Error', '100Handy Pro profile not loaded');
       return;
     }
 
@@ -254,7 +254,7 @@ export default function ConfirmBookingScreen() {
 
     // Validate hourly rate is set
     if (originalHourlyRateCents <= 0) {
-      toast.error('Pricing Error', 'This tasker has not set their hourly rate for this service. Please choose another tasker.');
+      toast.error('Pricing Error', 'This 100Handy Pro has not set their hourly rate for this service. Please choose another 100Handy Pro.');
       return;
     }
 
@@ -321,7 +321,7 @@ export default function ConfirmBookingScreen() {
           setIsSubmitting(false);
           Alert.alert(
             'Location Not Covered',
-            `${profile.display_name || 'This tasker'} doesn't serve your selected location. Please choose another tasker.`,
+            `${profile.display_name || 'This 100Handy Pro'} doesn't serve your selected location. Please choose another 100Handy Pro.`,
             [{ text: 'OK' }]
           );
           return;
@@ -339,7 +339,7 @@ export default function ConfirmBookingScreen() {
           setIsSubmitting(false);
           Alert.alert(
             'Not Available',
-            `${profile.display_name || 'This tasker'} is not available on this day. Please select another date.`,
+            `${profile.display_name || 'This 100Handy Pro'} is not available on this day. Please select another date.`,
             [{ text: 'OK' }]
           );
           return;
@@ -362,7 +362,7 @@ export default function ConfirmBookingScreen() {
           setIsSubmitting(false);
           Alert.alert(
             'Time Not Available',
-            `${profile.display_name || 'This tasker'} is not available at ${selectedTime}. Please select another time.`,
+            `${profile.display_name || 'This 100Handy Pro'} is not available at ${selectedTime}. Please select another time.`,
             [{ text: 'OK' }]
           );
           return;
@@ -380,7 +380,7 @@ export default function ConfirmBookingScreen() {
         setIsSubmitting(false);
         Alert.alert(
           'Time Slot Unavailable',
-          `${profile.display_name || 'This tasker'} already has a booking at this time. Please select another time.`,
+          `${profile.display_name || 'This 100Handy Pro'} already has a booking at this time. Please select another time.`,
           [{ text: 'OK' }]
         );
         return;
@@ -470,7 +470,7 @@ export default function ConfirmBookingScreen() {
       router.push({
         pathname: '/(client)/booking-success',
         params: {
-          taskerName: profile.display_name || 'Tasker',
+          taskerName: profile.display_name || '100Handy Pro',
           taskerAvatar: profile.avatar_url || '',
           categoryName,
           selectedDate,
@@ -535,7 +535,7 @@ export default function ConfirmBookingScreen() {
           {/* Tasker Info */}
           <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
             <Text className="text-base font-semibold text-brand-dark-alt mb-4">
-              Your Tasker
+              Your 100Handy Pro
             </Text>
             <View className="flex-row items-center gap-3">
               <Image
@@ -544,7 +544,7 @@ export default function ConfirmBookingScreen() {
               />
               <View className="flex-col flex-1">
                 <Text className="text-lg font-semibold text-brand-dark-alt">
-                  {profile?.display_name || 'Tasker'}
+                  {profile?.display_name || '100Handy Pro'}
                 </Text>
                 {profile?.verified && (
                   <View className="flex-row items-center gap-1 mt-1">

@@ -392,7 +392,7 @@ export default function EliteScreen() {
                               className="text-sm text-gray-600 leading-5"
                               style={{ fontFamily: 'WorkSans_400Regular' }}
                             >
-                              The more tasks you complete compared to the number of invitations you receive, the higher your score will be. Your Performance Score Ranking is how you compare to other Taskers in your area. These scores can change on a daily basis, but we use the monthly average for Elite qualification.
+                              The more tasks you complete compared to the number of invitations you receive, the higher your score will be. Your Performance Score Ranking is how you compare to other pros in your area. These scores can change on a daily basis, but we use the monthly average for Elite qualification.
                             </Text>
                           </View>
                         )}

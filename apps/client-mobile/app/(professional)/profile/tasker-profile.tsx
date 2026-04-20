@@ -14,7 +14,7 @@ export default function TaskerProfileScreen() {
           <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
         </Pressable>
         <Text className="text-xl font-bold text-[#30352D]" style={{ fontFamily: 'WorkSans_700Bold' }}>
-          Tasker Profile
+          Pro Profile
         </Text>
         <Pressable onPress={() => router.push('/(professional)/profile/profile-preview')}>
           <Eye size={24} color="#C1856A" strokeWidth={2} />

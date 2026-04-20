@@ -14,7 +14,7 @@ interface ConversationBubbleProps {
 export const ConversationBubble = ({
   message,
   currentUserId,
-  otherUserName = 'Tasker',
+  otherUserName = '100Handy Pro',
   otherUserAvatar,
   showTimestamp = true,
 }: ConversationBubbleProps) => {

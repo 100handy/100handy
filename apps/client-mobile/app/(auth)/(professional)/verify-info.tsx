@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable, Platform } from 'react-native';
+import { ScrollView, View, Text, Pressable, Platform, Alert } from 'react-native';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
 import { ChevronLeft, Lock, FileText } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { updateVerificationData, getUserProfile, getHandyProfile } from '@shared/supabase/profile';
+import { useAuthStore } from '@shared/supabase';
 import { useToast } from '@/components/ui/toast';
 import { LocationAutocomplete, fetchPlaceDetails } from '@/components/location';
 
@@ -186,6 +187,8 @@ export default function VerifyInformation() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const toast = useToast();
+  const navigation = useNavigation();
+  const { signOut } = useAuthStore();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -269,7 +272,60 @@ export default function VerifyInformation() {
     }
   };
 
+  const handleBack = (): void => {
+    if (navigation.canGoBack()) {
+      router.back();
+    } else {
+      // User arrived via replace() (e.g., from AuthWrapper redirect)
+      // Offer to sign out so they can get back to sign-in
+      Alert.alert(
+        'Go back',
+        'Do you want to sign out and return to the login screen?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign Out',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await signOut();
+                router.replace('/(auth)/(professional)');
+              } catch {
+                router.replace('/(auth)/(professional)');
+              }
+            },
+          },
+        ]
+      );
+    }
+  };
+
   const handleSignup = (): void => {
+    // Validate required fields before showing confirmation modal
+    if (!formData.firstName.trim()) {
+      toast.error('Missing info', 'Please enter your first name');
+      return;
+    }
+    if (!formData.lastName.trim()) {
+      toast.error('Missing info', 'Please enter your surname');
+      return;
+    }
+    if (!formData.dateOfBirth) {
+      toast.error('Missing info', 'Please select your date of birth');
+      return;
+    }
+    if (!formData.streetAddress.trim()) {
+      toast.error('Missing info', 'Please enter your street address');
+      return;
+    }
+    if (!formData.city.trim()) {
+      toast.error('Missing info', 'Please enter your city');
+      return;
+    }
+    if (!formData.postcode.trim()) {
+      toast.error('Missing info', 'Please enter your postcode');
+      return;
+    }
     setShowModal(true);
   };
 
@@ -278,24 +334,30 @@ export default function VerifyInformation() {
       setShowModal(false);
       setIsLoading(true);
 
-      // Save verification data to backend
       // Convert date from dd/mm/yyyy to YYYY-MM-DD format for PostgreSQL
+      const formattedDate = convertDateFormat(formData.dateOfBirth);
+      if (!formattedDate || !/^\d{4}-\d{2}-\d{2}$/.test(formattedDate)) {
+        toast.error('Invalid date', 'Please select a valid date of birth');
+        return;
+      }
+
+      // Save verification data to backend
       const success = await updateVerificationData({
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        date_of_birth: convertDateFormat(formData.dateOfBirth),
-        street_address: formData.streetAddress,
-        apartment: formData.apt,
-        city: formData.city,
-        county: formData.county,
-        postcode: formData.postcode,
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
+        date_of_birth: formattedDate,
+        street_address: formData.streetAddress.trim(),
+        apartment: formData.apt.trim(),
+        city: formData.city.trim(),
+        county: formData.county.trim(),
+        postcode: formData.postcode.trim(),
       });
 
       if (success) {
         // Navigate to document upload
         router.push('/(auth)/(professional)/verify-document-upload');
       } else {
-        toast.error('Error saving data', 'Please sign in again and try');
+        toast.error('Error saving data', 'Something went wrong. Please check your details and try again.');
       }
     } catch (error) {
       console.error('Error in handleConfirm:', error);
@@ -317,7 +379,7 @@ export default function VerifyInformation() {
           <View className="flex-col flex-1">
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-5">
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={handleBack} hitSlop={8}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>

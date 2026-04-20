@@ -79,7 +79,7 @@ export default function TaskDetailsScreen() {
             />
             <View className="flex-col flex-1">
               <Text className="text-base font-semibold text-[#30352D] mb-1">
-                {profile?.display_name || 'Tasker'}
+                {profile?.display_name || '100Handy Pro'}
               </Text>
             </View>
           </View>

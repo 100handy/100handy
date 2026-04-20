@@ -53,7 +53,7 @@ const welcomeScreens: WelcomeScreen[] = [
     body: (
       <Text className="text-[#F3E3D3] text-[14px] leading-[17px] text-center px-4">
         We've heard your feedback and made some big updates. Give a warm welcome to{' '}
-        <Text className="text-[#A0B194] font-bold">Tasker Analytics</Text>!
+        <Text className="text-[#A0B194] font-bold">Pro Analytics</Text>!
       </Text>
     ),
   },
@@ -64,7 +64,7 @@ const welcomeScreens: WelcomeScreen[] = [
     content: (
       <>
         <Text className="text-white text-base leading-6 mb-6 text-left">
-          We've put together a brand new set of business data designed to help you see how you're performing as a Tasker based on local demand.
+          We've put together a brand new set of business data designed to help you see how you're performing as a 100Handy Pro based on local demand.
         </Text>
         <Text className="text-white text-base font-bold mb-4 text-left">
           These data points work together to:
@@ -79,7 +79,7 @@ const welcomeScreens: WelcomeScreen[] = [
           <View className="items-start gap-3 flex-row">
             <Text className="text-brand-taupe text-lg mt-0.5">•</Text>
             <Text className="text-white text-base flex-1 text-left">
-              Give you a snapshot of how you stack up against other Taskers.
+              Give you a snapshot of how you stack up against other pros.
             </Text>
           </View>
           <View className="items-start gap-3 flex-row">
@@ -99,7 +99,7 @@ const welcomeScreens: WelcomeScreen[] = [
     content: (
       <>
         <Text className="text-white text-base leading-6 mb-6 text-left">
-          We've designed these new Analytics with you in mind. Whether you task full time or part time, they're here to help you excel as a Tasker.
+          We've designed these new Analytics with you in mind. Whether you task full time or part time, they're here to help you excel as a 100Handy Pro.
         </Text>
         <Text className="text-white text-base font-bold mb-4 text-left">
           With these new Analytics you can:
