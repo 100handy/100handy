@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ScrollView, View, Text, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 const ITEM_HEIGHT = 50;
@@ -17,24 +17,6 @@ export function TimePickerWheel({
 }: TimePickerWheelProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(values.indexOf(selectedValue));
-
-  useEffect(() => {
-    const index = values.indexOf(selectedValue);
-    if (index !== currentIndex) {
-      setCurrentIndex(index);
-    }
-  }, [selectedValue]);
-
-  useEffect(() => {
-    if (scrollViewRef.current && currentIndex >= 0) {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollTo({
-          y: currentIndex * ITEM_HEIGHT,
-          animated: true,
-        });
-      }, 100);
-    }
-  }, []);
 
   const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetY = event.nativeEvent.contentOffset.y;
@@ -63,6 +45,7 @@ export function TimePickerWheel({
         decelerationRate="fast"
         onMomentumScrollEnd={handleScrollEnd}
         onScrollEndDrag={handleScrollEnd}
+        contentOffset={{ x: 0, y: currentIndex * ITEM_HEIGHT }}
         contentContainerStyle={{
           paddingVertical: ITEM_HEIGHT * 2,
         }}

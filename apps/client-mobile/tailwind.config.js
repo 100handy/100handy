@@ -166,6 +166,15 @@ module.exports = {
           info: 'rgb(var(--color-indicator-info)/<alpha-value>)',
           error: 'rgb(var(--color-indicator-error)/<alpha-value>)',
         },
+        // Brand design tokens (matches web globals.css)
+        'brand-dark': '#333A31',
+        'brand-dark-alt': '#30352D',
+        'brand-terracotta': '#C1856A',
+        'brand-coral': '#FF9869',
+        'brand-sage': '#A0B194',
+        'brand-taupe': '#B29D88',
+        'brand-cream': '#F3E3D3',
+
         // Core brand colors
         'clay-orange': '#D9896C',
         'sage-green': '#A3B899',

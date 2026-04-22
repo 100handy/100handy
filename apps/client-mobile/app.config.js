@@ -21,7 +21,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.oxdpr.handy",
-      buildNumber: "7",
+      buildNumber: "8",
       usesAppleSignIn: true,
       // TODO: Replace with actual production domain for Universal Links
       associatedDomains: ["applinks:auth.yourdomain.com"],
@@ -33,7 +33,7 @@ module.exports = {
       },
     },
     android: {
-      versionCode: 5,
+      versionCode: 6,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",
