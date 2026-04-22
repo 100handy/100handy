@@ -6,7 +6,10 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Modal, ModalBackdrop, ModalContent } from "@/components/ui/modal";
 import { Plus, Trash2 } from "lucide-react-native";
@@ -74,6 +77,7 @@ const isOverlapping = (
 };
 
 export default function BookingsTab() {
+  const insets = useSafeAreaInsets();
   const [selectedDay, setSelectedDay] = useState(new Date().getDay());
   const [showAddModal, setShowAddModal] = useState(false);
   const [startHour, setStartHour] = useState("18");
@@ -462,8 +466,16 @@ export default function BookingsTab() {
         size="full"
       >
         <ModalBackdrop />
-        <ModalContent className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-0 m-0 max-w-none w-full">
-          <View className="flex-col p-6">
+        <ModalContent
+          className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-0 m-0 max-w-none w-full overflow-hidden"
+          style={{ maxHeight: "90%" }}
+        >
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) }}
+          >
+            <View className="flex-col p-6">
             {/* Modal Header */}
             <View className="flex-col items-center mb-6">
               <View className="w-12 h-1 bg-[#E5E5E5] rounded-full mb-4" />
@@ -545,6 +557,7 @@ export default function BookingsTab() {
               </Pressable>
             </View>
           </View>
+          </ScrollView>
         </ModalContent>
       </Modal>
     </View>

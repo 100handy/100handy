@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -35,14 +35,9 @@ export default function ProfessionalSignUp() {
   return (
     <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
-        <ScrollView 
-          className="flex-1"
-          contentContainerStyle={{ paddingBottom: 40 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View className="flex-col flex-1">
+        <View className="flex-col flex-1">
           {/* Header */}
-          <View className="flex-row items-center justify-between px-5 pt-2 pb-4">
+          <View className="flex-row items-center justify-between px-5 pt-2 pb-2">
             <Pressable onPress={() => router.back()}>
               <ChevronLeft size={24} color="#333A31" />
             </Pressable>
@@ -57,8 +52,8 @@ export default function ProfessionalSignUp() {
           </View>
 
           {/* Logo */}
-          <View className="items-center my-10">
-            <AuthLogo />
+          <View className="items-center mt-4 mb-5">
+            <AuthLogo size="compact" />
           </View>
 
           {/* Form Container */}
@@ -68,8 +63,7 @@ export default function ProfessionalSignUp() {
             userRole="professional"
           />
         </View>
-        </ScrollView>
       </SafeAreaView>
-      </View>
+    </View>
   );
 }
