@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Linking } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
-import { ChevronDown, X, Eye, EyeOff } from 'lucide-react-native';
+import { ChevronDown, X, Eye, EyeOff, Check } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +24,7 @@ export default function SignUpForm({
   const [callingCode, setCallingCode] = useState('44');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [marketingOptOut, setMarketingOptOut] = useState(false);
 
   const onSelectCountry = (country: Country): void => {
     setCountryCode(country.cca2);
@@ -81,17 +82,18 @@ export default function SignUpForm({
       role: userRole === 'professional' ? 'handy' : 'customer',
       postcode: formData.postcode,
       phone: fullPhone,
+      marketing_opt_out: marketingOptOut,
     };
 
     onSubmit(formData.email, formData.password, metadata);
   };
 
   return (
-    <View className="px-5">
+    <View className="px-5 flex-1">
       {/* First Name and Last Name Row */}
-      <View className="mb-3 gap-4 flex-row">
+      <View className="mb-2 gap-3 flex-row">
         <View className="flex-1">
-          <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
+          <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
             First Name
           </Text>
           <Controller
@@ -123,7 +125,7 @@ export default function SignUpForm({
           />
         </View>
         <View className="flex-1">
-          <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
+          <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
             Last Name
           </Text>
           <Controller
@@ -157,8 +159,8 @@ export default function SignUpForm({
       </View>
 
       {/* Email */}
-      <View className="mb-3">
-        <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
+      <View className="mb-2">
+        <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
           Email
         </Text>
         <Controller
@@ -193,8 +195,8 @@ export default function SignUpForm({
       </View>
 
       {/* Password */}
-      <View className="mb-3">
-        <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
+      <View className="mb-2">
+        <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
           Password
         </Text>
         <Controller
@@ -235,8 +237,8 @@ export default function SignUpForm({
       </View>
 
       {/* Phone Number */}
-      <View className="mb-3">
-        <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
+      <View className="mb-2">
+        <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
           Phone Number
         </Text>
         <Controller
@@ -299,8 +301,8 @@ export default function SignUpForm({
       </View>
 
       {/* Post code */}
-      <View className="mb-3">
-        <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
+      <View className="mb-2">
+        <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
           Post code
         </Text>
         <Controller
@@ -334,14 +336,32 @@ export default function SignUpForm({
       </View>
 
       {/* Help Text */}
-      <Text className="text-[12px] font-worksans-medium mb-5 leading-5" style={{ color: '#30352D' }}>
+      <Text className="text-[11px] font-worksans-medium mb-3 leading-4" style={{ color: '#30352D' }}>
         Your phone and postcode help us match and{'\n'}
         connect you with the right 100 Handy Pros.
       </Text>
 
+      <Pressable
+        onPress={() => setMarketingOptOut((prev) => !prev)}
+        className="flex-row items-start mb-3"
+      >
+        <View
+          className="w-5 h-5 rounded border mr-3 mt-0.5 items-center justify-center"
+          style={{
+            borderColor: marketingOptOut ? '#C1856A' : '#D1D5DB',
+            backgroundColor: marketingOptOut ? '#C1856A' : 'white',
+          }}
+        >
+          {marketingOptOut && <Check size={14} color="white" />}
+        </View>
+        <Text className="flex-1 text-[13px] font-worksans-medium leading-4" style={{ color: '#30352D' }}>
+          I do not want to receive promotional emails and notifications from 100Handy
+        </Text>
+      </Pressable>
+
       {/* Signup Button */}
       <Button
-        className="rounded-full shadow-sm mb-6 flex-row items-center justify-center gap-2"
+        className="rounded-full shadow-sm mb-3 flex-row items-center justify-center gap-2"
         style={{
           backgroundColor: isFormValid ? '#C1856A' : '#E5E7EB',
         }}
@@ -350,7 +370,7 @@ export default function SignUpForm({
       >
         {isLoading && <ButtonSpinner color={isFormValid ? 'white' : '#B7B7B7'} />}
         <ButtonText
-          className="text-[18px] font-worksans-bold"
+          className="text-[16px] font-worksans-bold"
           style={{ color: isFormValid ? 'white' : '#B7B7B7' }}
         >
           {isLoading ? 'Signing up...' : 'Signup'}
@@ -358,8 +378,8 @@ export default function SignUpForm({
       </Button>
 
       {/* Terms and Privacy */}
-      <View className="mb-6">
-        <Text className="text-center text-[15px] font-worksans-medium leading-[22px]" style={{ color: '#30352D' }}>
+      <View className="mb-3">
+        <Text className="text-center text-[13px] font-worksans-medium leading-[18px]" style={{ color: '#30352D' }}>
           I agree to the{' '}
           <Text
             style={{ color: '#C1856A' }}
@@ -380,7 +400,7 @@ export default function SignUpForm({
 
       {/* Login Link */}
       <Pressable onPress={() => router.push(`/(auth)/(${userRole})/sign-in`)}>
-        <Text className="text-center text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
+        <Text className="text-center text-[13px] font-worksans-medium" style={{ color: '#30352D' }}>
           Already have an account?{' '}
           <Text style={{ color: '#C1856A' }}>Log in</Text>
         </Text>

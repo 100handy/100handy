@@ -53,22 +53,6 @@ export default function SupportScreen() {
     }
   };
 
-  const handleBecomeTasker = () => {
-    Alert.alert(
-      'Become a 100Handy Pro',
-      'Interested in earning money by helping others? Join our community of skilled 100Handy Pros!',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Learn More',
-          onPress: () => {
-            Linking.openURL('https://100handy.com/become-pro');
-          }
-        }
-      ]
-    );
-  };
-
   const handleCancellationPolicy = () => {
     Alert.alert(
       'Cancellation Policy',
@@ -131,11 +115,6 @@ export default function SupportScreen() {
             <MenuItem
               title="Support Center"
               onPress={handleSupportCenter}
-            />
-
-            <MenuItem
-              title="Become a 100Handy Pro"
-              onPress={handleBecomeTasker}
             />
 
             <MenuItem
