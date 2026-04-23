@@ -5,14 +5,18 @@ import {
   getWeeklyAvailability,
   getAvailabilityByUserId,
   getAvailabilityByUserIds,
+  createAvailabilitySlot,
   saveDayAvailability,
   saveWeeklyAvailability,
   deleteAvailabilitySlot,
   clearAllAvailability,
   type AvailabilitySlot,
+  type CreateAvailabilityInput,
   type DayAvailabilityInput,
+  type RecurrenceType,
   type TimeSlotInput,
   type WeeklyAvailability,
+  doesAvailabilitySlotApplyToDate,
 } from '../../supabase/availability';
 
 // Query keys
@@ -93,6 +97,20 @@ export function useSaveDayAvailability() {
   });
 }
 
+export function useCreateAvailabilitySlot() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateAvailabilityInput) => createAvailabilitySlot(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: availabilityKeys.all });
+    },
+    onError: (error) => {
+      console.error('Error creating availability slot:', error);
+    },
+  });
+}
+
 /**
  * Hook for saving entire week's availability
  */
@@ -163,7 +181,11 @@ export function useInvalidateAvailability() {
 // Re-export types for convenience
 export type {
   AvailabilitySlot,
+  CreateAvailabilityInput,
   DayAvailabilityInput,
+  RecurrenceType,
   TimeSlotInput,
   WeeklyAvailability,
 };
+
+export { doesAvailabilitySlotApplyToDate };

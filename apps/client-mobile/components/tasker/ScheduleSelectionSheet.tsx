@@ -6,7 +6,11 @@ import {
   ModalBackdrop,
   ModalContent,
 } from '@/components/ui/modal';
-import { useAvailabilityByUserId, type AvailabilitySlot } from '@shared/supabase';
+import {
+  doesAvailabilitySlotApplyToDate,
+  useAvailabilityByUserId,
+  type AvailabilitySlot,
+} from '@shared/supabase';
 
 interface ScheduleSelectionSheetProps {
   isOpen: boolean;
@@ -38,14 +42,6 @@ function generateHourlySlots(startTime: string, endTime: string): string[] {
   }
 
   return slots;
-}
-
-/**
- * Get day of week index from date string (0 = Sunday, 6 = Saturday)
- */
-function getDayOfWeek(dateStr: string): number {
-  const date = new Date(dateStr);
-  return date.getDay();
 }
 
 export function ScheduleSelectionSheet({
@@ -97,8 +93,9 @@ export function ScheduleSelectionSheet({
       return [];
     }
 
-    const dayOfWeek = getDayOfWeek(dateStr);
-    const daySlots = availability.filter((slot: AvailabilitySlot) => slot.day_of_week === dayOfWeek);
+    const daySlots = availability.filter((slot: AvailabilitySlot) =>
+      doesAvailabilitySlotApplyToDate(slot, dateStr),
+    );
 
     if (daySlots.length === 0) {
       return [];

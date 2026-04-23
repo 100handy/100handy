@@ -61,7 +61,7 @@ export async function ensureReferralCode(): Promise<string | null> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for handy profile:', authError);
       return null;
     }
 
@@ -119,7 +119,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for handy profile:', authError);
       return null;
     }
 
@@ -156,7 +156,7 @@ export async function updateUserProfile(updates: UpdateProfileData): Promise<Use
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for handy profile:', authError);
       return null;
     }
 
@@ -452,13 +452,13 @@ export async function getBusinessPhotosByUser(
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching business photos:', error);
+      console.warn('Unable to fetch business photos:', error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.error('Error in getBusinessPhotosByUser:', error);
+    console.warn('Unable to load business photos:', error);
     return [];
   }
 }
@@ -533,7 +533,7 @@ export async function getHandyProfile(): Promise<HandyProfile | null> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for handy profile:', authError);
       return null;
     }
 
@@ -544,13 +544,13 @@ export async function getHandyProfile(): Promise<HandyProfile | null> {
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching handy profile:', error);
+      console.warn('Unable to fetch handy profile:', error);
       return null;
     }
 
     return data ?? null;
   } catch (error) {
-    console.error('Error in getHandyProfile:', error);
+    console.warn('Unable to load handy profile:', error);
     return null;
   }
 }
@@ -1169,7 +1169,7 @@ export async function getAllChatTemplates(): Promise<ChatTemplate[]> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for user skills:', authError);
       return [];
     }
 
@@ -1508,13 +1508,13 @@ export async function getUserSkills(): Promise<UserSkill[]> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching user skills:', error);
+      console.warn('Unable to fetch user skills:', error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.error('Error in getUserSkills:', error);
+    console.warn('Unable to load user skills:', error);
     return [];
   }
 }

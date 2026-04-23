@@ -10,8 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Polygon, Marker, LatLng, Region } from "react-native-maps";
-import * as Location from "expo-location";
-import { Hand, X, Pencil } from "lucide-react-native";
+import { Hand, Minus, Pencil, Plus, X } from "lucide-react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import {
   useWorkArea,
@@ -24,17 +23,19 @@ const { width, height } = Dimensions.get("window");
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+const LONDON_REGION: Region = {
+  latitude: 51.5074,
+  longitude: -0.1278,
+  latitudeDelta: LATITUDE_DELTA,
+  longitudeDelta: LONGITUDE_DELTA,
+};
 
 export default function WorkAreaTab() {
   const toast = useToast();
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null,
-  );
-  const [region, setRegion] = useState<Region | null>(null);
+  const [region, setRegion] = useState<Region>(LONDON_REGION);
 
   // Drawing state
   const [isDrawingMode, setIsDrawingMode] = useState(false);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [drawnCoordinates, setDrawnCoordinates] = useState<LatLng[]>([]);
@@ -53,7 +54,6 @@ export default function WorkAreaTab() {
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
-        setIsDrawing(true);
         setDrawnCoordinates([]);
         setIsReviewing(false);
       },
@@ -75,7 +75,6 @@ export default function WorkAreaTab() {
         }
       },
       onPanResponderRelease: () => {
-        setIsDrawing(false);
         setDrawnCoordinates((prev) => {
           if (prev.length > 2) {
             setIsReviewing(true);
@@ -112,34 +111,6 @@ export default function WorkAreaTab() {
       setIsReviewing(true);
     }
   }, [existingWorkArea]);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.error("Permission to access location was denied");
-        const defaultRegion = {
-          latitude: 51.5074,
-          longitude: -0.1278,
-          latitudeDelta: LATITUDE_DELTA,
-          longitudeDelta: LONGITUDE_DELTA,
-        };
-        setRegion(defaultRegion);
-        return;
-      }
-
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-
-      const initialRegion = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA,
-      };
-      setRegion(initialRegion);
-    })();
-  }, []);
 
   const handleSave = () => {
     if (drawnCoordinates.length > 2) {
@@ -185,6 +156,18 @@ export default function WorkAreaTab() {
     setIsDrawingMode(false);
   };
 
+  const handleZoom = (direction: "in" | "out") => {
+    const scale = direction === "in" ? 0.5 : 2;
+    const nextRegion: Region = {
+      ...region,
+      latitudeDelta: Math.max(0.002, Math.min(1, region.latitudeDelta * scale)),
+      longitudeDelta: Math.max(0.002, Math.min(1, region.longitudeDelta * scale)),
+    };
+
+    setRegion(nextRegion);
+    mapRef.current?.animateToRegion(nextRegion, 200);
+  };
+
   const handleVertexDrag = (index: number, coordinate: LatLng) => {
     setDrawnCoordinates((prev) => {
       const updated = [...prev];
@@ -201,7 +184,7 @@ export default function WorkAreaTab() {
     });
   };
 
-  if (!region || isLoadingWorkArea) {
+  if (isLoadingWorkArea) {
     return (
       <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
         <View className="flex-1 items-center justify-center">
@@ -234,6 +217,7 @@ export default function WorkAreaTab() {
           ref={mapRef}
           style={StyleSheet.absoluteFillObject}
           initialRegion={region}
+          onRegionChangeComplete={setRegion}
           scrollEnabled={!isDrawingMode && !isEditing}
           zoomEnabled={!isDrawingMode}
           rotateEnabled={!isDrawingMode && !isEditing}
@@ -290,6 +274,23 @@ export default function WorkAreaTab() {
             {...panResponder.panHandlers}
           />
         )}
+      </View>
+
+      <View className="absolute right-5 top-[120px] rounded-full bg-white shadow-lg overflow-hidden">
+        <Pressable
+          accessibilityLabel="Zoom in"
+          onPress={() => handleZoom("in")}
+          className="w-12 h-12 items-center justify-center border-b border-gray-100"
+        >
+          <Plus size={22} color="#30352D" />
+        </Pressable>
+        <Pressable
+          accessibilityLabel="Zoom out"
+          onPress={() => handleZoom("out")}
+          className="w-12 h-12 items-center justify-center"
+        >
+          <Minus size={22} color="#30352D" />
+        </Pressable>
       </View>
 
       {/* Controls - positioned above tab bar */}

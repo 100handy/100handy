@@ -18,6 +18,7 @@ import {
   checkBookingConflict,
   getWorkAreaByUserId,
   getAvailabilityByUserId,
+  doesAvailabilitySlotApplyToDate,
   isLocationInWorkArea,
   type Coordinate,
   type BookingFrequency,
@@ -331,9 +332,9 @@ export default function ConfirmBookingScreen() {
       // 2. Check availability for the selected date/time
       const availability = await getAvailabilityByUserId(profile.user_id);
       if (availability && availability.length > 0) {
-        const selectedDateObj = new Date(selectedDate + 'T00:00:00');
-        const dayOfWeek = selectedDateObj.getDay(); // 0 = Sunday, 6 = Saturday
-        const daySlots = availability.filter((slot) => slot.day_of_week === dayOfWeek);
+        const daySlots = availability.filter((slot) =>
+          doesAvailabilitySlotApplyToDate(slot, selectedDate),
+        );
 
         if (daySlots.length === 0) {
           setIsSubmitting(false);

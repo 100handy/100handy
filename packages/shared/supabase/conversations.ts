@@ -61,7 +61,8 @@ export async function getConversations(): Promise<ConversationWithProfiles[]> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      throw new Error('Not authenticated');
+      console.warn('Unable to get authenticated user for conversations:', authError);
+      return [];
     }
 
     // Fetch conversations
@@ -72,8 +73,8 @@ export async function getConversations(): Promise<ConversationWithProfiles[]> {
       .order('last_message_at', { ascending: false });
 
     if (conversationsError) {
-      console.error('Error fetching conversations:', conversationsError);
-      throw new Error(conversationsError.message);
+      console.warn('Unable to fetch conversations:', conversationsError);
+      return [];
     }
 
     if (!conversations || conversations.length === 0) {
@@ -94,7 +95,7 @@ export async function getConversations(): Promise<ConversationWithProfiles[]> {
       .in('user_id', Array.from(userIds));
 
     if (profilesError) {
-      console.error('Error fetching profiles:', profilesError);
+      console.warn('Unable to fetch conversation profiles:', profilesError);
       // Continue without profiles rather than failing
     }
 
@@ -113,8 +114,8 @@ export async function getConversations(): Promise<ConversationWithProfiles[]> {
 
     return result as ConversationWithProfiles[];
   } catch (error) {
-    console.error('Error in getConversations:', error);
-    throw error;
+    console.warn('Unable to load conversations:', error);
+    return [];
   }
 }
 

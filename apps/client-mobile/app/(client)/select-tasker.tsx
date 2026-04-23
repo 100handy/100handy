@@ -13,6 +13,7 @@ import {
   type Coordinate,
   type WorkArea,
   getAvailabilityByUserId,
+  doesAvailabilitySlotApplyToDate,
   type AvailabilitySlot,
 } from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
@@ -35,6 +36,13 @@ const sortOptions: SortOption[] = [
   'Total Reviews (Highest)',
   'Completed Tasks (Highest)',
 ];
+
+function formatDateOnly(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export default function SelectTaskerScreen() {
   const router = useRouter();
@@ -162,10 +170,10 @@ export default function SelectTaskerScreen() {
     for (let i = 0; i < 14; i++) {
       const date = new Date();
       date.setDate(date.getDate() + i);
-      const dayOfWeek = date.getDay();
-
-      // Check if tasker has availability on this day
-      const hasAvailability = slots.some((slot) => slot.day_of_week === dayOfWeek);
+      const dateValue = formatDateOnly(date);
+      const hasAvailability = slots.some((slot) =>
+        doesAvailabilitySlotApplyToDate(slot, dateValue),
+      );
       if (hasAvailability) {
         if (i === 0) return 'today';
         if (i === 1) return 'tomorrow';
@@ -414,4 +422,3 @@ export default function SelectTaskerScreen() {
     </SafeAreaView>
   );
 }
-

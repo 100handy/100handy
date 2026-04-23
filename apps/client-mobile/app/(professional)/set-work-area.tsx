@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, PanResponder, Text, Pressable, Platform, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Dimensions, PanResponder, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Polygon, LatLng, Region } from 'react-native-maps';
-import * as Location from 'expo-location';
 import { router } from 'expo-router';
-import { ArrowLeft, Hand, X } from 'lucide-react-native';
+import { ArrowLeft, Hand, Minus, Plus, X } from 'lucide-react-native';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useWorkArea, useSaveWorkArea, type Coordinate } from '@shared/supabase';
 import { useToast } from '@/components/ui/toast';
@@ -13,15 +12,19 @@ const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+const LONDON_REGION: Region = {
+  latitude: 51.5074,
+  longitude: -0.1278,
+  latitudeDelta: LATITUDE_DELTA,
+  longitudeDelta: LONGITUDE_DELTA,
+};
 
 export default function SetWorkAreaScreen() {
   const toast = useToast();
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [region, setRegion] = useState<Region | null>(null);
+  const [region, setRegion] = useState<Region>(LONDON_REGION);
 
   // Drawing state
   const [isDrawingMode, setIsDrawingMode] = useState(false); // Toggle for "Draw area" mode
-  const [isDrawing, setIsDrawing] = useState(false); // Actual drawing action (touch active)
   const [isReviewing, setIsReviewing] = useState(false); // Drawing finished, showing review UI
   const [drawnCoordinates, setDrawnCoordinates] = useState<LatLng[]>([]);
 
@@ -37,7 +40,6 @@ export default function SetWorkAreaScreen() {
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
-        setIsDrawing(true);
         setDrawnCoordinates([]); // Clear previous drawing when starting new one
         setIsReviewing(false);
       },
@@ -59,7 +61,6 @@ export default function SetWorkAreaScreen() {
         }
       },
       onPanResponderRelease: () => {
-        setIsDrawing(false);
         setDrawnCoordinates(prev => {
           if (prev.length > 2) {
             setIsReviewing(true);
@@ -83,34 +84,6 @@ export default function SetWorkAreaScreen() {
       setIsReviewing(true);
     }
   }, [existingWorkArea]);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.error('Permission to access location was denied');
-        const defaultRegion = {
-          latitude: 51.5074,
-          longitude: -0.1278,
-          latitudeDelta: LATITUDE_DELTA,
-          longitudeDelta: LONGITUDE_DELTA,
-        };
-        setRegion(defaultRegion);
-        return;
-      }
-
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-
-      const initialRegion = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA,
-      };
-      setRegion(initialRegion);
-    })();
-  }, []);
 
   const handleSave = () => {
     if (drawnCoordinates.length > 2) {
@@ -151,7 +124,28 @@ export default function SetWorkAreaScreen() {
     setIsReviewing(false);
   };
 
-  if (!region || isLoadingWorkArea) {
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(professional)/(tabs)/work-area');
+  };
+
+  const handleZoom = (direction: 'in' | 'out') => {
+    const scale = direction === 'in' ? 0.5 : 2;
+    const nextRegion: Region = {
+      ...region,
+      latitudeDelta: Math.max(0.002, Math.min(1, region.latitudeDelta * scale)),
+      longitudeDelta: Math.max(0.002, Math.min(1, region.longitudeDelta * scale)),
+    };
+
+    setRegion(nextRegion);
+    mapRef.current?.animateToRegion(nextRegion, 200);
+  };
+
+  if (isLoadingWorkArea) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center">
@@ -168,7 +162,7 @@ export default function SetWorkAreaScreen() {
       <SafeAreaView edges={['top']} className={`z-10 ${isReviewing ? 'bg-green-50' : 'bg-transparent'}`}>
         <View className="px-6 py-4 flex-row items-center justify-between">
           {!isReviewing ? (
-            <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full bg-white shadow-sm">
+            <Pressable onPress={handleBack} className="w-10 h-10 items-center justify-center rounded-full bg-white shadow-sm">
               <ArrowLeft size={24} color="#30352D" />
             </Pressable>
           ) : (
@@ -189,6 +183,7 @@ export default function SetWorkAreaScreen() {
           ref={mapRef}
           style={StyleSheet.absoluteFillObject}
           initialRegion={region}
+          onRegionChangeComplete={setRegion}
           scrollEnabled={!isDrawingMode} // Disable map scroll when drawing mode is active
           zoomEnabled={!isDrawingMode}
           rotateEnabled={!isDrawingMode}
@@ -229,6 +224,23 @@ export default function SetWorkAreaScreen() {
             {...panResponder.panHandlers}
           />
         )}
+      </View>
+
+      <View className="absolute right-5 top-32 rounded-full bg-white shadow-lg overflow-hidden">
+        <Pressable
+          accessibilityLabel="Zoom in"
+          onPress={() => handleZoom('in')}
+          className="w-12 h-12 items-center justify-center border-b border-gray-100"
+        >
+          <Plus size={22} color="#30352D" />
+        </Pressable>
+        <Pressable
+          accessibilityLabel="Zoom out"
+          onPress={() => handleZoom('out')}
+          className="w-12 h-12 items-center justify-center"
+        >
+          <Minus size={22} color="#30352D" />
+        </Pressable>
       </View>
 
       {/* Controls */}

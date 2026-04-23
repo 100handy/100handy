@@ -9,6 +9,7 @@ import {
   useAuthStore,
   checkBookingConflict,
   getAvailabilityByUserId,
+  doesAvailabilitySlotApplyToDate,
   type FormResponse,
 } from '@shared/supabase';
 import { ScheduleSelectionSheet } from '@/components/tasker/ScheduleSelectionSheet';
@@ -152,9 +153,9 @@ export default function EditBookingScreen() {
         if (booking.handy_id) {
           const availability = await getAvailabilityByUserId(booking.handy_id);
           if (availability && availability.length > 0) {
-            const dateObj = new Date(scheduledDate + 'T00:00:00');
-            const dayOfWeek = dateObj.getDay();
-            const daySlots = availability.filter((s) => s.day_of_week === dayOfWeek);
+            const daySlots = availability.filter((slot) =>
+              doesAvailabilitySlotApplyToDate(slot, scheduledDate),
+            );
 
             if (daySlots.length === 0) {
               setIsSaving(false);

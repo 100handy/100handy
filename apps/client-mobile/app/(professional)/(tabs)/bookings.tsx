@@ -5,6 +5,7 @@ import {
   Text,
   Pressable,
   ActivityIndicator,
+  Switch,
 } from "react-native";
 import {
   SafeAreaView,
@@ -17,15 +18,18 @@ import { toast } from "sonner-native";
 import { TimePickerWheel } from "@/components/availability";
 import {
   useWeeklyAvailability,
-  useSaveDayAvailability,
-  type TimeSlotInput,
+  useCreateAvailabilitySlot,
+  useDeleteAvailabilitySlot,
   type AvailabilitySlot,
+  type RecurrenceType,
 } from "@shared/supabase";
 
 interface TimeSlot {
   id: string;
   startTime: string;
   endTime: string;
+  recurrenceType: RecurrenceType;
+  startsOn: string;
 }
 
 interface DayAvailability {
@@ -34,6 +38,14 @@ interface DayAvailability {
 
 // Day names for weekly availability (index matches day_of_week in database: 0=Sunday)
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const REPEAT_DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+function formatDateOnly(date: Date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 // Get current week dates dynamically
 const getCurrentWeekDates = () => {
@@ -47,6 +59,7 @@ const getCurrentWeekDates = () => {
     return {
       short,
       date: date.getDate().toString(),
+      dateValue: formatDateOnly(date),
     };
   });
 };
@@ -84,6 +97,10 @@ export default function BookingsTab() {
   const [startMinute, setStartMinute] = useState("15");
   const [endHour, setEndHour] = useState("20");
   const [endMinute, setEndMinute] = useState("45");
+  const [repeatWeekly, setRepeatWeekly] = useState(false);
+  const [repeatDays, setRepeatDays] = useState<Set<number>>(
+    () => new Set([new Date().getDay()]),
+  );
   const [availability, setAvailability] = useState<DayAvailability>({});
   const [deletingSlots, setDeletingSlots] = useState<Set<string>>(new Set());
 
@@ -93,8 +110,8 @@ export default function BookingsTab() {
   // Query hooks for persistence
   const { data: weeklyData, isLoading: isLoadingAvailability } =
     useWeeklyAvailability();
-  const { mutate: saveDayMutation, isPending: isSaving } =
-    useSaveDayAvailability();
+  const createAvailabilityMutation = useCreateAvailabilitySlot();
+  const deleteAvailabilityMutation = useDeleteAvailabilitySlot();
 
   // Load existing availability from database
   useEffect(() => {
@@ -107,6 +124,8 @@ export default function BookingsTab() {
             id: slot.id,
             startTime: slot.start_time.slice(0, 5), // "HH:MM:SS" -> "HH:MM"
             endTime: slot.end_time.slice(0, 5),
+            recurrenceType: slot.recurrence_type ?? "weekly",
+            startsOn: slot.starts_on,
           }),
         );
       });
@@ -115,11 +134,16 @@ export default function BookingsTab() {
     }
   }, [weeklyData]);
 
-  const currentDaySlots = availability[selectedDay] || [];
+  const currentDaySlots = useMemo(
+    () => availability[selectedDay] || [],
+    [availability, selectedDay],
+  );
 
   // Calculate current selection in minutes
   const selectionStart = parseInt(startHour) * 60 + parseInt(startMinute);
   const selectionEnd = parseInt(endHour) * 60 + parseInt(endMinute);
+  const selectedDateValue =
+    daysOfWeek[selectedDay]?.dateValue ?? formatDateOnly(new Date());
 
   // Check for overlaps
   const overlappingSlots = useMemo(() => {
@@ -127,13 +151,40 @@ export default function BookingsTab() {
     return currentDaySlots.filter((slot) => {
       const slotStart = timeToMinutes(slot.startTime);
       const slotEnd = timeToMinutes(slot.endTime);
-      return isOverlapping(selectionStart, selectionEnd, slotStart, slotEnd);
+      const sameScope = repeatWeekly
+        ? slot.recurrenceType === "weekly"
+        : slot.recurrenceType !== "weekly" && slot.startsOn === selectedDateValue;
+      return (
+        sameScope &&
+        isOverlapping(selectionStart, selectionEnd, slotStart, slotEnd)
+      );
     });
-  }, [showAddModal, currentDaySlots, selectionStart, selectionEnd]);
+  }, [showAddModal, currentDaySlots, repeatWeekly, selectedDateValue, selectionStart, selectionEnd]);
 
   const isMerge = overlappingSlots.length > 0;
 
-  const handleSave = () => {
+  const handleRepeatWeeklyChange = (value: boolean) => {
+    setRepeatWeekly(value);
+    if (value) {
+      setRepeatDays((prev) =>
+        prev.size > 0 ? prev : new Set([selectedDay]),
+      );
+    }
+  };
+
+  const toggleRepeatDay = (dayIndex: number) => {
+    setRepeatDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(dayIndex)) {
+        next.delete(dayIndex);
+      } else {
+        next.add(dayIndex);
+      }
+      return next;
+    });
+  };
+
+  const handleSave = async () => {
     if (selectionEnd <= selectionStart) {
       toast.error(
         "End time must be after start time. Overnight slots are not supported.",
@@ -147,77 +198,112 @@ export default function BookingsTab() {
       return;
     }
 
-    // Capture previous state for rollback
-    const previousSlots = [...currentDaySlots];
-    let newSlots = [...currentDaySlots];
+    const targetDays = repeatWeekly
+      ? REPEAT_DAY_ORDER.filter((dayIndex) => repeatDays.has(dayIndex))
+      : [selectedDay];
 
-    if (isMerge) {
-      // Merge logic: Find min start and max end of all overlapping slots + new slot
-      let minStart = selectionStart;
-      let maxEnd = selectionEnd;
-
-      overlappingSlots.forEach((slot) => {
-        minStart = Math.min(minStart, timeToMinutes(slot.startTime));
-        maxEnd = Math.max(maxEnd, timeToMinutes(slot.endTime));
-      });
-
-      // Remove overlapping slots
-      newSlots = newSlots.filter((slot) => !overlappingSlots.includes(slot));
-
-      // Add merged slot
-      const formatTime = (mins: number) => {
-        const h = Math.floor(mins / 60)
-          .toString()
-          .padStart(2, "0");
-        const m = (mins % 60).toString().padStart(2, "0");
-        return `${h}:${m}`;
-      };
-
-      newSlots.push({
-        id: Date.now().toString(),
-        startTime: formatTime(minStart),
-        endTime: formatTime(maxEnd),
-      });
-    } else {
-      // Add new slot
-      newSlots.push({
-        id: Date.now().toString(),
-        startTime: `${startHour}:${startMinute}`,
-        endTime: `${endHour}:${endMinute}`,
-      });
+    if (repeatWeekly && targetDays.length === 0) {
+      toast.error("Select at least one weekday");
+      return;
     }
 
-    // Update local state immediately for UI (optimistic update)
+    const formatTime = (mins: number) => {
+      const h = Math.floor(mins / 60)
+        .toString()
+        .padStart(2, "0");
+      const m = (mins % 60).toString().padStart(2, "0");
+      return `${h}:${m}`;
+    };
+
+    const previousByDay: DayAvailability = {};
+    const nextByDay: DayAvailability = {};
+    const slotsToDelete: TimeSlot[] = [];
+    const slotsToCreate: {
+      dayIndex: number;
+      slot: TimeSlot;
+    }[] = [];
+
+    targetDays.forEach((dayIndex) => {
+      const daySlots = availability[dayIndex] || [];
+      previousByDay[dayIndex] = [...daySlots];
+
+      let newStart = selectionStart;
+      let newEnd = selectionEnd;
+      const dayOverlaps = daySlots.filter((slot) => {
+        const slotStart = timeToMinutes(slot.startTime);
+        const slotEnd = timeToMinutes(slot.endTime);
+        const sameScope = repeatWeekly
+          ? slot.recurrenceType === "weekly"
+          : slot.recurrenceType !== "weekly" && slot.startsOn === selectedDateValue;
+        return (
+          sameScope &&
+          isOverlapping(selectionStart, selectionEnd, slotStart, slotEnd)
+        );
+      });
+
+      dayOverlaps.forEach((slot) => {
+        newStart = Math.min(newStart, timeToMinutes(slot.startTime));
+        newEnd = Math.max(newEnd, timeToMinutes(slot.endTime));
+      });
+
+      const optimisticSlot: TimeSlot = {
+        id: `pending-${Date.now()}-${dayIndex}`,
+        startTime: formatTime(newStart),
+        endTime: formatTime(newEnd),
+        recurrenceType: repeatWeekly ? "weekly" : "none",
+        startsOn:
+          daysOfWeek[dayIndex]?.dateValue ?? selectedDateValue,
+      };
+
+      nextByDay[dayIndex] = [
+        ...daySlots.filter((slot) => !dayOverlaps.includes(slot)),
+        optimisticSlot,
+      ];
+      slotsToDelete.push(...dayOverlaps);
+      slotsToCreate.push({ dayIndex, slot: optimisticSlot });
+    });
+
     setAvailability((prev) => ({
       ...prev,
-      [selectedDay]: newSlots,
+      ...nextByDay,
     }));
-
-    // Persist to database
-    const slotsForDB: TimeSlotInput[] = newSlots.map((slot) => ({
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-    }));
-
-    saveDayMutation(
-      { dayIndex: selectedDay, slots: slotsForDB },
-      {
-        onSuccess: () => {
-          toast.success(isMerge ? "Availability merged" : "Availability added");
-        },
-        onError: (error) => {
-          console.error("Failed to save availability:", error);
-          toast.error("Failed to save. Please try again.");
-          // Rollback to previous state on error
-          setAvailability((prev) => ({
-            ...prev,
-            [selectedDay]: previousSlots,
-          }));
-        },
-      },
-    );
 
     setShowAddModal(false);
+
+    try {
+      await Promise.all(
+        slotsToDelete.map((slot) =>
+          deleteAvailabilityMutation.mutateAsync(slot.id),
+        ),
+      );
+      await Promise.all(
+        slotsToCreate.map(({ dayIndex, slot }) =>
+          createAvailabilityMutation.mutateAsync({
+            dayIndex,
+            slot: {
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+            },
+            startsOn: slot.startsOn,
+            recurrenceType: slot.recurrenceType,
+          }),
+        ),
+      );
+      toast.success(
+        repeatWeekly && targetDays.length > 1
+          ? "Availability added to selected days"
+          : isMerge
+            ? "Availability merged"
+            : "Availability added",
+      );
+    } catch (error) {
+      console.error("Failed to save availability:", error);
+      toast.error("Failed to save. Please try again.");
+      setAvailability((prev) => ({
+        ...prev,
+        ...previousByDay,
+      }));
+    }
   };
 
   const removeTimeSlot = (slotId: string) => {
@@ -234,14 +320,8 @@ export default function BookingsTab() {
       [selectedDay]: newSlots,
     }));
 
-    // Persist to database
-    const slotsForDB: TimeSlotInput[] = newSlots.map((slot) => ({
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-    }));
-
-    saveDayMutation(
-      { dayIndex: selectedDay, slots: slotsForDB },
+    deleteAvailabilityMutation.mutate(
+      slotId,
       {
         onSuccess: () => {
           toast.success("Slot removed");
@@ -272,6 +352,8 @@ export default function BookingsTab() {
     setStartMinute("00");
     setEndHour("17");
     setEndMinute("00");
+    setRepeatWeekly(false);
+    setRepeatDays(new Set([selectedDay]));
     setShowAddModal(true);
   };
 
@@ -409,6 +491,11 @@ export default function BookingsTab() {
                       <Text className="text-white font-worksans text-xs opacity-90">
                         {slot.startTime} - {slot.endTime}
                       </Text>
+                      <Text className="text-white font-worksans text-[10px] opacity-80">
+                        {slot.recurrenceType === "weekly"
+                          ? "Repeats weekly"
+                          : "One-time"}
+                      </Text>
                     </View>
                     <Pressable
                       onPress={() => removeTimeSlot(slot.id)}
@@ -536,14 +623,67 @@ export default function BookingsTab() {
               </View>
             </View>
 
+            {/* Recurrence */}
+            <View className="mb-6 rounded-xl border border-[#E5E7EB] px-4 py-3">
+              <View className="flex-row items-center justify-between gap-4">
+                <View className="flex-1">
+                  <Text className="font-worksans-semibold text-[15px] text-brand-dark-alt">
+                    Repeat weekly
+                  </Text>
+                  <Text className="font-worksans text-[13px] text-[#6B6B6B] mt-1">
+                    {repeatWeekly
+                      ? "This availability will repeat every week on the selected days."
+                      : "This availability will only be added for this date."}
+                  </Text>
+                </View>
+                <Switch
+                  value={repeatWeekly}
+                  onValueChange={handleRepeatWeeklyChange}
+                  trackColor={{ false: "#D1D5DB", true: "#A7D8C8" }}
+                  thumbColor={repeatWeekly ? "#047857" : "#F9FAFB"}
+                />
+              </View>
+              {repeatWeekly && (
+                <View className="flex-row flex-wrap gap-2 mt-4">
+                  {REPEAT_DAY_ORDER.map((dayIndex) => {
+                    const selected = repeatDays.has(dayIndex);
+                    return (
+                      <Pressable
+                        key={dayIndex}
+                        onPress={() => toggleRepeatDay(dayIndex)}
+                        className={`px-3 py-2 rounded-full border ${
+                          selected
+                            ? "bg-emerald-700 border-emerald-700"
+                            : "bg-white border-[#D1D5DB]"
+                        }`}
+                      >
+                        <Text
+                          className={`font-worksans-semibold text-[13px] ${
+                            selected ? "text-white" : "text-brand-dark-alt"
+                          }`}
+                        >
+                          {DAY_NAMES[dayIndex]}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+
             {/* Buttons */}
             <View className="flex-col gap-4">
               <Button
                 onPress={handleSave}
+                disabled={createAvailabilityMutation.isPending}
                 className={`rounded-full ${isMerge ? "bg-emerald-700" : "bg-brand-terracotta"}`}
               >
                 <ButtonText className="font-worksans-semibold text-white text-[16px]">
-                  {isMerge ? "Merge availability" : "Add Availability"}
+                  {createAvailabilityMutation.isPending
+                    ? "Saving..."
+                    : isMerge
+                      ? "Merge availability"
+                      : "Add Availability"}
                 </ButtonText>
               </Button>
 
