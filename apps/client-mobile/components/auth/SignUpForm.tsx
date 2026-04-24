@@ -338,7 +338,7 @@ export default function SignUpForm({
       {/* Help Text */}
       <Text className="text-[11px] font-worksans-medium mb-3 leading-4" style={{ color: '#30352D' }}>
         Your phone and postcode help us match and{'\n'}
-        connect you with the right 100 Handy Pros.
+        connect you with the right 100Handy Pros.
       </Text>
 
       <Pressable

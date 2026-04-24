@@ -142,7 +142,7 @@ export default function MessageSupportScreen() {
           </Pressable>
           <View className="flex-1 items-center">
             <Text className="text-[18px] font-bold text-white">
-              100 Handy Support
+              100Handy Support
             </Text>
             <Text className="text-[12px] text-white/80">
               We're here to help

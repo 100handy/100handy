@@ -269,6 +269,12 @@ export interface EliteProgress {
   }[];
 }
 
+const emptyEliteProgress: EliteProgress = {
+  monthlyCompletedTasks: 0,
+  lifetimeCompletedTasks: 0,
+  categoryProgress: [],
+};
+
 /**
  * Get elite status progress for a professional
  */
@@ -284,7 +290,10 @@ export async function getEliteProgress(userId: string): Promise<EliteProgress> {
       .eq('handy_id', userId)
       .eq('status', 'completed');
 
-    if (error) throw error;
+    if (error) {
+      console.warn('Unable to fetch elite progress:', error);
+      return emptyEliteProgress;
+    }
 
     let lifetimeCompletedTasks = 0;
     let monthlyCompletedTasks = 0;
@@ -314,7 +323,7 @@ export async function getEliteProgress(userId: string): Promise<EliteProgress> {
       categoryProgress,
     };
   } catch (error) {
-    console.error('Error in getEliteProgress:', error);
-    throw error;
+    console.warn('Unable to load elite progress:', error);
+    return emptyEliteProgress;
   }
 }

@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, FlatList, RefreshControl } from 'react-native';
+import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, FlatList, RefreshControl, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Download, ChevronDown, Info, X } from 'lucide-react-native';
+import { ArrowLeft, Download, ChevronDown, ChevronLeft, ChevronRight, Info, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useToast } from '@/components/ui/toast';
 import { useFocusEffect } from '@react-navigation/native';
@@ -92,7 +92,25 @@ export default function EarningsScreen() {
     setShowMonthPicker(false);
   };
 
+  const openPayoutInfo = () => {
+    router.push('/(professional)/profile/payout-info');
+  };
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(professional)/(tabs)/profile');
+  };
+
   const selectedMonthLabel = `${MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`;
+  const selectedMonthIndex = availableMonths.findIndex(
+    (item) => item.year === selectedYear && item.month === selectedMonth,
+  );
+  const previousMonth = selectedMonthIndex >= 0 ? availableMonths[selectedMonthIndex + 1] : null;
+  const nextMonth = selectedMonthIndex > 0 ? availableMonths[selectedMonthIndex - 1] : null;
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -101,7 +119,7 @@ export default function EarningsScreen() {
         <View className="bg-white px-5 py-4 border-b border-gray-100">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
-              <Pressable onPress={() => router.back()} className="mr-3">
+              <Pressable onPress={handleBack} className="mr-3">
                 <ArrowLeft size={24} color="#30352d" />
               </Pressable>
               <Text className="text-[#30352d] text-[18px] font-bold">
@@ -128,17 +146,44 @@ export default function EarningsScreen() {
           >
             {/* Month Selector */}
             <View className="px-5 pt-4">
-              <Pressable
-                className="bg-brand-taupe rounded-lg px-4 py-3 self-start"
-                onPress={() => setShowMonthPicker(true)}
-              >
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-white text-[14px] font-bold">
-                    {selectedMonthLabel}
-                  </Text>
-                  <ChevronDown size={16} color="white" />
-                </View>
-              </Pressable>
+              <View className="flex-row items-center gap-3">
+                <Pressable
+                  onPress={() => previousMonth && handleSelectMonth(previousMonth.year, previousMonth.month)}
+                  disabled={!previousMonth}
+                  className={`w-11 h-11 rounded-full items-center justify-center border ${
+                    previousMonth ? 'border-[#D9D4CE] bg-white' : 'border-[#ECECEC] bg-[#F7F7F7]'
+                  }`}
+                >
+                  <ChevronLeft size={20} color={previousMonth ? '#30352d' : '#C7C7C7'} />
+                </Pressable>
+
+                <Pressable
+                  className="bg-brand-taupe rounded-xl px-4 py-3 flex-1"
+                  onPress={() => setShowMonthPicker(true)}
+                >
+                  <View className="flex-row items-center justify-between gap-3">
+                    <View>
+                      <Text className="text-white text-[11px] font-medium opacity-80">
+                        Select month
+                      </Text>
+                      <Text className="text-white text-[16px] font-bold mt-0.5">
+                        {selectedMonthLabel}
+                      </Text>
+                    </View>
+                    <ChevronDown size={18} color="white" />
+                  </View>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => nextMonth && handleSelectMonth(nextMonth.year, nextMonth.month)}
+                  disabled={!nextMonth}
+                  className={`w-11 h-11 rounded-full items-center justify-center border ${
+                    nextMonth ? 'border-[#D9D4CE] bg-white' : 'border-[#ECECEC] bg-[#F7F7F7]'
+                  }`}
+                >
+                  <ChevronRight size={20} color={nextMonth ? '#30352d' : '#C7C7C7'} />
+                </Pressable>
+              </View>
             </View>
 
             {/* Stats Grid */}
@@ -239,11 +284,11 @@ export default function EarningsScreen() {
                       <Text className="text-[#333a31] text-[12px] font-medium flex-1">
                         No completed tasks this month.
                       </Text>
-                      <Pressable className="ml-2">
+                      <Pressable className="ml-2" onPress={openPayoutInfo}>
                         <Info size={20} color="#333a31" />
                       </Pressable>
                     </View>
-                    <Pressable className="self-end">
+                    <Pressable className="self-end" onPress={openPayoutInfo}>
                       <Text className="text-[#c1856a] text-[10px] font-medium">
                         More info
                       </Text>
@@ -304,9 +349,19 @@ export default function EarningsScreen() {
               {activeTab === 'payouts' && (
                 payouts.length === 0 ? (
                   <View className="flex-col gap-4">
-                    <Text className="text-[#333a31] text-[12px] font-medium">
-                      No payouts this month.
-                    </Text>
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-[#333a31] text-[12px] font-medium flex-1">
+                        No payouts this month.
+                      </Text>
+                      <Pressable className="ml-2" onPress={openPayoutInfo}>
+                        <Info size={20} color="#333a31" />
+                      </Pressable>
+                    </View>
+                    <Pressable className="self-end" onPress={openPayoutInfo}>
+                      <Text className="text-[#c1856a] text-[10px] font-medium">
+                        More info
+                      </Text>
+                    </Pressable>
                   </View>
                 ) : (
                   <View className="flex-col gap-3">
@@ -363,47 +418,59 @@ export default function EarningsScreen() {
         animationType="slide"
         onRequestClose={() => setShowMonthPicker(false)}
       >
-        <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-3xl max-h-[60%]">
-            <View className="flex-row items-center justify-between p-4 border-b border-gray-100">
-              <Text className="text-[18px] font-bold text-[#30352d]">
-                Select Month
-              </Text>
-              <Pressable onPress={() => setShowMonthPicker(false)}>
-                <X size={24} color="#30352d" />
-              </Pressable>
-            </View>
-            <FlatList
-              data={availableMonths}
-              keyExtractor={(item) => `${item.year}-${item.month}`}
-              renderItem={({ item }) => (
-                <Pressable
-                  className={`px-4 py-4 border-b border-gray-50 ${
-                    item.year === selectedYear && item.month === selectedMonth
-                      ? 'bg-[#F5F0EB]'
-                      : ''
-                  }`}
-                  onPress={() => handleSelectMonth(item.year, item.month)}
-                >
-                  <Text
-                    className={`text-[16px] ${
-                      item.year === selectedYear && item.month === selectedMonth
-                        ? 'font-bold text-[#C1856A]'
-                        : 'text-[#30352d]'
-                    }`}
-                  >
-                    {MONTH_NAMES[item.month - 1]} {item.year}
+        <TouchableWithoutFeedback onPress={() => setShowMonthPicker(false)}>
+          <View className="flex-1 bg-black/50 justify-end">
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View className="bg-white rounded-t-3xl max-h-[72%]">
+                <View className="flex-row items-center justify-between p-4 border-b border-gray-100">
+                  <Text className="text-[18px] font-bold text-[#30352d]">
+                    Select Month
                   </Text>
-                </Pressable>
-              )}
-              ListEmptyComponent={
-                <View className="p-4">
-                  <Text className="text-gray-500 text-center">No earnings data available</Text>
+                  <Pressable onPress={() => setShowMonthPicker(false)}>
+                    <X size={24} color="#30352d" />
+                  </Pressable>
                 </View>
-              }
-            />
+                <FlatList
+                  data={availableMonths}
+                  keyExtractor={(item) => `${item.year}-${item.month}`}
+                  contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16 }}
+                  renderItem={({ item }) => (
+                    <Pressable
+                      className={`px-4 py-4 rounded-xl mb-2 ${
+                        item.year === selectedYear && item.month === selectedMonth
+                          ? 'bg-[#F5F0EB]'
+                          : ''
+                      }`}
+                      onPress={() => handleSelectMonth(item.year, item.month)}
+                    >
+                      <View className="flex-row items-center justify-between">
+                        <Text
+                          className={`text-[16px] ${
+                            item.year === selectedYear && item.month === selectedMonth
+                              ? 'font-bold text-[#C1856A]'
+                              : 'text-[#30352d]'
+                          }`}
+                        >
+                          {MONTH_NAMES[item.month - 1]} {item.year}
+                        </Text>
+                        {item.year === selectedYear && item.month === selectedMonth ? (
+                          <Text className="text-[12px] font-semibold text-[#C1856A]">
+                            Selected
+                          </Text>
+                        ) : null}
+                      </View>
+                    </Pressable>
+                  )}
+                  ListEmptyComponent={
+                    <View className="p-4">
+                      <Text className="text-gray-500 text-center">No earnings data available</Text>
+                    </View>
+                  }
+                />
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );

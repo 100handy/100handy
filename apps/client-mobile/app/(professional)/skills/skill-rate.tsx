@@ -367,6 +367,7 @@ export default function SkillRateScreen() {
                 let borderColor = "#A3B899"; // Default green
                 let size = "w-20 h-20";
                 let textSize = "text-xl";
+                let labelSize = "text-[8px]";
                 let textColor = "text-gray-400";
                 let bgColor = "transparent";
                 let fontWeight = "WorkSans_400Regular";
@@ -375,6 +376,7 @@ export default function SkillRateScreen() {
                   borderColor = "#C1856A"; // Selected brown
                   size = "w-24 h-24";
                   textSize = "text-2xl";
+                  labelSize = "text-[9px]";
                   textColor = "text-gray-800";
                   bgColor = "#C1856A1A"; // Light brown background
                   fontWeight = "WorkSans_500Medium";
@@ -405,7 +407,10 @@ export default function SkillRateScreen() {
                       £{rate}
                     </Text>
                     <Text
-                      className={`text-[10px] tracking-widest ${textColor}`}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.75}
+                      className={`${labelSize} ${textColor} text-center leading-3 mt-0.5 px-1`}
                       style={{
                         fontFamily: fontWeight,
                       }}

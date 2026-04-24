@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -103,7 +103,7 @@ export default function EliteScreen() {
             className="text-xl font-bold text-gray-900"
             style={{ fontFamily: 'WorkSans_700Bold' }}
           >
-            Elite
+            Star
           </Text>
         </View>
       </View>
@@ -151,7 +151,7 @@ export default function EliteScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {activeTab === 'progress' ? (
           <View className="px-4 py-6 gap-6">
-            {/* Elite Progress Card */}
+            {/* Star Progress Card */}
             <View
               className="rounded-xl p-6"
               style={{ backgroundColor: '#BBF7D0' }}
@@ -160,7 +160,7 @@ export default function EliteScreen() {
                 className="text-sm text-gray-700 mb-2"
                 style={{ fontFamily: 'WorkSans_400Regular' }}
               >
-                Elite progress
+                Star progress
               </Text>
               <Text
                 className="text-3xl font-bold text-gray-900 mb-6"
@@ -392,7 +392,7 @@ export default function EliteScreen() {
                               className="text-sm text-gray-600 leading-5"
                               style={{ fontFamily: 'WorkSans_400Regular' }}
                             >
-                              The more tasks you complete compared to the number of invitations you receive, the higher your score will be. Your Performance Score Ranking is how you compare to other pros in your area. These scores can change on a daily basis, but we use the monthly average for Elite qualification.
+                              The more tasks you complete compared to the number of invitations you receive, the higher your score will be. Your Performance Score Ranking is how you compare to other pros in your area. These scores can change on a daily basis, but we use the monthly average for Star qualification.
                             </Text>
                           </View>
                         )}
@@ -418,19 +418,19 @@ export default function EliteScreen() {
         ) : (
           // About Tab
           <View className="px-4 py-6 gap-6">
-            {/* What is Elite? */}
+            {/* What is a 100Handy Star? */}
             <View className="gap-3">
               <Text
                 className="text-xl font-bold text-gray-900"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
-                What is Elite?
+                What is a 100Handy Star?
               </Text>
               <Text
                 className="text-base text-gray-700 leading-6"
                 style={{ fontFamily: 'WorkSans_400Regular' }}
               >
-                Elite is a status you can qualify for each month by hitting all the goals outlined in your progress panel. Elite status is not determined until the end of the month.
+                Star is a status you can qualify for each month by hitting all the goals outlined in your progress panel. Star status is not determined until the end of the month.
               </Text>
             </View>
 
@@ -446,7 +446,7 @@ export default function EliteScreen() {
                 className="text-base text-gray-700 leading-6 mb-3"
                 style={{ fontFamily: 'WorkSans_400Regular' }}
               >
-                On average, you can earn 3x more if you're an Elite Professional. You also get these rewards:
+                On average, you can earn 3x more if you&apos;re a Star Professional. You also get these rewards:
               </Text>
 
               {/* Benefits List */}
@@ -457,7 +457,7 @@ export default function EliteScreen() {
                     className="flex-1 text-base text-gray-700"
                     style={{ fontFamily: 'WorkSans_400Regular' }}
                   >
-                    Elite badge shown to clients
+                    Star badge shown to clients
                   </Text>
                 </View>
                 <View className="flex-row items-start gap-3">
@@ -481,19 +481,19 @@ export default function EliteScreen() {
               </View>
             </View>
 
-            {/* How do I become Elite? */}
+            {/* How do I become a 100Handy Star? */}
             <View className="gap-3">
               <Text
                 className="text-xl font-bold text-gray-900"
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
-                How do I become Elite?
+                How do I become a 100Handy Star?
               </Text>
               <Text
                 className="text-base text-gray-700 leading-6 mb-3"
                 style={{ fontFamily: 'WorkSans_400Regular' }}
               >
-                Meet all four of the milestones below in order to earn Elite:
+                Meet all four of the milestones below in order to earn Star status:
               </Text>
 
               {/* Milestones */}

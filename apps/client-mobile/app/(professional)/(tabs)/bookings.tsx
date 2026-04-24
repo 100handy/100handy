@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   ScrollView,
   View,
@@ -6,6 +6,9 @@ import {
   Pressable,
   ActivityIndicator,
   Switch,
+  Dimensions,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import {
   SafeAreaView,
@@ -13,7 +16,7 @@ import {
 } from "react-native-safe-area-context";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Modal, ModalBackdrop, ModalContent } from "@/components/ui/modal";
-import { Plus, Trash2 } from "lucide-react-native";
+import { Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react-native";
 import { toast } from "sonner-native";
 import { TimePickerWheel } from "@/components/availability";
 import {
@@ -39,6 +42,8 @@ interface DayAvailability {
 // Day names for weekly availability (index matches day_of_week in database: 0=Sunday)
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const REPEAT_DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const WEEK_OFFSETS = Array.from({ length: 105 }, (_, index) => index - 52);
 
 function formatDateOnly(date: Date) {
   const year = date.getFullYear();
@@ -47,22 +52,34 @@ function formatDateOnly(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-// Get current week dates dynamically
-const getCurrentWeekDates = () => {
-  const today = new Date();
-  const sunday = new Date(today);
-  sunday.setDate(today.getDate() - today.getDay());
+function startOfWeek(date: Date) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - start.getDay());
+  return start;
+}
+
+function addDays(date: Date, amount: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function getWeekDates(weekOffset: number) {
+  const baseSunday = startOfWeek(new Date());
+  const sunday = addDays(baseSunday, weekOffset * 7);
 
   return DAY_NAMES.map((short, i) => {
-    const date = new Date(sunday);
-    date.setDate(sunday.getDate() + i);
+    const date = addDays(sunday, i);
     return {
       short,
       date: date.getDate().toString(),
       dateValue: formatDateOnly(date),
+      fullDate: date,
+      key: `${formatDateOnly(date)}-${short}`,
     };
   });
-};
+}
 
 const HOURS = Array.from({ length: 24 }, (_, i) =>
   i.toString().padStart(2, "0"),
@@ -91,7 +108,9 @@ const isOverlapping = (
 
 export default function BookingsTab() {
   const insets = useSafeAreaInsets();
-  const [selectedDay, setSelectedDay] = useState(new Date().getDay());
+  const weekPagerRef = useRef<ScrollView>(null);
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [visibleWeekOffset, setVisibleWeekOffset] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
   const [startHour, setStartHour] = useState("18");
   const [startMinute, setStartMinute] = useState("15");
@@ -104,8 +123,31 @@ export default function BookingsTab() {
   const [availability, setAvailability] = useState<DayAvailability>({});
   const [deletingSlots, setDeletingSlots] = useState<Set<string>>(new Set());
 
-  // Get current week dates
-  const daysOfWeek = useMemo(() => getCurrentWeekDates(), []);
+  const selectedDay = selectedDate.getDay();
+  const weekPagerIndex = useMemo(
+    () => WEEK_OFFSETS.indexOf(visibleWeekOffset),
+    [visibleWeekOffset],
+  );
+  const daysOfWeek = useMemo(() => getWeekDates(visibleWeekOffset), [visibleWeekOffset]);
+  const weekLabel = useMemo(() => {
+    const firstDay = daysOfWeek[0]?.fullDate;
+    const lastDay = daysOfWeek[6]?.fullDate;
+
+    if (!firstDay || !lastDay) {
+      return "";
+    }
+
+    const sameMonth = firstDay.getMonth() === lastDay.getMonth();
+    const firstLabel = firstDay.toLocaleDateString("en-GB", {
+      month: "short",
+      day: "numeric",
+    });
+    const lastLabel = lastDay.toLocaleDateString("en-GB", {
+      ...(sameMonth ? { day: "numeric" } : { month: "short", day: "numeric" }),
+    });
+
+    return `${firstLabel} - ${lastLabel}`;
+  }, [daysOfWeek]);
 
   // Query hooks for persistence
   const { data: weeklyData, isLoading: isLoadingAvailability } =
@@ -142,8 +184,7 @@ export default function BookingsTab() {
   // Calculate current selection in minutes
   const selectionStart = parseInt(startHour) * 60 + parseInt(startMinute);
   const selectionEnd = parseInt(endHour) * 60 + parseInt(endMinute);
-  const selectedDateValue =
-    daysOfWeek[selectedDay]?.dateValue ?? formatDateOnly(new Date());
+  const selectedDateValue = formatDateOnly(selectedDate);
 
   // Check for overlaps
   const overlappingSlots = useMemo(() => {
@@ -162,6 +203,47 @@ export default function BookingsTab() {
   }, [showAddModal, currentDaySlots, repeatWeekly, selectedDateValue, selectionStart, selectionEnd]);
 
   const isMerge = overlappingSlots.length > 0;
+
+  const syncWeekOffset = (nextWeekOffset: number) => {
+    const nextWeek = getWeekDates(nextWeekOffset);
+    const nextSelectedDate = nextWeek[selectedDay]?.fullDate;
+
+    setVisibleWeekOffset(nextWeekOffset);
+    if (nextSelectedDate) {
+      setSelectedDate(new Date(nextSelectedDate));
+    }
+  };
+
+  const changeWeek = (direction: -1 | 1) => {
+    const nextIndex = Math.min(
+      WEEK_OFFSETS.length - 1,
+      Math.max(0, weekPagerIndex + direction),
+    );
+    const nextWeekOffset = WEEK_OFFSETS[nextIndex];
+
+    if (typeof nextWeekOffset !== "number") {
+      return;
+    }
+
+    weekPagerRef.current?.scrollTo({ x: nextIndex * SCREEN_WIDTH, animated: true });
+    syncWeekOffset(nextWeekOffset);
+  };
+
+  const handleWeekMomentumEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    const nextIndex = Math.round(
+      event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
+    );
+    const nextWeekOffset = WEEK_OFFSETS[nextIndex];
+
+    if (
+      typeof nextWeekOffset === "number" &&
+      nextWeekOffset !== visibleWeekOffset
+    ) {
+      syncWeekOffset(nextWeekOffset);
+    }
+  };
 
   const handleRepeatWeeklyChange = (value: boolean) => {
     setRepeatWeekly(value);
@@ -376,31 +458,74 @@ export default function BookingsTab() {
       </SafeAreaView>
 
       {/* Days Selector */}
-      <View className="flex-row px-5 py-4 gap-2 bg-white z-10">
-        {daysOfWeek.map((day, index) => (
+      <View className="bg-white z-10">
+        <View className="flex-row items-center justify-between px-5 pt-4">
           <Pressable
-            key={day.short}
-            onPress={() => setSelectedDay(index)}
-            className={`flex-1 items-center py-3 rounded-lg ${
-              selectedDay === index ? "bg-emerald-700" : "bg-transparent"
-            }`}
+            onPress={() => changeWeek(-1)}
+            className="w-9 h-9 items-center justify-center rounded-full bg-[#F7F7F7]"
           >
-            <Text
-              className={`font-worksans text-[11px] mb-1 ${
-                selectedDay === index ? "text-white" : "text-[#6B6B6B]"
-              }`}
-            >
-              {day.short}
-            </Text>
-            <Text
-              className={`font-worksans-semibold text-[14px] ${
-                selectedDay === index ? "text-white" : "text-brand-dark-alt"
-              }`}
-            >
-              {day.date}
-            </Text>
+            <ChevronLeft color="#30352D" size={18} strokeWidth={2} />
           </Pressable>
-        ))}
+          <Text className="font-worksans-semibold text-[14px] text-brand-dark-alt">
+            {weekLabel}
+          </Text>
+          <Pressable
+            onPress={() => changeWeek(1)}
+            className="w-9 h-9 items-center justify-center rounded-full bg-[#F7F7F7]"
+          >
+            <ChevronRight color="#30352D" size={18} strokeWidth={2} />
+          </Pressable>
+        </View>
+
+        <ScrollView
+          ref={weekPagerRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentOffset={{ x: weekPagerIndex * SCREEN_WIDTH, y: 0 }}
+          onMomentumScrollEnd={handleWeekMomentumEnd}
+        >
+          {WEEK_OFFSETS.map((weekOffset) => {
+            const weekDays = getWeekDates(weekOffset);
+
+            return (
+              <View
+                key={weekOffset}
+                style={{ width: SCREEN_WIDTH }}
+                className="flex-row px-5 py-4 gap-2 bg-white"
+              >
+                {weekDays.map((day) => {
+                  const isSelected = day.dateValue === selectedDateValue;
+
+                  return (
+                    <Pressable
+                      key={day.key}
+                      onPress={() => setSelectedDate(new Date(day.fullDate))}
+                      className={`flex-1 items-center py-3 rounded-lg ${
+                        isSelected ? "bg-emerald-700" : "bg-transparent"
+                      }`}
+                    >
+                      <Text
+                        className={`font-worksans text-[11px] mb-1 ${
+                          isSelected ? "text-white" : "text-[#6B6B6B]"
+                        }`}
+                      >
+                        {day.short}
+                      </Text>
+                      <Text
+                        className={`font-worksans-semibold text-[14px] ${
+                          isSelected ? "text-white" : "text-brand-dark-alt"
+                        }`}
+                      >
+                        {day.date}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            );
+          })}
+        </ScrollView>
       </View>
 
       {/* Timeline View */}

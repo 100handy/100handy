@@ -131,7 +131,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
       .single();
 
     if (error) {
-      console.error('Error fetching user profile:', error);
+      console.warn('Unable to fetch user profile:', error);
       return null;
     }
 
@@ -143,7 +143,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
       identity_verified: data.identity_verified ?? false,
     };
   } catch (error) {
-    console.error('Error in getUserProfile:', error);
+    console.warn('Unable to load user profile:', error);
     return null;
   }
 }
@@ -193,7 +193,7 @@ export async function updateUserAvatar(imageUri: string): Promise<string | null>
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for avatar upload:', authError);
       return null;
     }
 
@@ -216,7 +216,7 @@ export async function updateUserAvatar(imageUri: string): Promise<string | null>
       });
 
     if (uploadError) {
-      console.error('Error uploading avatar:', uploadError);
+      console.warn('Unable to upload avatar:', uploadError);
       return null;
     }
 
@@ -230,7 +230,7 @@ export async function updateUserAvatar(imageUri: string): Promise<string | null>
 
     return publicUrl;
   } catch (error) {
-    console.error('Error in updateUserAvatar:', error);
+    console.warn('Unable to update user avatar:', error);
     return null;
   }
 }

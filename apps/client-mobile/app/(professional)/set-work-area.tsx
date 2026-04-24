@@ -304,11 +304,15 @@ export default function SetWorkAreaScreen() {
       </View>
 
       {/* Controls */}
-      <SafeAreaView edges={['bottom']} className="absolute bottom-0 left-0 right-0 p-6 pointer-events-box-none">
+      <SafeAreaView
+        edges={['bottom']}
+        className="absolute bottom-0 left-0 right-0 px-4 pt-2 pb-3 pointer-events-box-none"
+      >
+        <View className="bg-white/96 rounded-[24px] px-4 pt-3 pb-2 shadow-lg">
 
         {/* Floating Action Buttons */}
         {!isReviewing && (
-          <View className="flex-row justify-end mb-6">
+          <View className="flex-row justify-end mb-4">
             {isDrawingMode ? (
               <View className="bg-white rounded-full shadow-lg px-6 py-3 flex-row items-center gap-2">
                 <Text className="text-brand-dark-alt font-worksans-medium">Draw on map</Text>
@@ -327,7 +331,7 @@ export default function SetWorkAreaScreen() {
 
         {/* Clear Button (when area is drawn) */}
         {isReviewing && (
-          <View className="flex-row justify-end mb-6">
+          <View className="flex-row justify-end mb-4">
             <Pressable
               onPress={handleClear}
               className="bg-white rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2"
@@ -352,6 +356,7 @@ export default function SetWorkAreaScreen() {
             </ButtonText>
           )}
         </Button>
+        </View>
       </SafeAreaView>
     </View>
   );

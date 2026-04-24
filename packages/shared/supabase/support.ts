@@ -100,7 +100,7 @@ export async function createSupportTicket(input: CreateTicketInput): Promise<Sup
       .insert({
         ticket_id: ticket.id,
         from_user: false,
-        message: "👋 Hi! I'm 100 Handy's virtual chat assistant and I'd like to help.\n\nPlease note: our Customer Support team is currently handling a high volume of inquiries resulting in a longer wait time. Your patience is greatly appreciated!\n\nOur live Support Team is currently offline and we'll be back online Monday to Friday, from 8:30 am - 6:30 pm GMT. In the meantime, our Virtual Chat Assistant is always here to help.",
+        message: "👋 Hi! I'm 100Handy's virtual chat assistant and I'd like to help.\n\nPlease note: our Customer Support team is currently handling a high volume of inquiries resulting in a longer wait time. Your patience is greatly appreciated!\n\nOur live Support Team is currently offline and we'll be back online Monday to Friday, from 8:30 am - 6:30 pm GMT. In the meantime, our Virtual Chat Assistant is always here to help.",
         message_type: 'system',
       });
 

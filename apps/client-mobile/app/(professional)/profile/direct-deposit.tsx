@@ -51,7 +51,7 @@ export default function DirectDepositScreen() {
         }
       } catch (error: any) {
         if (cancelled) return;
-        console.error('Error loading account status:', error);
+        console.warn('Unable to load account status:', error);
         setErrorMessage(error?.message || 'Unable to load account information');
         setAccountState('error');
       }
@@ -83,7 +83,7 @@ export default function DirectDepositScreen() {
         setAccountState('pending');
       }
     } catch (error: any) {
-      console.error('Error loading account status:', error);
+      console.warn('Unable to load account status:', error);
       setErrorMessage(error?.message || 'Unable to load account information');
       setAccountState('error');
     }

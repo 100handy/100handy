@@ -42,7 +42,7 @@ export const MessageBubble = ({ message, showTimestamp = true }: MessageBubblePr
         {!isFromUser && (
           <View className="flex-row items-center mb-1">
             <Text className="text-[12px] text-[#999999]">
-              {isAIGenerated ? '🤖 AI Assistant' : '100 Handy Support'}
+              {isAIGenerated ? '🤖 AI Assistant' : '100Handy Support'}
             </Text>
           </View>
         )}

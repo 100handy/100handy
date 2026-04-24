@@ -68,7 +68,7 @@ export default function ProfessionalDashboard() {
       const connectStatus = await getConnectAccountStatus();
       setHasDirectDeposit(connectStatus?.payoutsEnabled ?? false);
     } catch (error) {
-      console.error('Error fetching onboarding progress:', error);
+      console.warn('Unable to fetch onboarding progress:', error);
     }
   }, []);
 

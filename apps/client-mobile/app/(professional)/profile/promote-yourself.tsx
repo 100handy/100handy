@@ -38,7 +38,7 @@ export default function PromoteYourselfScreen() {
     if (!referralLink || !referralCode) return;
 
     const message =
-      `Give clients $10 off their next task.\n\n` +
+      `Give clients £10 off their next task.\n\n` +
       `Referral code: ${referralCode}\n` +
       `Sign up here: ${referralLink}`;
 
@@ -68,7 +68,7 @@ export default function PromoteYourselfScreen() {
             {isLoading ? ' ' : referralCode || '—'}
           </Text>
           <Text className="text-base font-worksans text-[#333A31]/70 mt-2">
-            Give clients $10 off their next task
+            Give clients £10 off their next task
           </Text>
         </View>
 
@@ -110,5 +110,4 @@ export default function PromoteYourselfScreen() {
     </SafeAreaView>
   );
 }
-
 

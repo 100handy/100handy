@@ -27,6 +27,13 @@ export interface Payout {
   createdAt: string;
 }
 
+const emptyEarningsSummary: EarningsSummary = {
+  totalEarned: 0,
+  sentToBank: 0,
+  taskCount: 0,
+  hoursInvoiced: 0,
+};
+
 /**
  * Get earnings summary for a professional for a specific month
  */
@@ -50,8 +57,8 @@ export async function getProfessionalEarnings(
       .lte('scheduled_date', endDate);
 
     if (error) {
-      console.error('Error fetching earnings:', error);
-      throw error;
+      console.warn('Unable to fetch earnings:', error);
+      return emptyEarningsSummary;
     }
 
     // Calculate totals
@@ -83,8 +90,8 @@ export async function getProfessionalEarnings(
       hoursInvoiced,
     };
   } catch (error) {
-    console.error('Error in getProfessionalEarnings:', error);
-    throw error;
+    console.warn('Unable to load professional earnings:', error);
+    return emptyEarningsSummary;
   }
 }
 
@@ -225,31 +232,32 @@ export async function getEarningsMonths(userId: string): Promise<{ year: number;
       throw error;
     }
 
-    // Extract unique year-month combinations
-    const monthsSet = new Set<string>();
-    const months: { year: number; month: number }[] = [];
+    const now = new Date();
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    if (bookings) {
-      for (const booking of bookings) {
-        const date = new Date(booking.scheduled_date);
-        const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
-        if (!monthsSet.has(key)) {
-          monthsSet.add(key);
-          months.push({
-            year: date.getFullYear(),
-            month: date.getMonth() + 1,
-          });
-        }
-      }
+    if (!bookings || bookings.length === 0) {
+      return [{
+        year: currentMonth.getFullYear(),
+        month: currentMonth.getMonth() + 1,
+      }];
     }
 
-    // If no months have data, return current month
-    if (months.length === 0) {
-      const now = new Date();
+    const oldestBookingDate = new Date(bookings[bookings.length - 1]!.scheduled_date);
+    const oldestMonth = new Date(
+      oldestBookingDate.getFullYear(),
+      oldestBookingDate.getMonth(),
+      1,
+    );
+
+    const months: { year: number; month: number }[] = [];
+    const cursor = new Date(currentMonth);
+
+    while (cursor >= oldestMonth) {
       months.push({
-        year: now.getFullYear(),
-        month: now.getMonth() + 1,
+        year: cursor.getFullYear(),
+        month: cursor.getMonth() + 1,
       });
+      cursor.setMonth(cursor.getMonth() - 1);
     }
 
     return months;

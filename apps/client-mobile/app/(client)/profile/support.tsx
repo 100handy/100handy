@@ -130,7 +130,7 @@ export default function SupportScreen() {
 
             <View className="px-6 mt-8">
               <Text className="text-[13px] text-[#333A31]">
-                Version {Constants.expoConfig?.version ?? '1.0.0'} (100 Handy)
+                Version {Constants.expoConfig?.version ?? '1.0.0'} (100Handy)
               </Text>
             </View>
           </View>

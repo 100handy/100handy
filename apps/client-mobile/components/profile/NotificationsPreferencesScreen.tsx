@@ -133,7 +133,7 @@ export function NotificationsPreferencesScreen() {
                 <SectionHeader title="Text Messages" />
                 <NotificationToggle
                   title="Task Updates"
-                  description="Updates from HQ or your 100 Handy"
+                  description="Updates from HQ or your 100Handy"
                   isEnabled={textUpdates}
                   onToggle={(value) => handleToggle('notification_text_updates', value)}
                 />
@@ -163,5 +163,4 @@ export function NotificationsPreferencesScreen() {
     </SafeAreaView>
   );
 }
-
 

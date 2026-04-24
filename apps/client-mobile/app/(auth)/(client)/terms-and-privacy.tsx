@@ -95,7 +95,7 @@ export default function TermsAndPrivacyScreen() {
                 {marketingAccepted && <CheckIcon color="white" size={16} />}
               </View>
               <Text className="flex-1 text-[15px] font-worksans-light leading-5" style={{ color: '#30352D' }}>
-                I do not wish to receive promotional {'\n'}communications from 100 Handy.
+                I do not wish to receive promotional {'\n'}communications from 100Handy.
               </Text>
             </Pressable>
           </View>

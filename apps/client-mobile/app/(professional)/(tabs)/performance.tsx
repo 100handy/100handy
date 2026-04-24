@@ -7,6 +7,7 @@ import {
   getProfessionalEarnings,
   getEliteProgress,
   useAuthStore,
+  useProfessionalRating,
   type EarningsSummary,
   type EliteProgress,
 } from '@shared/supabase';
@@ -49,6 +50,7 @@ export default function PerformanceScreen() {
   const [earnings, setEarnings] = useState<EarningsSummary | null>(null);
   const [activeSkillsCount, setActiveSkillsCount] = useState(0);
   const [eliteProgress, setEliteProgress] = useState<EliteProgress | null>(null);
+  const { data: reviewSummary } = useProfessionalRating(user?.id ?? '');
 
   const { currentMonthLabel, currentMonthYear } = useMemo(() => {
     const now = new Date();
@@ -73,7 +75,7 @@ export default function PerformanceScreen() {
       setActiveSkillsCount(skills.filter(s => s.is_active && s.hourly_rate_cents > 0).length);
       setEliteProgress(elite);
     } catch (error) {
-      console.error('Error loading performance data:', error);
+      console.warn('Unable to load performance data:', error);
       setLoadError(error instanceof Error ? error.message : 'Failed to load performance data');
     }
   }, [user?.id]);
@@ -89,7 +91,7 @@ export default function PerformanceScreen() {
     try {
       await loadData();
     } catch (error) {
-      console.error('Error refreshing performance data:', error);
+      console.warn('Unable to refresh performance data:', error);
     } finally {
       setRefreshing(false);
     }
@@ -170,26 +172,51 @@ export default function PerformanceScreen() {
           </PerformanceCard>
 
           {/* Reviews Card */}
-          <PerformanceCard title="Reviews">
+          <PerformanceCard
+            title="Reviews"
+            onPress={() => router.push('/(professional)/profile/reviews')}
+          >
             <View className="flex-col gap-2">
               <View className="flex-row items-baseline gap-2">
                 <Text className="font-worksans-bold text-[32px] text-brand-dark-alt">
-                  --
+                  {reviewSummary && reviewSummary.totalReviews > 0
+                    ? reviewSummary.averageRating.toFixed(1)
+                    : '--'}
                 </Text>
                 <Text className="font-worksans text-[18px] text-[#6B6B6B]">
                   / 5
                 </Text>
               </View>
               <Text className="font-worksans text-[12px] text-[#6B6B6B]">
-                (no reviews yet)
+                {reviewSummary && reviewSummary.totalReviews > 0
+                  ? `(${reviewSummary.totalReviews} ${
+                      reviewSummary.totalReviews === 1 ? 'review' : 'reviews'
+                    })`
+                  : '(no reviews yet)'}
               </Text>
               <View className="flex-row gap-2 mt-2">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} color="#E5E5E5" size={20} strokeWidth={2} fill="#E5E5E5" />
+                  <Star
+                    key={star}
+                    color={
+                      reviewSummary && star <= Math.round(reviewSummary.averageRating)
+                        ? '#C1856A'
+                        : '#E5E5E5'
+                    }
+                    size={20}
+                    strokeWidth={2}
+                    fill={
+                      reviewSummary && star <= Math.round(reviewSummary.averageRating)
+                        ? '#C1856A'
+                        : '#E5E5E5'
+                    }
+                  />
                 ))}
               </View>
               <Text className="font-worksans-medium text-[11px] text-brand-taupe mt-1">
-                Reviews will appear here after completing jobs
+                {reviewSummary && reviewSummary.totalReviews > 0
+                  ? 'Tap to view all customer reviews'
+                  : 'Reviews will appear here after completing jobs'}
               </Text>
             </View>
           </PerformanceCard>
@@ -234,14 +261,14 @@ export default function PerformanceScreen() {
             </View>
           </PerformanceCard>
 
-          {/* Elite Status Section */}
+          {/* Star Status Section */}
           <View className="bg-white mx-4 mb-6">
             <View className="flex-col gap-1 mb-3">
               <Text className="font-worksans-bold text-[18px] text-brand-dark-alt">
-                Elite status
+                Star status
               </Text>
               <Text className="font-worksans text-[13px] text-[#6B6B6B]">
-                Become Elite and earn up to 3x more!
+                Become a 100Handy Star and earn up to 3x more!
               </Text>
             </View>
 
@@ -253,7 +280,7 @@ export default function PerformanceScreen() {
               <View className="flex-row items-start justify-between">
                 <View className="flex-col flex-1">
                   <Text className="font-worksans text-[13px] text-[#1F3A2C] mb-1">
-                    Elite progress
+                    Star progress
                   </Text>
                   <Text className="font-worksans-bold text-[32px] text-[#1F3A2C] mb-4">
                     {currentMonthYear}

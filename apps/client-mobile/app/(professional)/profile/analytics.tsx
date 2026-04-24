@@ -7,7 +7,6 @@ import { useFocusEffect } from 'expo-router';
 // Import lucide-react-native icons
 import {
   ArrowLeft,
-  HelpCircle,
   Calendar,
   TrendingUp,
   CreditCard,
@@ -121,10 +120,7 @@ export default function AnalyticsScreen() {
               Analytics
             </Text>
 
-            {/* Help icon */}
-            <Pressable>
-              <HelpCircle size={24} color="#30352D" />
-            </Pressable>
+            <View className="w-6" />
           </View>
         </View>
 

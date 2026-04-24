@@ -354,7 +354,8 @@ export default function WorkAreaTab() {
       </View>
 
       {/* Controls - positioned above tab bar */}
-      <View className="absolute bottom-[90px] left-0 right-0 p-6 pointer-events-box-none">
+      <View className="absolute bottom-[16px] left-0 right-0 px-4 pt-2 pb-2 pointer-events-box-none">
+        <View className="bg-white/96 rounded-[24px] px-4 pt-3 pb-2 shadow-lg">
         {/* Floating Action Buttons */}
         {!isReviewing && (
           <View className="flex-row justify-end mb-4">
@@ -416,6 +417,7 @@ export default function WorkAreaTab() {
             </ButtonText>
           )}
         </Button>
+        </View>
       </View>
     </View>
   );

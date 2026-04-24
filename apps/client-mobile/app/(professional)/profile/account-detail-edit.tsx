@@ -169,11 +169,14 @@ export default function AccountDetailEditScreen() {
             Edit Account
           </Text>
           <Pressable
-            className="w-10"
+            className="min-w-[52px] items-end"
             onPress={handleSave}
             disabled={isSaving}
           >
-            <Text className={`font-worksans-semibold text-base ${isSaving ? 'text-gray-400' : 'text-brand-taupe'}`}>
+            <Text
+              numberOfLines={1}
+              className={`font-worksans-semibold text-[15px] ${isSaving ? 'text-gray-400' : 'text-brand-taupe'}`}
+            >
               {isSaving ? 'Saving...' : 'Save'}
             </Text>
           </Pressable>

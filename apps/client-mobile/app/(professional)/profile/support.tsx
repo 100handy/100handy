@@ -15,11 +15,7 @@ export default function SupportScreen() {
   const router = useRouter();
 
   const handleHandySupport = () => {
-    Linking.openURL('mailto:support@100handy.com');
-  };
-
-  const handleSupportCenter = () => {
-    Linking.openURL('https://100handy.com/support');
+    Linking.openURL('https://100handy.com/help');
   };
 
   const handleTestNotifications = async () => {
@@ -45,14 +41,9 @@ export default function SupportScreen() {
 
   const menuItems: MenuItem[] = [
     {
-      label: '100 Handy Support',
+      label: '100Handy Support',
       hasChevron: true,
       onPress: handleHandySupport,
-    },
-    {
-      label: 'Visit support center',
-      hasChevron: true,
-      onPress: handleSupportCenter,
     },
     {
       label: 'Test push notifications',
@@ -98,7 +89,7 @@ export default function SupportScreen() {
         {/* Version Info */}
         <View className="px-5 py-4">
           <Text className="font-worksans text-sm text-gray-500">
-            Version 1.2.0 (100 Handy)
+            Version 1.2.0 (100Handy)
           </Text>
         </View>
       </ScrollView>

@@ -30,7 +30,7 @@ export async function getOrCreateStripeCustomer(): Promise<string | null> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for Stripe Connect status:', authError);
       return null;
     }
 
@@ -320,13 +320,13 @@ export async function getConnectAccountStatus(): Promise<ConnectAccountStatus | 
     });
 
     if (error) {
-      console.error('Error getting Stripe Connect status:', error);
+      console.warn('Unable to get Stripe Connect status:', error);
       return null;
     }
 
     return data as ConnectAccountStatus;
   } catch (error) {
-    console.error('Error in getConnectAccountStatus:', error);
+    console.warn('Unable to load Stripe Connect status:', error);
     return null;
   }
 }

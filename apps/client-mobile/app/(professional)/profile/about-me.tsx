@@ -64,20 +64,20 @@ export default function AboutMeScreen() {
                 className="text-xl font-bold text-brand-dark" 
                 style={{ fontFamily: 'WorkSans_700Bold' }}
               >
-                Why do you task?
+                Why are you a 100Handy Pro?
               </Text>
               <Text 
                 className="text-sm text-[#666666] leading-5" 
                 style={{ fontFamily: 'WorkSans_400Regular' }}
               >
-                Why are you a 100Handy Pro? Tell your story..
+                Tell your story...
               </Text>
             </View>
 
             {/* Text Input */}
             <View className="flex-col gap-2">
               <TextInput
-                placeholder="For example, what supplies are needed, where to park, or timing restrictions."
+                placeholder="For example, what are your skills, experience, certifications, etc."
                 placeholderTextColor="#9CA3AF"
                 value={text}
                 onChangeText={(value) => {
