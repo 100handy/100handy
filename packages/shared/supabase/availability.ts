@@ -44,6 +44,11 @@ export interface CreateAvailabilityInput {
   endsAfterOccurrences?: number | null;
 }
 
+export interface ReplaceAvailabilitySlotsInput {
+  deleteSlotIds: string[];
+  slots: CreateAvailabilityInput[];
+}
+
 export interface WeeklyAvailability {
   [dayIndex: number]: AvailabilitySlot[];
 }
@@ -94,6 +99,10 @@ function stripRecurrenceColumns(row: AvailabilityInsertRow) {
   return legacyRow;
 }
 
+function requiresRecurrenceSchema(row: AvailabilityInsertRow): boolean {
+  return row.recurrence_type !== undefined && row.recurrence_type !== null && row.recurrence_type !== 'weekly';
+}
+
 async function insertAvailabilityRows(
   rows: AvailabilityInsertRow | AvailabilityInsertRow[],
 ) {
@@ -115,6 +124,13 @@ async function insertAvailabilityRows(
       error.message,
     );
     hasWarnedLegacyAvailabilitySchema = true;
+  }
+
+  const rowList = Array.isArray(rows) ? rows : [rows];
+  if (rowList.some(requiresRecurrenceSchema)) {
+    throw new Error(
+      'This availability type requires the recurring availability database migration. Please update the database before saving one-time availability.',
+    );
   }
 
   const legacyRows = Array.isArray(rows)
@@ -444,6 +460,35 @@ export async function createAvailabilitySlot(
     await insertAvailabilityRows(row);
   } catch (error) {
     throw new Error(`Failed to save availability: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+export async function replaceAvailabilitySlots(
+  input: ReplaceAvailabilitySlotsInput,
+): Promise<void> {
+  const slots = input.slots.map(({ dayIndex, slot, startsOn, recurrenceType, endsOn, endsAfterOccurrences }) => ({
+    day_of_week: dayIndex,
+    start_time: formatTimeForDB(slot.startTime),
+    end_time: formatTimeForDB(slot.endTime),
+    recurrence_type: recurrenceType,
+    starts_on: startsOn,
+    ends_on: endsOn ?? null,
+    ends_after_occurrences: endsAfterOccurrences ?? null,
+    timezone: DEFAULT_TIMEZONE,
+  }));
+
+  const { error } = await supabase.rpc('replace_professional_availability_slots', {
+    p_delete_ids: input.deleteSlotIds,
+    p_slots: slots,
+  });
+
+  if (error) {
+    if (isMissingRecurrenceColumnError(error)) {
+      throw new Error(
+        'Recurring availability is not available in the database yet. Please run the latest migrations.',
+      );
+    }
+    throw new Error(`Failed to save availability: ${error.message}`);
   }
 }
 

@@ -6,6 +6,7 @@ import {
   getAvailabilityByUserId,
   getAvailabilityByUserIds,
   createAvailabilitySlot,
+  replaceAvailabilitySlots,
   saveDayAvailability,
   saveWeeklyAvailability,
   deleteAvailabilitySlot,
@@ -13,6 +14,7 @@ import {
   type AvailabilitySlot,
   type CreateAvailabilityInput,
   type DayAvailabilityInput,
+  type ReplaceAvailabilitySlotsInput,
   type RecurrenceType,
   type TimeSlotInput,
   type WeeklyAvailability,
@@ -111,6 +113,20 @@ export function useCreateAvailabilitySlot() {
   });
 }
 
+export function useReplaceAvailabilitySlots() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: ReplaceAvailabilitySlotsInput) => replaceAvailabilitySlots(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: availabilityKeys.all });
+    },
+    onError: (error) => {
+      console.error('Error replacing availability slots:', error);
+    },
+  });
+}
+
 /**
  * Hook for saving entire week's availability
  */
@@ -183,6 +199,7 @@ export type {
   AvailabilitySlot,
   CreateAvailabilityInput,
   DayAvailabilityInput,
+  ReplaceAvailabilitySlotsInput,
   RecurrenceType,
   TimeSlotInput,
   WeeklyAvailability,

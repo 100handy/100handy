@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ScrollView, Pressable as RNPressable, View, Text, Pressable, Dimensions, ActivityIndicator, Switch } from 'react-native';
+import { ScrollView, View, Text, Pressable, ActivityIndicator, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -12,8 +12,8 @@ import { Plus, ChevronLeft, Trash2 } from 'lucide-react-native';
 import { TimePickerWheel } from '@/components/availability';
 import {
   useWeeklyAvailability,
-  useCreateAvailabilitySlot,
   useDeleteAvailabilitySlot,
+  useReplaceAvailabilitySlots,
   type AvailabilitySlot,
   type RecurrenceType,
 } from '@shared/supabase';
@@ -97,8 +97,8 @@ export default function SetAvailability() {
 
   // Query hooks for persistence
   const { data: weeklyData, isLoading: isLoadingAvailability } = useWeeklyAvailability();
-  const createAvailabilityMutation = useCreateAvailabilitySlot();
   const deleteAvailabilityMutation = useDeleteAvailabilitySlot();
+  const replaceAvailabilityMutation = useReplaceAvailabilitySlots();
 
   // Load existing availability from database
   useEffect(() => {
@@ -111,13 +111,13 @@ export default function SetAvailability() {
           startTime: slot.start_time.slice(0, 5), // "HH:MM:SS" -> "HH:MM"
           endTime: slot.end_time.slice(0, 5),
           recurrenceType: slot.recurrence_type ?? 'weekly',
-          startsOn: slot.starts_on,
+          startsOn: slot.starts_on ?? daysOfWeek[parseInt(dayIndex)]?.dateValue ?? formatDateOnly(new Date()),
         }));
       });
 
       setAvailability(transformed);
     }
-  }, [weeklyData]);
+  }, [daysOfWeek, weeklyData]);
 
   const currentDaySlots = useMemo(
     () => availability[selectedDay] || [],
@@ -246,24 +246,18 @@ export default function SetAvailability() {
     setShowAddModal(false);
 
     try {
-      await Promise.all(
-        slotsToDelete.map(slot =>
-          deleteAvailabilityMutation.mutateAsync(slot.id),
-        ),
-      );
-      await Promise.all(
-        slotsToCreate.map(({ dayIndex, slot }) =>
-          createAvailabilityMutation.mutateAsync({
-            dayIndex,
-            slot: {
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-            },
-            startsOn: slot.startsOn,
-            recurrenceType: slot.recurrenceType,
-          }),
-        ),
-      );
+      await replaceAvailabilityMutation.mutateAsync({
+        deleteSlotIds: slotsToDelete.map((slot) => slot.id),
+        slots: slotsToCreate.map(({ dayIndex, slot }) => ({
+          dayIndex,
+          slot: {
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          },
+          startsOn: slot.startsOn,
+          recurrenceType: slot.recurrenceType,
+        })),
+      });
       toast.success('Saved', 'Availability updated');
     } catch (error) {
       console.error('Failed to save availability:', error);
@@ -617,11 +611,11 @@ export default function SetAvailability() {
             <View className="flex-col gap-4">
               <Button
                 onPress={handleSave}
-                disabled={createAvailabilityMutation.isPending}
+                disabled={replaceAvailabilityMutation.isPending}
                 className={`rounded-full ${isMerge ? 'bg-emerald-700' : 'bg-brand-terracotta'}`}
               >
                 <ButtonText className="font-worksans-semibold text-white text-[16px]">
-                  {createAvailabilityMutation.isPending
+                  {replaceAvailabilityMutation.isPending
                     ? 'Saving...'
                     : isMerge
                       ? 'Merge availability'

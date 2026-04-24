@@ -18,8 +18,8 @@ import { toast } from "sonner-native";
 import { TimePickerWheel } from "@/components/availability";
 import {
   useWeeklyAvailability,
-  useCreateAvailabilitySlot,
   useDeleteAvailabilitySlot,
+  useReplaceAvailabilitySlots,
   type AvailabilitySlot,
   type RecurrenceType,
 } from "@shared/supabase";
@@ -110,8 +110,8 @@ export default function BookingsTab() {
   // Query hooks for persistence
   const { data: weeklyData, isLoading: isLoadingAvailability } =
     useWeeklyAvailability();
-  const createAvailabilityMutation = useCreateAvailabilitySlot();
   const deleteAvailabilityMutation = useDeleteAvailabilitySlot();
+  const replaceAvailabilityMutation = useReplaceAvailabilitySlots();
 
   // Load existing availability from database
   useEffect(() => {
@@ -125,14 +125,14 @@ export default function BookingsTab() {
             startTime: slot.start_time.slice(0, 5), // "HH:MM:SS" -> "HH:MM"
             endTime: slot.end_time.slice(0, 5),
             recurrenceType: slot.recurrence_type ?? "weekly",
-            startsOn: slot.starts_on,
+            startsOn: slot.starts_on ?? daysOfWeek[parseInt(dayIndex)]?.dateValue ?? formatDateOnly(new Date()),
           }),
         );
       });
 
       setAvailability(transformed);
     }
-  }, [weeklyData]);
+  }, [daysOfWeek, weeklyData]);
 
   const currentDaySlots = useMemo(
     () => availability[selectedDay] || [],
@@ -271,24 +271,18 @@ export default function BookingsTab() {
     setShowAddModal(false);
 
     try {
-      await Promise.all(
-        slotsToDelete.map((slot) =>
-          deleteAvailabilityMutation.mutateAsync(slot.id),
-        ),
-      );
-      await Promise.all(
-        slotsToCreate.map(({ dayIndex, slot }) =>
-          createAvailabilityMutation.mutateAsync({
-            dayIndex,
-            slot: {
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-            },
-            startsOn: slot.startsOn,
-            recurrenceType: slot.recurrenceType,
-          }),
-        ),
-      );
+      await replaceAvailabilityMutation.mutateAsync({
+        deleteSlotIds: slotsToDelete.map((slot) => slot.id),
+        slots: slotsToCreate.map(({ dayIndex, slot }) => ({
+          dayIndex,
+          slot: {
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          },
+          startsOn: slot.startsOn,
+          recurrenceType: slot.recurrenceType,
+        })),
+      });
       toast.success(
         repeatWeekly && targetDays.length > 1
           ? "Availability added to selected days"
@@ -675,11 +669,11 @@ export default function BookingsTab() {
             <View className="flex-col gap-4">
               <Button
                 onPress={handleSave}
-                disabled={createAvailabilityMutation.isPending}
+                disabled={replaceAvailabilityMutation.isPending}
                 className={`rounded-full ${isMerge ? "bg-emerald-700" : "bg-brand-terracotta"}`}
               >
                 <ButtonText className="font-worksans-semibold text-white text-[16px]">
-                  {createAvailabilityMutation.isPending
+                  {replaceAvailabilityMutation.isPending
                     ? "Saving..."
                     : isMerge
                       ? "Merge availability"

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Polygon, Marker, LatLng, Region } from "react-native-maps";
+import * as Location from "expo-location";
 import { Hand, Minus, Pencil, Plus, X } from "lucide-react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import {
@@ -29,6 +30,22 @@ const LONDON_REGION: Region = {
   latitudeDelta: LATITUDE_DELTA,
   longitudeDelta: LONGITUDE_DELTA,
 };
+
+function getRegionForCoordinates(coordinates: LatLng[]): Region {
+  const latitudes = coordinates.map((coord) => coord.latitude);
+  const longitudes = coordinates.map((coord) => coord.longitude);
+  const minLatitude = Math.min(...latitudes);
+  const maxLatitude = Math.max(...latitudes);
+  const minLongitude = Math.min(...longitudes);
+  const maxLongitude = Math.max(...longitudes);
+
+  return {
+    latitude: (minLatitude + maxLatitude) / 2,
+    longitude: (minLongitude + maxLongitude) / 2,
+    latitudeDelta: Math.max((maxLatitude - minLatitude) * 1.6, 0.01),
+    longitudeDelta: Math.max((maxLongitude - minLongitude) * 1.6, 0.01),
+  };
+}
 
 export default function WorkAreaTab() {
   const toast = useToast();
@@ -109,7 +126,50 @@ export default function WorkAreaTab() {
       );
       setDrawnCoordinates(coords);
       setIsReviewing(true);
+      const nextRegion = getRegionForCoordinates(coords);
+      setRegion(nextRegion);
+      requestAnimationFrame(() => {
+        mapRef.current?.fitToCoordinates(coords, {
+          edgePadding: { top: 120, right: 60, bottom: 180, left: 60 },
+          animated: false,
+        });
+      });
     }
+  }, [existingWorkArea]);
+
+  useEffect(() => {
+    if (existingWorkArea?.coordinates?.length) {
+      return;
+    }
+
+    let isMounted = true;
+
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        return;
+      }
+
+      const currentLocation = await Location.getCurrentPositionAsync({});
+      if (!isMounted) {
+        return;
+      }
+
+      const nextRegion: Region = {
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+      };
+      setRegion(nextRegion);
+      mapRef.current?.animateToRegion(nextRegion, 200);
+    })().catch((error) => {
+      console.warn("Unable to center map on current location:", error);
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, [existingWorkArea]);
 
   const handleSave = () => {

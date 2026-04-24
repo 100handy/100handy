@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -51,34 +51,40 @@ export default function ClientSignUp() {
   return (
     <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1">
-        <View className="flex-col flex-1">
-          {/* Header */}
-          <View className="flex-row items-center justify-between px-5 pt-2 pb-2">
-            <Pressable onPress={() => router.back()}>
-              <ChevronLeft size={24} color="#333A31" />
-            </Pressable>
-            <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
-              Sign Up
-            </Text>
-            <Pressable onPress={handleNotNow}>
-              <Text className="text-sm font-worksans-medium" style={{ color: '#333A31' }}>
-                Not now
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-col flex-1">
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-5 pt-2 pb-2">
+              <Pressable onPress={() => router.back()}>
+                <ChevronLeft size={24} color="#333A31" />
+              </Pressable>
+              <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
+                Sign Up
               </Text>
-            </Pressable>
-          </View>
+              <Pressable onPress={handleNotNow}>
+                <Text className="text-sm font-worksans-medium" style={{ color: '#333A31' }}>
+                  Not now
+                </Text>
+              </Pressable>
+            </View>
 
-          {/* Logo */}
-          <View className="items-center mt-4 mb-5">
-            <AuthLogo size="compact" />
-          </View>
+            {/* Logo */}
+            <View className="items-center mt-4 mb-5">
+              <AuthLogo size="compact" />
+            </View>
 
-          {/* Form Container */}
-          <SignUpForm
-            onSubmit={handleSignUp}
-            isLoading={isLoading}
-            userRole="client"
-          />
-        </View>
+            {/* Form Container */}
+            <SignUpForm
+              onSubmit={handleSignUp}
+              isLoading={isLoading}
+              userRole="client"
+            />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );

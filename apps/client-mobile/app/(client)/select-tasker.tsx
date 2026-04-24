@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, SlidersHorizontal, Check, MapPin } from 'lucide-react-native';
+import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker';
 import {
