@@ -9,6 +9,7 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  PanResponder,
 } from "react-native";
 import {
   SafeAreaView,
@@ -89,11 +90,27 @@ const MINUTES = ["00", "15", "30", "45"];
 const HOUR_HEIGHT = 60;
 const START_HOUR = 0; // 12 AM
 const END_HOUR = 24; // 12 AM next day
+const MIN_SLOT_MINUTES = 15;
 
 // Helper to convert time string "HH:MM" to minutes from start of day
 const timeToMinutes = (time: string) => {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
+};
+
+const formatTime = (mins: number) => {
+  const h = Math.floor(mins / 60)
+    .toString()
+    .padStart(2, "0");
+  const m = (mins % 60).toString().padStart(2, "0");
+  return `${h}:${m}`;
+};
+
+const snapMinutes = (mins: number) =>
+  Math.round(mins / MIN_SLOT_MINUTES) * MIN_SLOT_MINUTES;
+
+const clampMinutes = (value: number, min: number, max: number) => {
+  return Math.min(Math.max(value, min), max);
 };
 
 // Helper to check if two time ranges overlap (inclusive of exact matches)
@@ -122,6 +139,7 @@ export default function BookingsTab() {
   );
   const [availability, setAvailability] = useState<DayAvailability>({});
   const [deletingSlots, setDeletingSlots] = useState<Set<string>>(new Set());
+  const [resizingSlots, setResizingSlots] = useState<Set<string>>(new Set());
 
   const selectedDay = selectedDate.getDay();
   const weekPagerIndex = useMemo(
@@ -289,14 +307,6 @@ export default function BookingsTab() {
       return;
     }
 
-    const formatTime = (mins: number) => {
-      const h = Math.floor(mins / 60)
-        .toString()
-        .padStart(2, "0");
-      const m = (mins % 60).toString().padStart(2, "0");
-      return `${h}:${m}`;
-    };
-
     const previousByDay: DayAvailability = {};
     const nextByDay: DayAvailability = {};
     const slotsToDelete: TimeSlot[] = [];
@@ -431,6 +441,121 @@ export default function BookingsTab() {
     setRepeatWeekly(false);
     setRepeatDays(new Set([selectedDay]));
     setShowAddModal(true);
+  };
+
+  const updateSlotTimes = (slotId: string, startMinutes: number, endMinutes: number) => {
+    setAvailability((prev) => ({
+      ...prev,
+      [selectedDay]: (prev[selectedDay] || []).map((slot) =>
+        slot.id === slotId
+          ? {
+              ...slot,
+              startTime: formatTime(startMinutes),
+              endTime: formatTime(endMinutes),
+            }
+          : slot,
+      ),
+    }));
+  };
+
+  const createResizeResponder = (slot: TimeSlot, edge: "start" | "end") => {
+    const siblingSlots = [...currentDaySlots]
+      .filter((candidate) => candidate.id !== slot.id)
+      .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+    const originalStart = timeToMinutes(slot.startTime);
+    const originalEnd = timeToMinutes(slot.endTime);
+    const previousCandidates = siblingSlots.filter(
+      (candidate) => timeToMinutes(candidate.endTime) <= originalStart,
+    );
+    const previousSlot = previousCandidates[previousCandidates.length - 1];
+    const nextSlot = siblingSlots.find(
+      (candidate) => timeToMinutes(candidate.startTime) >= originalEnd,
+    );
+    const minStart = previousSlot ? timeToMinutes(previousSlot.endTime) : 0;
+    const maxEnd = nextSlot ? timeToMinutes(nextSlot.startTime) : END_HOUR * 60;
+    const previousDaySlots = [...currentDaySlots];
+
+    const getResizedRange = (distanceY: number) => {
+      const minuteDelta = snapMinutes((distanceY / HOUR_HEIGHT) * 60);
+
+      if (edge === "start") {
+        return {
+          nextStart: clampMinutes(
+            originalStart + minuteDelta,
+            minStart,
+            originalEnd - MIN_SLOT_MINUTES,
+          ),
+          nextEnd: originalEnd,
+        };
+      }
+
+      return {
+        nextStart: originalStart,
+        nextEnd: clampMinutes(
+          originalEnd + minuteDelta,
+          originalStart + MIN_SLOT_MINUTES,
+          maxEnd,
+        ),
+      };
+    };
+
+    const commitResize = async (distanceY: number) => {
+      const { nextStart, nextEnd } = getResizedRange(distanceY);
+
+      if (nextStart === originalStart && nextEnd === originalEnd) {
+        return;
+      }
+
+      setResizingSlots((prev) => new Set(prev).add(slot.id));
+
+      try {
+        await replaceAvailabilityMutation.mutateAsync({
+          deleteSlotIds: [slot.id],
+          slots: [
+            {
+              dayIndex: selectedDay,
+              slot: {
+                startTime: formatTime(nextStart),
+                endTime: formatTime(nextEnd),
+              },
+              startsOn: slot.startsOn,
+              recurrenceType: slot.recurrenceType,
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Failed to resize slot:", error);
+        setAvailability((prev) => ({
+          ...prev,
+          [selectedDay]: previousDaySlots,
+        }));
+        toast.error(
+          "Resize failed",
+          error instanceof Error ? error.message : "Please try again",
+        );
+      } finally {
+        setResizingSlots((prev) => {
+          const next = new Set(prev);
+          next.delete(slot.id);
+          return next;
+        });
+      }
+    };
+
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => !deletingSlots.has(slot.id),
+      onMoveShouldSetPanResponder: () => !deletingSlots.has(slot.id),
+      onPanResponderMove: (_, gestureState) => {
+        const { nextStart, nextEnd } = getResizedRange(gestureState.dy);
+        updateSlotTimes(slot.id, nextStart, nextEnd);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        void commitResize(gestureState.dy);
+      },
+      onPanResponderTerminate: (_, gestureState) => {
+        void commitResize(gestureState.dy);
+      },
+    });
   };
 
   if (isLoadingAvailability) {
@@ -589,6 +714,9 @@ export default function BookingsTab() {
               const endMins = timeToMinutes(slot.endTime);
               const top = (startMins / 60) * HOUR_HEIGHT;
               const height = ((endMins - startMins) / 60) * HOUR_HEIGHT;
+              const topResizeResponder = createResizeResponder(slot, "start");
+              const bottomResizeResponder = createResizeResponder(slot, "end");
+              const isBusy = deletingSlots.has(slot.id) || resizingSlots.has(slot.id);
 
               return (
                 <View
@@ -602,6 +730,13 @@ export default function BookingsTab() {
                   }}
                   className="bg-[#5FA08E] rounded-lg p-2 overflow-hidden shadow-sm"
                 >
+                  <View
+                    {...topResizeResponder.panHandlers}
+                    className="absolute top-0 left-0 right-0 h-6 z-10"
+                  >
+                    <View className="absolute top-1 left-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
+                    <View className="absolute top-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
+                  </View>
                   <View className="flex-row justify-between items-start">
                     <View>
                       <Text className="text-white font-worksans-bold text-sm">
@@ -618,15 +753,22 @@ export default function BookingsTab() {
                     </View>
                     <Pressable
                       onPress={() => removeTimeSlot(slot.id)}
-                      disabled={deletingSlots.has(slot.id)}
+                      disabled={isBusy}
                       className="bg-white/20 rounded-full p-1"
                     >
-                      {deletingSlots.has(slot.id) ? (
+                      {isBusy ? (
                         <ActivityIndicator size="small" color="white" />
                       ) : (
                         <Trash2 size={14} color="white" />
                       )}
                     </Pressable>
+                  </View>
+                  <View
+                    {...bottomResizeResponder.panHandlers}
+                    className="absolute bottom-0 left-0 right-0 h-6 z-10"
+                  >
+                    <View className="absolute bottom-1 left-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
+                    <View className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
                   </View>
                 </View>
               );

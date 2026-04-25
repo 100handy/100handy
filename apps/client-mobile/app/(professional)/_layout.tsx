@@ -119,6 +119,14 @@ export default function ProfessionalLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen
+        name="add-profile-photo"
+        options={{
+          presentation: 'card',
+          animation: 'slide_from_right',
+          contentStyle: { backgroundColor: '#FFFFFF' },
+        }}
+      />
       <Stack.Screen name="job-details" />
     </Stack>
   );
