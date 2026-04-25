@@ -27,6 +27,7 @@ import { PricingBreakdown } from '@/components/booking/PricingBreakdown';
 import { NextStepsGuide } from '@/components/booking/NextStepsGuide';
 import { CancelBookingModal } from '@/components/booking/CancelBookingModal';
 import { Button, ButtonText } from '@/components/ui/button';
+import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
 function StatusBanner({ status, taskerName }: { status: BookingStatus; taskerName?: string }) {
   if (status === 'pending') {
@@ -138,6 +139,8 @@ export default function BookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showFeedbackPrompt, setShowFeedbackPrompt] = useState(false);
+  const [showFeedbackFollowUp, setShowFeedbackFollowUp] = useState(false);
 
   const {
     data: booking,
@@ -199,9 +202,25 @@ export default function BookingDetailScreen() {
   };
 
   const handleLeaveReview = () => {
+    setShowFeedbackPrompt(false);
+    setShowFeedbackFollowUp(false);
     if (id) {
       router.push(`/(client)/review/${id}`);
     }
+  };
+
+  const handleDismissFeedbackPrompt = () => {
+    setShowFeedbackPrompt(false);
+    setShowFeedbackFollowUp(false);
+  };
+
+  const handleFeedbackNo = () => {
+    setShowFeedbackFollowUp(true);
+  };
+
+  const handleShareMoreFeedback = () => {
+    handleDismissFeedbackPrompt();
+    router.push('/(client)/profile/support');
   };
 
   const handleEditBooking = () => {
@@ -212,6 +231,13 @@ export default function BookingDetailScreen() {
       });
     }
   };
+
+  useEffect(() => {
+    if (booking?.status === 'completed' && !hasReviewed) {
+      setShowFeedbackPrompt(true);
+      setShowFeedbackFollowUp(false);
+    }
+  }, [booking?.status, hasReviewed]);
 
   // Loading state
   if (isLoading) {
@@ -513,6 +539,62 @@ export default function BookingDetailScreen() {
         scheduledTime={booking.scheduled_time}
         recurringSeriesId={booking.recurring_series_id}
       />
+
+      <Modal isOpen={showFeedbackPrompt} onClose={handleDismissFeedbackPrompt}>
+        <ModalBackdrop />
+        <ModalContent className="bg-white">
+          <ModalBody>
+            <View className="px-5 py-6">
+              <Text className="text-2xl font-worksans-bold text-[#30352D] mb-2">
+                Leave in-app feedback?
+              </Text>
+              <Text className="text-base text-gray-600 mb-6">
+                Your feedback helps us improve 100Handy and helps other clients choose the right pro.
+              </Text>
+
+              {!showFeedbackFollowUp ? (
+                <>
+                  <View className="flex-row gap-3">
+                    <Pressable
+                      onPress={handleLeaveReview}
+                      className="flex-1 py-4 rounded-full items-center"
+                      style={{ backgroundColor: '#C1856A' }}
+                    >
+                      <Text className="text-white font-worksans-semibold text-base">Yes</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={handleFeedbackNo}
+                      className="flex-1 py-4 rounded-full items-center border"
+                      style={{ borderColor: '#D1D5DB' }}
+                    >
+                      <Text className="text-[#30352D] font-worksans-semibold text-base">No</Text>
+                    </Pressable>
+                  </View>
+                  <Pressable onPress={handleDismissFeedbackPrompt} className="mt-4 items-center">
+                    <Text className="text-sm text-gray-500">Maybe later</Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  <Text className="text-sm text-gray-600 mb-5">
+                    Would you like to tell us more about your experience instead?
+                  </Text>
+                  <Pressable
+                    onPress={handleShareMoreFeedback}
+                    className="w-full py-4 rounded-full items-center"
+                    style={{ backgroundColor: '#30352D' }}
+                  >
+                    <Text className="text-white font-worksans-semibold text-base">Tell us more</Text>
+                  </Pressable>
+                  <Pressable onPress={handleDismissFeedbackPrompt} className="mt-4 items-center">
+                    <Text className="text-sm text-gray-500">Close</Text>
+                  </Pressable>
+                </>
+              )}
+            </View>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 }

@@ -3,7 +3,12 @@ import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { supabase } from '@shared/supabase';
+import * as Notifications from 'expo-notifications';
+import { useToast } from '@/components/ui/toast';
+import {
+  configureNotifications,
+  ensureAndroidNotificationChannelAsync,
+} from '@/lib/notifications';
 
 interface MenuItem {
   label: string;
@@ -13,6 +18,7 @@ interface MenuItem {
 
 export default function SupportScreen() {
   const router = useRouter();
+  const toast = useToast();
 
   const handleHandySupport = () => {
     Linking.openURL('https://100handy.com/help');
@@ -20,22 +26,35 @@ export default function SupportScreen() {
 
   const handleTestNotifications = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('send-push-notification', {
-        body: {
-          event: 'test',
-          title: 'Test notification',
-          body: 'If you see this, push notifications are working.',
-          route: '/(professional)/(tabs)/dashboard',
-        },
-      });
+      configureNotifications();
+      await ensureAndroidNotificationChannelAsync();
 
-      if (error) {
-        console.error('Test push notification failed:', error);
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') {
+        toast.error('Notifications disabled', 'Enable notifications to test this feature.');
         return;
       }
 
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Notifications are working',
+          body: 'If you can see this banner, notifications are enabled on this device.',
+          data: { route: '/(professional)/(tabs)/dashboard' },
+        },
+        trigger: null,
+      });
+
+      toast.success('Test notification sent', 'A banner should appear immediately.');
     } catch (e) {
       console.error('Test push notification error:', e);
+      toast.error('Notification test failed', 'Unable to trigger the test notification.');
     }
   };
 

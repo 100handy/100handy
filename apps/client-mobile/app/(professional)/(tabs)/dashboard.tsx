@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { ScrollView, Image, View, Text, Pressable, Alert, RefreshControl } from 'react-native';
+import { ScrollView, View, Text, Pressable, Alert, RefreshControl, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import {
@@ -34,6 +34,7 @@ export default function ProfessionalDashboard() {
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [hasActiveSkill, setHasActiveSkill] = useState(false);
+  const [hasAnySkill, setHasAnySkill] = useState(false);
   const [hasDirectDeposit, setHasDirectDeposit] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -61,6 +62,7 @@ export default function ProfessionalDashboard() {
     try {
       // Check for active skills (has at least 1 skill with is_active=true and hourly_rate_cents > 0)
       const skills = await getUserSkills();
+      setHasAnySkill(skills.length > 0);
       const activeSkills = skills.filter(s => s.is_active && s.hourly_rate_cents > 0);
       setHasActiveSkill(activeSkills.length > 0);
 
@@ -203,9 +205,9 @@ export default function ProfessionalDashboard() {
       title: 'Name your price',
       duration: '4 MIN PER SKILL',
       completed: hasActiveSkill,
-      disabled: !isAccountVerified,
+      disabled: false,
       onPress: () => {
-        router.push('/(professional)/skills/my-skills');
+        router.push(hasAnySkill ? '/(professional)/skills/my-skills' : '/(professional)/skills/add-skills');
       },
     },
     {
@@ -213,7 +215,7 @@ export default function ProfessionalDashboard() {
       title: 'Set up direct deposit',
       duration: '2 MIN',
       completed: hasDirectDeposit,
-      disabled: !isAccountVerified,
+      disabled: false,
       onPress: () => {
         router.push('/(professional)/profile/direct-deposit');
       },
@@ -331,7 +333,7 @@ export default function ProfessionalDashboard() {
                 Your account isn't live yet!
               </Text>
               <Text className="font-worksans text-[11px] text-brand-dark leading-[15px]">
-                {isVerifying || stripeLoading
+                {isVerifying
                   ? 'Starting verification...'
                   : 'Tap here to verify your identity and activate your account.'}
               </Text>

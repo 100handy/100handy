@@ -49,7 +49,7 @@ function generateReferralCode(length: number = 8): string {
 
 export function buildReferralDeepLink(code: string): string {
   const normalized = code.trim().toUpperCase();
-  return `handy://role-selection?ref=${encodeURIComponent(normalized)}`;
+  return `https://100handy-client-web.vercel.app/referral?ref=${encodeURIComponent(normalized)}`;
 }
 
 /**

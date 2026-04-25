@@ -83,26 +83,32 @@ export default function ConfirmBookingScreen() {
     []
   );
 
+  const fetchPaymentMethods = useCallback(async (): Promise<PaymentMethod[]> => {
+    if (!isAuthenticated) {
+      setLoadingPayment(false);
+      setPaymentMethods([]);
+      return [];
+    }
+
+    try {
+      setLoadingPayment(true);
+      const methods = await listPaymentMethods();
+      const resolvedMethods = methods || [];
+      setPaymentMethods(resolvedMethods);
+      return resolvedMethods;
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+      return [];
+    } finally {
+      setLoadingPayment(false);
+    }
+  }, [isAuthenticated]);
+
   // Fetch payment methods on mount and when screen is focused
   useFocusEffect(
     useCallback(() => {
-      const fetchPaymentMethods = async () => {
-        if (!isAuthenticated) {
-          setLoadingPayment(false);
-          return;
-        }
-        try {
-          setLoadingPayment(true);
-          const methods = await listPaymentMethods();
-          setPaymentMethods(methods || []);
-        } catch (error) {
-          console.error('Error fetching payment methods:', error);
-        } finally {
-          setLoadingPayment(false);
-        }
-      };
       fetchPaymentMethods();
-    }, [isAuthenticated])
+    }, [fetchPaymentMethods])
   );
 
   // Handle back navigation - ask user if they want to clear pending booking
@@ -288,8 +294,18 @@ export default function ConfirmBookingScreen() {
       return;
     }
 
+    if (loadingPayment) {
+      toast.info('Loading payment method', 'Please wait a moment and try again.');
+      return;
+    }
+
+    let availablePaymentMethods = paymentMethods;
+    if (availablePaymentMethods.length === 0) {
+      availablePaymentMethods = await fetchPaymentMethods();
+    }
+
     // Check if payment method is added
-    if (paymentMethods.length === 0) {
+    if (availablePaymentMethods.length === 0) {
       toast.error('Payment Required', 'Please add a payment method to continue');
       return;
     }
@@ -393,7 +409,7 @@ export default function ConfirmBookingScreen() {
       // Taskrabbit-style: authorize (hold) now, capture later when job is completed.
       // Match web behavior: hold minimum 2 hours worth of the hourly rate.
       // Use discounted rate for recurring bookings.
-      const defaultMethod = paymentMethods.find((m) => m.isDefault) ?? paymentMethods[0];
+      const defaultMethod = availablePaymentMethods.find((m) => m.isDefault) ?? availablePaymentMethods[0];
       const paymentMethodId = defaultMethod?.id;
       if (!paymentMethodId) {
         setIsSubmitting(false);
