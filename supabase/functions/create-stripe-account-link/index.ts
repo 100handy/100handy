@@ -1,15 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { jsonResponse, requireAuthenticatedUser } from '../_shared/auth.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2024-10-28.acacia',
   httpClient: Stripe.createFetchHttpClient(),
 });
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -18,26 +15,16 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, refreshUrl, returnUrl, linkType } = await req.json();
-
-    if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'User ID is required' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const auth = await requireAuthenticatedUser(req);
+    if ('error' in auth) return auth.error;
+    const { user, serviceClient: supabase } = auth;
+    const { refreshUrl, returnUrl, linkType } = await req.json();
 
     // Get the Connect account ID from handy_profiles
     const { data: handyProfile, error: profileError } = await supabase
       .from('handy_profiles')
       .select('stripe_connect_account_id')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .single();
 
     if (profileError) {
@@ -52,13 +39,7 @@ serve(async (req) => {
     }
 
     if (!handyProfile?.stripe_connect_account_id) {
-      return new Response(
-        JSON.stringify({ error: 'No Connect account found. Please create one first.' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+      return jsonResponse({ error: 'No Connect account found. Please create one first.' }, 400);
     }
 
     // Create account link

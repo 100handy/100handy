@@ -7,7 +7,6 @@ import { createClient } from '../supabase';
 export async function createPaymentIntent(params: {
   amount: number; // Amount in cents
   currency?: string;
-  customerId?: string;
   metadata?: Record<string, string>;
 }): Promise<{ clientSecret: string; paymentIntentId: string } | null> {
   const supabase = createClient();
@@ -16,7 +15,6 @@ export async function createPaymentIntent(params: {
     body: {
       amount: params.amount,
       currency: params.currency || 'gbp',
-      customerId: params.customerId,
       metadata: params.metadata,
     },
   });

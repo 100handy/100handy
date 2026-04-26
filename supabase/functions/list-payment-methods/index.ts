@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
+import { getStripeCustomerIdForUser, jsonResponse, requireAuthenticatedUser } from '../_shared/auth.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2024-10-28.acacia',
@@ -14,16 +15,12 @@ serve(async (req) => {
   }
 
   try {
-    const { customerId } = await req.json();
+    const auth = await requireAuthenticatedUser(req);
+    if ('error' in auth) return auth.error;
 
+    const customerId = await getStripeCustomerIdForUser(auth.serviceClient, auth.user.id);
     if (!customerId) {
-      return new Response(
-        JSON.stringify({ error: 'Customer ID is required' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+      return jsonResponse({ error: 'Stripe customer not found' }, 400);
     }
 
     // Fetch payment methods and customer in parallel for better performance

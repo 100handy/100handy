@@ -53,11 +53,7 @@ export async function getOrCreateStripeCustomer(): Promise<string | null> {
 
     // Otherwise, create a new Stripe customer via edge function
     const { data, error } = await supabase.functions.invoke('create-stripe-customer', {
-      body: {
-        userId: user.id,
-        email: user.email,
-        name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.email,
-      },
+      body: {},
     });
 
     if (error) {
@@ -78,16 +74,14 @@ export async function getOrCreateStripeCustomer(): Promise<string | null> {
 export async function createSetupIntent(): Promise<SetupIntentResponse | null> {
   try {
     // Get or create Stripe customer first
-    const customerId = await getOrCreateStripeCustomer();
-
-    if (!customerId) {
+    if (!(await getOrCreateStripeCustomer())) {
       console.error('Failed to get Stripe customer ID');
       return null;
     }
 
     // Create SetupIntent via edge function
     const { data, error } = await supabase.functions.invoke('create-setup-intent', {
-      body: { customerId },
+      body: {},
     });
 
     if (error) {
@@ -110,16 +104,14 @@ export async function createSetupIntent(): Promise<SetupIntentResponse | null> {
  */
 export async function listPaymentMethods(): Promise<PaymentMethod[]> {
   try {
-    const customerId = await getOrCreateStripeCustomer();
-
-    if (!customerId) {
+    if (!(await getOrCreateStripeCustomer())) {
       console.error('Failed to get Stripe customer ID');
       return [];
     }
 
     // Fetch payment methods via edge function
     const { data, error } = await supabase.functions.invoke('list-payment-methods', {
-      body: { customerId },
+      body: {},
     });
 
     if (error) {
@@ -139,9 +131,7 @@ export async function listPaymentMethods(): Promise<PaymentMethod[]> {
  */
 export async function setDefaultPaymentMethod(paymentMethodId: string): Promise<boolean> {
   try {
-    const customerId = await getOrCreateStripeCustomer();
-
-    if (!customerId) {
+    if (!(await getOrCreateStripeCustomer())) {
       console.error('Failed to get Stripe customer ID');
       return false;
     }
@@ -149,7 +139,6 @@ export async function setDefaultPaymentMethod(paymentMethodId: string): Promise<
     // Set default payment method via edge function
     const { error } = await supabase.functions.invoke('set-default-payment-method', {
       body: {
-        customerId,
         paymentMethodId,
       },
     });
@@ -270,8 +259,6 @@ export async function getOrCreateStripeConnectAccount(
     // Create or get Connect account via edge function
     const { data, error } = await supabase.functions.invoke('create-stripe-connect-account', {
       body: {
-        userId: user.id,
-        email: user.email,
         country: country || 'GB',
         refreshUrl,
         returnUrl,
@@ -316,7 +303,7 @@ export async function getConnectAccountStatus(): Promise<ConnectAccountStatus | 
 
     // Get Connect account status via edge function
     const { data, error } = await supabase.functions.invoke('get-stripe-connect-status', {
-      body: { userId: user.id },
+      body: {},
     });
 
     if (error) {
@@ -350,7 +337,6 @@ export async function createConnectAccountLink(
     // Create account link via edge function
     const { data, error } = await supabase.functions.invoke('create-stripe-account-link', {
       body: {
-        userId: user.id,
         linkType,
         refreshUrl,
         returnUrl,

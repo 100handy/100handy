@@ -28,7 +28,7 @@ import {
 import { createClient } from "@/lib/supabase";
 import { createAddress } from "@/lib/supabase/addresses";
 import { createBooking } from "@/lib/supabase/bookings";
-import { createPaymentIntent } from "@/lib/stripe/payment";
+import { cancelPaymentIntent, createPaymentIntent } from "@/lib/stripe/payment";
 import type { FormResponse } from "@shared/supabase";
 
 type SortOption = "recommended" | "price_low" | "price_high" | "rating" | "reviews";
@@ -431,6 +431,11 @@ function BrowseProsContent() {
     setPaymentAuthorized(true);
 
     if (!userId || !selectedTasker || !categoryId || !addressId) {
+      try {
+        await cancelPaymentIntent({ paymentIntentId: authorizedPaymentIntentId });
+      } catch (releaseErr) {
+        console.error("Failed to release payment hold:", releaseErr);
+      }
       setError("Missing required booking information");
       return;
     }
@@ -460,11 +465,23 @@ function BrowseProsContent() {
         clearPendingBooking();
         router.push(`/bookings/${booking.id}`);
       } else {
-        setError("Failed to create booking.");
+        try {
+          await cancelPaymentIntent({ paymentIntentId: authorizedPaymentIntentId });
+        } catch (releaseErr) {
+          console.error("Failed to release payment hold:", releaseErr);
+        }
+        setPaymentAuthorized(false);
+        setError("Failed to create booking. Your payment hold has been released. Please try again.");
       }
     } catch (err) {
       console.error(err);
-      setError("Failed to create booking. Please try again.");
+      try {
+        await cancelPaymentIntent({ paymentIntentId: authorizedPaymentIntentId });
+      } catch (releaseErr) {
+        console.error("Failed to release payment hold:", releaseErr);
+      }
+      setPaymentAuthorized(false);
+      setError("Failed to create booking. Your payment hold has been released. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

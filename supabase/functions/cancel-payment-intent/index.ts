@@ -65,21 +65,21 @@ serve(async (req) => {
 
     const { data: booking, error: bookingError } = await serviceClient
       .from('bookings')
-      .select('id, customer_id, handy_id')
+      .select('id, customer_id, handy_id, status, payment_status')
       .eq('payment_intent_id', paymentIntentId)
       .maybeSingle();
 
-    if (bookingError || !booking) {
+    if (bookingError) {
       return new Response(
-        JSON.stringify({ error: 'Booking not found for this payment intent' }),
+        JSON.stringify({ error: 'Booking lookup failed' }),
         {
-          status: 404,
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
 
-    if (user.id !== booking.customer_id && user.id !== booking.handy_id) {
+    if (booking && user.id !== booking.customer_id && user.id !== booking.handy_id) {
       return new Response(
         JSON.stringify({ error: 'Forbidden: you are not a party to this booking' }),
         {
@@ -91,6 +91,30 @@ serve(async (req) => {
 
     // Get the payment intent to check its status
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (!booking && paymentIntent.metadata?.user_id !== user.id) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: payment intent does not belong to the authenticated user' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const canReleaseLinkedHold =
+      booking?.status === 'cancelled' ||
+      (booking?.status === 'completed' && booking?.payment_status === 'failed');
+
+    if (booking && !canReleaseLinkedHold) {
+      return new Response(
+        JSON.stringify({ error: `Cannot release hold while booking status is ${booking.status}` }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     // Only cancel if the payment intent is in a cancellable state
     // (requires_payment_method, requires_confirmation, requires_action, processing, requires_capture)

@@ -1,15 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { jsonResponse, requireAuthenticatedUser } from '../_shared/auth.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2024-10-28.acacia',
   httpClient: Stripe.createFetchHttpClient(),
 });
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -35,26 +32,20 @@ serve(async (req) => {
       );
     }
 
-    const { userId, email, country, refreshUrl, returnUrl } = await req.json();
+    const auth = await requireAuthenticatedUser(req);
+    if ('error' in auth) return auth.error;
+    const { user, serviceClient: supabase } = auth;
+    const { country, refreshUrl, returnUrl } = await req.json();
 
-    if (!userId || !email) {
-      return new Response(
-        JSON.stringify({ error: 'User ID and email are required' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+    if (!user.email) {
+      return jsonResponse({ error: 'Authenticated user email is required' }, 400);
     }
-
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if user already has a Stripe Connect account
     const { data: handyProfile, error: profileError } = await supabase
       .from('handy_profiles')
       .select('stripe_connect_account_id, stripe_connect_status')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .single();
 
     if (profileError && profileError.code !== 'PGRST116') {
@@ -92,21 +83,21 @@ serve(async (req) => {
     }
 
     // Create new Stripe Connect Express account
-    console.log('Creating Stripe Connect account for:', { userId, email, country: country || 'GB' });
+    console.log('Creating Stripe Connect account for:', { userId: user.id, email: user.email, country: country || 'GB' });
 
     let account;
     try {
       account = await stripe.accounts.create({
         type: 'express',
         country: country || 'GB', // Default to UK, but can be any supported country
-        email: email,
+	        email: user.email,
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
         },
         business_type: 'individual',
         metadata: {
-          supabase_user_id: userId,
+	          supabase_user_id: user.id,
           platform: '100handy',
         },
       });
@@ -139,7 +130,7 @@ serve(async (req) => {
         stripe_connect_account_id: account.id,
         stripe_connect_status: 'pending',
       })
-      .eq('user_id', userId);
+      .eq('user_id', user.id);
 
     if (updateError) {
       console.error('Error updating handy profile:', updateError);

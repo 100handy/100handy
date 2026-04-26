@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { jsonResponse, requireAuthenticatedUser } from '../_shared/auth.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2024-10-28.acacia',
@@ -14,77 +14,42 @@ serve(async (req) => {
   }
 
   try {
-    // Verify JWT authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const authClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user } } = await authClient.auth.getUser();
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const auth = await requireAuthenticatedUser(req);
+    if ('error' in auth) return auth.error;
+    const { user, serviceClient } = auth;
 
     const { bookingId, amount } = await req.json();
 
     if (!bookingId) {
-      return new Response(
-        JSON.stringify({ error: 'Booking ID is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonResponse({ error: 'Booking ID is required' }, 400);
     }
-
-    // Fetch booking with service role to verify ownership and get payment intent
-    const serviceClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     const { data: booking, error: bookingError } = await serviceClient
       .from('bookings')
-      .select('id, customer_id, handy_id, payment_intent_id, payment_status, status')
+      .select('id, customer_id, handy_id, payment_intent_id, payment_status, status, transfer_id')
       .eq('id', bookingId)
       .single();
 
     if (bookingError || !booking) {
-      return new Response(
-        JSON.stringify({ error: 'Booking not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonResponse({ error: 'Booking not found' }, 404);
     }
 
-    // Only the customer who paid may request a refund
-    if (user.id !== booking.customer_id) {
-      return new Response(
-        JSON.stringify({ error: 'Forbidden: only the customer may request a refund' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const { data: profile } = await serviceClient
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile?.role !== 'admin') {
+      return jsonResponse({ error: 'Forbidden: refunds require admin approval' }, 403);
     }
 
     if (!booking.payment_intent_id) {
-      return new Response(
-        JSON.stringify({ error: 'No payment found for this booking' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonResponse({ error: 'No payment found for this booking' }, 400);
     }
 
     if (booking.payment_status !== 'captured') {
-      return new Response(
-        JSON.stringify({ error: `Cannot refund a payment with status: ${booking.payment_status}` }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonResponse({ error: `Cannot refund a payment with status: ${booking.payment_status}` }, 400);
     }
 
     // Issue the refund via Stripe
@@ -98,19 +63,35 @@ serve(async (req) => {
     }
 
     const refund = await stripe.refunds.create(refundParams, {
-      idempotencyKey: `${bookingId}_refund`,
+      idempotencyKey: `${bookingId}_${amount || 'full'}_refund`,
     });
 
+    let reversalId: string | null = null;
+    if (booking.transfer_id) {
+      const reversal = await stripe.transfers.createReversal(
+        booking.transfer_id,
+        amount && amount > 0 ? { amount: Math.round(amount) } : {},
+        { idempotencyKey: `${bookingId}_${amount || 'full'}_transfer_reversal` }
+      );
+      reversalId = reversal.id;
+    }
+
     // Update booking payment status
+    const updateData: Record<string, unknown> = { payment_status: 'refunded' };
+    if (booking.transfer_id) {
+      updateData.payout_status = 'failed';
+    }
+
     await serviceClient
       .from('bookings')
-      .update({ payment_status: 'refunded' })
+      .update(updateData)
       .eq('id', bookingId);
 
     return new Response(
       JSON.stringify({
         success: true,
         refundId: refund.id,
+        reversalId,
         amount: refund.amount,
         status: refund.status,
         currency: refund.currency,

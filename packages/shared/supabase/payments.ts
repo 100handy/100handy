@@ -333,7 +333,7 @@ export async function retryPaymentProcessing(
 
   // Check current payment status to skip capture if already done
   const paymentDetails = await getBookingPaymentDetails(bookingId);
-  const alreadyCaptured = paymentDetails?.paymentStatus === 'captured';
+  let alreadyCaptured = paymentDetails?.paymentStatus === 'captured';
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -351,9 +351,9 @@ export async function retryPaymentProcessing(
             await sleep(2000 * Math.pow(2, attempt - 1)); // 2s, 4s, 8s, 16s, 32s
             continue;
           }
-          // Final attempt failed - release hold and mark payment as failed
-          await cancelPaymentIntent(paymentIntentId);
           await updateBookingPaymentStatus(bookingId, 'failed');
+          // Final attempt failed - mark failed before releasing the hold so the server allows it.
+          await cancelPaymentIntent(paymentIntentId);
           await updateBookingPayoutStatus(bookingId, 'failed');
           await logPaymentError(bookingId, 'capture_failed', lastError, {
             paymentIntentId,
@@ -364,6 +364,7 @@ export async function retryPaymentProcessing(
 
         // Update payment status to captured
         await updateBookingPaymentStatus(bookingId, 'captured');
+        alreadyCaptured = true;
       }
 
       // Step 2: Create payout to professional
