@@ -7,11 +7,20 @@ import { useRouter } from 'expo-router';
 export default function AnnouncementsScreen() {
   const router = useRouter();
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(professional)/(tabs)/dashboard');
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={handleBack}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-brand-dark-alt">

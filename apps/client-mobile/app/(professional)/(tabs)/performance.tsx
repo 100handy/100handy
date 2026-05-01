@@ -1,16 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronRight, Star, BarChart3 } from 'lucide-react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import {
-  getProfessionalEarnings,
-  getEliteProgress,
-  useAuthStore,
-  useProfessionalRating,
-  type EarningsSummary,
-  type EliteProgress,
-} from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { useProfessionalRating } from '@shared/query';
+import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronRight, Star, BarChart3 } from 'lucide-react-native'; import { useRouter, useFocusEffect } from 'expo-router'; import { getProfessionalEarnings, getEliteProgress, type EarningsSummary, type EliteProgress } from '@shared/supabase';
 import { getUserSkills } from '@shared/supabase/profile';
 
 interface PerformanceCardProps {

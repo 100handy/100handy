@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Alert, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input, InputField } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
-import { Image } from 'expo-image';
-import { Loader } from '@/components/ui/loader';
-import { Camera, User } from 'lucide-react-native';
-import { useProfileStore } from '@shared/supabase';
+import { ScrollView, Alert, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input, InputField } from '@/components/ui/input'; import { Button, ButtonText } from '@/components/ui/button'; import { Image } from 'expo-image'; import { Loader } from '@/components/ui/loader'; import { Camera, User } from 'lucide-react-native'; import { useProfileStore } from '@shared/store';
 import Header from '@/components/Header';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -118,7 +111,7 @@ export default function EditProfile() {
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <Header title="Edit Profile" onBackPress={() => router.back()} showBellIcon={false} />
       
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="flex-col p-6 space-y-6">
           {/* Profile Picture Section */}
           <View className="flex-col items-center space-y-4">

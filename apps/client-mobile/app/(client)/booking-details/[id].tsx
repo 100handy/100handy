@@ -1,25 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
-import {
-  ChevronLeft,
-  Calendar,
-  Clock,
-  MapPin,
-  AlertCircle,
-  Info,
-  Edit,
-  Star,
-  MessageCircle,
-  CheckCircle2,
-} from 'lucide-react-native';
-import type { BookingStatus } from '@shared/supabase/bookings';
-import { subscribeToBookingUpdates, unsubscribeFromBookingUpdates } from '@shared/supabase/bookings';
-import { bookingKeys, useBookingById } from '@shared/query/hooks/useBookings';
-import { useHasReviewedBooking } from '@shared/query/hooks/useReviews';
-import { useAuthStore } from '@shared/store/auth';
-import { useExistingConversationByBooking } from '@shared/supabase';
+import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useLocalSearchParams, router } from 'expo-router'; import {   ChevronLeft, Calendar, Clock, MapPin, AlertCircle, Info, Edit, Star, MessageCircle, CheckCircle2, } from 'lucide-react-native'; import type { BookingStatus } from '@shared/supabase/bookings'; import { subscribeToBookingUpdates, unsubscribeFromBookingUpdates } from '@shared/supabase/bookings'; import { bookingKeys, useBookingById } from '@shared/query/hooks/useBookings'; import { useHasReviewedBooking } from '@shared/query/hooks/useReviews'; import { useAuthStore } from '@shared/store/auth'; import { useExistingConversationByBooking } from '@shared/query';
 import { useQueryClient } from '@tanstack/react-query';
 import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';
 import { HandymanCard } from '@/components/booking/HandymanCard';

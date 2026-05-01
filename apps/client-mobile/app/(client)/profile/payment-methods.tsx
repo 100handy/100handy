@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ScrollView, View, Text, Pressable, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { useToast } from '@/components/ui/toast';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +24,7 @@ export default function PaymentMethodsScreen() {
   const router = useRouter();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
   const toast = useToast();
@@ -37,16 +38,23 @@ export default function PaymentMethodsScreen() {
 
   const loadPaymentMethods = async () => {
     setIsLoading(true);
-    const methods = await listPaymentMethods();
-    setPaymentMethods(methods);
-    setIsLoading(false);
+    try {
+      const methods = await listPaymentMethods();
+      setPaymentMethods(methods);
+    } finally {
+      setIsLoading(false);
+      setHasLoadedOnce(true);
+    }
   };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    const methods = await listPaymentMethods();
-    setPaymentMethods(methods);
-    setRefreshing(false);
+    try {
+      const methods = await listPaymentMethods();
+      setPaymentMethods(methods);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   const handleAddPaymentMethod = () => {
@@ -95,146 +103,154 @@ export default function PaymentMethodsScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#C1856A" />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <Header title="Payment Methods" onBackPress={() => router.back()} showBellIcon={false} />
 
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#C1856A"
-            colors={['#C1856A']}
-          />
-        }
-      >
-        <View className="flex-col px-5 py-6 gap-4">
-          {/* Info Text */}
+      {isLoading && !hasLoadedOnce ? (
+        <View className="flex-1 px-5 py-6">
           <Text
-            className="text-sm text-[#6B6B6B] mb-2"
+            className="text-sm text-[#6B6B6B] mb-6"
             style={{ fontFamily: 'WorkSans_400Regular' }}
           >
             Manage your payment methods for bookings and purchases
           </Text>
+          <View className="flex-1 items-center justify-center gap-4">
+            <ActivityIndicator size="large" color="#C1856A" />
+            <Text
+              className="text-sm text-[#6B6B6B]"
+              style={{ fontFamily: 'WorkSans_400Regular' }}
+            >
+              Loading payment methods...
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#C1856A"
+              colors={['#C1856A']}
+            />
+          }
+        >
+          <View className="flex-col px-5 py-6 gap-4">
+            {/* Info Text */}
+            <Text
+              className="text-sm text-[#6B6B6B] mb-2"
+              style={{ fontFamily: 'WorkSans_400Regular' }}
+            >
+              Manage your payment methods for bookings and purchases
+            </Text>
 
-          {/* Payment Methods List */}
-          {paymentMethods.length === 0 ? (
-            /* Empty State */
-            <View className="flex-col items-center justify-center py-12 gap-4">
-              <View
-                className="w-20 h-20 rounded-full items-center justify-center"
-                style={{ backgroundColor: '#F5F5F5' }}
-              >
-                <Text className="text-4xl">💳</Text>
+            {/* Payment Methods List */}
+            {paymentMethods.length === 0 ? (
+              /* Empty State */
+              <View className="flex-col items-center justify-center py-12 gap-4">
+                <View
+                  className="w-20 h-20 rounded-full items-center justify-center"
+                  style={{ backgroundColor: '#F5F5F5' }}
+                >
+                  <Text className="text-4xl">💳</Text>
+                </View>
+                <Text
+                  className="text-center text-base text-[#30352D] font-semibold"
+                  style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                >
+                  No payment methods yet
+                </Text>
+                <Text
+                  className="text-center text-sm text-[#6B6B6B] px-8"
+                  style={{ fontFamily: 'WorkSans_400Regular' }}
+                >
+                  Add a payment method to quickly book services
+                </Text>
               </View>
-              <Text
-                className="text-center text-base text-[#30352D] font-semibold"
-                style={{ fontFamily: 'WorkSans_600SemiBold' }}
-              >
-                No payment methods yet
-              </Text>
-              <Text
-                className="text-center text-sm text-[#6B6B6B] px-8"
-                style={{ fontFamily: 'WorkSans_400Regular' }}
-              >
-                Add a payment method to quickly book services
-              </Text>
-            </View>
-          ) : (
-            /* Payment Methods List */
-            <View className="flex-col gap-3">
-              {paymentMethods.map((method) => {
-                // Skip if card data is missing
-                if (!method.card) {
-                  return null;
-                }
+            ) : (
+              /* Payment Methods List */
+              <View className="flex-col gap-3">
+                {paymentMethods.map((method) => {
+                  if (!method.card) {
+                    return null;
+                  }
 
-                const isDefault = method.isDefault || false;
-                const brandName = CARD_BRANDS[method.card.brand] || method.card.brand.toUpperCase();
+                  const isDefault = method.isDefault || false;
+                  const brandName = CARD_BRANDS[method.card.brand] || method.card.brand.toUpperCase();
 
-                return (
-                  <View
-                    key={method.id}
-                    className="bg-white rounded-xl border border-[#E5E5E5] p-4"
-                  >
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-1">
-                        <View className="flex-row items-center gap-2 mb-1">
+                  return (
+                    <View
+                      key={method.id}
+                      className="bg-white rounded-xl border border-[#E5E5E5] p-4"
+                    >
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-1">
+                          <View className="flex-row items-center gap-2 mb-1">
+                            <Text
+                              className="text-base font-semibold text-[#30352D]"
+                              style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                            >
+                              {brandName}
+                            </Text>
+                            {isDefault && (
+                              <View className="bg-[#BBF7D0] px-2 py-1 rounded">
+                                <Text
+                                  className="text-[10px] font-bold text-[#166534]"
+                                  style={{ fontFamily: 'WorkSans_700Bold' }}
+                                >
+                                  DEFAULT
+                                </Text>
+                              </View>
+                            )}
+                          </View>
                           <Text
-                            className="text-base font-semibold text-[#30352D]"
-                            style={{ fontFamily: 'WorkSans_600SemiBold' }}
+                            className="text-sm text-[#6B6B6B]"
+                            style={{ fontFamily: 'WorkSans_400Regular' }}
                           >
-                            {brandName}
+                            •••• {method.card.last4}
                           </Text>
-                          {isDefault && (
-                            <View className="bg-[#BBF7D0] px-2 py-1 rounded">
-                              <Text
-                                className="text-[10px] font-bold text-[#166534]"
-                                style={{ fontFamily: 'WorkSans_700Bold' }}
-                              >
-                                DEFAULT
-                              </Text>
-                            </View>
-                          )}
+                          <Text
+                            className="text-xs text-[#999999] mt-1"
+                            style={{ fontFamily: 'WorkSans_400Regular' }}
+                          >
+                            Expires {method.card.exp_month}/{method.card.exp_year}
+                          </Text>
                         </View>
-                        <Text
-                          className="text-sm text-[#6B6B6B]"
-                          style={{ fontFamily: 'WorkSans_400Regular' }}
-                        >
-                          •••• {method.card.last4}
-                        </Text>
-                        <Text
-                          className="text-xs text-[#999999] mt-1"
-                          style={{ fontFamily: 'WorkSans_400Regular' }}
-                        >
-                          Expires {method.card.exp_month}/{method.card.exp_year}
-                        </Text>
-                      </View>
 
-                      {/* Actions */}
-                      <View className="flex-row items-center gap-2">
-                        {!isDefault && (
+                        <View className="flex-row items-center gap-2">
+                          {!isDefault && (
+                            <Pressable
+                              onPress={() => handleSetDefault(method.id)}
+                              disabled={!!settingDefaultId}
+                              className="p-2"
+                            >
+                              {settingDefaultId === method.id ? (
+                                <ActivityIndicator size="small" color="#C1856A" />
+                              ) : (
+                                <CheckCircle size={20} color="#C1856A" strokeWidth={2} />
+                              )}
+                            </Pressable>
+                          )}
                           <Pressable
-                            onPress={() => handleSetDefault(method.id)}
-                            disabled={!!settingDefaultId}
+                            onPress={() => handleDeletePaymentMethod(method.id)}
                             className="p-2"
                           >
-                            {settingDefaultId === method.id ? (
-                              <ActivityIndicator size="small" color="#C1856A" />
-                            ) : (
-                              <CheckCircle size={20} color="#C1856A" strokeWidth={2} />
-                            )}
+                            <Trash2 size={20} color="#EF4444" strokeWidth={2} />
                           </Pressable>
-                        )}
-                        <Pressable
-                          onPress={() => handleDeletePaymentMethod(method.id)}
-                          className="p-2"
-                        >
-                          <Trash2 size={20} color="#EF4444" strokeWidth={2} />
-                        </Pressable>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-        </View>
-      </ScrollView>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      )}
 
       {/* Add Payment Method Button */}
       <View className="px-5 pb-6 pt-3 border-t border-[#F0F0F0]">

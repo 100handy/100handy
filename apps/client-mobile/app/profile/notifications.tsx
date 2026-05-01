@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { router } from 'expo-router';
-import { useAuthStore } from '@shared/supabase';
+import { router } from 'expo-router'; import { useAuthStore } from '@shared/store';
 import { Loader } from '@/components/ui/loader';
 
 /**

@@ -1,11 +1,8 @@
 import React, { useState, useCallback } from 'react';
-
 import { Image } from 'expo-image';
 import { ScrollView, View, Text, Pressable, RefreshControl, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
-
-// Import lucide-react-native icons
 import {
   User,
   Shield,
@@ -22,7 +19,8 @@ import {
   Megaphone,
   Globe,
 } from 'lucide-react-native';
-import { useAuthStore, switchToProfessionalRole } from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { switchToProfessionalRole } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { useProfile, useUnreadNotificationCount } from '@shared/query';
 import { queryClient } from '@shared/query/queryClient';

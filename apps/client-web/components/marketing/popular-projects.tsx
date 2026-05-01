@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useGroupedSubcategories } from "@shared/supabase";
+import { useGroupedSubcategories } from '@shared/query';
 import { useMemo } from "react";
 
 // Map service names to their card images (case-insensitive lookup via lowercase key)

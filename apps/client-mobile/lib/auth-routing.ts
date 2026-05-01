@@ -12,7 +12,7 @@ interface ResolveAuthenticatedRouteOptions {
   userEmail?: string | null;
   userId?: string | null;
   getLocalClientOnboardingCompleted: (userId: string) => Promise<boolean>;
-  getProfessionalOnboardingCompleted: () => Promise<boolean>;
+  getProfessionalOnboardingCompleted: () => Promise<boolean | null>;
   getPendingBookingRoute: () => AuthRouteTarget | null;
 }
 
@@ -84,11 +84,14 @@ export async function resolveAuthenticatedRoute({
   if (userRole === 'handy') {
     try {
       const onboardingComplete = await getProfessionalOnboardingCompleted();
+      if (onboardingComplete === null) {
+        return '/(professional)/(tabs)/dashboard';
+      }
       return onboardingComplete
         ? '/(professional)/(tabs)/dashboard'
         : '/(auth)/(professional)/verify-info';
     } catch {
-      return '/(auth)/(professional)/verify-info';
+      return '/(professional)/(tabs)/dashboard';
     }
   }
 

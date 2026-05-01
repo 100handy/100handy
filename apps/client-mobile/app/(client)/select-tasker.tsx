@@ -1,21 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker';
-import {
-  useHandymenByCategory,
-  type HandymanFilters,
-  useLocationStore,
-  getWorkAreaByUserId,
-  isLocationInWorkArea,
-  type Coordinate,
-  type WorkArea,
-  getAvailabilityByUserId,
-  doesAvailabilitySlotApplyToDate,
-  type AvailabilitySlot,
-} from '@shared/supabase';
+import { useLocationStore } from '@shared/store';
+import { type HandymanFilters, type Coordinate, type WorkArea, doesAvailabilitySlotApplyToDate, type AvailabilitySlot } from '@shared/query';
+import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker'; import { useHandymenByCategory } from '@shared/query'; import { getWorkAreaByUserId, isLocationInWorkArea, getAvailabilityByUserId } from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 
 const filterOptions = ['Within a week', 'Flexible', 'Price'];

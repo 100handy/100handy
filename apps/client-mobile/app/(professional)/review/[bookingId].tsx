@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  ScrollView,
-  View,
-  Text,
-  Pressable,
-  TextInput,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, Star, X, Lock } from 'lucide-react-native';
-import { toast } from 'sonner-native';
-import {
-  useBookingById,
-  useCreateProfessionalReview,
-  useHasReviewedBooking,
-} from '@shared/supabase';
+import { useCreateProfessionalReview, useHasReviewedBooking } from '@shared/query';
+import { ScrollView, View, Text, Pressable, TextInput, ActivityIndicator, Alert, } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useLocalSearchParams, useRouter } from 'expo-router'; import { ArrowLeft, Star, X, Lock } from 'lucide-react-native'; import { toast } from 'sonner-native'; import { useBookingById } from '@shared/query';
 
 export default function ProfessionalReviewScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
@@ -137,7 +121,11 @@ export default function ProfessionalReviewScreen() {
         </Pressable>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Booking Info */}
         <View className="bg-white mx-4 mt-4 p-4 rounded-2xl">
           <Text className="font-worksans-bold text-[16px] text-[#30352D]">

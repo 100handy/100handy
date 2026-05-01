@@ -40,7 +40,7 @@ export default function MessageSupportScreen() {
           // Force create a new ticket (skip open ticket check)
           const newTicket = await createTicket({
             subject: 'General Support',
-            message: 'Support ticket created',
+            message: 'Hello',
           });
 
           // Set the newly created ticket as active and subscribe to messages
@@ -58,15 +58,6 @@ export default function MessageSupportScreen() {
           if (openTickets.length > 0) {
             // Use the most recent open ticket
             await openTicket(openTickets[0].id);
-          } else {
-            // Create new ticket only if no open tickets exist
-            const newTicket = await createTicket({
-              subject: 'General Support',
-              message: 'Support ticket created',
-            });
-
-            // Set the newly created ticket as active and subscribe to messages
-            await openTicket(newTicket.id);
           }
         }
       } catch (error) {
@@ -98,6 +89,17 @@ export default function MessageSupportScreen() {
   const handleSendMessage = async (message: string, attachment?: any) => {
     try {
       if (!message.trim() && !attachment) {
+        return;
+      }
+
+      if (!activeTicket) {
+        const initialMessage = message.trim() || 'Attachment sent';
+        const newTicket = await createTicket({
+          subject: 'General Support',
+          message: initialMessage,
+        });
+
+        await openTicket(newTicket.id);
         return;
       }
 
@@ -168,8 +170,8 @@ export default function MessageSupportScreen() {
         {/* Input */}
         <MessageInput
           onSend={handleSendMessage}
-          disabled={isSendingMessage || !activeTicket}
-          placeholder="Type a message"
+          disabled={isSendingMessage}
+          placeholder={activeTicket ? 'Type a message' : 'Start a conversation with support'}
         />
       </View>
     </SafeAreaView>

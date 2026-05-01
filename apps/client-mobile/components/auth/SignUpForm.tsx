@@ -7,7 +7,9 @@ import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signUpSchema, validatePostcode, type SignUpFormData } from '@shared/schemas/auth';
-import CountryPicker, { type Country, type CountryCode } from 'react-native-country-picker-modal';
+import { countryCodeToFlagEmoji } from '@/lib/welcome-country';
+import CountryCodePickerSheet from './CountryCodePickerSheet';
+import type { Country, CountryCode } from 'react-native-country-picker-modal/lib/types';
 
 interface SignUpFormProps {
   onSubmit: (email: string, password: string, metadata: any) => void;
@@ -31,7 +33,6 @@ export default function SignUpForm({
     if (country.callingCode && country.callingCode.length > 0) {
       setCallingCode(country.callingCode[0]);
     }
-    setShowCountryPicker(false);
   };
 
   // State for custom postcode error
@@ -255,18 +256,12 @@ export default function SignUpForm({
                     className="flex-row items-center mr-3"
                     onPress={() => setShowCountryPicker(true)}
                   >
-                    <CountryPicker
-                      countryCode={countryCode}
-                      withFilter
-                      withFlag
-                      withCallingCode
-                      withCallingCodeButton
-                      withEmoji
-                      onSelect={onSelectCountry}
-                      visible={showCountryPicker}
-                      onClose={() => setShowCountryPicker(false)}
-                      containerButtonStyle={{ marginRight: 4 }}
-                    />
+                    <Text className="mr-1 text-[18px]">
+                      {countryCodeToFlagEmoji(countryCode)}
+                    </Text>
+                    <Text className="font-worksans-medium text-[15px]" style={{ color: '#30352D' }}>
+                      +{callingCode}
+                    </Text>
                     <ChevronDown size={16} color="#30352D" />
                   </Pressable>
                   <InputField
@@ -405,6 +400,13 @@ export default function SignUpForm({
           <Text style={{ color: '#C1856A' }}>Log in</Text>
         </Text>
       </Pressable>
+
+      <CountryCodePickerSheet
+        isOpen={showCountryPicker}
+        onClose={() => setShowCountryPicker(false)}
+        selectedCountryCode={countryCode}
+        onSelectCountry={onSelectCountry}
+      />
     </View>
   );
 }

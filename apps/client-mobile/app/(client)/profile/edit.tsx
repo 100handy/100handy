@@ -150,7 +150,7 @@ export default function EditProfileScreen() {
           )}
         </View>
 
-        <ScrollView className="flex-1">
+        <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
           <View className="flex-col p-6 gap-6">
             {/* Avatar Section */}
             <View className="flex-col items-center gap-4">

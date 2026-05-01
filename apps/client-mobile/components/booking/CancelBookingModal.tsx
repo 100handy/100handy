@@ -1,20 +1,6 @@
 import React, { useMemo } from 'react';
-import { Text, View } from 'react-native';
-import { X, AlertTriangle } from 'lucide-react-native';
-import {
-  Modal,
-  ModalBackdrop,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-} from '@/components/ui/modal';
-import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
-import { useCancelBooking, bookingKeys } from '@shared/query/hooks/useBookings';
-import { cancelRecurringSeries } from '@shared/supabase';
-import { useToast } from '@/components/ui/toast';
-import { useAuthStore } from '@shared/supabase';
+import { Text, View } from 'react-native'; import { X, AlertTriangle } from 'lucide-react-native'; import {   Modal, ModalBackdrop, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, } from '@/components/ui/modal'; import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button'; import { useCancelBooking, bookingKeys } from '@shared/query/hooks/useBookings'; import { cancelRecurringSeries } from '@shared/supabase';
+import { useToast } from '@/components/ui/toast'; import { useAuthStore } from '@shared/store';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 

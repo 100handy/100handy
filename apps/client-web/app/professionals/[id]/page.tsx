@@ -4,12 +4,7 @@ import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  useHandymanProfile,
-  useHandymanReviews,
-  useProfessionalRating,
-  useAvailabilityByUserId,
-} from "@shared/supabase";
+import { useHandymanProfile, useHandymanReviews, useProfessionalRating, useAvailabilityByUserId } from '@shared/query';
 import { SelectDateTimeModal } from "@/components/browse-pros/select-datetime-modal";
 
 // Day names for availability display

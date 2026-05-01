@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, RefreshControl, Image as RNImage, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Star, MapPin, Calendar, Users } from 'lucide-react-native';
-import { useFavoriteHandymen } from '@shared/supabase/query';
-import { useUserBookings, useAuthStore } from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { ScrollView, RefreshControl, Image as RNImage, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Star, MapPin, Calendar, Users } from 'lucide-react-native'; import { useFavoriteHandymen } from '@shared/supabase/query'; import { useUserBookings } from '@shared/query';
 import { Loader } from '@/components/ui/loader';
 import { getPastTaskersFromBookings, handymenProfilesToTaskers, type Tasker } from '@/lib/taskers';
 import { useRouter } from 'expo-router';

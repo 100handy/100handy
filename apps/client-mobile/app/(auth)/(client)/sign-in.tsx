@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft } from 'lucide-react-native';
-import { router } from 'expo-router';
-import SignInForm from '@/components/auth/SignInForm';
-import { signIn } from '@shared/supabase/auth';
-import { type SignInFormData } from '@shared/schemas/auth';
-import AuthFooter from '@/components/auth/AuthFooter';
-import AuthLogo from '@/components/auth/AuthLogo';
-import { useToast } from '@/components/ui/toast';
-import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
+import { usePendingBookingStore, useLocationStore } from '@shared/store';
+import { View, Text, Pressable, ScrollView } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { router } from 'expo-router'; import SignInForm from '@/components/auth/SignInForm'; import { signIn } from '@shared/supabase/auth'; import { type SignInFormData } from '@shared/schemas/auth'; import AuthFooter from '@/components/auth/AuthFooter'; import AuthLogo from '@/components/auth/AuthLogo'; import { useToast } from '@/components/ui/toast'; import { useAuthStore } from '@shared/store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { buildPendingBookingRoute, resolveAuthenticatedRoute } from '@/lib/auth-routing';
@@ -79,6 +70,7 @@ export default function ClientSignIn() {
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <View className="flex-col flex-1 justify-between">
             <View>

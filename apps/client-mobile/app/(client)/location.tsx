@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input, InputField } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { LocationAutocomplete, type LocationResult, type AddressComponents } from '@/components/location';
-import { useLocationStore } from '@shared/supabase';
+import { ScrollView, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input, InputField } from '@/components/ui/input'; import { Button, ButtonText } from '@/components/ui/button'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { LocationAutocomplete, type LocationResult, type AddressComponents } from '@/components/location'; import { useLocationStore } from '@shared/store';
 
 export default function LocationScreen() {
   const router = useRouter();
@@ -84,7 +77,11 @@ export default function LocationScreen() {
         <Pressable onPress={() => router.back()} className="w-7" />
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="flex-col px-5 pt-6 pb-8">
           {/* Street Address with Autocomplete */}
           <View className="flex-col mb-6">

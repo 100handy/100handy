@@ -1,10 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react-native';
-import { getAllChatTemplates, deleteChatTemplateById, ChatTemplate } from '@shared/supabase';
+import { ScrollView, View, Text, Pressable, ActivityIndicator, Alert } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { useFocusEffect } from '@react-navigation/native'; import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react-native'; import { getAllChatTemplates, deleteChatTemplateById, ChatTemplate } from '@shared/supabase';
 
 interface TemplateItem {
   title: string;

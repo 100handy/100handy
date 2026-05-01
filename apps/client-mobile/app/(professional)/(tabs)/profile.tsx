@@ -1,35 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  ScrollView,
-  Image,
-  Alert,
-  View,
-  Text,
-  Pressable,
-  RefreshControl,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  User,
-  FileText,
-  BarChart3,
-  Calendar,
-  MessageSquare,
-  Megaphone,
-  CreditCard,
-  Bell,
-  HelpCircle,
-  Shield,
-  Info,
-  Lock,
-  LogOut,
-  ChevronRight,
-  Camera,
-  Globe,
-} from "lucide-react-native";
-import { useRouter } from "expo-router";
-import { switchToCustomerRole, useAuthStore } from "@shared/supabase";
-import { useProfileStore } from "@shared/supabase";
+import { useAuthStore } from '@shared/store';
+import { ScrollView, Image, Alert, View, Text, Pressable, RefreshControl, } from "react-native"; import { SafeAreaView } from "react-native-safe-area-context"; import {   User, FileText, BarChart3, Calendar, MessageSquare, Megaphone, CreditCard, Bell, HelpCircle, Shield, Info, Lock, LogOut, ChevronRight, Camera, Globe, } from "lucide-react-native"; import { useRouter } from "expo-router"; import { switchToCustomerRole } from '@shared/supabase';
+import { useProfileStore } from '@shared/store';
 import { useUnreadNotificationCount } from "@shared/query";
 import { queryClient } from "@shared/query/queryClient";
 import * as ImagePicker from "expo-image-picker";

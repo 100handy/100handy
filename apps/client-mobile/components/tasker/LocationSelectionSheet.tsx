@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ScrollView, View, Pressable as RNPressable, Text, TextInput, ActivityIndicator } from 'react-native';
-import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
-import { Input, InputField } from '@/components/ui/input';
-import { ChevronLeft, X, Check, MapPin } from 'lucide-react-native';
-import {
-  useLocationStore,
-  useTaskFormStore,
-  useCategoryFormFields,
-  type FormField,
-  type Location,
-} from '@shared/supabase';
+import { useTaskFormStore, type Location } from '@shared/store';
+import { useCategoryFormFields } from '@shared/query';
+import { ScrollView, View, Pressable as RNPressable, Text, TextInput, ActivityIndicator } from 'react-native'; import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal'; import { Input, InputField } from '@/components/ui/input'; import { ChevronLeft, X, Check, MapPin } from 'lucide-react-native'; import { useLocationStore } from '@shared/store'; import { type FormField } from '@shared/supabase';
 import { useRouter } from 'expo-router';
 import { LocationAutocomplete, type LocationResult } from '@/components/location';
 import * as ExpoLocation from 'expo-location';
@@ -50,7 +42,11 @@ function SelectionStep({
 
   return (
     <>
-      <ScrollView className="w-full flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="w-full flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="px-5 pt-4 pb-6 flex-col">
           <Text className="text-3xl font-extrabold text-[#30352d] text-center mb-10" style={{ letterSpacing: -0.5 }}>{title}</Text>
           <View className="mb-6 flex-col">
@@ -242,6 +238,7 @@ function LocationStep({
       <ScrollView
         className="w-full flex-1"
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View className="px-5 pt-4 pb-6 flex-col">
           {/* Task Title */}

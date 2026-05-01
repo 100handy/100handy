@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Switch, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import { useProfessionalProfileStore } from '@shared/supabase';
+import { ScrollView, Switch, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { useProfessionalProfileStore } from '@shared/store';
 
 export default function CalendarSettingsScreen() {
   const { syncCalendars, setSyncCalendars, loadProfile } = useProfessionalProfileStore();

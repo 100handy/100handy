@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setPendingBookingStorage } from '@shared/supabase';
+import { setPendingBookingStorage } from '@shared/store';
 import type { StateStorage } from 'zustand/middleware';
 
 // Create AsyncStorage adapter for Zustand persist middleware

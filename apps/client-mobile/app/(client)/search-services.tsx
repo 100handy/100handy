@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
-import {
-  ChevronLeft,
-  Search,
-  ChevronRight,
-} from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { useGroupedSubcategories } from '@shared/supabase';
+import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input, InputField, InputSlot } from '@/components/ui/input'; import {   ChevronLeft, Search, ChevronRight, } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useGroupedSubcategories } from '@shared/query';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { getCategoryIcon } from '@/lib/category-icons';
 
@@ -73,7 +64,11 @@ export default function SearchServicesScreen() {
       </View>
 
       {/* Categories List */}
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {isLoading ? (
           <View className="flex-col items-center justify-center py-20">
             <ActivityIndicator size="large" color="#30352D" />

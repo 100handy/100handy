@@ -1,9 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, Share, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { ChevronLeft, ExternalLink } from 'lucide-react-native';
-import { buildReferralDeepLink, ensureReferralCode } from '@shared/supabase';
+import { ActivityIndicator, Pressable, Share, Text, View } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { ChevronLeft, ExternalLink } from 'lucide-react-native'; import { buildReferralDeepLink, ensureReferralCode } from '@shared/supabase';
 
 export default function PromoteYourselfScreen() {
   const router = useRouter();

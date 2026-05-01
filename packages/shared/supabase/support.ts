@@ -135,6 +135,10 @@ export async function getSupportTickets(): Promise<SupportTicket[]> {
 
     return data || [];
   } catch (error) {
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return [];
+    }
+
     console.error('Error in getSupportTickets:', error);
     throw error;
   }
@@ -165,6 +169,10 @@ export async function getSupportTicket(ticketId: string): Promise<SupportTicket 
 
     return data;
   } catch (error) {
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return null;
+    }
+
     console.error('Error in getSupportTicket:', error);
     throw error;
   }

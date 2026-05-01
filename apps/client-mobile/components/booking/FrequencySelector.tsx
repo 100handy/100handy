@@ -1,7 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Check } from 'lucide-react-native';
-import { FREQUENCY_OPTIONS, type BookingFrequency } from '@shared/supabase';
+import { View, Text, Pressable } from 'react-native'; import { Check } from 'lucide-react-native'; import { FREQUENCY_OPTIONS, type BookingFrequency } from '@shared/supabase';
 
 interface FrequencySelectorProps {
   selectedFrequency: BookingFrequency;

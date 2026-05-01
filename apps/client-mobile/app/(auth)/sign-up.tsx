@@ -77,7 +77,7 @@ export default function Signup() {
 
 
   return (
-    <ScrollView>
+    <ScrollView keyboardShouldPersistTaps="handled">
       <View className="flex-1 bg-theme-background min-h-full">
         <View className="flex-1 justify-center items-center p-4">
           <View className="w-full max-w-[390px] bg-theme-background">

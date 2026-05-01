@@ -1,11 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Text, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Bell } from 'lucide-react-native';
-import Header from '@/components/Header';
-import { NotificationItem } from '@/components/notifications/NotificationItem';
-import { useAuthStore, type NotificationItem as NotificationItemType } from '@shared/supabase';
+import { View, Text, FlatList, RefreshControl, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { Bell } from 'lucide-react-native'; import Header from '@/components/Header'; import { NotificationItem } from '@/components/notifications/NotificationItem'; import { useAuthStore } from '@shared/store'; import { type NotificationItem as NotificationItemType } from '@shared/supabase';
 import { useNotifications } from '@shared/query';
 
 export default function ProfessionalNotificationsScreen() {

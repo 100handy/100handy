@@ -1,12 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft } from 'lucide-react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { verifyEmailOTP, resendEmailOTP } from '@shared/supabase/auth';
-import { useToast } from '@/components/ui/toast';
-import { OtpInput, OtpInputRef } from 'react-native-otp-entry';
-import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
+import { usePendingBookingStore, useLocationStore } from '@shared/store';
+import { View, Text, Pressable, ScrollView } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { router, useLocalSearchParams } from 'expo-router'; import { verifyEmailOTP, resendEmailOTP } from '@shared/supabase/auth'; import { useToast } from '@/components/ui/toast'; import { OtpInput, OtpInputRef } from 'react-native-otp-entry'; import { useAuthStore } from '@shared/store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { buildPendingBookingRoute, resolveAuthenticatedRoute } from '@/lib/auth-routing';

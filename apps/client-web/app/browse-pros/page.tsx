@@ -16,15 +16,7 @@ import { LocationAutocomplete } from "@/components/LocationAutocomplete";
 import { useAuthContext } from "@/components/providers/auth-provider";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
-import {
-  usePendingBookingStore,
-  useLocationStore,
-  useCategoriesByNames,
-  useHandymenByCategory,
-  useAvailabilityByUserIds,
-  type PendingBookingData,
-  type HandymanProfile,
-} from "@shared/supabase";
+import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store'; import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, type HandymanProfile } from '@shared/query';
 import { createClient } from "@/lib/supabase";
 import { createAddress } from "@/lib/supabase/addresses";
 import { createBooking } from "@/lib/supabase/bookings";

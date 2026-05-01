@@ -167,6 +167,7 @@ export function LocationAutocomplete({
             data={predictions}
             keyExtractor={(item) => item.place_id}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             renderItem={({ item, index }) => (
               <Pressable
                 onPress={() => handleSelectPrediction(item)}

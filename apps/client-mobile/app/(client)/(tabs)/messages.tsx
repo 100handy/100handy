@@ -1,14 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { MessageCircle } from 'lucide-react-native';
-import {
-  useConversations,
-  useAuthStore,
-  subscribeToConversationList,
-  unsubscribeFromConversation,
-} from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { MessageCircle } from 'lucide-react-native'; import { useConversations } from '@shared/query'; import { subscribeToConversationList, unsubscribeFromConversation } from '@shared/supabase';
 import { ConversationItem } from '../../../components/chat';
 
 export default function MessagesScreen() {

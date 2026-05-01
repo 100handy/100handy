@@ -1,9 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, Share, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Gift, X } from 'lucide-react-native';
-import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
-import { ensureReferralCode, buildReferralDeepLink } from '@shared/supabase';
+import { View, Text, Pressable, Share, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Gift, X } from 'lucide-react-native'; import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal'; import { ensureReferralCode, buildReferralDeepLink } from '@shared/supabase';
 
 type ReferralShareModalProps = {
   isOpen: boolean;

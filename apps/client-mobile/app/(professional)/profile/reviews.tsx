@@ -1,9 +1,6 @@
 import React, { useMemo } from 'react';
-import { ScrollView, View, Text, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { ArrowLeft, Star } from 'lucide-react-native';
-import { useAuthStore, useProfessionalRating, useHandymanReviews } from '@shared/supabase';
+import { useProfessionalRating, useHandymanReviews } from '@shared/query';
+import { ScrollView, View, Text, Pressable, ActivityIndicator, RefreshControl } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { ArrowLeft, Star } from 'lucide-react-native'; import { useAuthStore } from '@shared/store';
 
 function formatReviewDate(value?: string) {
   if (!value) return '';
@@ -27,6 +24,15 @@ export default function ProfessionalReviewsScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const handyId = user?.id ?? '';
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(professional)/(tabs)/performance');
+  };
 
   const {
     data: ratingSummary,
@@ -80,7 +86,7 @@ export default function ProfessionalReviewsScreen() {
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
       <View className="bg-white px-5 py-4 border-b border-[#F0F0F0]">
         <View className="flex-row items-center justify-between">
-          <Pressable onPress={() => router.back()} className="w-8">
+          <Pressable onPress={handleBack} className="w-8">
             <ArrowLeft size={24} color="#30352D" />
           </Pressable>
           <Text className="font-worksans-bold text-[20px] text-brand-dark-alt">

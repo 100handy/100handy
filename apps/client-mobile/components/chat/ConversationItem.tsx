@@ -1,8 +1,6 @@
 import React from 'react';
-import { View, Text, Image, Pressable } from 'react-native';
-import { ConversationWithProfiles } from '@shared/supabase';
-import { formatDistanceToNow } from 'date-fns';
-import { useAuthStore } from '@shared/supabase';
+import { View, Text, Image, Pressable } from 'react-native'; import { ConversationWithProfiles } from '@shared/query';
+import { formatDistanceToNow } from 'date-fns'; import { useAuthStore } from '@shared/store';
 
 interface ConversationItemProps {
   conversation: ConversationWithProfiles;

@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Star, SlidersHorizontal } from 'lucide-react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import {
-  RatingFilter,
-  RatingFilterSheet,
-  ScheduleSelectionSheet,
-} from '@/components/tasker';
-import { useHandymanProfile, useHandymanReviews, type HandymanReview } from '@shared/supabase';
+import { useHandymanReviews, type HandymanReview } from '@shared/query';
+import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, Star, SlidersHorizontal } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import {   RatingFilter, RatingFilterSheet, ScheduleSelectionSheet, } from '@/components/tasker'; import { useHandymanProfile } from '@shared/query';
 
 export default function TaskerProfileScreen() {
   const router = useRouter();

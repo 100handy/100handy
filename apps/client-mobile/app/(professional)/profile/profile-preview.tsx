@@ -1,9 +1,5 @@
 import React, { useEffect } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import { useProfessionalProfileStore } from '@shared/supabase';
+import { ScrollView, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { useProfessionalProfileStore } from '@shared/store';
 
 export default function ProfilePreviewScreen() {
   const { tools, vehicles, quickFacts, aboutMe, syncCalendars, loadProfile } = useProfessionalProfileStore();

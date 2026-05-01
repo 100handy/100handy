@@ -3,11 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useHomeCategory } from "./home-category-context";
-import {
-  useSubcategories,
-  useTopLevelCategories,
-  type Category,
-} from "@shared/supabase";
+import { useSubcategories, useTopLevelCategories, type Category } from '@shared/query';
 import { getCategoryIcon } from "@/components/icons/category-icons";
 
 // Fallback categories for when DB is unavailable

@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import Header from '@/components/Header';
-import { useToast } from '@/components/ui/toast';
-import { signIn, updatePassword } from '@shared/supabase/auth';
-import { useAuthStore } from '@shared/supabase';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import Header from '@/components/Header'; import { useToast } from '@/components/ui/toast'; import { signIn, updatePassword } from '@shared/supabase/auth'; import { useAuthStore } from '@shared/store';
 import { ExpandablePasswordRow } from '@/components/profile/ExpandablePasswordRow';
 
 export default function ChangePasswordScreen() {

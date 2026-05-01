@@ -1,12 +1,6 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, View, Text, Pressable, Switch, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import Header from '@/components/Header';
-import {
-  usePrivacySettings,
-  useUpdatePrivacySettings,
-} from '@shared/supabase';
+import { useUpdatePrivacySettings } from '@shared/query';
+import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollView, View, Text, Pressable, Switch, ActivityIndicator } from 'react-native'; import { useRouter } from 'expo-router'; import Header from '@/components/Header'; import { usePrivacySettings } from '@shared/query';
 import { useToast } from '@/components/ui/toast';
 
 interface PrivacyToggleProps {

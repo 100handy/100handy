@@ -1,10 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
-import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { CheckCircle2, MessageCircle, Calendar } from 'lucide-react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useConversationByBooking } from '@shared/supabase';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native'; import { Image } from 'expo-image'; import { SafeAreaView } from 'react-native-safe-area-context'; import { CheckCircle2, MessageCircle, Calendar } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { useConversationByBooking } from '@shared/query';
 
 export default function BookingSuccessScreen() {
   const router = useRouter();

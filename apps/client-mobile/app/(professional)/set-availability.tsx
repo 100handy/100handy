@@ -1,22 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { ScrollView, View, Text, Pressable, Dimensions, ActivityIndicator, Switch, NativeSyntheticEvent, NativeScrollEvent, PanResponder } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { Button, ButtonText } from '@/components/ui/button';
-import {
-  Modal,
-  ModalBackdrop,
-  ModalContent,
-} from '@/components/ui/modal';
-import { Plus, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react-native';
-import { TimePickerWheel } from '@/components/availability';
-import {
-  useWeeklyAvailability,
-  useDeleteAvailabilitySlot,
-  useReplaceAvailabilitySlots,
-  type AvailabilitySlot,
-  type RecurrenceType,
-} from '@shared/supabase';
+import { useDeleteAvailabilitySlot, useReplaceAvailabilitySlots, type AvailabilitySlot, type RecurrenceType } from '@shared/query';
+import { ScrollView, View, Text, Pressable, Dimensions, ActivityIndicator, Switch, NativeSyntheticEvent, NativeScrollEvent, PanResponder } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import { Button, ButtonText } from '@/components/ui/button'; import {   Modal, ModalBackdrop, ModalContent, } from '@/components/ui/modal'; import { Plus, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react-native'; import { TimePickerWheel } from '@/components/availability'; import { useWeeklyAvailability } from '@shared/query';
 import { useToast } from '@/components/ui/toast';
 
 interface TimeSlot {
@@ -107,6 +91,8 @@ const isOverlapping = (start1: number, end1: number, start2: number, end2: numbe
 export default function SetAvailability() {
   const toast = useToast();
   const weekPagerRef = useRef<ScrollView>(null);
+  const timelineScrollRef = useRef<ScrollView>(null);
+  const hasAutoSelectedAvailabilityDay = useRef(false);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [visibleWeekOffset, setVisibleWeekOffset] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -116,7 +102,7 @@ export default function SetAvailability() {
   const [endMinute, setEndMinute] = useState('45');
   const [repeatWeekly, setRepeatWeekly] = useState(false);
   const [repeatDays, setRepeatDays] = useState<Set<number>>(
-    () => new Set([0]),
+    () => new Set([new Date().getDay()]),
   );
   const [availability, setAvailability] = useState<DayAvailability>({});
   const [deletingSlots, setDeletingSlots] = useState<Set<string>>(new Set());
@@ -172,6 +158,18 @@ export default function SetAvailability() {
       });
 
       setAvailability(transformed);
+
+      if (!hasAutoSelectedAvailabilityDay.current) {
+        const firstAvailableDate = daysOfWeek.find(
+          ({ fullDate }) => (transformed[fullDate.getDay()] || []).length > 0,
+        )?.fullDate;
+
+        if (firstAvailableDate) {
+          setSelectedDate(new Date(firstAvailableDate));
+        }
+
+        hasAutoSelectedAvailabilityDay.current = true;
+      }
     }
   }, [daysOfWeek, weeklyData]);
 
@@ -179,6 +177,21 @@ export default function SetAvailability() {
     () => availability[selectedDay] || [],
     [availability, selectedDay],
   );
+
+  useEffect(() => {
+    if (showAddModal || currentDaySlots.length === 0) {
+      return;
+    }
+
+    const earliestStart = Math.min(
+      ...currentDaySlots.map((slot) => timeToMinutes(slot.startTime)),
+    );
+    const offset = Math.max(0, (earliestStart / 60) * HOUR_HEIGHT - 120);
+
+    requestAnimationFrame(() => {
+      timelineScrollRef.current?.scrollTo({ y: offset, animated: false });
+    });
+  }, [currentDaySlots, selectedDay, showAddModal]);
 
   // Calculate current selection in minutes
   const selectionStart = parseInt(startHour) * 60 + parseInt(startMinute);
@@ -611,7 +624,11 @@ export default function SetAvailability() {
       </View>
 
       {/* Timeline View */}
-      <ScrollView className="flex-1 bg-white" contentContainerStyle={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT + 50 }}>
+      <ScrollView
+        ref={timelineScrollRef}
+        className="flex-1 bg-white"
+        contentContainerStyle={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT + 50 }}
+      >
         <View className="flex-row flex-1">
           {/* Time Labels */}
           <View className="w-16 border-r border-gray-100 bg-white">
@@ -674,8 +691,7 @@ export default function SetAvailability() {
                     {...topResizeResponder.panHandlers}
                     className="absolute top-0 left-0 right-0 h-6 z-10"
                   >
-                    <View className="absolute top-1 left-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
-                    <View className="absolute top-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
+                    <View className="absolute top-1 self-center w-10 h-1.5 rounded-full bg-white/90" />
                   </View>
                   <View className="flex-row justify-between items-start">
                     <View className="flex-1 min-w-0 pr-2">
@@ -685,11 +701,13 @@ export default function SetAvailability() {
                           numberOfLines={1}
                           ellipsizeMode="tail"
                         >
-                          Available · {slot.startTime}–{slot.endTime}
+                          {slot.startTime} - {slot.endTime}
                         </Text>
                       ) : (
                         <>
-                          <Text className="text-white font-worksans-bold text-sm">Available</Text>
+                          <Text className="text-white font-worksans-bold text-base">
+                            Available
+                          </Text>
                           <Text className="text-white font-worksans text-xs opacity-90">
                             {slot.startTime} - {slot.endTime}
                           </Text>
@@ -715,8 +733,7 @@ export default function SetAvailability() {
                     {...bottomResizeResponder.panHandlers}
                     className="absolute bottom-0 left-0 right-0 h-6 z-10"
                   >
-                    <View className="absolute bottom-1 left-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
-                    <View className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
+                    <View className="absolute bottom-1 self-center w-10 h-1.5 rounded-full bg-white/90" />
                   </View>
                 </View>
               );
@@ -736,7 +753,7 @@ export default function SetAvailability() {
                   borderColor: '#047857',
                   backgroundColor: 'rgba(4, 120, 87, 0.1)',
                 }}
-                className="rounded-lg justify-center items-center"
+                className="rounded-lg justify-center items-center px-3"
               >
                 <Text className="text-emerald-700 font-worksans-bold">
                   {isMerge ? 'Merging...' : 'New Slot'}

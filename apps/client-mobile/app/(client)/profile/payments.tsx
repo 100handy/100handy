@@ -3,24 +3,22 @@ import { ScrollView, View, Text, Pressable, Platform, ActivityIndicator } from '
 import { useToast } from '@/components/ui/toast';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useStripe } from '@stripe/stripe-react-native';
-
-// Import lucide-react-native icons
 import { ChevronRight } from 'lucide-react-native';
-
-// Import Header component
 import Header from '@/components/Header';
-
-// Import shared supabase functions
 import { createSetupIntent } from '@shared/supabase';
+import { getUnsupportedNativeFeatureMessage, initStripePaymentSheet, presentStripePaymentSheet, supportsStripeNative } from '@/lib/native-feature-support';
 
 export default function PaymentsScreen() {
     const router = useRouter();
-    const { initPaymentSheet, presentPaymentSheet } = useStripe();
     const [isWalletLoading, setIsWalletLoading] = useState(false);
     const toast = useToast();
 
     const handleWalletPayment = async () => {
+        if (!supportsStripeNative()) {
+            toast.info('Unavailable in Expo Go', getUnsupportedNativeFeatureMessage('Wallet payments'));
+            return;
+        }
+
         setIsWalletLoading(true);
         try {
             // 1. Create SetupIntent to save the payment method
@@ -31,7 +29,7 @@ export default function PaymentsScreen() {
             }
 
             // 2. Initialize PaymentSheet with wallet support (only pass platform-relevant config)
-            const { error: initError } = await initPaymentSheet({
+            const { error: initError } = await initStripePaymentSheet({
                 setupIntentClientSecret: setupIntent.clientSecret,
                 merchantDisplayName: '100Handy',
                 ...(Platform.OS === 'ios' ? { applePay: { merchantCountryCode: 'GB' } } : {}),
@@ -46,7 +44,7 @@ export default function PaymentsScreen() {
             }
 
             // 3. Present the PaymentSheet
-            const { error: presentError } = await presentPaymentSheet();
+            const { error: presentError } = await presentStripePaymentSheet();
 
             if (presentError) {
                 // User cancelled or error

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useRouter, useSegments } from 'expo-router';
-import { useAuthStore } from '@shared/supabase';
+import { useRouter, useSegments } from 'expo-router'; import { useAuthStore } from '@shared/store';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { Loader } from '@/components/ui/loader';
 
@@ -71,14 +70,20 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         try {
           const handyProfile = await getHandyProfile();
           if (isMounted) {
-            setProfessionalOnboardingComplete(handyProfile?.onboarding_completed || false);
-            setIsIdentityVerified(handyProfile?.verification_status === 'verified');
+            setProfessionalOnboardingComplete(
+              typeof handyProfile?.onboarding_completed === 'boolean'
+                ? handyProfile.onboarding_completed
+                : true
+            );
+            setIsIdentityVerified(
+              handyProfile ? handyProfile.verification_status === 'verified' : true
+            );
           }
         } catch (error) {
-          console.error('Error checking professional status:', error);
+          console.warn('Unable to check professional status:', error);
           if (isMounted) {
-            setProfessionalOnboardingComplete(false);
-            // Assume verified on error to avoid blocking legitimate users on transient failures
+            // Avoid forcing legitimate professionals back into onboarding on transient failures.
+            setProfessionalOnboardingComplete(true);
             setIsIdentityVerified(true);
           }
         } finally {
@@ -186,7 +191,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
 
   const stillLoading = !hasTimedOut && (isLoading || (isAuthenticated && userRole === 'handy' && isCheckingOnboarding) || (isAuthenticated && isIdentityVerified === null));
   if (stillLoading) {
-    return <Loader />;
+    return <Loader text="Checking your account..." />;
   }
 
   return <>{children}</>;

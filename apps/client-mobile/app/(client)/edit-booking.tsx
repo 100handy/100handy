@@ -1,17 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, Calendar, Clock, Save, Edit, MapPin } from 'lucide-react-native';
-import {
-  useBookingById,
-  useUpdateBookingDetails,
-  useAuthStore,
-  checkBookingConflict,
-  getAvailabilityByUserId,
-  doesAvailabilitySlotApplyToDate,
-  type FormResponse,
-} from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { useUpdateBookingDetails, doesAvailabilitySlotApplyToDate } from '@shared/query';
+import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useLocalSearchParams, useRouter } from 'expo-router'; import { ChevronLeft, Calendar, Clock, Save, Edit, MapPin } from 'lucide-react-native'; import { useBookingById } from '@shared/query'; import { checkBookingConflict, getAvailabilityByUserId, type FormResponse } from '@shared/supabase';
 import { ScheduleSelectionSheet } from '@/components/tasker/ScheduleSelectionSheet';
 import { DynamicFormRenderer } from '@/components/booking/DynamicFormRenderer';
 import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';

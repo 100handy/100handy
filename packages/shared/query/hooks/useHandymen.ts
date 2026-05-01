@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../../supabase';
+import { supabase } from '../../supabase/supabaseClient';
 
 export interface HandymanProfile {
   user_id: string;

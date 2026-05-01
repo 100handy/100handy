@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePendingBookingStore, useLocationStore } from "@shared/supabase";
+import { usePendingBookingStore, useLocationStore } from '@shared/store';
 import { useAuthContext } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 

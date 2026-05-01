@@ -20,8 +20,9 @@ import { findOrCreateAddress } from "@/lib/supabase/addresses";
 import { createBooking, getEstimatedHours, MINIMUM_BOOKING_HOURS } from "@/lib/supabase/bookings";
 import { createPaymentIntent, cancelPaymentIntent } from "@/lib/stripe/payment";
 import { createClient } from "@/lib/supabase";
-import type { FormResponse, PendingBookingData, Category, HandymanProfile, AvailabilitySlot } from "@shared/supabase";
-import { usePendingBookingStore, useLocationStore, useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds } from "@shared/supabase";
+import type { FormResponse } from "@shared/supabase";
+import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store';
+import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, type Category, type HandymanProfile, type AvailabilitySlot } from '@shared/query';
 
 // Sort options type
 type SortOption = 'recommended' | 'price_low' | 'price_high' | 'rating' | 'reviews';

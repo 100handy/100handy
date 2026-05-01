@@ -1,15 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, FlatList, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Mail, MessageCircle } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import {
-  useProfileStore,
-  useConversations,
-  useAuthStore,
-  subscribeToConversationList,
-  unsubscribeFromConversation,
-} from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { useConversations } from '@shared/query';
+import { View, Text, Pressable, FlatList, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, Mail, MessageCircle } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useProfileStore } from '@shared/store'; import { subscribeToConversationList, unsubscribeFromConversation } from '@shared/supabase';
 import { ConversationItem } from '@/components/chat';
 
 export default function InboxScreen() {

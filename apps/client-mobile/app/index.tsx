@@ -1,8 +1,5 @@
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useRouter, useFocusEffect } from "expo-router";
-import { Loader } from "@/components/ui/loader";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore, usePendingBookingStore, useLocationStore } from '@shared/supabase';
+import { usePendingBookingStore, useLocationStore } from '@shared/store';
+import { useEffect, useState, useRef, useCallback } from "react"; import { useRouter, useFocusEffect } from "expo-router"; import { Loader } from "@/components/ui/loader"; import AsyncStorage from '@react-native-async-storage/async-storage'; import { useAuthStore } from '@shared/store';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { buildPendingBookingRoute, resolveAuthenticatedRoute, type AuthRouteTarget } from '@/lib/auth-routing';
@@ -68,7 +65,9 @@ export default function Index() {
         },
         getProfessionalOnboardingCompleted: async () => {
           const handyProfile = await getHandyProfile();
-          return handyProfile?.onboarding_completed || false;
+          return typeof handyProfile?.onboarding_completed === 'boolean'
+            ? handyProfile.onboarding_completed
+            : null;
         },
         getPendingBookingRoute,
       });
@@ -76,10 +75,9 @@ export default function Index() {
       hasRouted.current = true;
       router.replace(route as Parameters<typeof router.replace>[0]);
     } catch (error) {
-      console.error('Error routing authenticated user:', error);
-      // Default to client home on error (user is authenticated)
+      console.warn('Unable to route authenticated user cleanly:', error);
       hasRouted.current = true;
-      router.replace('/(client)/(tabs)/home');
+      router.replace(userRole === 'handy' ? '/(professional)/(tabs)/dashboard' : '/(client)/(tabs)/home');
     } finally {
       setIsChecking(false);
     }
@@ -112,7 +110,7 @@ export default function Index() {
       router.replace('/(auth)/welcome');
       setIsChecking(false);
     } catch (error) {
-      console.error('Error checking onboarding status:', error);
+      console.warn('Unable to check onboarding status:', error);
       // On error, check auth state first
       if (isAuthenticated && user) {
         await routeAuthenticatedUser();
@@ -149,7 +147,7 @@ export default function Index() {
     !hasPendingBookingHydrated ||
     (isAuthenticated && user && !isRoleResolved)
   ) {
-    return <Loader />;
+    return <Loader text="Opening 100Handy..." />;
   }
 
   // This should not be reached, but return null as fallback

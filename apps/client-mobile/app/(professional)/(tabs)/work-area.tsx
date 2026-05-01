@@ -1,23 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  PanResponder,
-  Text,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import MapView, { Polygon, Marker, LatLng, Region } from "react-native-maps";
-import * as Location from "expo-location";
-import { Hand, Minus, Pencil, Plus, X } from "lucide-react-native";
-import { Button, ButtonText } from "@/components/ui/button";
-import {
-  useWorkArea,
-  useSaveWorkArea,
-  type Coordinate,
-} from "@shared/supabase";
+import { useSaveWorkArea, type Coordinate } from '@shared/query';
+import { View, StyleSheet, Dimensions, PanResponder, Text, Pressable, ActivityIndicator, } from "react-native"; import { SafeAreaView } from "react-native-safe-area-context"; import MapView, { Polygon, Marker, LatLng, Region } from "react-native-maps"; import { Hand, Minus, Pencil, Plus, X } from "lucide-react-native"; import { Button, ButtonText } from "@/components/ui/button"; import { useWorkArea } from '@shared/query';
 import { useToast } from "@/components/ui/toast";
 
 const { width, height } = Dimensions.get("window");
@@ -135,41 +118,6 @@ export default function WorkAreaTab() {
         });
       });
     }
-  }, [existingWorkArea]);
-
-  useEffect(() => {
-    if (existingWorkArea?.coordinates?.length) {
-      return;
-    }
-
-    let isMounted = true;
-
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        return;
-      }
-
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      if (!isMounted) {
-        return;
-      }
-
-      const nextRegion: Region = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA,
-      };
-      setRegion(nextRegion);
-      mapRef.current?.animateToRegion(nextRegion, 200);
-    })().catch((error) => {
-      console.warn("Unable to center map on current location:", error);
-    });
-
-    return () => {
-      isMounted = false;
-    };
   }, [existingWorkArea]);
 
   const handleSave = () => {

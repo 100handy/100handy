@@ -1,7 +1,4 @@
-import { useState, useCallback } from 'react';
-import { useRouter } from 'expo-router';
-import { useProfile } from '@shared/query';
-import { useAuthStore, signIn } from '@shared/supabase';
+import { useState, useCallback } from 'react'; import { useRouter } from 'expo-router'; import { useProfile } from '@shared/query'; import { useAuthStore } from '@shared/store'; import { signIn } from '@shared/supabase';
 import { useToast } from '@/components/ui/toast';
 
 /**

@@ -1,19 +1,6 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  ScrollView,
-  View,
-  Text,
-  Pressable,
-  Switch,
-  ActivityIndicator,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import {
-  useNotificationPreferences,
-  useUpdateNotificationPreferences,
-} from '@shared/supabase';
+import { useUpdateNotificationPreferences } from '@shared/query';
+import { SafeAreaView } from 'react-native-safe-area-context'; import {   ScrollView, View, Text, Pressable, Switch, ActivityIndicator, } from 'react-native'; import { useRouter } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { useNotificationPreferences } from '@shared/query';
 import { useToast } from '@/components/ui/toast';
 
 const SectionHeader = ({ title }: { title: string }) => (

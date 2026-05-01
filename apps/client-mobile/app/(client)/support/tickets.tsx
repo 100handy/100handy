@@ -1,12 +1,5 @@
 import React, { useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, View, Text, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { ChevronLeft, MessageCircle, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react-native';
-import Header from '@/components/Header';
-import { useSupportStore } from '@shared/store/support';
-import { formatDistanceToNow } from 'date-fns';
-import { SupportTicket } from '@shared/supabase';
+import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollView, View, Text, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native'; import { useRouter } from 'expo-router'; import { ChevronLeft, MessageCircle, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react-native'; import Header from '@/components/Header'; import { useSupportStore } from '@shared/store/support'; import { formatDistanceToNow } from 'date-fns'; import { SupportTicket } from '@shared/supabase';
 
 interface TicketItemProps {
   ticket: SupportTicket;

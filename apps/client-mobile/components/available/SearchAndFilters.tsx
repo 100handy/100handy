@@ -19,7 +19,11 @@ export const SearchAndFilters = ({ activeFilter, onFilterChange }: SearchAndFilt
         </InputSlot>
         <InputField placeholder="Search professionals..." className="font-work-sans text-sm text-gray-400" />
       </Input>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="space-x-2 flex-row">
           {filterChips.map((chip) => (
             <Pressable

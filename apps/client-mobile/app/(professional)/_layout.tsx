@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Stack, Redirect, useSegments, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
-import { useAuthStore } from '@shared/supabase';
+import { useEffect, useRef, useState } from 'react'; import { Stack, Redirect, useSegments, useFocusEffect } from 'expo-router'; import { useCallback } from 'react'; import { useAuthStore } from '@shared/store';
 import { getHandyProfile } from '@shared/supabase/profile';
 import {
   canAccessProfessionalTab,
   type ProfessionalVerificationStatus,
 } from '@/lib/professional-access';
+import { Loader } from '@/components/ui/loader';
 
 export default function ProfessionalLayout() {
   const { isAuthenticated, isLoading, isRoleResolved, isEmailVerified, user, userRole } = useAuthStore();
@@ -14,10 +12,12 @@ export default function ProfessionalLayout() {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState<boolean | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<ProfessionalVerificationStatus>(null);
   const segments = useSegments();
+  const isMountedRef = useRef(true);
+  const hasLoadedOnFocusRef = useRef(false);
 
-  const loadProfessionalStatus = useCallback(async (isMounted: boolean) => {
+  const loadProfessionalStatus = useCallback(async () => {
     if (!isAuthenticated || userRole !== 'handy' || !isEmailVerified) {
-      if (isMounted) {
+      if (isMountedRef.current) {
         setIsCheckingOnboarding(false);
         setIsOnboardingComplete(null);
         setVerificationStatus(null);
@@ -29,42 +29,46 @@ export default function ProfessionalLayout() {
 
     try {
       const handyProfile = await getHandyProfile();
-      if (isMounted) {
+      if (isMountedRef.current) {
         setIsOnboardingComplete(!!handyProfile?.onboarding_completed);
         setVerificationStatus(
           (handyProfile?.verification_status as ProfessionalVerificationStatus | undefined) ?? null
         );
       }
     } catch (error) {
-      console.error('Error checking professional onboarding in layout:', error);
-      if (isMounted) {
-        setIsOnboardingComplete(false);
+      console.warn('Unable to load professional onboarding state in layout:', error);
+      if (isMountedRef.current) {
+        setIsOnboardingComplete(null);
         setVerificationStatus(null);
       }
     } finally {
-      if (isMounted) {
+      if (isMountedRef.current) {
         setIsCheckingOnboarding(false);
       }
     }
   }, [isAuthenticated, isEmailVerified, userRole]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    loadProfessionalStatus(isMounted);
+    isMountedRef.current = true;
+    loadProfessionalStatus();
 
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
     };
   }, [loadProfessionalStatus]);
 
   useFocusEffect(
     useCallback(() => {
-      let isMounted = true;
-      loadProfessionalStatus(isMounted);
+      if (!hasLoadedOnFocusRef.current) {
+        hasLoadedOnFocusRef.current = true;
+        return undefined;
+      }
+
+      isMountedRef.current = true;
+      loadProfessionalStatus();
 
       return () => {
-        isMounted = false;
+        isMountedRef.current = false;
       };
     }, [loadProfessionalStatus])
   );
@@ -74,7 +78,7 @@ export default function ProfessionalLayout() {
     (isAuthenticated && !isRoleResolved) ||
     (isAuthenticated && userRole === 'handy' && isCheckingOnboarding)
   ) {
-    return null;
+    return <Loader text="Preparing your dashboard..." />;
   }
 
   if (!isAuthenticated) {
@@ -127,7 +131,6 @@ export default function ProfessionalLayout() {
           contentStyle: { backgroundColor: '#FFFFFF' },
         }}
       />
-      <Stack.Screen name="job-details" />
     </Stack>
   );
 }

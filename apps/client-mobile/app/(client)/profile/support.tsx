@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, Alert, View, Text, Pressable, Linking, ActivityIndicator, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
-import Header from '@/components/Header';
-import { useDeleteAccount, useAuthStore, signIn } from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollView, Alert, View, Text, Pressable, Linking, ActivityIndicator, TextInput } from 'react-native'; import { useRouter } from 'expo-router'; import Header from '@/components/Header'; import { useDeleteAccount } from '@shared/query'; import { signIn } from '@shared/supabase';
 import { useToast } from '@/components/ui/toast';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 import Constants from 'expo-constants';

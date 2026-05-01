@@ -1,6 +1,6 @@
 import { Tabs, useRouter, useFocusEffect } from 'expo-router';
 import { Pressable, Text } from 'react-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Home, MapPin, Calendar, BarChart, User, Briefcase } from 'lucide-react-native';
 import { getHandyProfile } from '@shared/supabase/profile';
 import {
@@ -11,6 +11,7 @@ import {
 export default function ProfessionalTabLayout() {
   const router = useRouter();
   const [verificationStatus, setVerificationStatus] = useState<ProfessionalVerificationStatus>(null);
+  const hasLoadedOnFocusRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -24,7 +25,7 @@ export default function ProfessionalTabLayout() {
           );
         }
       } catch (error) {
-        console.error('Error loading professional verification status:', error);
+        console.warn('Unable to load professional verification status:', error);
         if (isMounted) {
           setVerificationStatus(null);
         }
@@ -40,6 +41,11 @@ export default function ProfessionalTabLayout() {
 
   useFocusEffect(
     useCallback(() => {
+      if (!hasLoadedOnFocusRef.current) {
+        hasLoadedOnFocusRef.current = true;
+        return undefined;
+      }
+
       let isMounted = true;
 
       const reloadVerificationStatus = async () => {
@@ -51,7 +57,7 @@ export default function ProfessionalTabLayout() {
             );
           }
         } catch (error) {
-          console.error('Error refreshing professional verification status:', error);
+          console.warn('Unable to refresh professional verification status:', error);
         }
       };
 

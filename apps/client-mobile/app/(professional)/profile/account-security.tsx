@@ -1,10 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Mail, Shield, ShieldOff } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import { supabase, disable2FA, useProfile } from '@shared/supabase';
-import { useAuthStore } from '@shared/supabase';
+import { useProfile } from '@shared/query';
+import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, Mail, Shield, ShieldOff } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useFocusEffect } from '@react-navigation/native'; import { supabase, disable2FA } from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
 import { Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
 
 export default function ProfessionalAccountSecurityScreen() {

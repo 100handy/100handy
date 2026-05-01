@@ -1,30 +1,11 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { ScrollView, View, Text, Pressable, Alert, RefreshControl, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import {
-  DollarSign,
-  Landmark,
-  Smile,
-  Calendar,
-  MapPin,
-  Bell,
-  Mail,
-  AlertTriangle,
-  ChevronRight,
-  ShieldCheck,
-  Clock,
-} from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { OnboardingTask } from '@/components/dashboard';
-import { useAuthStore } from '@shared/supabase';
-import { useProfileStore } from '@shared/supabase';
-import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { ScrollView, View, Text, Pressable, Alert, RefreshControl, Image } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import {   DollarSign, Landmark, Smile, Calendar, MapPin, Bell, Mail, AlertTriangle, ChevronRight, ShieldCheck, Clock, } from 'lucide-react-native'; import { LinearGradient } from 'expo-linear-gradient'; import { OnboardingTask } from '@/components/dashboard'; import { useAuthStore } from '@shared/store';
+import { useProfileStore } from '@shared/store';
 import { supabase } from '@shared/supabase';
-import { getHandyProfile, getUserSkills } from '@shared/supabase/profile';
-import { getConnectAccountStatus } from '@shared/supabase/payment-methods';
-import { useWorkArea, useWeeklyAvailability } from '@shared/supabase';
+import { useWeeklyAvailability } from '@shared/query';
+import { getHandyProfile, getUserSkills } from '@shared/supabase/profile'; import { getConnectAccountStatus } from '@shared/supabase/payment-methods'; import { useWorkArea } from '@shared/query';
 import { useFocusEffect } from 'expo-router';
+import { getUnsupportedNativeFeatureMessage, presentStripeIdentityVerificationSheet, supportsStripeNative } from '@/lib/native-feature-support';
 
 type VerificationStatus = 'pending' | 'submitted' | 'verified' | 'rejected' | null;
 
@@ -37,6 +18,8 @@ export default function ProfessionalDashboard() {
   const [hasAnySkill, setHasAnySkill] = useState(false);
   const [hasDirectDeposit, setHasDirectDeposit] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
+  const hasHandledInitialFocusRef = useRef(false);
 
   // Fetch work area and availability for progress calculation
   const { data: workArea } = useWorkArea();
@@ -56,6 +39,7 @@ export default function ProfessionalDashboard() {
   }, [profile?.avatar_url, verificationStatus, workArea, weeklyAvailability, hasActiveSkill, hasDirectDeposit]);
 
   const progressPercent = (completedTasks / totalTasks) * 100;
+  const isLoadingOverview = !hasLoadedProgress && !refreshing;
 
   // Fetch skills and direct deposit status
   const fetchOnboardingProgress = useCallback(async () => {
@@ -71,6 +55,8 @@ export default function ProfessionalDashboard() {
       setHasDirectDeposit(connectStatus?.payoutsEnabled ?? false);
     } catch (error) {
       console.warn('Unable to fetch onboarding progress:', error);
+    } finally {
+      setHasLoadedProgress(true);
     }
   }, []);
 
@@ -85,6 +71,11 @@ export default function ProfessionalDashboard() {
   // Refresh progress + verification status when screen comes into focus
   useFocusEffect(
     useCallback(() => {
+      if (!hasHandledInitialFocusRef.current) {
+        hasHandledInitialFocusRef.current = true;
+        return undefined;
+      }
+
       if (user) {
         fetchVerificationStatus();
         fetchOnboardingProgress();
@@ -145,7 +136,7 @@ export default function ProfessionalDashboard() {
     }
   }, []);
 
-  const { present, loading: stripeLoading } = useStripeIdentity(fetchOptions);
+  const [stripeLoading, setStripeLoading] = useState(false);
 
   const handleStartVerification = useCallback(async () => {
     // Don't start a new verification if already submitted or verified
@@ -157,9 +148,16 @@ export default function ProfessionalDashboard() {
       return;
     }
 
+    if (!supportsStripeNative()) {
+      Alert.alert('Unavailable in Expo Go', getUnsupportedNativeFeatureMessage('Identity verification'));
+      return;
+    }
+
     try {
       setIsVerifying(true);
-      const result = await present() as { status: string } | undefined;
+      setStripeLoading(true);
+      const options = await fetchOptions();
+      const result = await presentStripeIdentityVerificationSheet(options);
 
       if (result?.status === 'FlowCompleted') {
         await fetchVerificationStatus();
@@ -174,9 +172,10 @@ export default function ProfessionalDashboard() {
       console.error('Error in verification:', error);
       Alert.alert('Error', 'Failed to start verification. Please try again.');
     } finally {
+      setStripeLoading(false);
       setIsVerifying(false);
     }
-  }, [fetchVerificationStatus, present, verificationStatus]);
+  }, [fetchOptions, fetchVerificationStatus, verificationStatus]);
 
   // Check completion status for each task
   const hasProfilePhoto = !!profile?.avatar_url;
@@ -403,6 +402,11 @@ export default function ProfessionalDashboard() {
               style={{ width: `${progressPercent}%` }}
             />
           </View>
+          {isLoadingOverview ? (
+            <Text className="font-worksans text-[12px] text-[#6B6B6B] mt-2">
+              Loading your progress...
+            </Text>
+          ) : null}
         </View>
 
         <View className="flex-col">

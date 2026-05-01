@@ -1,21 +1,14 @@
 import "@/globals.css";
-import { SplashScreen, Stack, router } from "expo-router";
-import { useFonts } from "expo-font";
-import { useEffect, useRef } from "react";
-import { AppState, Platform } from "react-native";
-import * as Linking from "expo-linking";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { supabase } from "@shared/supabase/supabaseClient";
-import { useAuthStore, upsertDevicePushToken } from "@shared/supabase";
+import { SplashScreen, Stack, router } from "expo-router"; import { useFonts } from "expo-font"; import { useEffect, useRef } from "react"; import { AppState, Platform } from "react-native"; import * as Linking from "expo-linking"; import { GestureHandlerRootView } from "react-native-gesture-handler"; import { supabase } from "@shared/supabase/supabaseClient"; import { useAuthStore } from '@shared/store'; import { upsertDevicePushToken } from '@shared/supabase';
 import { QueryProvider } from "@/components/providers";
 import { ToastProvider } from "@/components/ui/toast";
 import { StripeProviderWrapper } from "@/components/StripeProviderWrapper";
 import { initializePendingBookingStorage } from "@/lib/pending-booking-storage";
-import * as Notifications from "expo-notifications";
 import {
-  configureNotifications,
-  getRouteFromNotificationData,
+  addNotificationResponseListener,
+  getLastNotificationRouteAsync,
   registerForPushNotificationsAsync,
+  supportsPushNotifications,
 } from "@/lib/notifications";
 
 // Initialize pending booking storage with AsyncStorage
@@ -63,33 +56,31 @@ export default function RootLayout() {
 
   // Push notifications: configure handlers, handle taps, and register device token (once per user/device).
   useEffect(() => {
-    configureNotifications();
+    let isCancelled = false;
+    let responseSub: { remove: () => void } | null = null;
 
-    const responseSub = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const route = getRouteFromNotificationData(
-          response.notification.request.content.data
-        );
-        if (route) {
+    const setupNotifications = async () => {
+      if (!supportsPushNotifications()) {
+        return;
+      }
+
+      responseSub = await addNotificationResponseListener((route) => {
+        if (!isCancelled) {
           router.push(route as Parameters<typeof router.push>[0]);
         }
-      }
-    );
+      });
 
-    // Handle cold start / backgrounded app tap.
-    (async () => {
-      const lastResponse = await Notifications.getLastNotificationResponseAsync();
-      if (!lastResponse) return;
-      const route = getRouteFromNotificationData(
-        lastResponse.notification.request.content.data
-      );
+      const route = await getLastNotificationRouteAsync();
       if (route) {
         router.push(route as Parameters<typeof router.push>[0]);
       }
-    })();
+    };
+
+    void setupNotifications();
 
     return () => {
-      responseSub.remove();
+      isCancelled = true;
+      responseSub?.remove();
     };
   }, []);
 
@@ -101,6 +92,10 @@ export default function RootLayout() {
         setCurrentPushToken(null);
         lastRegisteredUserIdRef.current = null;
         lastRegisteredTokenRef.current = null;
+        return;
+      }
+
+      if (!supportsPushNotifications()) {
         return;
       }
 

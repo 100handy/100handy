@@ -52,6 +52,7 @@ export default function ResetPassword() {
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <View className="flex-col flex-1">
             {/* Header */}

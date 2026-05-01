@@ -66,6 +66,8 @@ export const useSupportStore = create<SupportState>((set, get) => ({
 
   error: null,
 
+  // Helper for recoverable auth misses during session rehydration
+
   // Fetch all tickets for the user
   fetchTickets: async () => {
     try {
@@ -74,9 +76,20 @@ export const useSupportStore = create<SupportState>((set, get) => ({
       const tickets = await getSupportTickets();
       set({ tickets, isLoadingTickets: false });
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch tickets';
+
+      if (message === 'Not authenticated') {
+        set({
+          tickets: [],
+          isLoadingTickets: false,
+          error: null,
+        });
+        return;
+      }
+
       console.error('Error fetching tickets:', error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to fetch tickets',
+        error: message,
         isLoadingTickets: false,
       });
     }
@@ -97,9 +110,19 @@ export const useSupportStore = create<SupportState>((set, get) => ({
 
       return ticket;
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to create ticket';
+
+      if (message === 'Not authenticated') {
+        set({
+          isCreatingTicket: false,
+          error: null,
+        });
+        throw error;
+      }
+
       console.error('Error creating ticket:', error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to create ticket',
+        error: message,
         isCreatingTicket: false,
       });
       throw error;
@@ -135,9 +158,21 @@ export const useSupportStore = create<SupportState>((set, get) => ({
       // Mark messages as read
       await markAllMessagesAsRead(ticketId);
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to open ticket';
+
+      if (message === 'Not authenticated') {
+        set({
+          activeTicket: null,
+          messages: [],
+          isLoadingMessages: false,
+          error: null,
+        });
+        return;
+      }
+
       console.error('Error opening ticket:', error);
       set({
-        error: error instanceof Error ? error.message : 'Failed to open ticket',
+        error: message,
         isLoadingMessages: false,
       });
     }

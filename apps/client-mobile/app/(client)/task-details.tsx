@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, TextInput, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft } from 'lucide-react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useHandymanProfile } from '@shared/supabase';
+import { ScrollView, View, Text, Pressable, TextInput, Image } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { useHandymanProfile } from '@shared/query';
 
 export default function TaskDetailsScreen() {
   const router = useRouter();
@@ -69,7 +65,11 @@ export default function TaskDetailsScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="flex-col px-5 py-6">
           {/* Tasker Info Section */}
           <View className="flex-row items-start mb-6">

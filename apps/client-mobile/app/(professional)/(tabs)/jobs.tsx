@@ -1,23 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { FlatList, View, Text, Pressable, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from 'expo-router';
-import {
-  Clock,
-  MapPin,
-  Calendar,
-  ChevronRight,
-  AlertCircle,
-  CheckCircle2,
-  Play,
-  Briefcase,
-} from 'lucide-react-native';
-import { useAuthStore, subscribeToHandyBookings, unsubscribeFromBookingUpdates } from '@shared/supabase';
-import {
-  useHandyBookings,
-  type BookingWithCustomer,
-} from '@shared/supabase';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { FlatList, View, Text, Pressable, RefreshControl } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { useFocusEffect } from 'expo-router'; import {   Clock, MapPin, Calendar, ChevronRight, AlertCircle, CheckCircle2, Play, Briefcase, } from 'lucide-react-native'; import { useAuthStore } from '@shared/store'; import { subscribeToHandyBookings, unsubscribeFromBookingUpdates } from '@shared/supabase';
+import { useHandyBookings, type BookingWithCustomer } from '@shared/query';
 
 type TabType = 'pending' | 'upcoming' | 'past';
 
@@ -172,11 +155,32 @@ function EmptyState({ type }: { type: TabType }) {
   );
 }
 
+function JobCardSkeleton() {
+  return (
+    <View className="bg-white mx-4 mb-3 p-4 rounded-2xl border border-[#F0F0F0]">
+      <View className="w-24 h-6 rounded-full bg-[#F5F1EC] mb-3" />
+      <View className="w-3/5 h-5 rounded bg-[#F5F5F5] mb-2" />
+      <View className="w-2/5 h-4 rounded bg-[#F5F5F5] mb-4" />
+      <View className="w-4/5 h-4 rounded bg-[#F5F5F5] mb-2" />
+      <View className="w-3/5 h-4 rounded bg-[#F5F5F5] mb-3" />
+      <View className="h-[1px] bg-[#F0F0F0] my-3" />
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center">
+          <View className="w-8 h-8 rounded-full bg-[#F5F5F5] mr-2" />
+          <View className="w-24 h-4 rounded bg-[#F5F5F5]" />
+        </View>
+        <View className="w-16 h-5 rounded bg-[#F5F5F5]" />
+      </View>
+    </View>
+  );
+}
+
 export default function ProfessionalJobs() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [refreshing, setRefreshing] = useState(false);
+  const hasHandledInitialFocusRef = useRef(false);
 
   const {
     pending,
@@ -190,6 +194,11 @@ export default function ProfessionalJobs() {
   // Refresh when screen comes into focus
   useFocusEffect(
     useCallback(() => {
+      if (!hasHandledInitialFocusRef.current) {
+        hasHandledInitialFocusRef.current = true;
+        return undefined;
+      }
+
       if (user?.id) {
         refetch();
       }
@@ -311,10 +320,15 @@ export default function ProfessionalJobs() {
 
       {/* Content */}
       {isLoading && !refreshing ? (
-        <View className="flex-1 items-center justify-center py-16">
-          <Text className="font-worksans text-[14px] text-[#6B6B6B]">
-            Loading jobs...
-          </Text>
+        <View className="flex-1 pt-4">
+          <View className="px-5 mb-3">
+            <Text className="font-worksans text-[13px] text-[#6B6B6B]">
+              Loading your jobs...
+            </Text>
+          </View>
+          <JobCardSkeleton />
+          <JobCardSkeleton />
+          <JobCardSkeleton />
         </View>
       ) : bookings.length === 0 ? (
         <FlatList

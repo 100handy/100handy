@@ -1,56 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native';
+import React from 'react';
+import { Alert, View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
-import { CardField, useConfirmSetupIntent } from '@stripe/stripe-react-native';
-import { createSetupIntent } from '@shared/supabase/payment-methods';
-import { useToast } from '@/components/ui/toast';
+import { getUnsupportedNativeFeatureMessage, supportsStripeNative } from '@/lib/native-feature-support';
 
 export default function AddPaymentMethodScreen() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [cardComplete, setCardComplete] = useState(false);
-  const { confirmSetupIntent } = useConfirmSetupIntent();
-  const toast = useToast();
 
   const handleSaveCard = async () => {
-    if (!cardComplete) {
-      toast.error('Error', 'Please enter valid card details');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const setupIntent = await createSetupIntent();
-
-      if (!setupIntent) {
-        toast.error('Error', 'Failed to initialize payment setup. Please try again.');
-        setIsLoading(false);
-        return;
-      }
-
-      const { error } = await confirmSetupIntent(setupIntent.clientSecret, {
-        paymentMethodType: 'Card',
-      });
-
-      if (error) {
-        console.error('Error confirming setup intent:', error);
-        toast.error('Error', error.message || 'Failed to add payment method. Please try again.');
-        setIsLoading(false);
-        return;
-      }
-
-      toast.success('Success', 'Payment method added successfully');
-      router.back();
-    } catch (error) {
-      console.error('Error saving card:', error);
-      toast.error('Error', 'An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    Alert.alert('Unavailable in Expo Go', getUnsupportedNativeFeatureMessage('Adding a card'));
   };
+
+  const isStripeSupported = supportsStripeNative();
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -71,33 +33,10 @@ export default function AddPaymentMethodScreen() {
               className="text-sm text-[#6B6B6B]"
               style={{ fontFamily: 'WorkSans_400Regular' }}
             >
-              Enter your card information below. Your payment details are securely processed by Stripe.
+              {isStripeSupported
+                ? 'Use a development build to complete card entry. Payment details are securely processed by Stripe.'
+                : getUnsupportedNativeFeatureMessage('Card entry')}
             </Text>
-          </View>
-
-          {/* Card Input Field */}
-          <View className="flex-col gap-2">
-            <CardField
-              postalCodeEnabled={false}
-              placeholders={{
-                number: '4242 4242 4242 4242',
-              }}
-              cardStyle={{
-                backgroundColor: '#FFFFFF',
-                textColor: '#30352D',
-                borderWidth: 1,
-                borderColor: '#E5E5E5',
-                borderRadius: 12,
-              }}
-              style={{
-                width: '100%',
-                height: 50,
-                marginVertical: 8,
-              }}
-              onCardChange={(cardDetails) => {
-                setCardComplete(cardDetails.complete);
-              }}
-            />
           </View>
 
           {/* Security Info */}
@@ -147,10 +86,9 @@ export default function AddPaymentMethodScreen() {
       <View className="px-5 pb-6 pt-3 border-t border-[#F0F0F0]">
         <Pressable
           onPress={handleSaveCard}
-          disabled={!cardComplete || isLoading}
           className="rounded-xl py-4 flex-row items-center justify-center"
           style={{
-            backgroundColor: cardComplete && !isLoading ? '#C1856A' : '#D1D5DB',
+            backgroundColor: '#C1856A',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,
@@ -158,16 +96,12 @@ export default function AddPaymentMethodScreen() {
             elevation: 3,
           }}
         >
-          {isLoading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text
-              className="text-white text-base font-semibold"
-              style={{ fontFamily: 'WorkSans_600SemiBold' }}
-            >
-              Save Card
-            </Text>
-          )}
+          <Text
+            className="text-white text-base font-semibold"
+            style={{ fontFamily: 'WorkSans_600SemiBold' }}
+          >
+            Open in Dev Build
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>

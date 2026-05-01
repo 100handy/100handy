@@ -22,15 +22,54 @@ export interface SetupIntentResponse {
   setupIntentId: string;
 }
 
+async function getAuthenticatedUser() {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return null;
+  }
+
+  return user;
+}
+
+async function getExistingStripeCustomerId(): Promise<string | null> {
+  try {
+    const user = await getAuthenticatedUser();
+
+    if (!user) {
+      return null;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.warn('Unable to fetch Stripe customer ID from profile:', profileError);
+      return null;
+    }
+
+    return profile?.stripe_customer_id ?? null;
+  } catch (error) {
+    console.warn('Unable to load Stripe customer ID from profile:', error);
+    return null;
+  }
+}
+
 /**
  * Get or create a Stripe customer for the current user
  */
 export async function getOrCreateStripeCustomer(): Promise<string | null> {
   try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const user = await getAuthenticatedUser();
 
-    if (authError || !user) {
-      console.warn('Unable to get authenticated user for Stripe Connect status:', authError);
+    if (!user) {
+      console.warn('Unable to get authenticated user for Stripe customer');
       return null;
     }
 
@@ -104,8 +143,9 @@ export async function createSetupIntent(): Promise<SetupIntentResponse | null> {
  */
 export async function listPaymentMethods(): Promise<PaymentMethod[]> {
   try {
-    if (!(await getOrCreateStripeCustomer())) {
-      console.error('Failed to get Stripe customer ID');
+    const customerId = await getExistingStripeCustomerId();
+
+    if (!customerId) {
       return [];
     }
 
@@ -115,13 +155,13 @@ export async function listPaymentMethods(): Promise<PaymentMethod[]> {
     });
 
     if (error) {
-      console.error('Error listing payment methods:', error);
+      console.warn('Unable to list payment methods:', error);
       return [];
     }
 
     return data?.paymentMethods || [];
   } catch (error) {
-    console.error('Error in listPaymentMethods:', error);
+    console.warn('Unable to load payment methods:', error);
     return [];
   }
 }
@@ -241,7 +281,7 @@ export async function getOrCreateStripeConnectAccount(
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for Stripe Connect account:', authError);
       return null;
     }
 
@@ -284,7 +324,7 @@ export async function getOrCreateStripeConnectAccount(
       isExisting: data.isExisting,
     };
   } catch (error: unknown) {
-    console.error('Error in getOrCreateStripeConnectAccount:', error);
+    console.warn('Unable to create or load Stripe Connect account:', error);
     throw error;
   }
 }
@@ -297,7 +337,7 @@ export async function getConnectAccountStatus(): Promise<ConnectAccountStatus | 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for Stripe Connect status:', authError);
       return null;
     }
 
@@ -330,7 +370,7 @@ export async function createConnectAccountLink(
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
+      console.warn('Unable to get authenticated user for Stripe account link:', authError);
       return null;
     }
 
@@ -344,7 +384,7 @@ export async function createConnectAccountLink(
     });
 
     if (error) {
-      console.error('Error creating Stripe account link:', error);
+      console.warn('Unable to create Stripe account link:', error);
       return null;
     }
 
@@ -353,7 +393,7 @@ export async function createConnectAccountLink(
       expiresAt: data.expiresAt,
     };
   } catch (error) {
-    console.error('Error in createConnectAccountLink:', error);
+    console.warn('Unable to create Stripe account link:', error);
     return null;
   }
 }

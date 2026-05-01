@@ -19,6 +19,9 @@
     "typescript": "5.8.3"
   },
   "pnpm": {
+    "patchedDependencies": {
+      "react-native-css-interop@0.1.22": "patches/react-native-css-interop@0.1.22.patch"
+    },
     "overrides": {
       "react": "19.1.0",
       "react-dom": "19.1.0",

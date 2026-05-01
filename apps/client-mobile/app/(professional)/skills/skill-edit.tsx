@@ -577,7 +577,11 @@ export default function SkillEditScreen() {
           </View>
         </View>
 
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <View className="px-6 py-6">
             {/* Experience Description */}
             <View className="mb-8">

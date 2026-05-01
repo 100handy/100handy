@@ -1,16 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
-import { ChevronDown, Check, AlertCircle } from 'lucide-react-native';
-import {
-  Modal,
-  ModalBackdrop,
-  ModalContent,
-} from '@/components/ui/modal';
-import {
-  doesAvailabilitySlotApplyToDate,
-  useAvailabilityByUserId,
-  type AvailabilitySlot,
-} from '@shared/supabase';
+import { useAvailabilityByUserId, type AvailabilitySlot } from '@shared/query';
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native'; import { ChevronDown, Check, AlertCircle } from 'lucide-react-native'; import {   Modal, ModalBackdrop, ModalContent, } from '@/components/ui/modal'; import { doesAvailabilitySlotApplyToDate } from '@shared/query';
 
 interface ScheduleSelectionSheetProps {
   isOpen: boolean;

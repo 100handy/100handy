@@ -1,4 +1,4 @@
-import { setPendingBookingStorage } from '@shared/supabase';
+import { setPendingBookingStorage } from '@shared/store';
 import type { StateStorage } from 'zustand/middleware';
 
 // Create localStorage adapter for Zustand persist middleware
@@ -42,4 +42,4 @@ export function initializePendingBookingStorage(): void {
 }
 
 // Export the storage key for direct localStorage access if needed
-export { PENDING_BOOKING_STORAGE_KEY } from '@shared/supabase';
+export { PENDING_BOOKING_STORAGE_KEY } from '@shared/store';

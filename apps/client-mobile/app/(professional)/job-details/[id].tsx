@@ -1,46 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  ScrollView,
-  View,
-  Text,
-  Pressable,
-  Alert,
-  Linking,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  MapPin,
-  Phone,
-  MessageCircle,
-  User,
-  DollarSign,
-  FileText,
-  CheckCircle2,
-  XCircle,
-  Play,
-  Flag,
-  Star,
-} from 'lucide-react-native';
-import { toast } from 'sonner-native';
-import {
-  useBookingById,
-  useAcceptBooking,
-  useDeclineBooking,
-  useStartBooking,
-  useCompleteBooking,
-  useHasReviewedBooking,
-  useRetryPayment,
-  useCancelAcceptedBooking,
-  useExistingConversationByBooking,
-  useAuthStore,
-  supabase,
-} from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { useAcceptBooking, useDeclineBooking, useStartBooking, useCompleteBooking, useHasReviewedBooking, useRetryPayment, useCancelAcceptedBooking, useExistingConversationByBooking } from '@shared/query';
+import { ScrollView, View, Text, Pressable, Alert, Linking, ActivityIndicator, Platform, } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useLocalSearchParams, useRouter } from 'expo-router'; import {   ArrowLeft, Calendar, Clock, MapPin, Phone, MessageCircle, User, DollarSign, FileText, CheckCircle2, XCircle, Play, Flag, Star, } from 'lucide-react-native'; import { toast } from 'sonner-native'; import { useBookingById } from '@shared/query'; import { supabase } from '@shared/supabase';
 import { getBookingPaymentDetails } from '@shared/supabase/payments';
 
 function InfoRow({
@@ -121,6 +82,15 @@ export default function JobDetailsScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(professional)/(tabs)/jobs');
+  };
 
   const { data: booking, isLoading, error, refetch } = useBookingById(id || null);
   const { data: hasReviewed } = useHasReviewedBooking(id || '', 'handy');
@@ -224,7 +194,7 @@ export default function JobDetailsScreen() {
       const result = await acceptMutation.mutateAsync({ bookingId: id, handyId: user.id });
       if (result.success) {
         toast.success('Job accepted!');
-        router.back();
+        handleBack();
       } else if (result.conflict) {
         toast.error('Schedule Conflict', 'You already have a booking at this time. Decline or reschedule the other job first.');
       } else {
@@ -257,7 +227,7 @@ export default function JobDetailsScreen() {
               });
               if (success) {
                 toast.success('Job declined');
-                router.back();
+                handleBack();
               } else {
                 toast.error('Failed to decline job');
               }
@@ -309,7 +279,7 @@ export default function JobDetailsScreen() {
               if (result.success) {
                 if (result.paymentProcessed) {
                   toast.success('Job completed! Payment processed successfully.');
-                  router.back();
+                  handleBack();
                 } else if (result.payoutFailed || result.error) {
                   toast.success('Job marked as complete.');
                   toast.warning('Payout failed', 'The client has been charged but your payout could not be processed. Tap "Retry Payment" to try again.');
@@ -319,7 +289,7 @@ export default function JobDetailsScreen() {
                   }));
                 } else {
                   toast.success('Job completed!');
-                  router.back();
+                  handleBack();
                 }
               } else {
                 toast.error(result.error || 'Failed to complete job');
@@ -355,7 +325,7 @@ export default function JobDetailsScreen() {
               });
               if (success) {
                 toast.success('Job cancelled');
-                router.back();
+                handleBack();
               } else {
                 toast.error('Failed to cancel job');
               }
@@ -395,7 +365,7 @@ export default function JobDetailsScreen() {
     return (
       <SafeAreaView className="flex-1 bg-[#F5F5F5]">
         <View className="flex-row items-center px-4 py-3 bg-white border-b border-[#F0F0F0]">
-          <Pressable onPress={() => router.back()} className="p-2 -ml-2">
+          <Pressable onPress={handleBack} className="p-2 -ml-2">
             <ArrowLeft color="#30352D" size={24} />
           </Pressable>
         </View>
@@ -427,7 +397,7 @@ export default function JobDetailsScreen() {
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-4 py-3 bg-white border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()} className="p-2 -ml-2">
+        <Pressable onPress={handleBack} className="p-2 -ml-2">
           <ArrowLeft color="#30352D" size={24} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-brand-dark-alt ml-2 flex-1">

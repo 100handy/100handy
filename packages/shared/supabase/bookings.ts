@@ -229,14 +229,14 @@ export async function getBookingById(bookingId: string): Promise<BookingWithRela
         handy_profile:profiles!bookings_handy_profile_fkey(user_id, first_name, last_name, avatar_url)
       `)
       .eq('id', bookingId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching booking:', error);
       throw new Error(error.message);
     }
 
-    return data;
+    return data ?? null;
   } catch (error) {
     console.error('Error in getBookingById:', error);
     throw error;

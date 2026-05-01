@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { User, Session } from '@supabase/supabase-js';
+import type { User, Session } from '@supabase/supabase-js';
 import { getSession } from '../supabase/auth';
-import { supabase } from '../supabase';
+import { supabase } from '../supabase/supabaseClient';
 import { queryClient } from '../query/queryClient';
 import { deleteDevicePushToken } from '../supabase/pushTokens';
 

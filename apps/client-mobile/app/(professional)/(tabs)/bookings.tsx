@@ -1,32 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import {
-  ScrollView,
-  View,
-  Text,
-  Pressable,
-  ActivityIndicator,
-  Switch,
-  Dimensions,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  PanResponder,
-} from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Modal, ModalBackdrop, ModalContent } from "@/components/ui/modal";
-import { Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react-native";
-import { toast } from "sonner-native";
-import { TimePickerWheel } from "@/components/availability";
-import {
-  useWeeklyAvailability,
-  useDeleteAvailabilitySlot,
-  useReplaceAvailabilitySlots,
-  type AvailabilitySlot,
-  type RecurrenceType,
-} from "@shared/supabase";
+import { useDeleteAvailabilitySlot, useReplaceAvailabilitySlots, type AvailabilitySlot, type RecurrenceType } from '@shared/query';
+import { ScrollView, View, Text, Pressable, ActivityIndicator, Switch, Dimensions, NativeSyntheticEvent, NativeScrollEvent, PanResponder, } from "react-native"; import {   SafeAreaView, useSafeAreaInsets, } from "react-native-safe-area-context"; import { Button, ButtonText } from "@/components/ui/button"; import { Modal, ModalBackdrop, ModalContent } from "@/components/ui/modal"; import { Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react-native"; import { toast } from "sonner-native"; import { TimePickerWheel } from "@/components/availability"; import { useWeeklyAvailability } from '@shared/query';
 
 interface TimeSlot {
   id: string;
@@ -126,6 +100,8 @@ const isOverlapping = (
 export default function BookingsTab() {
   const insets = useSafeAreaInsets();
   const weekPagerRef = useRef<ScrollView>(null);
+  const timelineScrollRef = useRef<ScrollView>(null);
+  const hasAutoSelectedAvailabilityDay = useRef(false);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [visibleWeekOffset, setVisibleWeekOffset] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -191,6 +167,18 @@ export default function BookingsTab() {
       });
 
       setAvailability(transformed);
+
+      if (!hasAutoSelectedAvailabilityDay.current) {
+        const firstAvailableDate = daysOfWeek.find(
+          ({ fullDate }) => (transformed[fullDate.getDay()] || []).length > 0,
+        )?.fullDate;
+
+        if (firstAvailableDate) {
+          setSelectedDate(new Date(firstAvailableDate));
+        }
+
+        hasAutoSelectedAvailabilityDay.current = true;
+      }
     }
   }, [daysOfWeek, weeklyData]);
 
@@ -198,6 +186,21 @@ export default function BookingsTab() {
     () => availability[selectedDay] || [],
     [availability, selectedDay],
   );
+
+  useEffect(() => {
+    if (showAddModal || currentDaySlots.length === 0) {
+      return;
+    }
+
+    const earliestStart = Math.min(
+      ...currentDaySlots.map((slot) => timeToMinutes(slot.startTime)),
+    );
+    const offset = Math.max(0, (earliestStart / 60) * HOUR_HEIGHT - 120);
+
+    requestAnimationFrame(() => {
+      timelineScrollRef.current?.scrollTo({ y: offset, animated: false });
+    });
+  }, [currentDaySlots, selectedDay, showAddModal]);
 
   // Calculate current selection in minutes
   const selectionStart = parseInt(startHour) * 60 + parseInt(startMinute);
@@ -655,6 +658,7 @@ export default function BookingsTab() {
 
       {/* Timeline View */}
       <ScrollView
+        ref={timelineScrollRef}
         className="flex-1 bg-white"
         contentContainerStyle={{
           height: (END_HOUR - START_HOUR) * HOUR_HEIGHT + 50,
@@ -734,12 +738,11 @@ export default function BookingsTab() {
                     {...topResizeResponder.panHandlers}
                     className="absolute top-0 left-0 right-0 h-6 z-10"
                   >
-                    <View className="absolute top-1 left-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
-                    <View className="absolute top-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
+                    <View className="absolute top-1 self-center w-10 h-1.5 rounded-full bg-white/90" />
                   </View>
                   <View className="flex-row justify-between items-start">
                     <View>
-                      <Text className="text-white font-worksans-bold text-sm">
+                      <Text className="text-white font-worksans-bold text-base">
                         Available
                       </Text>
                       <Text className="text-white font-worksans text-xs opacity-90">
@@ -767,8 +770,7 @@ export default function BookingsTab() {
                     {...bottomResizeResponder.panHandlers}
                     className="absolute bottom-0 left-0 right-0 h-6 z-10"
                   >
-                    <View className="absolute bottom-1 left-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
-                    <View className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white bg-[#5FA08E]" />
+                    <View className="absolute bottom-1 self-center w-10 h-1.5 rounded-full bg-white/90" />
                   </View>
                 </View>
               );
@@ -788,7 +790,7 @@ export default function BookingsTab() {
                   borderColor: "#047857",
                   backgroundColor: "rgba(4, 120, 87, 0.1)",
                 }}
-                className="rounded-lg justify-center items-center"
+                className="rounded-lg justify-center items-center px-3"
               >
                 <Text className="text-emerald-700 font-worksans-bold">
                   {isMerge ? "Merging..." : "New Slot"}

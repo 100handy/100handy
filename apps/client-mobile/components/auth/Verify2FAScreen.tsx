@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { supabase, enable2FA, useProfile } from '@shared/supabase';
+import { useProfile } from '@shared/query';
+import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { supabase, enable2FA } from '@shared/supabase';
 import { OtpInput } from 'react-native-otp-entry';
 
 interface Verify2FAScreenProps {

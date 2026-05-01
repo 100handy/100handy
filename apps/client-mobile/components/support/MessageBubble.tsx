@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { SupportMessage } from '@shared/supabase';
+import { View, Text } from 'react-native'; import { SupportMessage } from '@shared/supabase';
 import { format } from 'date-fns';
 
 interface MessageBubbleProps {

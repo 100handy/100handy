@@ -1,9 +1,9 @@
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 let isConfigured = false;
+let notificationsModulePromise: Promise<typeof import('expo-notifications')> | null = null;
 
 export type NotificationRoute = string;
 
@@ -11,9 +11,19 @@ export interface NotificationData {
   route?: NotificationRoute;
 }
 
-export function configureNotifications(): void {
-  if (isConfigured) return;
+async function getNotificationsModule() {
+  if (!notificationsModulePromise) {
+    notificationsModulePromise = import('expo-notifications');
+  }
+
+  return notificationsModulePromise;
+}
+
+export async function configureNotifications(): Promise<void> {
+  if (isConfigured || !supportsPushNotifications()) return;
   isConfigured = true;
+
+  const Notifications = await getNotificationsModule();
 
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -24,6 +34,10 @@ export function configureNotifications(): void {
       shouldSetBadge: false,
     }),
   });
+}
+
+export function supportsPushNotifications(): boolean {
+  return Device.isDevice;
 }
 
 export function getEasProjectId(): string | null {
@@ -38,6 +52,8 @@ export function getEasProjectId(): string | null {
 export async function ensureAndroidNotificationChannelAsync(): Promise<void> {
   if (Platform.OS !== 'android') return;
 
+  const Notifications = await getNotificationsModule();
+
   await Notifications.setNotificationChannelAsync('default', {
     name: 'default',
     importance: Notifications.AndroidImportance.MAX,
@@ -48,13 +64,15 @@ export async function ensureAndroidNotificationChannelAsync(): Promise<void> {
 
 export async function registerForPushNotificationsAsync(): Promise<string | null> {
   try {
-    configureNotifications();
+    await configureNotifications();
     await ensureAndroidNotificationChannelAsync();
 
-    if (!Device.isDevice) {
+    if (!supportsPushNotifications()) {
       console.warn('[notifications] Push notifications require a physical device.');
       return null;
     }
+
+    const Notifications = await getNotificationsModule();
 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -77,7 +95,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
 
     return tokenResponse.data;
   } catch (error) {
-    console.error('[notifications] Failed to register for push notifications:', error);
+    console.warn('[notifications] Failed to register for push notifications:', error);
     return null;
   }
 }
@@ -88,4 +106,36 @@ export function getRouteFromNotificationData(data: unknown): NotificationRoute |
   return typeof route === 'string' && route.length > 0 ? route : null;
 }
 
+export async function addNotificationResponseListener(
+  onRoute: (route: NotificationRoute) => void
+): Promise<{ remove: () => void } | null> {
+  if (!supportsPushNotifications()) {
+    return null;
+  }
 
+  const Notifications = await getNotificationsModule();
+
+  return Notifications.addNotificationResponseReceivedListener((response) => {
+    const route = getRouteFromNotificationData(
+      response.notification.request.content.data
+    );
+    if (route) {
+      onRoute(route);
+    }
+  });
+}
+
+export async function getLastNotificationRouteAsync(): Promise<NotificationRoute | null> {
+  if (!supportsPushNotifications()) {
+    return null;
+  }
+
+  const Notifications = await getNotificationsModule();
+  const lastResponse = await Notifications.getLastNotificationResponseAsync();
+
+  if (!lastResponse) {
+    return null;
+  }
+
+  return getRouteFromNotificationData(lastResponse.notification.request.content.data);
+}

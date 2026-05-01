@@ -262,10 +262,15 @@ export async function getExistingConversationByBooking(
       .from('bookings')
       .select('customer_id, handy_id')
       .eq('id', bookingId)
-      .single();
+      .maybeSingle();
 
-    if (bookingError || !booking) {
-      throw new Error('Booking not found');
+    if (bookingError) {
+      console.error('Error fetching booking for existing conversation lookup:', bookingError);
+      throw new Error(bookingError.message);
+    }
+
+    if (!booking) {
+      return null;
     }
 
     const { data: existing, error: fetchError } = await supabase

@@ -1,10 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Shield, ShieldOff } from 'lucide-react-native';
-import Header from '@/components/Header';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import { supabase, disable2FA, useAuthStore } from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { SafeAreaView } from 'react-native-safe-area-context'; import { Mail, Shield, ShieldOff } from 'lucide-react-native'; import Header from '@/components/Header'; import { useRouter } from 'expo-router'; import { useFocusEffect } from '@react-navigation/native'; import { supabase, disable2FA } from '@shared/supabase';
 import { useProfile, useInvalidateProfile } from '@shared/query';
 import { Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
 

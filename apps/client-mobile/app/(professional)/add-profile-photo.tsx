@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, Image, Alert, View, Text, Pressable } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
-import { useProfileStore } from '@shared/supabase';
+import { ScrollView, Image, Alert, View, Text, Pressable } from 'react-native'; import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import * as ImagePicker from 'expo-image-picker'; import { useProfileStore } from '@shared/store';
 
 export default function AddProfilePhotoScreen() {
   const router = useRouter();

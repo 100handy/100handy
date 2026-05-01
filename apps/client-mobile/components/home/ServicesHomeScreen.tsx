@@ -1,14 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable } from 'react-native';
-import AuthLogo from '@/components/auth/AuthLogo';
-import {
-  MapPin,
-  Search,
-  ChevronRight,
-} from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useLocationStore, useGroupedSubcategories, type Category } from '@shared/supabase';
+import { useGroupedSubcategories, type Category } from '@shared/query';
+import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable } from 'react-native'; import AuthLogo from '@/components/auth/AuthLogo'; import {   MapPin, Search, ChevronRight, } from 'lucide-react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { useLocationStore } from '@shared/store';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { getCategoryIcon } from '@/lib/category-icons';
 

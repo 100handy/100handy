@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, View, Text } from 'react-native';
-import { ConversationMessage } from '@shared/supabase';
+import { ActivityIndicator, FlatList, RefreshControl, View, Text } from 'react-native'; import { ConversationMessage } from '@shared/query';
 import { ConversationBubble } from './ConversationBubble';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 

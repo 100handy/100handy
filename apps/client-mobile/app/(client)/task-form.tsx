@@ -1,10 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import { DynamicFormRenderer } from '@/components/booking';
-import type { FormResponse } from '@shared/supabase';
+import { View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { DynamicFormRenderer } from '@/components/booking'; import type { FormResponse } from '@shared/supabase';
 
 export default function TaskFormScreen() {
   const router = useRouter();

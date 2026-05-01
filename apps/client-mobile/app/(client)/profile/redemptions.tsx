@@ -1,10 +1,5 @@
 import React from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import Header from '@/components/Header';
-import { StatusBar } from 'expo-status-bar';
-import { useAccountBalance, formatBalanceDisplay } from '@shared/supabase';
+import { View, Text, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import Header from '@/components/Header'; import { StatusBar } from 'expo-status-bar'; import { useAccountBalance } from '@shared/query'; import { formatBalanceDisplay } from '@shared/supabase';
 
 export default function RedemptionsScreen() {
   const router = useRouter();

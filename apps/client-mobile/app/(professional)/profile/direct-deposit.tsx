@@ -1,16 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, Alert, View, Text, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { ChevronLeft, HelpCircle, Banknote, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react-native';
-import {
-  getConnectAccountStatus,
-  getOrCreateStripeConnectAccount,
-  createConnectAccountLink,
-  ConnectAccountStatus,
-} from '@shared/supabase/payment-methods';
-import { useAuthStore } from '@shared/supabase';
+import { ScrollView, Alert, View, Text, Pressable, ActivityIndicator, RefreshControl } from 'react-native'; import * as WebBrowser from 'expo-web-browser'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { ChevronLeft, HelpCircle, Banknote, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react-native'; import {   getConnectAccountStatus, getOrCreateStripeConnectAccount, createConnectAccountLink, ConnectAccountStatus, } from '@shared/supabase/payment-methods'; import { useAuthStore } from '@shared/store';
 
 type AccountState = 'loading' | 'not_started' | 'pending' | 'active' | 'error';
 
@@ -22,6 +11,15 @@ export default function DirectDepositScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(professional)/(tabs)/profile');
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -514,7 +512,7 @@ export default function DirectDepositScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <View className="flex-row py-4 px-5 items-center justify-between border-b border-gray-100">
-        <Pressable className="w-10 items-start" onPress={() => router.back()}>
+        <Pressable className="w-10 items-start" onPress={handleBack}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-xl text-theme-font">

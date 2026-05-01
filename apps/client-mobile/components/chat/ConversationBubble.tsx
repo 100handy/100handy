@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
-import { ConversationMessage } from '@shared/supabase';
+import { View, Text, Image } from 'react-native'; import { ConversationMessage } from '@shared/query';
 import { format } from 'date-fns';
 
 interface ConversationBubbleProps {

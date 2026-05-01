@@ -3,13 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { FormFieldRenderer } from './FormFieldRenderer';
 import { Button } from '@/components/ui/button';
-import {
-  useCategoryFormFields,
-  validateFormResponses,
-  shouldShowField,
-  groupFieldsBySection,
-  type FormResponse,
-} from '@shared/supabase';
+import { useCategoryFormFields } from '@shared/query'; import { validateFormResponses, shouldShowField, groupFieldsBySection, type FormResponse } from '@shared/supabase';
 
 interface DynamicFormRendererProps {
   categoryId: string;

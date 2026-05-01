@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import { saveChatTemplate } from '@shared/supabase';
+import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { saveChatTemplate } from '@shared/supabase';
 
 export default function NewChatTemplateScreen() {
     const router = useRouter();
@@ -63,7 +59,11 @@ export default function NewChatTemplateScreen() {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
             >
-                <ScrollView className="flex-1 px-5 pt-6" showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    className="flex-1 px-5 pt-6"
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
 
                     {/* Title Input */}
                     <View className="mb-6">

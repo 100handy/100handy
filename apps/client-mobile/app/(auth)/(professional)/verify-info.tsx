@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable, Platform, Alert } from 'react-native';
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input, InputField } from '@/components/ui/input';
-import { Button, ButtonText } from '@/components/ui/button';
-import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal';
-import { ChevronLeft, Lock, FileText } from 'lucide-react-native';
-import { router, useNavigation } from 'expo-router';
-import { updateVerificationData, getUserProfile, getHandyProfile } from '@shared/supabase/profile';
-import { useAuthStore } from '@shared/supabase';
+import { ScrollView, View, Text, Pressable, Platform, Alert } from 'react-native'; import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input, InputField } from '@/components/ui/input'; import { Button, ButtonText } from '@/components/ui/button'; import { Modal, ModalBackdrop, ModalContent } from '@/components/ui/modal'; import { ChevronLeft, Lock, FileText } from 'lucide-react-native'; import { router, useNavigation } from 'expo-router'; import { updateVerificationData, getUserProfile, getHandyProfile } from '@shared/supabase/profile'; import { useAuthStore } from '@shared/store';
 import { useToast } from '@/components/ui/toast';
 import { LocationAutocomplete, fetchPlaceDetails } from '@/components/location';
 
@@ -375,6 +366,7 @@ export default function VerifyInformation() {
           className="flex-1"
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <View className="flex-col flex-1">
             {/* Header */}

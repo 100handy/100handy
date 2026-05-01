@@ -1,17 +1,23 @@
 // Platform-aware Stripe Provider wrapper
 import React from 'react';
 import { Platform } from 'react-native';
-import { StripeProvider } from '@stripe/stripe-react-native';
+import Constants from 'expo-constants';
 
 interface Props {
   children: React.ReactElement;
 }
 
 export function StripeProviderWrapper({ children }: Props) {
-  // Skip Stripe on web platform (Metro returns empty module for web)
-  if (Platform.OS === 'web') {
+  const executionEnvironment = Constants.executionEnvironment;
+  const shouldSkipStripe =
+    Platform.OS === 'web' || executionEnvironment === 'storeClient';
+
+  // Skip Stripe on web and Expo Go. Stripe native modules are not fully supported there.
+  if (shouldSkipStripe) {
     return <>{children}</>;
   }
+
+  const { StripeProvider } = require('@stripe/stripe-react-native') as typeof import('@stripe/stripe-react-native');
 
   return (
     <StripeProvider

@@ -1,19 +1,79 @@
 import React from 'react';
-import { ScrollView, RefreshControl, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Loader } from '@/components/ui/loader';
-import { ClipboardList } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { TaskCard, Tab, EmptyState } from '@/components/tasks';
-import { useUserBookings } from '@shared/supabase/query';
-import { useAuthStore } from '@shared/supabase';
+import { ScrollView, RefreshControl, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Loader } from '@/components/ui/loader'; import { ClipboardList, Trash2 } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { Swipeable } from 'react-native-gesture-handler'; import { TaskCard, Tab, EmptyState } from '@/components/tasks'; import { useUserBookings } from '@shared/supabase/query'; import { useAuthStore } from '@shared/store';
 import { bookingToTaskCardProps } from '@/lib/bookings';
+import { CancelBookingModal } from '@/components/booking/CancelBookingModal';
+
+type BookingItem = ReturnType<typeof useUserBookings>['upcoming'][number];
+
+function SwipeableTaskRow({
+  booking,
+  activeTab,
+  onPress,
+  onDelete,
+  isCancelled,
+  onSwipeableOpen,
+}: {
+  booking: BookingItem;
+  activeTab: string;
+  onPress: () => void;
+  onDelete: () => void;
+  isCancelled: boolean;
+  onSwipeableOpen: (swipeable: Swipeable | null) => void;
+}) {
+  const swipeableRef = React.useRef<Swipeable | null>(null);
+  const taskCardProps = bookingToTaskCardProps(booking);
+  const isCancellable = activeTab === 'upcoming' && (booking.status === 'pending' || booking.status === 'accepted');
+
+  const card = (
+    <View style={isCancelled ? { opacity: 0.6 } : undefined}>
+      <TaskCard
+        {...taskCardProps}
+        onPress={onPress}
+      />
+    </View>
+  );
+
+  if (!isCancellable) {
+    return card;
+  }
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      overshootRight={false}
+      rightThreshold={40}
+      friction={2}
+      renderRightActions={() => (
+        <Pressable
+          onPress={onDelete}
+          className="mx-4 my-2 w-[92px] rounded-xl bg-[#D84C3F] items-center justify-center"
+        >
+          <Trash2 size={20} color="#FFFFFF" />
+          <Text className="mt-1 text-xs font-work-sans font-semibold text-white">
+            Delete
+          </Text>
+        </Pressable>
+      )}
+      onSwipeableWillOpen={() => onSwipeableOpen(swipeableRef.current)}
+    >
+      {card}
+    </Swipeable>
+  );
+}
 
 // Using Tailwind design tokens - colors are now defined in tailwind.config.js
 
 export default function TasksScreen() {
   const [activeTab, setActiveTab] = React.useState('upcoming');
+  const [selectedBookingForCancel, setSelectedBookingForCancel] = React.useState<{
+    id: string;
+    taskTitle: string;
+    scheduledDate?: string;
+    scheduledTime?: string;
+    recurringSeriesId?: string | null;
+  } | null>(null);
   const router = useRouter();
+  const openSwipeableRef = React.useRef<Swipeable | null>(null);
   
   // Get user from auth store
   const { user } = useAuthStore();
@@ -47,18 +107,28 @@ export default function TasksScreen() {
     }
   };
 
-  // Transform bookings to TaskCard props with cancelled status info
-  const getCurrentTaskCardsWithStatus = () => {
-    const bookings = getCurrentBookings();
-    return bookings.map(booking => ({
-      props: bookingToTaskCardProps(booking),
-      isCancelled: booking.status === 'cancelled',
-    }));
-  };
-
   const handleTaskCardPress = (bookingId?: string | number) => {
     if (!bookingId) return;
     router.push(`/(client)/booking-details/${bookingId}`);
+  };
+
+  const handleOpenCancel = (booking: BookingItem) => {
+    openSwipeableRef.current?.close();
+    openSwipeableRef.current = null;
+    setSelectedBookingForCancel({
+      id: booking.id,
+      taskTitle: booking.task_title,
+      scheduledDate: booking.scheduled_date,
+      scheduledTime: booking.scheduled_time,
+      recurringSeriesId: booking.recurring_series_id,
+    });
+  };
+
+  const handleSwipeableOpen = (swipeable: Swipeable | null) => {
+    if (openSwipeableRef.current && openSwipeableRef.current !== swipeable) {
+      openSwipeableRef.current.close();
+    }
+    openSwipeableRef.current = swipeable;
   };
 
 
@@ -123,16 +193,16 @@ export default function TasksScreen() {
             <EmptyState />
           ) : (
             <View className="flex-col space-y-2">
-              {getCurrentTaskCardsWithStatus().map(({ props: taskCardProps, isCancelled }, index) => (
-                <View
-                  key={`${activeTab}-${taskCardProps.bookingId || index}`}
-                  style={isCancelled ? { opacity: 0.6 } : undefined}
-                >
-                  <TaskCard
-                    {...taskCardProps}
-                    onPress={() => handleTaskCardPress(taskCardProps.bookingId)}
-                  />
-                </View>
+              {getCurrentBookings().map((booking, index) => (
+                <SwipeableTaskRow
+                  key={`${activeTab}-${booking.id || index}`}
+                  booking={booking}
+                  activeTab={activeTab}
+                  isCancelled={booking.status === 'cancelled'}
+                  onPress={() => handleTaskCardPress(booking.id)}
+                  onDelete={() => handleOpenCancel(booking)}
+                  onSwipeableOpen={handleSwipeableOpen}
+                />
               ))}
 
               {/* Helper text when there are tasks */}
@@ -145,6 +215,18 @@ export default function TasksScreen() {
           )}
         </ScrollView>
       </View>
+
+      {selectedBookingForCancel && (
+        <CancelBookingModal
+          isOpen={true}
+          onClose={() => setSelectedBookingForCancel(null)}
+          bookingId={selectedBookingForCancel.id}
+          taskTitle={selectedBookingForCancel.taskTitle}
+          scheduledDate={selectedBookingForCancel.scheduledDate}
+          scheduledTime={selectedBookingForCancel.scheduledTime}
+          recurringSeriesId={selectedBookingForCancel.recurringSeriesId}
+        />
+      )}
     </SafeAreaView>
   );
 }

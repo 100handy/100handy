@@ -119,7 +119,6 @@ export async function getUserProfile(): Promise<UserProfile | null> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.warn('Unable to get authenticated user for handy profile:', authError);
       return null;
     }
 
@@ -131,7 +130,6 @@ export async function getUserProfile(): Promise<UserProfile | null> {
       .single();
 
     if (error) {
-      console.warn('Unable to fetch user profile:', error);
       return null;
     }
 
@@ -143,7 +141,6 @@ export async function getUserProfile(): Promise<UserProfile | null> {
       identity_verified: data.identity_verified ?? false,
     };
   } catch (error) {
-    console.warn('Unable to load user profile:', error);
     return null;
   }
 }
@@ -533,7 +530,6 @@ export async function getHandyProfile(): Promise<HandyProfile | null> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.warn('Unable to get authenticated user for handy profile:', authError);
       return null;
     }
 
@@ -544,13 +540,11 @@ export async function getHandyProfile(): Promise<HandyProfile | null> {
       .maybeSingle();
 
     if (error) {
-      console.warn('Unable to fetch handy profile:', error);
       return null;
     }
 
     return data ?? null;
   } catch (error) {
-    console.warn('Unable to load handy profile:', error);
     return null;
   }
 }
@@ -1494,7 +1488,6 @@ export async function getUserSkills(): Promise<UserSkill[]> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('Error getting authenticated user:', authError);
       return [];
     }
 
@@ -1508,13 +1501,11 @@ export async function getUserSkills(): Promise<UserSkill[]> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.warn('Unable to fetch user skills:', error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.warn('Unable to load user skills:', error);
     return [];
   }
 }

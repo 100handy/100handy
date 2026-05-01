@@ -1,24 +1,13 @@
 import React, { useCallback } from 'react';
+import { useAuthStore } from '@shared/store';
 import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
-
-// Import lucide-react-native icons
-import {
-  ArrowLeft,
-  Calendar,
-  TrendingUp,
-  CreditCard,
-  Briefcase,
-} from 'lucide-react-native';
+import { ArrowLeft, Calendar, TrendingUp, CreditCard, Briefcase } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { AnalyticsWelcome } from '@/components/analytics';
-import {
-  getProfessionalAnalytics,
-  useAuthStore,
-  type AnalyticsData,
-} from '@shared/supabase';
+import { getProfessionalAnalytics, type AnalyticsData } from '@shared/supabase';
 
 const ANALYTICS_WELCOME_KEY = '@hasSeenAnalyticsWelcome';
 

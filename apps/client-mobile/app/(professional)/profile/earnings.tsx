@@ -1,20 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, FlatList, RefreshControl, TouchableWithoutFeedback } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Download, ChevronDown, ChevronLeft, ChevronRight, Info, X } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { useToast } from '@/components/ui/toast';
-import { useFocusEffect } from '@react-navigation/native';
-import {
-  getProfessionalEarnings,
-  getProfessionalInvoices,
-  getProfessionalPayouts,
-  getEarningsMonths,
-  useAuthStore,
-  type EarningsSummary,
-  type Invoice,
-  type Payout,
-} from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, FlatList, RefreshControl, TouchableWithoutFeedback } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ArrowLeft, Download, ChevronDown, ChevronLeft, ChevronRight, Info, X } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useToast } from '@/components/ui/toast'; import { useFocusEffect } from '@react-navigation/native'; import { getProfessionalEarnings, getProfessionalInvoices, getProfessionalPayouts, getEarningsMonths, type EarningsSummary, type Invoice, type Payout } from '@shared/supabase';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',

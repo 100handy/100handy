@@ -1,14 +1,6 @@
 import React, { useState, type ReactNode } from 'react';
-import { View, Text, Pressable, Dimensions } from 'react-native';
-import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronRight, MapPin, Calendar } from 'lucide-react-native';
-import { router } from 'expo-router';
-import Svg, { Path } from 'react-native-svg';
-import StarRating from '@/assets/images/star-rating.svg';
-import AuthLogo from '@/components/auth/AuthLogo';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore, usePendingBookingStore, useLocationStore, supabase } from '@shared/supabase';
+import { usePendingBookingStore, useLocationStore } from '@shared/store';
+import { View, Text, Pressable, Dimensions } from 'react-native'; import { Image } from 'expo-image'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronRight, MapPin, Calendar } from 'lucide-react-native'; import { router } from 'expo-router'; import Svg, { Path } from 'react-native-svg'; import StarRating from '@/assets/images/star-rating.svg'; import AuthLogo from '@/components/auth/AuthLogo'; import AsyncStorage from '@react-native-async-storage/async-storage'; import { useAuthStore } from '@shared/store'; import { supabase } from '@shared/supabase';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 const CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX = '@clientOnboardingCompleted:';

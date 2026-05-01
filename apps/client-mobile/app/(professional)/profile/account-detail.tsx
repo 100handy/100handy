@@ -1,12 +1,5 @@
 import React, { useEffect } from 'react';
-import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import {
-  Edit3,
-  ChevronLeft
-} from 'lucide-react-native';
-import { useProfileStore } from '@shared/supabase';
+import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import {   Edit3, ChevronLeft } from 'lucide-react-native'; import { useProfileStore } from '@shared/store';
 
 interface FieldRowProps {
   label: string;

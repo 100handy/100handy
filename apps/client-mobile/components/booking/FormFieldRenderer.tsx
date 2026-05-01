@@ -1,8 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, TextInput } from 'react-native';
-import { Check } from 'lucide-react-native';
-import { Input, InputField } from '@/components/ui/input';
-import type { FormField, FormResponse } from '@shared/supabase';
+import { View, Text, Pressable, TextInput } from 'react-native'; import { Check } from 'lucide-react-native'; import { Input, InputField } from '@/components/ui/input'; import type { FormField, FormResponse } from '@shared/supabase';
 
 interface FormFieldRendererProps {
   field: FormField;

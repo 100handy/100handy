@@ -1,13 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable, Image, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ButtonText } from '@/components/ui/button';
-import { ChevronLeft, ShieldCheck, Camera, FileText } from 'lucide-react-native';
-import { router, useFocusEffect } from 'expo-router';
-import { useStripeIdentity } from "@stripe/stripe-identity-react-native";
-import { supabase } from '@shared/supabase';
+import { ScrollView, View, Text, Pressable, Image, Alert } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Button, ButtonText } from '@/components/ui/button'; import { ChevronLeft, ShieldCheck, Camera, FileText } from 'lucide-react-native'; import { router, useFocusEffect } from 'expo-router'; import { supabase } from '@shared/supabase';
 import { completeOnboarding, getHandyProfile } from '@shared/supabase/profile';
 import { useToast } from '@/components/ui/toast';
+import { getUnsupportedNativeFeatureMessage, presentStripeIdentityVerificationSheet, supportsStripeNative } from '@/lib/native-feature-support';
 
 export default function VerifyDocumentUpload() {
   const [isLoading, setIsLoading] = useState(false);
@@ -70,12 +65,21 @@ export default function VerifyDocumentUpload() {
     }
   }, []);
 
-  const { status, present, loading: stripeLoading } = useStripeIdentity(fetchOptions);
+  const [stripeStatus, setStripeStatus] = useState<string | undefined>(undefined);
+  const [stripeLoading, setStripeLoading] = useState(false);
 
   const handleVerifyWithStripe = useCallback(async () => {
+    if (!supportsStripeNative()) {
+      toast.info('Unavailable in Expo Go', getUnsupportedNativeFeatureMessage('Identity verification'));
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const result = await present() as { status: string } | undefined;
+      setStripeLoading(true);
+      const options = await fetchOptions();
+      const result = await presentStripeIdentityVerificationSheet(options);
+      setStripeStatus(result?.status);
 
       if (result?.status === 'FlowCompleted') {
         await syncVerificationStatus();
@@ -94,9 +98,10 @@ export default function VerifyDocumentUpload() {
       console.error('Error in verification:', error);
       toast.error('Error', 'Failed to start verification');
     } finally {
+      setStripeLoading(false);
       setIsLoading(false);
     }
-  }, [present, syncVerificationStatus, toast]);
+  }, [fetchOptions, syncVerificationStatus, toast]);
 
   const handleSkipForNow = async (): Promise<void> => {
     try {
@@ -190,10 +195,10 @@ export default function VerifyDocumentUpload() {
               </View>
 
               {/* Status indicator */}
-              {status && (
+              {stripeStatus && (
                 <View className="mb-4 p-3 rounded-lg" style={{ backgroundColor: '#F5F5F5' }}>
                   <Text className="text-center text-[13px] font-worksans" style={{ color: '#666' }}>
-                    Status: {status}
+                    Status: {stripeStatus}
                   </Text>
                 </View>
               )}

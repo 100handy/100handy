@@ -1,17 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { View, Text, Image, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft, MoreVertical } from 'lucide-react-native';
-import {
-  useConversation,
-  useConversationMessages,
-  useSendConversationMessage,
-  useMarkAsRead,
-  useAuthStore,
-  subscribeToConversation,
-  unsubscribeFromConversation,
-} from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { useConversationMessages, useSendConversationMessage, useMarkAsRead } from '@shared/query';
+import { View, Text, Image, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform, Alert } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft, MoreVertical } from 'lucide-react-native'; import { useConversation } from '@shared/query'; import { subscribeToConversation, unsubscribeFromConversation } from '@shared/supabase';
 import { ConversationMessageList } from '../../../components/chat';
 import { MessageInput } from '../../../components/support/MessageInput';
 

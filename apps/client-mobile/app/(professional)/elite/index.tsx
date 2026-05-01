@@ -1,10 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
-import { ChevronLeft, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react-native';
-import { getUserSkills, UserSkill } from '@shared/supabase/profile';
-import { getEliteProgress, useAuthStore, type EliteProgress } from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
+import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router, useFocusEffect } from 'expo-router'; import { ChevronLeft, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react-native'; import { getUserSkills, UserSkill } from '@shared/supabase/profile'; import { getEliteProgress, type EliteProgress } from '@shared/supabase';
 
 type TabType = 'progress' | 'about';
 

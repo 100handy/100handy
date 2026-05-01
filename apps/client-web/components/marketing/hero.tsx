@@ -3,7 +3,7 @@
 import { Search } from "lucide-react";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCategories } from "@shared/supabase";
+import { useCategories } from '@shared/query';
 
 const FALLBACK_SUBCATEGORIES = [
   "Furniture assembly",

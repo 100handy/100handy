@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
-import { useCategories } from "@shared/supabase";
+import { useCategories } from '@shared/query';
 
 function DashboardContent() {
   const router = useRouter();

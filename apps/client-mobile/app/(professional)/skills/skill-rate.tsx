@@ -152,7 +152,11 @@ export default function SkillRateScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="px-6 py-6">
           {/* Earning Structures Section */}
           <View className="mb-6">

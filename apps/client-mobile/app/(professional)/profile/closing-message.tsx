@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, TextInput, Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import { useProfessionalProfileStore } from '@shared/supabase';
+import { ScrollView, TextInput, Alert, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { useProfessionalProfileStore } from '@shared/store';
 
 export default function ClosingMessageScreen() {
   const router = useRouter();
@@ -77,7 +73,11 @@ export default function ClosingMessageScreen() {
         <View className="w-10" />
       </View>
 
-      <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1 bg-white"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Text Input Container */}
         <View className="mx-5 mt-6">
           <View className="border border-gray-200 rounded-lg p-4" style={{ minHeight: 200 }}>

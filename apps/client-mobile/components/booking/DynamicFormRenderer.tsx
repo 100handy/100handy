@@ -1,15 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ScrollView, View, Text, ActivityIndicator, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import {
-  useCategoryFormFields,
-  validateFormResponses,
-  shouldShowField,
-  groupFieldsBySection,
-  type FormResponse,
-} from '@shared/supabase';
+import { ScrollView, View, Text, ActivityIndicator, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useCategoryFormFields } from '@shared/query'; import { validateFormResponses, shouldShowField, groupFieldsBySection, type FormResponse } from '@shared/supabase';
 import { FormFieldRenderer } from './FormFieldRenderer';
 
 interface DynamicFormRendererProps {

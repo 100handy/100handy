@@ -1,8 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Image } from 'expo-image';
-import { Calendar, MessageCircle, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react-native';
-import type { NotificationItem as NotificationItemType } from '@shared/supabase';
+import { View, Text, Pressable } from 'react-native'; import { Image } from 'expo-image'; import { Calendar, MessageCircle, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react-native'; import type { NotificationItem as NotificationItemType } from '@shared/supabase';
 
 function getRelativeTime(dateStr: string): string {
   const now = Date.now();

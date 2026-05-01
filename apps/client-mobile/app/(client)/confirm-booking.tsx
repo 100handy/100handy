@@ -1,33 +1,11 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native';
-import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { useConfirmPayment } from '@stripe/stripe-react-native';
-import {
-  useHandymanProfile,
-  useLocationStore,
-  useCreateBooking,
-  type FormResponse,
-  usePendingBookingStore,
-  type PendingBookingData,
-  listPaymentMethods,
-  type PaymentMethod,
-  createPaymentIntent,
-  cancelPaymentIntent,
-  checkBookingConflict,
-  getWorkAreaByUserId,
-  getAvailabilityByUserId,
-  doesAvailabilitySlotApplyToDate,
-  isLocationInWorkArea,
-  type Coordinate,
-  type BookingFrequency,
-  FREQUENCY_OPTIONS,
-  calculateDiscountedRate,
-} from '@shared/supabase';
-import { useAuthStore } from '@shared/supabase';
+import { useLocationStore, usePendingBookingStore, type PendingBookingData } from '@shared/store';
+import { useCreateBooking, doesAvailabilitySlotApplyToDate, type Coordinate } from '@shared/query';
+import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native'; import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'; import { useHandymanProfile } from '@shared/query'; import { type FormResponse, listPaymentMethods, type PaymentMethod, createPaymentIntent, cancelPaymentIntent, checkBookingConflict, getWorkAreaByUserId, getAvailabilityByUserId, isLocationInWorkArea, type BookingFrequency, FREQUENCY_OPTIONS, calculateDiscountedRate } from '@shared/supabase';
+import { useAuthStore } from '@shared/store';
 import { useToast } from '@/components/ui/toast';
 import { FrequencySelector } from '@/components/booking';
+import { confirmStripePayment, getUnsupportedNativeFeatureMessage, supportsStripeNative } from '@/lib/native-feature-support';
 
 export default function ConfirmBookingScreen() {
   const router = useRouter();
@@ -77,7 +55,6 @@ export default function ConfirmBookingScreen() {
   );
   const isSubmittingRef = useRef(false);
   const toast = useToast();
-  const { confirmPayment } = useConfirmPayment();
   const recurringFrequencies = useMemo(
     () => FREQUENCY_OPTIONS.filter((option) => option.value !== 'once').map((option) => option.value),
     []
@@ -318,6 +295,11 @@ export default function ConfirmBookingScreen() {
       return;
     }
 
+    if (!supportsStripeNative()) {
+      Alert.alert('Unsupported in Expo Go', getUnsupportedNativeFeatureMessage('Booking payment authorization'));
+      return;
+    }
+
     let authorizedPaymentIntentId: string | null = null;
     isSubmittingRef.current = true;
 
@@ -430,7 +412,7 @@ export default function ConfirmBookingScreen() {
         return;
       }
 
-      const { error: paymentError, paymentIntent: confirmedPaymentIntent } = await confirmPayment(
+      const { error: paymentError, paymentIntent: confirmedPaymentIntent } = await confirmStripePayment(
         paymentIntent.clientSecret,
         {
           paymentMethodType: 'Card',
