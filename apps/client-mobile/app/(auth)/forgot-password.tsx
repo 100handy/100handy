@@ -5,6 +5,7 @@ import { Input, InputField } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
+import AuthLogo from '@/components/auth/AuthLogo';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@shared/schemas/auth';
@@ -19,7 +20,6 @@ export default function ForgotPassword() {
     control,
     handleSubmit,
     formState: { errors, isValid },
-    getValues,
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     mode: 'onChange',
@@ -70,14 +70,7 @@ export default function ForgotPassword() {
 
             {/* Logo */}
             <View className="items-center my-12">
-              <View className="flex-col items-center">
-                <Text className="text-5xl font-cardo-regular tracking-widest" style={{ color: '#30352D' }}>
-                  100
-                </Text>
-                <Text className="text-5xl font-cardo-bold tracking-widest" style={{ color: '#30352D' }}>
-                  HANDY
-                </Text>
-              </View>
+              <AuthLogo size="auth" variant="green" />
             </View>
 
             {/* Description */}
