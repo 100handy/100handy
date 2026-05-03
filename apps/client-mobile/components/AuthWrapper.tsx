@@ -73,17 +73,17 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
             setProfessionalOnboardingComplete(
               typeof handyProfile?.onboarding_completed === 'boolean'
                 ? handyProfile.onboarding_completed
-                : true
+                : false
             );
             setIsIdentityVerified(
-              handyProfile ? handyProfile.verification_status === 'verified' : true
+              handyProfile ? handyProfile.verification_status === 'verified' : false
             );
           }
         } catch (error) {
           console.warn('Unable to check professional status:', error);
           if (isMounted) {
-            // Avoid forcing legitimate professionals back into onboarding on transient failures.
-            setProfessionalOnboardingComplete(true);
+            // On transient failures, default to incomplete to avoid bypassing onboarding/verification.
+            setProfessionalOnboardingComplete(false);
             setIsIdentityVerified(true);
           }
         } finally {

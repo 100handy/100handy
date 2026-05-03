@@ -79,6 +79,7 @@ export const useSupportStore = create<SupportState>((set, get) => ({
       const message = error instanceof Error ? error.message : 'Failed to fetch tickets';
 
       if (message === 'Not authenticated') {
+        console.warn('[support] fetchTickets: not authenticated, returning empty list');
         set({
           tickets: [],
           isLoadingTickets: false,
@@ -113,6 +114,7 @@ export const useSupportStore = create<SupportState>((set, get) => ({
       const message = error instanceof Error ? error.message : 'Failed to create ticket';
 
       if (message === 'Not authenticated') {
+        console.warn('[support] createTicket: not authenticated');
         set({
           isCreatingTicket: false,
           error: null,
@@ -161,6 +163,7 @@ export const useSupportStore = create<SupportState>((set, get) => ({
       const message = error instanceof Error ? error.message : 'Failed to open ticket';
 
       if (message === 'Not authenticated') {
+        console.warn('[support] openTicket: not authenticated, clearing ticket state');
         set({
           activeTicket: null,
           messages: [],

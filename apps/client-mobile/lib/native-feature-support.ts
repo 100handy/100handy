@@ -14,6 +14,7 @@ export function getUnsupportedNativeFeatureMessage(feature: string): string {
 export async function confirmStripePayment(
   ...args: Parameters<typeof import('@stripe/stripe-react-native').confirmPayment>
 ): Promise<Awaited<ReturnType<typeof import('@stripe/stripe-react-native').confirmPayment>>> {
+  if (!supportsStripeNative()) throw new Error(getUnsupportedNativeFeatureMessage('Payments'));
   const stripe = require('@stripe/stripe-react-native') as typeof import('@stripe/stripe-react-native');
   return stripe.confirmPayment(...args);
 }
@@ -21,6 +22,7 @@ export async function confirmStripePayment(
 export async function confirmStripeSetupIntent(
   ...args: Parameters<typeof import('@stripe/stripe-react-native').confirmSetupIntent>
 ): Promise<Awaited<ReturnType<typeof import('@stripe/stripe-react-native').confirmSetupIntent>>> {
+  if (!supportsStripeNative()) throw new Error(getUnsupportedNativeFeatureMessage('Payments'));
   const stripe = require('@stripe/stripe-react-native') as typeof import('@stripe/stripe-react-native');
   return stripe.confirmSetupIntent(...args);
 }
@@ -28,6 +30,7 @@ export async function confirmStripeSetupIntent(
 export async function initStripePaymentSheet(
   ...args: Parameters<typeof import('@stripe/stripe-react-native').initPaymentSheet>
 ): Promise<Awaited<ReturnType<typeof import('@stripe/stripe-react-native').initPaymentSheet>>> {
+  if (!supportsStripeNative()) throw new Error(getUnsupportedNativeFeatureMessage('Payments'));
   const stripe = require('@stripe/stripe-react-native') as typeof import('@stripe/stripe-react-native');
   return stripe.initPaymentSheet(...args);
 }
@@ -35,6 +38,7 @@ export async function initStripePaymentSheet(
 export async function presentStripePaymentSheet(
   ...args: Parameters<typeof import('@stripe/stripe-react-native').presentPaymentSheet>
 ): Promise<Awaited<ReturnType<typeof import('@stripe/stripe-react-native').presentPaymentSheet>>> {
+  if (!supportsStripeNative()) throw new Error(getUnsupportedNativeFeatureMessage('Payments'));
   const stripe = require('@stripe/stripe-react-native') as typeof import('@stripe/stripe-react-native');
   return stripe.presentPaymentSheet(...args);
 }
@@ -42,6 +46,7 @@ export async function presentStripePaymentSheet(
 export async function presentStripeIdentityVerificationSheet(
   ...args: Parameters<typeof import('@stripe/stripe-identity-react-native').presentIdentityVerificationSheet>
 ): Promise<Awaited<ReturnType<typeof import('@stripe/stripe-identity-react-native').presentIdentityVerificationSheet>>> {
+  if (!supportsStripeNative()) throw new Error(getUnsupportedNativeFeatureMessage('Identity verification'));
   const stripeIdentity = require('@stripe/stripe-identity-react-native') as typeof import('@stripe/stripe-identity-react-native');
   return stripeIdentity.presentIdentityVerificationSheet(...args);
 }

@@ -93,6 +93,12 @@ export default function SetAvailability() {
   const weekPagerRef = useRef<ScrollView>(null);
   const timelineScrollRef = useRef<ScrollView>(null);
   const hasAutoSelectedAvailabilityDay = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      hasAutoSelectedAvailabilityDay.current = false;
+    };
+  }, []);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [visibleWeekOffset, setVisibleWeekOffset] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);

@@ -77,7 +77,13 @@ export default function Index() {
     } catch (error) {
       console.warn('Unable to route authenticated user cleanly:', error);
       hasRouted.current = true;
-      router.replace(userRole === 'handy' ? '/(professional)/(tabs)/dashboard' : '/(client)/(tabs)/home');
+      if (userRole === 'handy') {
+        router.replace('/(professional)/(tabs)/dashboard');
+      } else if (userRole === 'customer') {
+        router.replace('/(client)/(tabs)/home');
+      } else {
+        router.replace('/(auth)/welcome');
+      }
     } finally {
       setIsChecking(false);
     }

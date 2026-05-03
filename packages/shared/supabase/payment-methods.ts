@@ -78,7 +78,7 @@ export async function getOrCreateStripeCustomer(): Promise<string | null> {
       .from('profiles')
       .select('stripe_customer_id, first_name, last_name')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       console.error('Error fetching user profile:', profileError);
@@ -112,7 +112,7 @@ export async function getOrCreateStripeCustomer(): Promise<string | null> {
  */
 export async function createSetupIntent(): Promise<SetupIntentResponse | null> {
   try {
-    // Get or create Stripe customer first
+    // Intentionally creates a Stripe customer if one doesn't exist yet — a SetupIntent requires it.
     if (!(await getOrCreateStripeCustomer())) {
       console.error('Failed to get Stripe customer ID');
       return null;

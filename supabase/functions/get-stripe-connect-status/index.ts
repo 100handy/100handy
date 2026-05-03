@@ -24,7 +24,7 @@ serve(async (req) => {
       .from('handy_profiles')
       .select('stripe_connect_account_id, stripe_connect_status')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       console.error('Error fetching handy profile:', profileError);
@@ -55,7 +55,32 @@ serve(async (req) => {
     }
 
     // Fetch the account details from Stripe
-    const account = await stripe.accounts.retrieve(handyProfile.stripe_connect_account_id);
+    let account: Awaited<ReturnType<typeof stripe.accounts.retrieve>>;
+    try {
+      account = await stripe.accounts.retrieve(handyProfile.stripe_connect_account_id);
+    } catch (stripeError: any) {
+      // Account not found or invalid (e.g. test account ID used with live key, or deleted account).
+      // Treat as if no account exists rather than returning a 5xx.
+      if (stripeError?.statusCode === 400 || stripeError?.statusCode === 404 || stripeError?.code === 'account_invalid') {
+        console.warn('Stripe Connect account not retrievable, treating as not started:', {
+          accountId: handyProfile.stripe_connect_account_id,
+          message: stripeError?.message,
+          code: stripeError?.code,
+        });
+        return new Response(
+          JSON.stringify({
+            hasAccount: false,
+            status: 'not_started',
+            payoutsEnabled: false,
+            chargesEnabled: false,
+            requirements: null,
+            externalAccounts: [],
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw stripeError;
+    }
 
     // Determine the status based on account state
     let status = handyProfile.stripe_connect_status || 'pending';

@@ -84,13 +84,13 @@ export async function resolveAuthenticatedRoute({
   if (userRole === 'handy') {
     try {
       const onboardingComplete = await getProfessionalOnboardingCompleted();
-      if (onboardingComplete === null) {
-        return '/(professional)/(tabs)/dashboard';
-      }
-      return onboardingComplete
+      // null means the column is unset or the profile is missing — treat as incomplete.
+      return onboardingComplete === true
         ? '/(professional)/(tabs)/dashboard'
         : '/(auth)/(professional)/verify-info';
     } catch {
+      // Thrown exception = transient network/system error; default to dashboard to avoid
+      // repeatedly bouncing already-onboarded professionals back through onboarding.
       return '/(professional)/(tabs)/dashboard';
     }
   }
