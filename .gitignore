@@ -47,3 +47,5 @@ temp/
 opencode.json
 Copy of 100 Handy*.md
 docs/agents/
+.agents/
+.codex/
