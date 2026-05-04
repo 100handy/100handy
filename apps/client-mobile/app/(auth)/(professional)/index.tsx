@@ -101,14 +101,14 @@ export default function ProfessionalWelcome() {
                   I agree to the{' '}
                   <Text
                     className="text-brand-terracotta"
-                    onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+                    onPress={() => Linking.openURL('https://www.100handy.com/terms')}
                   >
                     Terms of Service
                   </Text>
                   {' '}and have reviewed the{' '}
                   <Text
                     className="text-brand-terracotta"
-                    onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+                    onPress={() => Linking.openURL('https://www.100handy.com/terms')}
                   >
                     Privacy Policy
                   </Text>

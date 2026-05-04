@@ -23,8 +23,7 @@ module.exports = {
       bundleIdentifier: "com.oxdpr.handy",
       buildNumber: "8",
       usesAppleSignIn: true,
-      // TODO: Replace with actual production domain for Universal Links
-      associatedDomains: ["applinks:auth.yourdomain.com"],
+      associatedDomains: ["applinks:100handy.com", "applinks:www.100handy.com"],
       infoPlist: {
         NSLocationWhenInUseUsageDescription:
           "We need your location to help you set your work area and find nearby jobs.",

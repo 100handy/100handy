@@ -8,14 +8,14 @@ export default function AuthFooter() {
         I agree to the{' '}
         <Text
           style={{ color: '#C1856A' }}
-          onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+          onPress={() => Linking.openURL('https://www.100handy.com/terms')}
         >
           Terms of Service
         </Text>
         {' '}and have reviewed the{' '}
         <Text
           style={{ color: '#C1856A' }}
-          onPress={() => Linking.openURL('https://100handy-client-web.vercel.app/terms')}
+          onPress={() => Linking.openURL('https://www.100handy.com/terms')}
         >
           Privacy Policy
         </Text>

@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.oxdpr.handy",
       "associatedDomains": [
-        "applinks:auth.yourdomain.com"
+        "applinks:100handy.com",
+        "applinks:www.100handy.com"
       ],
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to help you set your work area and find nearby jobs.",
