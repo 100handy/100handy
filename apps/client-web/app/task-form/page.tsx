@@ -591,9 +591,9 @@ function TaskFormContent() {
   };
 
   const steps = [
-    { number: 1, label: "Describe your task", active: getCurrentStep() === 1 },
-    { number: 2, label: "Browse Pros", active: getCurrentStep() === 2 },
-    { number: 3, label: "Confirm details", active: getCurrentStep() === 3 },
+    { number: 1, label: "Describe your task", mobileLabel: "Describe", active: getCurrentStep() === 1 },
+    { number: 2, label: "Browse Pros", mobileLabel: "Browse", active: getCurrentStep() === 2 },
+    { number: 3, label: "Confirm details", mobileLabel: "Confirm", active: getCurrentStep() === 3 },
   ];
 
   return (
@@ -608,13 +608,13 @@ function TaskFormContent() {
             </Link>
 
             {/* Progress Stepper */}
-            <div className="flex items-center gap-2 flex-1 max-w-2xl mx-2 sm:mx-8">
+            <div className="flex items-center gap-1 sm:gap-2 flex-1 max-w-2xl mx-2 sm:mx-8">
               {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center flex-1">
+                <div key={step.number} className="flex items-center flex-1 min-w-0">
                   {/* Step Circle */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-center sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-colors flex-shrink-0 ${
                         step.active
                           ? "bg-brand-terracotta text-white"
                           : "bg-gray-300 text-white"
@@ -623,15 +623,20 @@ function TaskFormContent() {
                       {step.number}
                     </div>
                     {step.label && (
-                      <span className="text-xs text-brand-dark whitespace-nowrap">
+                      <>
+                        <span className="text-[11px] leading-tight text-brand-dark text-center sm:hidden">
+                          {step.mobileLabel}
+                        </span>
+                        <span className="hidden sm:inline text-xs text-brand-dark whitespace-nowrap">
                         {step.label}
-                      </span>
+                        </span>
+                      </>
                     )}
                   </div>
 
                   {/* Connector Line */}
                   {index < steps.length - 1 && (
-                    <div className="flex-1 h-px bg-gray-300 mx-2" />
+                    <div className="flex-1 h-px bg-gray-300 mx-1 sm:mx-2" />
                   )}
                 </div>
               ))}
