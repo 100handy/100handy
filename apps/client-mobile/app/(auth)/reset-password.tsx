@@ -93,15 +93,24 @@ export default function ResetPassword() {
                     <View>
                       <Input
                         variant="outline"
-                        className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
+                        className="relative border-0 border-b border-gray-300 rounded-none px-0 h-10"
                       >
+                        {!value ? (
+                          <Text
+                            pointerEvents="none"
+                            className="absolute left-0 text-[15px] font-worksans"
+                            style={{ color: '#9CA3AF' }}
+                          >
+                            Enter new password
+                          </Text>
+                        ) : null}
                         <InputField
                           className="font-worksans text-[15px] flex-1"
                           style={{ color: '#30352D' }}
                           value={value}
                           onChangeText={onChange}
                           onBlur={onBlur}
-                          placeholder="Enter new password"
+                          placeholder=""
                           placeholderTextColor="#9CA3AF"
                           secureTextEntry={!showPassword}
                         />
@@ -135,15 +144,24 @@ export default function ResetPassword() {
                     <View>
                       <Input
                         variant="outline"
-                        className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
+                        className="relative border-0 border-b border-gray-300 rounded-none px-0 h-10"
                       >
+                        {!value ? (
+                          <Text
+                            pointerEvents="none"
+                            className="absolute left-0 text-[15px] font-worksans"
+                            style={{ color: '#9CA3AF' }}
+                          >
+                            Confirm new password
+                          </Text>
+                        ) : null}
                         <InputField
                           className="font-worksans text-[15px] flex-1"
                           style={{ color: '#30352D' }}
                           value={value}
                           onChangeText={onChange}
                           onBlur={onBlur}
-                          placeholder="Confirm new password"
+                          placeholder=""
                           placeholderTextColor="#9CA3AF"
                           secureTextEntry={!showConfirmPassword}
                         />

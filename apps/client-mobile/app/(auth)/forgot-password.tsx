@@ -90,15 +90,24 @@ export default function ForgotPassword() {
                     <View>
                       <Input
                         variant="outline"
-                        className="border-0 border-b border-gray-300 rounded-none px-0 h-10"
+                        className="relative border-0 border-b border-gray-300 rounded-none px-0 h-10"
                       >
+                        {!value ? (
+                          <Text
+                            pointerEvents="none"
+                            className="absolute left-0 text-[15px] font-worksans"
+                            style={{ color: '#9CA3AF' }}
+                          >
+                            Email
+                          </Text>
+                        ) : null}
                         <InputField
                           className="font-worksans text-[15px]"
                           style={{ color: '#30352D' }}
                           value={value}
                           onChangeText={onChange}
                           onBlur={onBlur}
-                          placeholder="Email"
+                          placeholder=""
                           placeholderTextColor="#9CA3AF"
                           keyboardType="email-address"
                           autoCapitalize="none"

@@ -67,15 +67,24 @@ export default function SignInForm({
             <View>
               <Input
                 variant="outline"
-                className="h-14 rounded-2xl border-2 border-[#8B7355] bg-[#FCF8F5] px-4"
+                className="relative h-14 rounded-2xl border-2 border-[#8B7355] bg-[#FCF8F5] px-4"
               >
+                {!value ? (
+                  <Text
+                    pointerEvents="none"
+                    className="absolute left-4 text-[15px] font-worksans"
+                    style={{ color: '#9CA3AF' }}
+                  >
+                    Email
+                  </Text>
+                ) : null}
                 <InputField
                   className="font-worksans text-[15px]"
                   style={{ color: '#30352D' }}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
-                  placeholder="Email"
+                  placeholder=""
                   placeholderTextColor="#9CA3AF"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -100,15 +109,24 @@ export default function SignInForm({
             <View>
               <Input
                 variant="outline"
-                className="h-14 flex-row items-center rounded-2xl border-2 border-[#8B7355] bg-[#FCF8F5] px-4"
+                className="relative h-14 flex-row items-center rounded-2xl border-2 border-[#8B7355] bg-[#FCF8F5] px-4"
               >
+                {!value ? (
+                  <Text
+                    pointerEvents="none"
+                    className="absolute left-4 text-[15px] font-worksans"
+                    style={{ color: '#9CA3AF' }}
+                  >
+                    Password
+                  </Text>
+                ) : null}
                 <InputField
                   className="font-worksans text-[15px] flex-1"
                   style={{ color: '#30352D' }}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
-                  placeholder="Password"
+                  placeholder=""
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry={!showPassword}
                 />
