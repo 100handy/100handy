@@ -21,7 +21,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.oxdpr.handy",
-      buildNumber: "8",
+      buildNumber: "10",
       usesAppleSignIn: true,
       associatedDomains: ["applinks:100handy.com", "applinks:www.100handy.com"],
       infoPlist: {

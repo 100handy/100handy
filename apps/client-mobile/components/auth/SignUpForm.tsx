@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Linking } from 'react-native';
+import { View, Text, Pressable, Linking, Platform } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { ChevronDown, X, Eye, EyeOff, Check } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signUpSchema, validatePostcode, type SignUpFormData } from '@shared/schemas/auth';
+import {
+  signUpWithDateOfBirthSchema,
+  validatePostcode,
+  type SignUpWithDateOfBirthFormData,
+} from '@shared/schemas/auth';
 import { countryCodeToFlagEmoji } from '@/lib/welcome-country';
 import CountryCodePickerSheet from './CountryCodePickerSheet';
 import type { Country, CountryCode } from 'react-native-country-picker-modal/lib/types';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 interface SignUpFormProps {
   onSubmit: (email: string, password: string, metadata: any) => void;
@@ -27,6 +32,7 @@ export default function SignUpForm({
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [marketingOptOut, setMarketingOptOut] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const onSelectCountry = (country: Country): void => {
     setCountryCode(country.cca2);
@@ -43,8 +49,8 @@ export default function SignUpForm({
     handleSubmit,
     formState: { errors, isValid },
     watch,
-  } = useForm<SignUpFormData>({
-    resolver: zodResolver(signUpSchema),
+  } = useForm<SignUpWithDateOfBirthFormData>({
+    resolver: zodResolver(signUpWithDateOfBirthSchema),
     mode: 'onChange',
     defaultValues: {
       firstName: '',
@@ -53,6 +59,7 @@ export default function SignUpForm({
       password: '',
       phone: '',
       postcode: '',
+      dateOfBirth: '',
     },
   });
 
@@ -74,7 +81,7 @@ export default function SignUpForm({
 
   // Check if form is truly valid (including custom postcode validation)
   const isFormValid = isValid && !postcodeError;
-  const handleSignUp = (formData: SignUpFormData): void => {
+  const handleSignUp = (formData: SignUpWithDateOfBirthFormData): void => {
     const fullPhone = `+${callingCode}${formData.phone}`;
     const metadata = {
       first_name: formData.firstName,
@@ -84,6 +91,7 @@ export default function SignUpForm({
       postcode: formData.postcode,
       phone: fullPhone,
       marketing_opt_out: marketingOptOut,
+      date_of_birth: formData.dateOfBirth,
     };
 
     onSubmit(formData.email, formData.password, metadata);
@@ -323,6 +331,67 @@ export default function SignUpForm({
               {(errors.postcode || postcodeError) && (
                 <Text className="text-xs text-red-600 mt-1 font-worksans">
                   {postcodeError || errors.postcode?.message}
+                </Text>
+              )}
+            </View>
+          )}
+        />
+      </View>
+
+      {/* Date of Birth */}
+      <View className="mb-2">
+        <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
+          Date of Birth
+        </Text>
+        <Controller
+          control={control}
+          name="dateOfBirth"
+          render={({ field: { onChange, value } }) => (
+            <View>
+              <Pressable
+                onPress={() => setShowDatePicker(true)}
+                className="border-0 border-b border-gray-300 px-0 h-10 justify-center"
+              >
+                <Text
+                  className="font-worksans text-[15px]"
+                  style={{ color: value ? '#30352D' : '#9CA3AF' }}
+                >
+                  {value || 'DD/MM/YYYY'}
+                </Text>
+              </Pressable>
+              {showDatePicker && (
+                <DateTimePicker
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  value={
+                    value
+                      ? new Date(
+                          Number(value.split('/')[2]),
+                          Number(value.split('/')[1]) - 1,
+                          Number(value.split('/')[0])
+                        )
+                      : new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+                  }
+                  maximumDate={new Date()}
+                  onChange={(event: DateTimePickerEvent, date?: Date) => {
+                    if (Platform.OS === 'android') setShowDatePicker(false);
+                    if (event.type === 'dismissed') {
+                      setShowDatePicker(false);
+                      return;
+                    }
+                    if (date) {
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const year = date.getFullYear();
+                      onChange(`${day}/${month}/${year}`);
+                      if (Platform.OS === 'ios') setShowDatePicker(false);
+                    }
+                  }}
+                />
+              )}
+              {errors.dateOfBirth && (
+                <Text className="text-xs text-red-600 mt-1 font-worksans">
+                  {errors.dateOfBirth.message}
                 </Text>
               )}
             </View>

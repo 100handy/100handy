@@ -11,11 +11,13 @@ export * from './query';
 export {
   signInSchema,
   signUpSchema,
+  signUpWithDateOfBirthSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   otpSchema,
   type SignInFormData,
   type SignUpFormData,
+  type SignUpWithDateOfBirthFormData,
   type ForgotPasswordFormData,
   type ResetPasswordFormData,
   type OtpFormData,

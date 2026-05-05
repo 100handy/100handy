@@ -139,7 +139,7 @@ export default function CountryCodePickerSheet({
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center flex-1">
                       <Text className="text-[20px] mr-3">
-                        {country.flag || countryCodeToFlagEmoji(country.cca2)}
+                        {countryCodeToFlagEmoji(country.cca2)}
                       </Text>
                       <View className="flex-1">
                         <Text className="font-worksans-medium text-[15px]" style={{ color: '#30352D' }}>

@@ -25,6 +25,49 @@ export const signInSchema = z.object({
     .min(6, 'Password must be at least 6 characters'),
 });
 
+const parseDateOfBirth = (dateString: string): Date | null => {
+  const [day, month, year] = dateString.split('/').map(Number);
+  if (!day || !month || !year) {
+    return null;
+  }
+
+  const birthDate = new Date(year, month - 1, day);
+  if (
+    birthDate.getFullYear() !== year ||
+    birthDate.getMonth() !== month - 1 ||
+    birthDate.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return birthDate;
+};
+
+const isValidDateOfBirth = (dateString: string): boolean => parseDateOfBirth(dateString) !== null;
+
+// Helper to validate age 18+
+const isAtLeast18 = (dateString: string): boolean => {
+  const birthDate = parseDateOfBirth(dateString);
+  if (!birthDate) {
+    return false;
+  }
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  const dayDiff = today.getDate() - birthDate.getDate();
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
+  return age >= 18;
+};
+
+const dateOfBirthSchema = z.string()
+  .min(1, 'Date of birth is required')
+  .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Please enter a valid date (DD/MM/YYYY)')
+  .refine(isValidDateOfBirth, 'Please enter a valid date (DD/MM/YYYY)')
+  .refine(isAtLeast18, 'You must be at least 18 years old to sign up');
+
 // Base schema without country-specific validation
 export const signUpSchema = z.object({
   firstName: z.string()
@@ -49,6 +92,10 @@ export const signUpSchema = z.object({
   postcode: z.string()
     .min(1, 'Postcode is required')
     .min(2, 'Postcode must be at least 2 characters'),
+});
+
+export const signUpWithDateOfBirthSchema = signUpSchema.extend({
+  dateOfBirth: dateOfBirthSchema,
 });
 
 // Factory function to create schema with country-specific postcode validation
@@ -89,7 +136,7 @@ export const otpSchema = z.object({
 
 export type SignInFormData = z.infer<typeof signInSchema>;
 export type SignUpFormData = z.infer<typeof signUpSchema>;
+export type SignUpWithDateOfBirthFormData = z.infer<typeof signUpWithDateOfBirthSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 export type OtpFormData = z.infer<typeof otpSchema>;
-
