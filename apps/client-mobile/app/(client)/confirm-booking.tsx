@@ -14,7 +14,7 @@ export default function ConfirmBookingScreen() {
   // Task details from previous screens
   const taskerId = params.taskerId as string;
   const categoryId = params.categoryId as string;
-  const categoryName = params.categoryName as string;
+  const categoryName = typeof params.categoryName === 'string' ? params.categoryName : '';
   const selectedDate = params.selectedDate as string;
   const selectedTime = params.selectedTime as string;
   const selectedFrequencyParam =
@@ -711,17 +711,16 @@ export default function ConfirmBookingScreen() {
               />
             </View>
 
-            {supportsRecurringFrequency && isRepeatEnabled ? (
-              <View className="mt-4">
-                <FrequencySelector
-                  selectedFrequency={selectedFrequency}
-                  onFrequencyChange={handleFrequencyChange}
-                  disabledFrequencies={recurringFrequencies}
-                  disabledMessage="Recurring booking checkout is temporarily unavailable on mobile."
-                />
-              </View>
-            ) : null}
           </View>
+
+          {supportsRecurringFrequency && isRepeatEnabled ? (
+            <FrequencySelector
+              selectedFrequency={selectedFrequency}
+              onFrequencyChange={handleFrequencyChange}
+              disabledFrequencies={recurringFrequencies}
+              disabledMessage="Recurring booking checkout is temporarily unavailable on mobile."
+            />
+          ) : null}
 
           {/* Payment Method */}
           <Pressable
