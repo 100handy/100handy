@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { useLocationStore, usePendingBookingStore, type PendingBookingData } from '@shared/store';
 import { useCreateBooking, doesAvailabilitySlotApplyToDate, type Coordinate } from '@shared/query';
-import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native'; import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'; import { useHandymanProfile } from '@shared/query'; import { type FormResponse, listPaymentMethods, type PaymentMethod, createPaymentIntent, cancelPaymentIntent, checkBookingConflict, getWorkAreaByUserId, getAvailabilityByUserId, isLocationInWorkArea, type BookingFrequency, FREQUENCY_OPTIONS, calculateDiscountedRate } from '@shared/supabase';
+import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler, Switch } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native'; import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'; import { useHandymanProfile } from '@shared/query'; import { type FormResponse, listPaymentMethods, type PaymentMethod, createPaymentIntent, cancelPaymentIntent, checkBookingConflict, getWorkAreaByUserId, getAvailabilityByUserId, isLocationInWorkArea, type BookingFrequency, FREQUENCY_OPTIONS, calculateDiscountedRate } from '@shared/supabase';
 import { useAuthStore } from '@shared/store';
 import { useToast } from '@/components/ui/toast';
 import { FrequencySelector } from '@/components/booking';
@@ -19,6 +19,7 @@ export default function ConfirmBookingScreen() {
   const selectedTime = params.selectedTime as string;
   const selectedFrequencyParam =
     typeof params.selectedFrequency === 'string' ? params.selectedFrequency : 'once';
+  const supportsRecurringFrequency = categoryName.toLowerCase().includes('clean');
 
   // Parse form responses
   const formResponses: FormResponse = useMemo(() => {
@@ -49,9 +50,13 @@ export default function ConfirmBookingScreen() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loadingPayment, setLoadingPayment] = useState(true);
   const [selectedFrequency, setSelectedFrequency] = useState<BookingFrequency>(
-    FREQUENCY_OPTIONS.some((option) => option.value === selectedFrequencyParam)
+    supportsRecurringFrequency &&
+      FREQUENCY_OPTIONS.some((option) => option.value === selectedFrequencyParam)
       ? (selectedFrequencyParam as BookingFrequency)
       : 'once'
+  );
+  const [isRepeatEnabled, setIsRepeatEnabled] = useState(
+    supportsRecurringFrequency && selectedFrequencyParam !== 'once'
   );
   const isSubmittingRef = useRef(false);
   const toast = useToast();
@@ -220,6 +225,17 @@ export default function ConfirmBookingScreen() {
 
     setSelectedFrequency(frequency);
   }, [toast]);
+
+  const handleRepeatToggle = useCallback((value: boolean) => {
+    if (!supportsRecurringFrequency) {
+      return;
+    }
+
+    setIsRepeatEnabled(value);
+    if (!value) {
+      setSelectedFrequency('once');
+    }
+  }, [supportsRecurringFrequency]);
 
   const handleCreateBooking = async () => {
     // Debounce/mutex guard to prevent double-submission
@@ -672,13 +688,40 @@ export default function ConfirmBookingScreen() {
             </View>
           </View>
 
-          {/* Frequency Selection */}
-          <FrequencySelector
-            selectedFrequency={selectedFrequency}
-            onFrequencyChange={handleFrequencyChange}
-            disabledFrequencies={recurringFrequencies}
-            disabledMessage="Recurring booking checkout is temporarily unavailable on mobile."
-          />
+          <View className="rounded-lg border border-gray-300 bg-white p-5">
+            <View className="flex-row items-center justify-between gap-4">
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-[#30352D] mb-1">
+                  Repeat service
+                </Text>
+                <Text className="text-sm text-gray-600">
+                  {supportsRecurringFrequency
+                    ? 'Turn this on to view repeat booking options.'
+                    : 'Recurring booking is not available for this service.'}
+                </Text>
+              </View>
+              <Switch
+                value={supportsRecurringFrequency ? isRepeatEnabled : false}
+                onValueChange={handleRepeatToggle}
+                disabled={!supportsRecurringFrequency}
+                trackColor={{ false: '#D1D5DB', true: '#A7D8C8' }}
+                thumbColor={
+                  supportsRecurringFrequency && isRepeatEnabled ? '#047857' : '#F9FAFB'
+                }
+              />
+            </View>
+
+            {supportsRecurringFrequency && isRepeatEnabled ? (
+              <View className="mt-4">
+                <FrequencySelector
+                  selectedFrequency={selectedFrequency}
+                  onFrequencyChange={handleFrequencyChange}
+                  disabledFrequencies={recurringFrequencies}
+                  disabledMessage="Recurring booking checkout is temporarily unavailable on mobile."
+                />
+              </View>
+            ) : null}
+          </View>
 
           {/* Payment Method */}
           <Pressable
