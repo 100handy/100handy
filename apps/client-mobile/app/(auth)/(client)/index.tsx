@@ -146,8 +146,8 @@ export default function ClientWelcome() {
                   }
                 >
                   <Text className="text-center text-[14px] font-worksans-medium" style={{ color: '#30352D' }}>
-                    Looking to sign up as a{' '}
-                    <Text style={{ color: '#C1856A' }}>100Handy Pro</Text>
+                    Looking to offer services on{' '}
+                    <Text style={{ color: '#C1856A' }}>100Handy</Text>
                   </Text>
                 </Pressable>
               </View>

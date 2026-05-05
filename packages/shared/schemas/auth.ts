@@ -87,11 +87,15 @@ export const signUpSchema = z.object({
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
   phone: z.string()
-    .min(1, 'Phone number is required')
-    .regex(phoneRegex, 'Please enter a valid phone number (digits only)'),
+    .refine(
+      (value) => value.trim() === '' || phoneRegex.test(value),
+      'Please enter a valid phone number (digits only)'
+    ),
   postcode: z.string()
-    .min(1, 'Postcode is required')
-    .min(2, 'Postcode must be at least 2 characters'),
+    .refine(
+      (value) => value.trim() === '' || value.trim().length >= 2,
+      'Postcode must be at least 2 characters'
+    ),
 });
 
 export const signUpWithDateOfBirthSchema = signUpSchema.extend({
@@ -101,7 +105,7 @@ export const signUpWithDateOfBirthSchema = signUpSchema.extend({
 // Factory function to create schema with country-specific postcode validation
 export const createSignUpSchema = (countryCode: string) => {
   return signUpSchema.refine(
-    (data) => validatePostcode(data.postcode, countryCode),
+    (data) => data.postcode.trim() === '' || validatePostcode(data.postcode, countryCode),
     {
       message: `Please enter a valid postcode for ${countryCode}`,
       path: ['postcode'],

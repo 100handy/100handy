@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Linking, Platform } from 'react-native';
+import { View, Text, Pressable, Linking, Platform, Modal } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Button, ButtonText, ButtonSpinner } from '@/components/ui/button';
 import { ChevronDown, X, Eye, EyeOff, Check } from 'lucide-react-native';
@@ -33,6 +33,9 @@ export default function SignUpForm({
   const [showPassword, setShowPassword] = useState(false);
   const [marketingOptOut, setMarketingOptOut] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [draftDateOfBirth, setDraftDateOfBirth] = useState<Date>(
+    new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+  );
 
   const onSelectCountry = (country: Country): void => {
     setCountryCode(country.cca2);
@@ -65,6 +68,19 @@ export default function SignUpForm({
 
   const postcodeValue = watch('postcode');
 
+  const parseDateOfBirth = (value?: string): Date => {
+    if (!value) {
+      return new Date(new Date().setFullYear(new Date().getFullYear() - 18));
+    }
+
+    const [day, month, year] = value.split('/').map(Number);
+    if (!day || !month || !year) {
+      return new Date(new Date().setFullYear(new Date().getFullYear() - 18));
+    }
+
+    return new Date(year, month - 1, day);
+  };
+
   // Validate postcode when country or postcode value changes
   useEffect(() => {
     if (postcodeValue && postcodeValue.length >= 2) {
@@ -82,14 +98,16 @@ export default function SignUpForm({
   // Check if form is truly valid (including custom postcode validation)
   const isFormValid = isValid && !postcodeError;
   const handleSignUp = (formData: SignUpWithDateOfBirthFormData): void => {
-    const fullPhone = `+${callingCode}${formData.phone}`;
+    const trimmedPhone = formData.phone.trim();
+    const trimmedPostcode = formData.postcode.trim();
+    const fullPhone = trimmedPhone ? `+${callingCode}${trimmedPhone}` : undefined;
     const metadata = {
       first_name: formData.firstName,
       last_name: formData.lastName,
       full_name: `${formData.firstName} ${formData.lastName}`,
       role: userRole === 'professional' ? 'handy' : 'customer',
-      postcode: formData.postcode,
-      phone: fullPhone,
+      ...(trimmedPostcode ? { postcode: trimmedPostcode } : {}),
+      ...(fullPhone ? { phone: fullPhone } : {}),
       marketing_opt_out: marketingOptOut,
       date_of_birth: formData.dateOfBirth,
     };
@@ -248,7 +266,7 @@ export default function SignUpForm({
       {/* Phone Number */}
       <View className="mb-2">
         <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
-          Phone Number
+          Phone Number (optional)
         </Text>
         <Controller
           control={control}
@@ -278,7 +296,7 @@ export default function SignUpForm({
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
-                    placeholder="Phone Number"
+                    placeholder="Add a phone number"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="phone-pad"
                   />
@@ -306,7 +324,7 @@ export default function SignUpForm({
       {/* Post code */}
       <View className="mb-2">
         <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
-          Post code
+          Post code (optional)
         </Text>
         <Controller
           control={control}
@@ -349,7 +367,10 @@ export default function SignUpForm({
           render={({ field: { onChange, value } }) => (
             <View>
               <Pressable
-                onPress={() => setShowDatePicker(true)}
+                onPress={() => {
+                  setDraftDateOfBirth(parseDateOfBirth(value));
+                  setShowDatePicker(true);
+                }}
                 className="border-0 border-b border-gray-300 px-0 h-10 justify-center"
               >
                 <Text
@@ -360,34 +381,73 @@ export default function SignUpForm({
                 </Text>
               </Pressable>
               {showDatePicker && (
-                <DateTimePicker
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  value={
-                    value
-                      ? new Date(
-                          Number(value.split('/')[2]),
-                          Number(value.split('/')[1]) - 1,
-                          Number(value.split('/')[0])
-                        )
-                      : new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-                  }
-                  maximumDate={new Date()}
-                  onChange={(event: DateTimePickerEvent, date?: Date) => {
-                    if (Platform.OS === 'android') setShowDatePicker(false);
-                    if (event.type === 'dismissed') {
-                      setShowDatePicker(false);
-                      return;
-                    }
-                    if (date) {
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const year = date.getFullYear();
-                      onChange(`${day}/${month}/${year}`);
-                      if (Platform.OS === 'ios') setShowDatePicker(false);
-                    }
-                  }}
-                />
+                <>
+                  {Platform.OS === 'ios' ? (
+                    <Modal
+                      visible={showDatePicker}
+                      transparent
+                      animationType="slide"
+                      onRequestClose={() => setShowDatePicker(false)}
+                    >
+                      <View className="flex-1 justify-end bg-black/30">
+                        <View className="bg-white rounded-t-3xl px-5 pt-4 pb-8">
+                          <View className="flex-row items-center justify-between mb-4">
+                            <Pressable onPress={() => setShowDatePicker(false)}>
+                              <Text className="font-worksans-semibold text-[16px]" style={{ color: '#6B7280' }}>
+                                Cancel
+                              </Text>
+                            </Pressable>
+                            <Text className="font-worksans-semibold text-[16px]" style={{ color: '#30352D' }}>
+                              Date of Birth
+                            </Text>
+                            <Pressable
+                              onPress={() => {
+                                const day = String(draftDateOfBirth.getDate()).padStart(2, '0');
+                                const month = String(draftDateOfBirth.getMonth() + 1).padStart(2, '0');
+                                const year = draftDateOfBirth.getFullYear();
+                                onChange(`${day}/${month}/${year}`);
+                                setShowDatePicker(false);
+                              }}
+                            >
+                              <Text className="font-worksans-semibold text-[16px]" style={{ color: '#C1856A' }}>
+                                Done
+                              </Text>
+                            </Pressable>
+                          </View>
+
+                          <DateTimePicker
+                            mode="date"
+                            display="spinner"
+                            value={draftDateOfBirth}
+                            maximumDate={new Date()}
+                            onChange={(_event: DateTimePickerEvent, date?: Date) => {
+                              if (date) {
+                                setDraftDateOfBirth(date);
+                              }
+                            }}
+                          />
+                        </View>
+                      </View>
+                    </Modal>
+                  ) : (
+                    <DateTimePicker
+                      mode="date"
+                      display="default"
+                      value={parseDateOfBirth(value)}
+                      maximumDate={new Date()}
+                      onChange={(event: DateTimePickerEvent, date?: Date) => {
+                        setShowDatePicker(false);
+                        if (event.type === 'dismissed' || !date) {
+                          return;
+                        }
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear();
+                        onChange(`${day}/${month}/${year}`);
+                      }}
+                    />
+                  )}
+                </>
               )}
               {errors.dateOfBirth && (
                 <Text className="text-xs text-red-600 mt-1 font-worksans">
@@ -401,8 +461,8 @@ export default function SignUpForm({
 
       {/* Help Text */}
       <Text className="text-[11px] font-worksans-medium mb-3 leading-4" style={{ color: '#30352D' }}>
-        Your phone and postcode help us match and{'\n'}
-        connect you with the right 100Handy Pros.
+        If you add your phone number or postcode,{'\n'}
+        we can use them later to help with bookings and support.
       </Text>
 
       <Pressable

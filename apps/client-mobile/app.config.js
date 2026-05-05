@@ -12,23 +12,28 @@ module.exports = {
     icon: "./assets/images/icon.png",
     scheme: "handy",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
+    newArchEnabled: false,
     extra: {
       eas: {
         projectId: "baf41b27-5045-4fb4-ad35-c66c9a3d1814",
       },
     },
     ios: {
-      supportsTablet: true,
+      supportsTablet: false,
       bundleIdentifier: "com.oxdpr.handy",
       buildNumber: "10",
       usesAppleSignIn: true,
       associatedDomains: ["applinks:100handy.com", "applinks:www.100handy.com"],
       infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
         NSLocationWhenInUseUsageDescription:
           "We need your location to help you set your work area and find nearby jobs.",
+        NSPhotoLibraryUsageDescription:
+          "We use your photo library so you can choose an existing profile photo, business photo, or identity document image to upload to your 100Handy account.",
+        NSPhotoLibraryAddUsageDescription:
+          "We use your photo library so you can choose an existing profile photo, business photo, or identity document image to upload to your 100Handy account.",
         NSCameraUsageDescription:
-          "We need camera access to take photos of your identity documents and profile pictures.",
+          "We use your camera so you can take profile photos, business photos, and identity document photos for your 100Handy account.",
       },
     },
     android: {

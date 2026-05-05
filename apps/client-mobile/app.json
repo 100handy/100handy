@@ -7,9 +7,9 @@
     "icon": "./assets/images/icon.png",
     "scheme": "handy",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.oxdpr.handy",
       "associatedDomains": [
         "applinks:100handy.com",
@@ -17,7 +17,9 @@
       ],
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to help you set your work area and find nearby jobs.",
-        "NSCameraUsageDescription": "This app uses the camera to take a picture of your identity documents."
+        "NSPhotoLibraryUsageDescription": "We use your photo library so you can choose an existing profile photo, business photo, or identity document image to upload to your 100Handy account.",
+        "NSPhotoLibraryAddUsageDescription": "We use your photo library so you can choose an existing profile photo, business photo, or identity document image to upload to your 100Handy account.",
+        "NSCameraUsageDescription": "We use your camera so you can take profile photos, business photos, and identity document photos for your 100Handy account."
       }
     },
     "android": {

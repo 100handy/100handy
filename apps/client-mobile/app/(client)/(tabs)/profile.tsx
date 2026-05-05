@@ -283,14 +283,14 @@ export default function ProfileScreen() {
               </Pressable>
             ))}
 
-            {/* Become a 100Handy Pro */}
+            {/* Offer services with 100Handy */}
             <Pressable
               className="flex-row items-center px-6 py-5 border-b border-gray-100"
               onPress={handleGo100Task}
               disabled={isSwitchingToProfessional}
             >
               <Globe size={20} color="#C1856A" strokeWidth={1.5} />
-              <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Become a 100Handy Pro</Text>
+              <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Offer services with 100Handy</Text>
             </Pressable>
 
             {/* Sign Out Button */}
