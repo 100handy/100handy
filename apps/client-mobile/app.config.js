@@ -12,7 +12,7 @@ module.exports = {
     icon: "./assets/images/icon.png",
     scheme: "handy",
     userInterfaceStyle: "automatic",
-    newArchEnabled: false,
+    newArchEnabled: true,
     extra: {
       eas: {
         projectId: "baf41b27-5045-4fb4-ad35-c66c9a3d1814",
