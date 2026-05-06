@@ -15,7 +15,7 @@ export default function AuthFooter() {
         {' '}and have reviewed the{' '}
         <Text
           style={{ color: '#C1856A' }}
-          onPress={() => Linking.openURL('https://www.100handy.com/terms')}
+          onPress={() => Linking.openURL('https://www.100handy.com/terms#privacy-policy')}
         >
           Privacy Policy
         </Text>

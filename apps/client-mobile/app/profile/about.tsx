@@ -40,7 +40,7 @@ export default function AboutScreen() {
   };
 
   const handlePrivacyPolicy = () => {
-    Linking.openURL('https://100handy.com/privacy');
+    Linking.openURL('https://www.100handy.com/terms#privacy-policy');
   };
 
   return (
@@ -60,5 +60,4 @@ export default function AboutScreen() {
     </SafeAreaView>
   );
 }
-
 

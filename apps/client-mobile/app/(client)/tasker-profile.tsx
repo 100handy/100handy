@@ -138,7 +138,7 @@ export default function TaskerProfileScreen() {
                   style={{ backgroundColor: '#7EC04B' }}
                 >
                   <Text className="text-xs font-semibold text-white">
-                    ⚡ Super Pro
+                    ⚡ Top Provider
                   </Text>
                 </View>
               )}

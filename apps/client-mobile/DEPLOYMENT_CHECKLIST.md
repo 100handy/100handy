@@ -58,7 +58,7 @@ App: **100Handy** · Bundle ID: **com.oxdpr.handy** · Expo project: **baf41b27-
 
 ### Web pages referenced from the app must be live
 - [ ] `https://www.100handy.com/terms`
-- [ ] `https://www.100handy.com/privacy`
+- [ ] `https://www.100handy.com/terms#privacy-policy`
 - [ ] `https://www.100handy.com/legal`
 - [ ] `https://www.100handy.com/help`
 - [ ] `https://www.100handy.com/support`
@@ -114,7 +114,7 @@ App: **100Handy** · Bundle ID: **com.oxdpr.handy** · Expo project: **baf41b27-
 - [ ] Category: Business / Lifestyle (decide)
 - [ ] Support URL: `https://www.100handy.com/support`
 - [ ] Marketing URL: `https://www.100handy.com`
-- [ ] Privacy policy URL: `https://www.100handy.com/privacy`
+- [ ] Privacy policy URL: `https://www.100handy.com/terms#privacy-policy`
 - [ ] Terms URL: `https://www.100handy.com/terms`
 
 ### iOS App Review

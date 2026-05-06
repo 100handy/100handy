@@ -61,7 +61,7 @@ export default function ProfessionalWelcome() {
           <View className="flex-col flex-1 bg-white">
             {/* Welcome Text */}
             <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8 text-brand-dark-alt">
-              Welcome to 100Handy Pros
+              Offer services on 100Handy
             </Text>
 
             {/* Create Account Button */}
@@ -108,7 +108,7 @@ export default function ProfessionalWelcome() {
                   {' '}and have reviewed the{' '}
                   <Text
                     className="text-brand-terracotta"
-                    onPress={() => Linking.openURL('https://www.100handy.com/terms')}
+                    onPress={() => Linking.openURL('https://www.100handy.com/terms#privacy-policy')}
                   >
                     Privacy Policy
                   </Text>

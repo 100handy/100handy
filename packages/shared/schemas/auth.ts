@@ -87,6 +87,19 @@ export const signUpSchema = z.object({
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
   phone: z.string()
+    .min(1, 'Phone number is required')
+    .regex(phoneRegex, 'Please enter a valid phone number (digits only)'),
+  postcode: z.string()
+    .min(1, 'Postcode is required')
+    .min(2, 'Postcode must be at least 2 characters'),
+});
+
+export const signUpWithDateOfBirthSchema = signUpSchema.extend({
+  dateOfBirth: dateOfBirthSchema,
+});
+
+export const mobileSignUpSchema = signUpSchema.extend({
+  phone: z.string()
     .refine(
       (value) => value.trim() === '' || phoneRegex.test(value),
       'Please enter a valid phone number (digits only)'
@@ -98,14 +111,14 @@ export const signUpSchema = z.object({
     ),
 });
 
-export const signUpWithDateOfBirthSchema = signUpSchema.extend({
+export const mobileSignUpWithDateOfBirthSchema = mobileSignUpSchema.extend({
   dateOfBirth: dateOfBirthSchema,
 });
 
 // Factory function to create schema with country-specific postcode validation
 export const createSignUpSchema = (countryCode: string) => {
   return signUpSchema.refine(
-    (data) => data.postcode.trim() === '' || validatePostcode(data.postcode, countryCode),
+    (data) => validatePostcode(data.postcode, countryCode),
     {
       message: `Please enter a valid postcode for ${countryCode}`,
       path: ['postcode'],
@@ -141,6 +154,8 @@ export const otpSchema = z.object({
 export type SignInFormData = z.infer<typeof signInSchema>;
 export type SignUpFormData = z.infer<typeof signUpSchema>;
 export type SignUpWithDateOfBirthFormData = z.infer<typeof signUpWithDateOfBirthSchema>;
+export type MobileSignUpFormData = z.infer<typeof mobileSignUpSchema>;
+export type MobileSignUpWithDateOfBirthFormData = z.infer<typeof mobileSignUpWithDateOfBirthSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 export type OtpFormData = z.infer<typeof otpSchema>;

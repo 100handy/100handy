@@ -70,7 +70,7 @@ export function TaskerCard({ tasker, onPress, onSeeProfile }: TaskerCardProps) {
                   className="text-xs"
                   style={{ color: '#FFFFFF', fontWeight: '600' }}
                 >
-                  ⚡ Super Pro
+                  ⚡ Top Provider
                 </Text>
               </View>
             )}
@@ -177,4 +177,3 @@ export function TaskerCard({ tasker, onPress, onSeeProfile }: TaskerCardProps) {
     </Pressable>
   );
 }
-

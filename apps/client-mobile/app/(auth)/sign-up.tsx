@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, Alert, View, Text, Pressable } from 'react-native';
+import { ScrollView, Alert, View, Text, Pressable, Linking } from 'react-native';
 import { Input, InputField, InputSlot, InputIcon } from '@/components/ui/input';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectInput, SelectIcon, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectItem } from '@/components/ui/select';
@@ -36,14 +36,16 @@ export default function Signup() {
       return;
     }
 
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
     try {
       setIsLoading(true);
-      const fullPhoneNumber = `${countryCode}${formData.phone}`;
+      const trimmedPhone = formData.phone.trim();
+      const trimmedPostcode = formData.postCode.trim();
+      const fullPhoneNumber = trimmedPhone ? `${countryCode}${trimmedPhone}` : undefined;
 
       // Sign up with email - this will send email verification automatically
       await signUp({
@@ -55,8 +57,8 @@ export default function Signup() {
             first_name: formData.firstName,
             last_name: formData.lastName,
             full_name: `${formData.firstName} ${formData.lastName}`,
-            postcode: formData.postCode,
-            phone: fullPhoneNumber,
+            ...(trimmedPostcode ? { postcode: trimmedPostcode } : {}),
+            ...(fullPhoneNumber ? { phone: fullPhoneNumber } : {}),
           },
         },
       });
@@ -175,7 +177,7 @@ export default function Signup() {
                       className="h-[61px] bg-typography-white border-typography-200 rounded-xl"
                     >
                       <InputField
-                        placeholder="Phone number"
+                        placeholder="Phone number (optional)"
                         value={formData.phone}
                         onChangeText={(value) => handleInputChange('phone', value)}
                         keyboardType="phone-pad"
@@ -213,7 +215,7 @@ export default function Signup() {
                   className="h-[58px] bg-typography-white border-typography-200 rounded-xl my-2"
                 >
                   <InputField
-                    placeholder="Post code"
+                    placeholder="Post code (optional)"
                     value={formData.postCode}
                     onChangeText={(value) => handleInputChange('postCode', value)}
                     className="text-base text-typography-black font-worksans placeholder-typography-400"
@@ -234,9 +236,19 @@ export default function Signup() {
                   <View className="flex-1">
                     <Text className="text-sm leading-6 font-worksans">
                       <Text className="text-typography-500">I agree to the</Text>
-                      <Text className="text-clayOrange underline"> Terms and Conditions</Text>
+                      <Text
+                        className="text-clayOrange underline"
+                        onPress={() => Linking.openURL('https://www.100handy.com/terms')}
+                      >
+                        {' '}Terms and Conditions
+                      </Text>
                       <Text className="text-typography-500"> and</Text>
-                      <Text className="text-clayOrange underline"> Privacy Policy</Text>
+                      <Text
+                        className="text-clayOrange underline"
+                        onPress={() => Linking.openURL('https://www.100handy.com/terms#privacy-policy')}
+                      >
+                        {' '}Privacy Policy
+                      </Text>
                     </Text>
                   </View>
                 </Pressable>

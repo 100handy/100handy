@@ -7,9 +7,9 @@ import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  signUpWithDateOfBirthSchema,
+  mobileSignUpWithDateOfBirthSchema,
   validatePostcode,
-  type SignUpWithDateOfBirthFormData,
+  type MobileSignUpWithDateOfBirthFormData,
 } from '@shared/schemas/auth';
 import { countryCodeToFlagEmoji } from '@/lib/welcome-country';
 import CountryCodePickerSheet from './CountryCodePickerSheet';
@@ -52,8 +52,8 @@ export default function SignUpForm({
     handleSubmit,
     formState: { errors, isValid },
     watch,
-  } = useForm<SignUpWithDateOfBirthFormData>({
-    resolver: zodResolver(signUpWithDateOfBirthSchema),
+  } = useForm<MobileSignUpWithDateOfBirthFormData>({
+    resolver: zodResolver(mobileSignUpWithDateOfBirthSchema),
     mode: 'onChange',
     defaultValues: {
       firstName: '',
@@ -97,7 +97,7 @@ export default function SignUpForm({
 
   // Check if form is truly valid (including custom postcode validation)
   const isFormValid = isValid && !postcodeError;
-  const handleSignUp = (formData: SignUpWithDateOfBirthFormData): void => {
+  const handleSignUp = (formData: MobileSignUpWithDateOfBirthFormData): void => {
     const trimmedPhone = formData.phone.trim();
     const trimmedPostcode = formData.postcode.trim();
     const fullPhone = trimmedPhone ? `+${callingCode}${trimmedPhone}` : undefined;
@@ -514,7 +514,7 @@ export default function SignUpForm({
           {' '}and have reviewed the{' '}
           <Text
             style={{ color: '#C1856A' }}
-            onPress={() => Linking.openURL('https://www.100handy.com/terms')}
+            onPress={() => Linking.openURL('https://www.100handy.com/terms#privacy-policy')}
           >
             Privacy Policy
           </Text>

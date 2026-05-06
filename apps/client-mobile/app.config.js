@@ -21,7 +21,7 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: "com.oxdpr.handy",
-      buildNumber: "10",
+      buildNumber: "12",
       usesAppleSignIn: true,
       associatedDomains: ["applinks:100handy.com", "applinks:www.100handy.com"],
       infoPlist: {
@@ -29,9 +29,9 @@ module.exports = {
         NSLocationWhenInUseUsageDescription:
           "We need your location to help you set your work area and find nearby jobs.",
         NSPhotoLibraryUsageDescription:
-          "We use your photo library so you can choose an existing profile photo, business photo, or identity document image to upload to your 100Handy account.",
+          "We use your photo library only when you choose an image to upload, such as selecting a profile photo, business photo, or identity document image for your 100Handy account.",
         NSPhotoLibraryAddUsageDescription:
-          "We use your photo library so you can choose an existing profile photo, business photo, or identity document image to upload to your 100Handy account.",
+          "We use your photo library only when you choose an image to upload, such as selecting a profile photo, business photo, or identity document image for your 100Handy account.",
         NSCameraUsageDescription:
           "We use your camera so you can take profile photos, business photos, and identity document photos for your 100Handy account.",
       },

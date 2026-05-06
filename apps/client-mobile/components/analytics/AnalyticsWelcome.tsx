@@ -53,7 +53,7 @@ const welcomeScreens: WelcomeScreen[] = [
     body: (
       <Text className="text-[#F3E3D3] text-[14px] leading-[17px] text-center px-4">
         We've heard your feedback and made some big updates. Give a warm welcome to{' '}
-        <Text className="text-[#A0B194] font-bold">Pro Analytics</Text>!
+        <Text className="text-[#A0B194] font-bold">Performance Analytics</Text>!
       </Text>
     ),
   },
