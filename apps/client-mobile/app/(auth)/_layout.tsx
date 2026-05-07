@@ -1,10 +1,16 @@
-import { Redirect, Stack } from 'expo-router';
+import { Redirect, Stack, useSegments } from 'expo-router';
 import { Loader } from '@/components/ui/loader';
 import { useAuthStore } from '@shared/store';
 
 export default function AuthLayout() {
   const { isAuthenticated, isLoading, isRoleResolved, isEmailVerified, user, userRole } =
     useAuthStore();
+  const segments = useSegments().map(String);
+  const professionalAuthSegmentIndex = segments.indexOf('(professional)');
+  const professionalAuthLeaf =
+    professionalAuthSegmentIndex >= 0 ? segments[professionalAuthSegmentIndex + 1] : null;
+  const isAllowedProfessionalOnboardingRoute =
+    professionalAuthLeaf === 'verify-info' || professionalAuthLeaf === 'verify-document-upload';
 
   if (isLoading || (isAuthenticated && !isRoleResolved)) {
     return <Loader />;
@@ -21,11 +27,11 @@ export default function AuthLayout() {
     );
   }
 
-  if (isAuthenticated && userRole === 'handy') {
+  if (isAuthenticated && userRole === 'handy' && !isAllowedProfessionalOnboardingRoute) {
     return <Redirect href="/(professional)/(tabs)/dashboard" />;
   }
 
-  if (isAuthenticated && userRole === 'customer') {
+  if (isAuthenticated && userRole === 'customer' && !isAllowedProfessionalOnboardingRoute) {
     return <Redirect href="/(client)/(tabs)/home" />;
   }
 

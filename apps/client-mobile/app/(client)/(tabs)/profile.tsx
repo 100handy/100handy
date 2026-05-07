@@ -22,6 +22,7 @@ import {
 import { useAuthStore } from '@shared/store';
 import { switchToProfessionalRole } from '@shared/supabase';
 import { getHandyProfile } from '@shared/supabase/profile';
+import { getSession } from '@shared/supabase/auth';
 import { useProfile, useUnreadNotificationCount } from '@shared/query';
 import { queryClient } from '@shared/query/queryClient';
 import { useRouter } from 'expo-router';
@@ -102,9 +103,23 @@ export default function ProfileScreen() {
         return;
       }
 
-      await checkAuth();
-      // Invalidate all queries after role switch to avoid stale data
-      queryClient.invalidateQueries();
+      const { data: { session } } = await getSession();
+      const switchedUser = session?.user ?? null;
+      const switchedMetadata = switchedUser?.user_metadata;
+      useAuthStore.setState({
+        user: switchedUser,
+        session: session ?? null,
+        isAuthenticated: !!switchedUser,
+        isEmailVerified: !!switchedUser?.email_confirmed_at,
+        isPhoneVerified: !!switchedUser?.phone_confirmed_at,
+        hasCompletedOnboarding: switchedMetadata?.onboarding_completed || false,
+        userRole: 'handy',
+        isRoleResolved: true,
+        isLoading: false,
+      });
+
+      void checkAuth();
+      queryClient.clear();
 
       // Check if professional onboarding is completed
       const handyProfile = await getHandyProfile();

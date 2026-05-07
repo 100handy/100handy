@@ -114,7 +114,7 @@ export async function createSetupIntent(): Promise<SetupIntentResponse | null> {
   try {
     // Intentionally creates a Stripe customer if one doesn't exist yet — a SetupIntent requires it.
     if (!(await getOrCreateStripeCustomer())) {
-      console.error('Failed to get Stripe customer ID');
+      console.warn('Unable to get Stripe customer ID for SetupIntent');
       return null;
     }
 
@@ -124,7 +124,7 @@ export async function createSetupIntent(): Promise<SetupIntentResponse | null> {
     });
 
     if (error) {
-      console.error('Error creating SetupIntent:', error);
+      console.warn('Unable to create SetupIntent:', error);
       return null;
     }
 
@@ -133,7 +133,7 @@ export async function createSetupIntent(): Promise<SetupIntentResponse | null> {
       setupIntentId: data.setupIntentId,
     };
   } catch (error) {
-    console.error('Error in createSetupIntent:', error);
+    console.warn('Unable to initialize SetupIntent:', error);
     return null;
   }
 }

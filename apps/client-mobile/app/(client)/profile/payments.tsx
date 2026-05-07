@@ -6,7 +6,12 @@ import { useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import Header from '@/components/Header';
 import { createSetupIntent } from '@shared/supabase';
-import { getUnsupportedNativeFeatureMessage, initStripePaymentSheet, presentStripePaymentSheet, supportsStripeNative } from '@/lib/native-feature-support';
+import {
+  getUnsupportedNativeFeatureMessage,
+  initStripePaymentSheet,
+  presentStripePaymentSheet,
+  supportsStripeNative,
+} from '@/lib/native-feature-support';
 
 export default function PaymentsScreen() {
     const router = useRouter();
@@ -21,19 +26,19 @@ export default function PaymentsScreen() {
 
         setIsWalletLoading(true);
         try {
-            // 1. Create SetupIntent to save the payment method
             const setupIntent = await createSetupIntent();
             if (!setupIntent) {
                 toast.error('Error', 'Failed to initialize payment. Please try again.');
                 return;
             }
 
-            // 2. Initialize PaymentSheet with wallet support (only pass platform-relevant config)
             const { error: initError } = await initStripePaymentSheet({
                 setupIntentClientSecret: setupIntent.clientSecret,
                 merchantDisplayName: '100Handy',
                 ...(Platform.OS === 'ios' ? { applePay: { merchantCountryCode: 'GB' } } : {}),
-                ...(Platform.OS === 'android' ? { googlePay: { merchantCountryCode: 'GB', testEnv: __DEV__ } } : {}),
+                ...(Platform.OS === 'android'
+                    ? { googlePay: { merchantCountryCode: 'GB', testEnv: __DEV__ } }
+                    : {}),
                 style: 'automatic',
             });
 
@@ -43,18 +48,15 @@ export default function PaymentsScreen() {
                 return;
             }
 
-            // 3. Present the PaymentSheet
             const { error: presentError } = await presentStripePaymentSheet();
 
             if (presentError) {
-                // User cancelled or error
                 if (presentError.code !== 'Canceled') {
                     toast.error('Error', presentError.message);
                 }
                 return;
             }
 
-            // Success - card was saved
             toast.success('Success', 'Payment method added successfully!');
             router.push('/(client)/profile/payment-methods');
         } catch (error) {
@@ -126,10 +128,10 @@ export default function PaymentsScreen() {
                                     <>
                                         <View className="rounded bg-black px-1.5 py-0.5 flex-row items-center justify-center">
                                             <Text className="text-white text-[10px] font-medium">
-
+                                                Apple
                                             </Text>
                                             <Text className="text-white text-[10px] font-medium">
-                                                Pay
+                                                {' '}Pay
                                             </Text>
                                         </View>
                                         <Text className="font-work-sans text-lg font-light" style={{ color: '#30352D' }}>
