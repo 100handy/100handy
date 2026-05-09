@@ -3,9 +3,10 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.oxdpr.handy",
+      "package_name": "com.oxdpr.hand",
       "sha256_cert_fingerprints": [
-        "REPLACE_WITH_ANDROID_UPLOAD_KEY_SHA256"
+        "D5:E3:2E:E2:B6:0A:3B:5A:36:5D:DE:5B:D1:18:5E:A6:8C:B2:44:83:CE:44:87:6B:B0:AD:4B:41:F1:72:67:15",
+        "45:4B:65:6C:16:E7:72:F1:7B:07:04:19:33:AF:75:2D:EB:B7:06:86:79:9D:13:DF:5F:DE:E6:15:46:B6:56:4A"
       ]
     }
   }

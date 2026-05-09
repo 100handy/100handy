@@ -5,6 +5,8 @@ import { supabase } from '../supabase/supabaseClient';
 import { queryClient } from '../query/queryClient';
 import { deleteDevicePushToken } from '../supabase/pushTokens';
 
+const PROFILE_ROLE_TIMEOUT_MS = 8000;
+
 interface AuthState {
   user: User | null;
   session: Session | null;
@@ -34,11 +36,20 @@ interface AuthState {
  */
 async function fetchProfileRole(userId: string): Promise<'customer' | 'handy' | null> {
   try {
-    const { data } = await supabase
+    const query = supabase
       .from('profiles')
       .select('role')
       .eq('user_id', userId)
       .single();
+    const { data } = await Promise.race([
+      query,
+      new Promise<never>((_, reject) => {
+        setTimeout(
+          () => reject(new Error('Timed out resolving profile role')),
+          PROFILE_ROLE_TIMEOUT_MS
+        );
+      }),
+    ]);
     return (data?.role as 'customer' | 'handy' | null) ?? null;
   } catch {
     return null;

@@ -31,7 +31,7 @@ export default function AuthLayout() {
     return <Redirect href="/(professional)/(tabs)/dashboard" />;
   }
 
-  if (isAuthenticated && userRole === 'customer' && !isAllowedProfessionalOnboardingRoute) {
+  if (isAuthenticated && userRole === 'customer') {
     return <Redirect href="/(client)/(tabs)/home" />;
   }
 

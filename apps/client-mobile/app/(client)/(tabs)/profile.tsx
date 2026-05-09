@@ -32,6 +32,17 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSecureNavigation } from '@/hooks/useSecureNavigation';
 import ReferralShareModal from '@/components/modals/ReferralShareModal';
 
+const ROLE_SWITCH_TIMEOUT_MS = 15000;
+
+function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error(message)), ROLE_SWITCH_TIMEOUT_MS);
+    }),
+  ]);
+}
+
 // --- Data for list items ---
 // requiresSecurity: true means 2FA must be enabled to access this section
 const menuItems = [
@@ -96,14 +107,20 @@ export default function ProfileScreen() {
 
     setIsSwitchingToProfessional(true);
     try {
-      const ok = await switchToProfessionalRole();
+      const ok = await withTimeout(
+        switchToProfessionalRole(),
+        'The role switch took too long. Please check your connection and try again.'
+      );
       if (!ok) {
         console.error('Failed to switch to professional role');
         toast.error('Switch failed', 'Could not switch to professional role. Please try again.');
         return;
       }
 
-      const { data: { session } } = await getSession();
+      const { data: { session } } = await withTimeout(
+        getSession(),
+        'The updated session took too long to load. Please try again.'
+      );
       const switchedUser = session?.user ?? null;
       const switchedMetadata = switchedUser?.user_metadata;
       useAuthStore.setState({
@@ -122,7 +139,10 @@ export default function ProfileScreen() {
       queryClient.clear();
 
       // Check if professional onboarding is completed
-      const handyProfile = await getHandyProfile();
+      const handyProfile = await withTimeout(
+        getHandyProfile(),
+        'The professional profile took too long to load. Please try again.'
+      );
       if (!handyProfile?.onboarding_completed) {
         // First-time switch — send through professional onboarding flow
         router.replace('/(auth)/(professional)/verify-info');
@@ -131,7 +151,10 @@ export default function ProfileScreen() {
       }
     } catch (err) {
       console.error('Error switching to professional:', err);
-      toast.error('Switch failed', 'An error occurred while switching roles. Please try again.');
+      toast.error(
+        'Switch failed',
+        err instanceof Error ? err.message : 'An error occurred while switching roles. Please try again.'
+      );
     } finally {
       setIsSwitchingToProfessional(false);
     }
@@ -306,6 +329,7 @@ export default function ProfileScreen() {
             >
               <Globe size={20} color="#C1856A" strokeWidth={1.5} />
               <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Offer services with 100Handy</Text>
+              {isSwitchingToProfessional && <ActivityIndicator size="small" color="#C1856A" />}
             </Pressable>
 
             {/* Sign Out Button */}
