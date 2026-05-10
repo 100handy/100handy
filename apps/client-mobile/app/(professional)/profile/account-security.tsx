@@ -1,15 +1,21 @@
 import React, { useState, useCallback } from 'react';
-import { useProfile } from '@shared/query';
-import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, Mail, Shield, ShieldOff } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useFocusEffect } from '@react-navigation/native'; import { supabase, disable2FA } from '@shared/supabase';
+import { useDeleteAccount, useProfile } from '@shared/query';
+import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, Mail, Shield, ShieldOff } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useFocusEffect } from '@react-navigation/native'; import { supabase, disable2FA, signIn } from '@shared/supabase';
 import { useAuthStore } from '@shared/store';
-import { Alert, ActivityIndicator, View, Text, Pressable } from 'react-native';
+import { Alert, ActivityIndicator, View, Text, Pressable, TextInput } from 'react-native';
+import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
+import { useToast } from '@/components/ui/toast';
 
 export default function ProfessionalAccountSecurityScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { data: profile, refetch: refetchProfile } = useProfile();
+  const deleteAccount = useDeleteAccount();
+  const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
 
   const is2FAEnabled = profile?.two_factor_enabled || false;
 
@@ -108,6 +114,39 @@ export default function ProfessionalAccountSecurityScreen() {
     }
   };
 
+  const handleDeleteAccount = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteWithPassword = async () => {
+    if (!deletePassword || !user?.email) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await signIn(user.email, deletePassword);
+
+      const success = await deleteAccount.mutateAsync();
+      if (success) {
+        setShowDeleteConfirm(false);
+        setDeletePassword('');
+        toast.success('Success', 'Your account has been deleted');
+        router.replace('/(auth)/(client)');
+      } else {
+        throw new Error('Failed to delete account');
+      }
+    } catch (err) {
+      console.error('Error deleting account:', err);
+      const message = err instanceof Error && err.message.includes('Invalid login credentials')
+        ? 'Incorrect password. Please try again.'
+        : 'Failed to delete account. Please try again.';
+      toast.error('Error', message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
@@ -194,6 +233,14 @@ export default function ProfessionalAccountSecurityScreen() {
                   </View>
                 )}
               </Pressable>
+
+              <Pressable
+                className="py-4 items-center mt-4"
+                onPress={handleDeleteAccount}
+                disabled={isLoading}
+              >
+                <Text className="text-red-600 text-base font-worksans-bold">Delete Account</Text>
+              </Pressable>
             </>
           ) : (
             /* 2FA Disabled State */
@@ -249,10 +296,63 @@ export default function ProfessionalAccountSecurityScreen() {
                   </View>
                 )}
               </Pressable>
+
+              <Pressable
+                className="py-4 items-center mt-4"
+                onPress={handleDeleteAccount}
+                disabled={isLoading}
+              >
+                <Text className="text-red-600 text-base font-worksans-bold">Delete Account</Text>
+              </Pressable>
             </>
           )}
         </View>
       </View>
+
+      <Modal isOpen={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setDeletePassword(''); }}>
+        <ModalBackdrop />
+        <ModalContent className="bg-white">
+          <ModalBody>
+            <View className="flex-col w-full px-4 py-6">
+              <Text className="text-xl font-semibold text-[#30352D] mb-2">Delete Account</Text>
+              <Text className="text-sm text-gray-600 mb-2">
+                This action cannot be undone. Your account and related data will be permanently deleted.
+              </Text>
+              <Text className="text-sm font-semibold text-gray-700 mb-4">
+                Enter your password to confirm.
+              </Text>
+              <TextInput
+                value={deletePassword}
+                onChangeText={setDeletePassword}
+                placeholder="Password"
+                placeholderTextColor="#9CA3AF"
+                secureTextEntry
+                autoFocus
+                className="border border-gray-300 rounded-lg px-4 py-3 text-base mb-4"
+                style={{ color: '#30352D' }}
+              />
+              <Pressable
+                onPress={confirmDeleteWithPassword}
+                disabled={isLoading || !deletePassword}
+                className="w-full py-4 rounded-full items-center"
+                style={{ backgroundColor: isLoading || !deletePassword ? '#D1D5DB' : '#DC2626' }}
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text className="text-white font-semibold text-base">Delete My Account</Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => { setShowDeleteConfirm(false); setDeletePassword(''); }}
+                className="w-full py-3 items-center mt-2"
+              >
+                <Text className="text-gray-500 text-base">Cancel</Text>
+              </Pressable>
+            </View>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 }

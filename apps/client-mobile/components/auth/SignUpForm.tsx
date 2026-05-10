@@ -116,7 +116,7 @@ export default function SignUpForm({
   };
 
   return (
-    <View className="px-5 flex-1">
+    <View className="px-5 flex-1 w-full self-center" style={{ maxWidth: 560 }}>
       {/* First Name and Last Name Row */}
       <View className="mb-2 gap-3 flex-row">
         <View className="flex-1">

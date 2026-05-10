@@ -72,7 +72,7 @@ export default function ClientSignIn() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="flex-col flex-1 justify-between">
+          <View className="flex-col flex-1 justify-between w-full self-center" style={{ maxWidth: 560 }}>
             <View>
               {/* Header */}
               <View className="flex-row items-center justify-between px-5 pt-2 pb-4">
@@ -110,7 +110,9 @@ export default function ClientSignIn() {
                 </Text>
               </Pressable>
             </View>
-            <AuthFooter />
+            <View className="w-full self-center" style={{ maxWidth: 560 }}>
+              <AuthFooter />
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>

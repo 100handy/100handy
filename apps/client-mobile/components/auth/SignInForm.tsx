@@ -57,7 +57,7 @@ export default function SignInForm({
   });
 
   return (
-    <View className="px-5">
+    <View className="px-5 w-full self-center" style={{ maxWidth: 560 }}>
       {/* Email */}
       <View className="mb-3">
         <Controller

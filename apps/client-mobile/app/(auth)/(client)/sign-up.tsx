@@ -56,7 +56,7 @@ export default function ClientSignUp() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="flex-col flex-1">
+          <View className="flex-col flex-1 w-full self-center" style={{ maxWidth: 560 }}>
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-2">
               <Pressable onPress={() => router.back()}>

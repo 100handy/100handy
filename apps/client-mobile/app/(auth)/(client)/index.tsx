@@ -56,7 +56,7 @@ export default function ClientWelcome() {
           {/* Dark Top Section */}
           <View className="flex-col pb-20" style={{ backgroundColor: '#333A31' }}>
             {/* Country Label */}
-            <View className="flex-row items-center justify-between px-5 pt-4 pb-12">
+            <View className="w-full self-center px-5 pt-4 pb-12 flex-row items-center justify-between" style={{ maxWidth: 560 }}>
               <View className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
                 <Text className="mr-2 text-[18px]">
                   {countryCodeToFlagEmoji(countryCode)}
@@ -77,7 +77,7 @@ export default function ClientWelcome() {
           </View>
 
           {/* Light Bottom Section */}
-          <View className="flex-col flex-1 bg-white mt-10">
+          <View className="flex-col flex-1 bg-white mt-10 w-full self-center" style={{ maxWidth: 560 }}>
             {/* Welcome Text */}
             <Text className="text-2xl font-worksans-bold text-center px-8 pt-10 pb-8" style={{ color: '#30352D' }}>
               Welcome to 100Handy

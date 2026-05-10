@@ -42,7 +42,7 @@ export default function ProfessionalWelcome() {
           {/* Dark Top Section */}
           <View className="flex-col pb-20 bg-brand-dark">
             {/* Country Label */}
-            <View className="items-center pt-4 pb-12">
+            <View className="items-center pt-4 pb-12 w-full self-center" style={{ maxWidth: 560 }}>
               <View className="flex-row items-center px-4 py-2 rounded-full border border-white/30">
                 <Text className="mr-2 text-[18px]">
                   {countryCodeToFlagEmoji(countryCode)}
@@ -58,7 +58,7 @@ export default function ProfessionalWelcome() {
           </View>
 
           {/* Light Bottom Section */}
-          <View className="flex-col flex-1 bg-white">
+          <View className="flex-col flex-1 bg-white w-full self-center" style={{ maxWidth: 560 }}>
             {/* Welcome Text */}
             <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8 text-brand-dark-alt">
               Offer services on 100Handy
