@@ -104,8 +104,6 @@ Users may request account updates, data access, or account deletion by contactin
 
 help@100handy.com
 
-Account deletion is also available directly within the 100Handy mobile application by going to Profile → Privacy Settings → Delete Account.
-
 Where account deletion is requested, 100Handy may retain certain information where reasonably necessary for fraud prevention, dispute resolution, legal compliance, tax obligations, insurance matters, payment disputes, enforcement of agreements, safety investigations, platform security, or protection of platform integrity.
 
 100Handy uses reasonable technical and organisational measures designed to help protect personal information, including secure systems, restricted access controls, monitoring procedures, encryption practices where appropriate, secure third-party payment processing, verification procedures, fraud prevention systems, and security monitoring designed to support platform safety and integrity.
