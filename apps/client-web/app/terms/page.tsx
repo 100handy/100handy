@@ -39,160 +39,82 @@ All users must agree to the Terms of Service before using the platform.`,
       title: c("privacy_policy.title", "Privacy Policy"),
       content: c(
         "privacy_policy.content",
-        `100 Handy ("100 Handy", "we", "us", "our") operates an online marketplace that connects Clients with home-service Professionals ("Pros") through our mobile and web applications. This Privacy Policy explains what personal data we collect, why we collect it, who we share it with, and your rights. It applies to users in the United Kingdom, European Union/EEA, the United States, and other regions where 100 Handy is available.
+        `The Privacy Policy explains how 100Handy collects, uses, stores, processes, shares, and protects personal information when users access or use the 100Handy platform, website, or mobile application.
 
-1. Who is responsible for your data
+This includes:
 
-100 Handy is the data controller for the personal information described in this policy. You can contact our privacy team at privacy@100handy.com.
+• Personal information provided during account registration, including names, email addresses, phone numbers, addresses, date of birth, and profile information
+• Information related to bookings, payments, transactions, messages, reviews, uploaded images, customer support enquiries, and service activity
+• Identity verification information, including identification documents, verification checks, profile verification, background screening, and service-related credentials where required
+• Device and technical information, including IP addresses, browser type, operating system, device identifiers, advertising identifiers, cookies, app usage data, analytics data, crash reports, and log information
+• Approximate or precise location data where location services are enabled, permitted, or required for services and platform functionality
+• Payment and payout information processed securely through third-party payment providers including Stripe
+• Analytics and usage information collected through services including Google Analytics and Microsoft Clarity to help improve platform performance, analyse usage trends, monitor interactions, prevent fraud, maintain security, and improve user experience
 
-2. Information we collect
+How information may be used includes:
 
-Account and profile information:
-• Name, email address, phone number, and password
-• Profile photo, address, and service area
-• For Pros: business information, qualifications, and tax details
+• Creating, maintaining, and managing user accounts
+• Processing bookings, payments, cancellations, refunds, payouts, and service-related activity
+• Facilitating communication between Clients and 100Handy Pros
+• Providing platform functionality, customer support, and service-related assistance
+• Improving platform performance, reliability, functionality, safety, and user experience
+• Preventing fraud, misuse, suspicious activity, unsafe conduct, unauthorised access, and violations of platform rules
+• Carrying out verification, trust, safety, moderation, and compliance procedures
+• Sending service-related notifications, updates, security alerts, verification requests, and important platform communications
+• Monitoring analytics, usage trends, performance data, and operational activity
+• Complying with legal obligations, tax requirements, law enforcement requests, dispute resolution procedures, and regulatory obligations
+• Protecting the rights, safety, property, systems, users, and operations of 100Handy and its users
 
-Identity and verification:
-• Government-issued ID and selfie (processed via Stripe Identity) for Pro verification
-• Background-check information where required
+100Handy processes personal information under lawful bases permitted under applicable data protection laws, including contractual necessity, legitimate interests, legal obligations, fraud prevention, platform security, safety monitoring, dispute resolution, and user consent where required.
 
-Payments:
-• Payment card details and billing address (processed and stored by Stripe; 100 Handy retains only the last four digits and card brand)
-• Payout bank account information for Pros (processed by Stripe Connect)
-• Transaction history
+100Handy may share information with trusted third-party providers where reasonably necessary to operate the platform, provide services, maintain infrastructure, process transactions, monitor analytics, support security procedures, or comply with legal obligations.
 
-Location:
-• Precise location, when you grant permission, to match jobs near you, define your work area, and improve service matching
-• Approximate location derived from IP address
+These providers may include payment processors, analytics providers, verification services, cloud hosting providers, behavioural analytics providers, customer support systems, communication providers, infrastructure providers, operating system services, app distribution platforms, and fraud prevention services including:
 
-Photos, files and media:
-• Photos you upload (profile, business, job photos) via your camera or photo library
-• Documents you upload (qualifications, identity documents)
+• Stripe for payment processing, payouts, refunds, transaction-related services, identity verification, fraud prevention, compliance procedures, and financial verification services
+• Google Analytics for analytics, usage monitoring, device information, performance reporting, and platform improvement services
+• Microsoft Clarity for behavioural analytics, interaction monitoring, website usage analysis, and user experience improvement
+• Apple for App Store distribution, app-related services, security, and platform functionality
+• Android and Google services for Android platform functionality, app distribution, device services, notifications, security, and operational support
 
-Bookings and communications:
-• Service requests, in-app messages between Clients and Pros, ratings, and reviews
-• Customer support communications
+These third-party providers may process, store, transfer, analyse, or access certain personal information where reasonably necessary to provide services, maintain platform functionality, process transactions, improve user experience, monitor performance, support analytics, maintain security, prevent fraud, comply with legal obligations, or support operational infrastructure.
 
-Device and technical information:
-• Device or Other IDs — including Advertising ID, Android ID, device model, operating system, and IP address
-• Push-notification tokens (via Firebase Cloud Messaging on Android and Apple Push Notification service on iOS)
-• Crash reports, performance data, and basic usage information
-• App version and language settings
+100Handy takes reasonable steps designed to ensure that third-party providers handling personal information maintain appropriate security, confidentiality, and data protection measures in accordance with applicable laws and contractual obligations.
 
-Cookies and similar technologies:
-• Session cookies on our website to keep you signed in
-• Functional cookies for preferences
+Personal information may also be shared where reasonably necessary to comply with legal obligations, court orders, law enforcement requests, regulatory requirements, fraud investigations, safety concerns, dispute resolution procedures, insurance matters, or protection of platform rights, property, systems, and users.
 
-3. Why we use your data and our legal basis
+Some third-party providers and infrastructure services may process or store information outside the United Kingdom. Where international transfers occur, 100Handy takes reasonable steps designed to ensure that appropriate safeguards and protections are in place in accordance with applicable data protection laws.
 
-To provide the service (legal basis: contract):
-• Create and manage your account, match Clients with Pros, process bookings and payments, deliver messages and notifications.
+Cookies, analytics technologies, device identifiers, tracking technologies, and similar technologies may be used to improve platform functionality, analyse platform usage, monitor interactions, maintain security, personalise experiences, improve performance, and support operational functionality. Users may be able to control certain cookie and tracking preferences through their browser, device, or operating system settings; however, disabling certain technologies may affect platform functionality and user experience.
 
-To verify identity and prevent fraud (legal basis: legitimate interests, legal obligation):
-• Verify Pro identity through Stripe Identity, screen for fraud, enforce platform rules, detect abuse.
+Personal information is retained only for as long as reasonably necessary to provide services, operate the platform, comply with legal obligations, resolve disputes, maintain records, prevent fraud, enforce agreements, maintain security procedures, and protect platform integrity. Certain financial, tax, verification, fraud prevention, analytics, payment, and transaction records may be retained for longer periods where required under applicable legal, regulatory, tax, insurance, accounting, or compliance obligations.
 
-To improve and secure the service (legal basis: legitimate interests):
-• Monitor crashes and performance, debug issues, improve features.
+Users have rights under applicable data protection laws, including the right to:
 
-To communicate with you (legal basis: contract, legitimate interests):
-• Send transactional emails, push notifications about your bookings, customer support replies.
+• Request access to personal information
+• Request correction of inaccurate or incomplete information
+• Request deletion of personal information
+• Request restriction of processing
+• Object to certain processing activities
+• Withdraw consent where processing relies on consent
+• Request transfer of personal information where applicable
+• Lodge complaints with the Information Commissioner's Office (ICO)
 
-For marketing (legal basis: consent or legitimate interests, depending on jurisdiction):
-• Send promotional emails or push notifications. You can opt out at any time.
+Users may request account updates, data access, or account deletion by contacting:
 
-To meet legal obligations (legal basis: legal obligation):
-• Tax records, dispute resolution, response to lawful requests.
+help@100handy.com
 
-4. Who we share your data with
+Where account deletion is requested, 100Handy may retain certain information where reasonably necessary for fraud prevention, dispute resolution, legal compliance, tax obligations, insurance matters, payment disputes, enforcement of agreements, safety investigations, platform security, or protection of platform integrity.
 
-Service providers (acting as our processors):
-• Stripe, Inc. — payment processing, payouts, identity verification, and fraud prevention. Stripe may collect device identifiers, IP address, and behavioural signals for fraud scoring.
-• Supabase Inc. — our hosting provider for the database, file storage, and authentication.
-• Google LLC — Firebase Cloud Messaging for Android push notifications, Google Maps for map display, and Google Play Services. Google may collect Android device identifiers.
-• Apple Inc. — Apple Push Notification service and Sign in with Apple.
-• Expo (650 Industries, Inc.) — over-the-air updates and push-notification routing.
-• Email and SMS providers for transactional messaging.
-• Customer support tools.
+100Handy uses reasonable technical and organisational measures designed to help protect personal information, including secure systems, restricted access controls, monitoring procedures, encryption practices where appropriate, secure third-party payment processing, verification procedures, fraud prevention systems, and security monitoring designed to support platform safety and integrity.
 
-Other users (where you choose to share):
-• Pros see Client name, address, photos and job details for accepted bookings.
-• Clients see Pro name, profile photo, rating, and business information.
-• Ratings and reviews you post may be visible publicly on profiles.
+100Handy may use verification procedures, profile reviews, moderation systems, fraud detection systems, behavioural monitoring technologies, automated security systems, and safety-related monitoring processes to help protect users, maintain platform integrity, prevent abuse, and enforce platform policies. Certain accounts, activities, content, or transactions may be reviewed, restricted, suspended, removed, or investigated where safety, fraud, legal, regulatory, or policy concerns arise.
 
-Legal and safety:
-• Law enforcement, regulators, or courts when required by law or to protect rights, property or safety.
-• Professional advisers and auditors.
+While 100Handy may use verification, moderation, and safety procedures, no verification process, identity review, background check, screening process, moderation activity, or monitoring system can guarantee user identity, behaviour, legitimacy, conduct, safety, service quality, or compliance. Users remain responsible for exercising their own judgment, caution, and safety practices when arranging, providing, or receiving services through the platform.
 
-Business transfers:
-• If 100 Handy is acquired, merged, or reorganised, your data may be transferred to the acquirer subject to this policy.
+100Handy is not intended for use by individuals under the age of 18. Users must be at least 18 years old and legally capable of entering into binding agreements in their jurisdiction to use the platform, create accounts, book services, or provide services through 100Handy.
 
-We do not sell your personal information. We do not use your data for cross-context behavioural advertising.
-
-5. International transfers
-
-Some of our service providers (notably Stripe, Google, Apple, and Supabase) are located outside the UK and EEA. When we transfer your data outside the UK/EEA, we rely on Standard Contractual Clauses, adequacy decisions, or other lawful safeguards.
-
-6. How long we keep your data
-
-• Active account data: for as long as your account is active.
-• Booking and payment records: at least 7 years, to meet tax, accounting and legal requirements.
-• Identity verification documents: as required by anti-money-laundering and platform-safety obligations.
-• Marketing preferences: until you withdraw consent.
-• Deleted accounts: we retain a minimal record of the deletion (account ID, deletion date) for fraud prevention; identifying personal data is removed within 30 days of deletion, except where law requires longer retention.
-
-7. Your rights
-
-UK and EU (UK GDPR / GDPR):
-• Access — request a copy of the personal data we hold about you.
-• Rectification — ask us to correct inaccurate information.
-• Erasure — ask us to delete your data (subject to legal retention obligations).
-• Restriction — ask us to pause processing in certain cases.
-• Portability — receive your data in a portable format.
-• Object — object to processing based on legitimate interests, including direct marketing.
-• Withdraw consent — at any time, where processing is based on consent.
-• Lodge a complaint with your local supervisory authority (in the UK, the Information Commissioner's Office at ico.org.uk).
-
-California (CCPA / CPRA):
-• Right to know what personal information we collect and how it is used and shared.
-• Right to delete your personal information.
-• Right to correct inaccurate personal information.
-• Right to opt out of sale or sharing of your personal information (we do not sell or share for cross-context behavioural advertising).
-• Right to limit the use of sensitive personal information.
-• Right to non-discrimination for exercising these rights.
-
-Other US states (e.g. Virginia, Colorado, Connecticut, Utah, Texas, Oregon): equivalent rights apply where available under applicable state privacy laws.
-
-How to exercise your rights:
-• In-app: open the 100Handy app, go to Profile → Privacy Settings → Delete Account to delete your account directly.
-• By email: privacy@100handy.com — include the email address associated with your account so we can verify your identity.
-
-We respond within 30 days for UK/EU requests and 45 days for CCPA requests.
-
-8. Account deletion
-
-You can delete your account at any time:
-• In the 100Handy mobile app: Profile → Privacy Settings → Delete Account.
-• By email: privacy@100handy.com.
-
-Once you confirm deletion, your identifying personal data is removed within 30 days, except information we are legally required to retain (such as transaction records for tax and accounting). Deletion is permanent and cannot be undone.
-
-9. Security
-
-We use technical and organisational measures to protect your data, including encryption in transit (TLS), encryption of identity documents and payment data at rest, role-based access controls, and ongoing security monitoring. No system is 100% secure; please use a strong unique password and notify us promptly of any suspected unauthorised access.
-
-10. Children
-
-100 Handy is not intended for children under 18. We do not knowingly collect personal information from anyone under 18. If you believe a child has provided us with personal information, contact privacy@100handy.com and we will delete it.
-
-11. Changes to this policy
-
-We may update this policy from time to time. The "Last updated" date at the top of the page shows when changes took effect. Material changes will be notified in-app or by email.
-
-12. Contact
-
-100 Handy Privacy Team
-Email: privacy@100handy.com
-General support: help@100handy.com`,
+By using 100Handy, users acknowledge and agree that certain information may be processed, stored, analysed, monitored, or transferred through trusted third-party providers and infrastructure services where reasonably necessary for platform functionality, operations, analytics, fraud prevention, compliance, safety, communication, payment processing, service delivery, and platform improvement.`,
       ),
     },
     {
