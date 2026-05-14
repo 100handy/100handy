@@ -30,6 +30,7 @@ import {
   getHandyProfile,
   UserSkill,
 } from "@shared/supabase/profile";
+import { goBackOrReplace } from '@/lib/navigation';
 
 // Category icon and color mapping
 const CATEGORY_CONFIG: Record<
@@ -208,7 +209,7 @@ export default function MySkillsScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-4">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/dashboard')}>
           <ChevronLeft size={24} color="#1F2937" strokeWidth={2} />
         </Pressable>
         <Text

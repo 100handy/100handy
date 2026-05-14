@@ -5,6 +5,7 @@ import { useDeleteAccount, useProfile, useInvalidateProfile } from '@shared/quer
 import { Alert, ActivityIndicator, View, Text, Pressable, TextInput } from 'react-native';
 import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function AccountSecurityScreen() {
   const router = useRouter();
@@ -153,7 +154,7 @@ export default function AccountSecurityScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <Header title="Account Security" onBackPress={() => router.back()} showBellIcon={false} />
+        <Header title="Account Security" onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} showBellIcon={false} />
 
         {/* Content */}
         <View className="flex-col p-6 space-y-6 flex-1">

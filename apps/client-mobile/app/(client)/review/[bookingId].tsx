@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCreateCustomerReview, useHasReviewedBooking } from '@shared/query';
 import { ScrollView, View, Text, Pressable, TextInput, ActivityIndicator, Alert, } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useLocalSearchParams, useRouter } from 'expo-router'; import { ArrowLeft, Star, X } from 'lucide-react-native'; import { toast } from 'sonner-native'; import { useBookingById } from '@shared/query';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ClientReviewScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
@@ -22,7 +23,7 @@ export default function ClientReviewScreen() {
       Alert.alert(
         'Cannot Review',
         'Reviews can only be submitted for completed bookings.',
-        [{ text: 'OK', onPress: () => router.back() }]
+        [{ text: 'OK', onPress: () => goBackOrReplace(router, '/(client)/(tabs)/tasks') }]
       );
     }
   }, [booking, router]);
@@ -45,7 +46,7 @@ export default function ClientReviewScreen() {
 
       if (review) {
         toast.success('Review submitted!');
-        router.back();
+        goBackOrReplace(router, '/(client)/(tabs)/tasks');
       } else {
         toast.error('Failed to submit review');
       }
@@ -57,7 +58,7 @@ export default function ClientReviewScreen() {
   };
 
   const handleSkip = () => {
-    router.back();
+    goBackOrReplace(router, '/(client)/(tabs)/tasks');
   };
 
   if (loadingBooking || loadingReview) {
@@ -72,7 +73,7 @@ export default function ClientReviewScreen() {
     return (
       <SafeAreaView className="flex-1 bg-[#F5F5F5]">
         <View className="flex-row items-center px-4 py-3 bg-white border-b border-[#F0F0F0]">
-          <Pressable onPress={() => router.back()} className="p-2 -ml-2">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')} className="p-2 -ml-2">
             <ArrowLeft color="#30352D" size={24} />
           </Pressable>
         </View>
@@ -89,7 +90,7 @@ export default function ClientReviewScreen() {
     return (
       <SafeAreaView className="flex-1 bg-[#F5F5F5]">
         <View className="flex-row items-center px-4 py-3 bg-white border-b border-[#F0F0F0]">
-          <Pressable onPress={() => router.back()} className="p-2 -ml-2">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')} className="p-2 -ml-2">
             <ArrowLeft color="#30352D" size={24} />
           </Pressable>
         </View>
@@ -110,7 +111,7 @@ export default function ClientReviewScreen() {
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()} className="p-2 -ml-2">
+        <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')} className="p-2 -ml-2">
           <ArrowLeft color="#30352D" size={24} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-[#30352D]">

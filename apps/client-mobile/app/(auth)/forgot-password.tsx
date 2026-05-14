@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@shared/schemas/auth';
 import { sendPasswordResetOTP } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +60,7 @@ export default function ForgotPassword() {
           <View className="flex-col flex-1">
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-4">
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => goBackOrReplace(router, '/(auth)/welcome')}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
@@ -139,7 +140,7 @@ export default function ForgotPassword() {
                 </ButtonText>
               </Button>
 
-              <Pressable onPress={() => router.back()} className="mt-4">
+              <Pressable onPress={() => goBackOrReplace(router, '/(auth)/(client)/sign-in')} className="mt-4">
                 <Text className="text-center text-sm font-worksans-medium" style={{ color: '#30352D' }}>
                   Remember your password?{' '}
                   <Text style={{ color: '#C1856A' }}>Sign in</Text>

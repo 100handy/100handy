@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, TrendingUp, CreditCard, Briefcase } from 'lucide-r
 import { useRouter } from 'expo-router';
 import { AnalyticsWelcome } from '@/components/analytics';
 import { getProfessionalAnalytics, type AnalyticsData } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 const ANALYTICS_WELCOME_KEY = '@hasSeenAnalyticsWelcome';
 
@@ -97,7 +98,7 @@ export default function AnalyticsScreen() {
         <View className="bg-white px-6 py-4 border-b border-gray-100">
           <View className="flex-row items-center justify-between">
             {/* Back button */}
-            <Pressable onPress={() => router.back()}>
+            <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
               <ArrowLeft size={24} color="#30352D" />
             </Pressable>
 

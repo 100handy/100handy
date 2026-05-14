@@ -3,6 +3,7 @@ import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { goBackOrReplace } from '@/lib/navigation';
 
 interface PaymentItem {
   title: string;
@@ -27,7 +28,7 @@ export default function PaymentsScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <View className="flex-row py-4 px-5 items-center justify-between border-b border-gray-100">
-        <Pressable className="w-10 items-start" onPress={() => router.back()}>
+        <Pressable className="w-10 items-start" onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-xl text-theme-font">

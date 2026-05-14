@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Calendar, FileText, Check } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
+import { goBackOrReplace } from '@/lib/navigation';
 
 const FILE_TYPES = ['CSV', 'PDF', 'Excel'] as const;
 type FileType = typeof FILE_TYPES[number];
@@ -52,7 +53,7 @@ export default function ExportTransactionsScreen() {
         {/* Header */}
         <View className="bg-white px-5 py-4 border-b border-gray-100">
           <View className="flex-row items-center">
-            <Pressable onPress={() => router.back()} className="mr-3">
+            <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')} className="mr-3">
               <ArrowLeft size={24} color="#30352d" />
             </Pressable>
             <Text className="text-[#30352d] text-[18px] font-bold">

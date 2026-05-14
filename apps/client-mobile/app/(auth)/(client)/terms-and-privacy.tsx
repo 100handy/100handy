@@ -7,6 +7,7 @@ import { CheckIcon, ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function TermsAndPrivacyScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -33,7 +34,7 @@ export default function TermsAndPrivacyScreen() {
 
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 pt-4 pb-2">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(auth)/(client)')}>
           <ChevronLeft size={24} color="#333A31" />
         </Pressable>
         <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>

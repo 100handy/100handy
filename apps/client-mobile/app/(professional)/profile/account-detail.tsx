@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import {   Edit3, ChevronLeft } from 'lucide-react-native'; import { useProfileStore } from '@shared/store';
+import { goBackOrReplace } from '@/lib/navigation';
 
 interface FieldRowProps {
   label: string;
@@ -49,7 +50,7 @@ export default function AccountDetailScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <View className="flex-row py-4 px-6 items-center justify-between border-b border-gray-100">
-        <Pressable onPress={() => router.back()} className="w-10">
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')} className="w-10">
           <ChevronLeft color="#30352D" size={24} strokeWidth={1.5} />
         </Pressable>
         <Text className="font-worksans-bold text-xl text-theme-font">

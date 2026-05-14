@@ -6,6 +6,7 @@ import { Gift } from 'lucide-react-native';
 import Header from '@/components/Header';
 import { StatusBar } from 'expo-status-bar';
 import ReferralShareModal from '@/components/modals/ReferralShareModal';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function PromotionsScreen() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function PromotionsScreen() {
       <SafeAreaView className="flex-1 bg-[#FBF4ED]" edges={['top', 'bottom']}>
         <StatusBar style="dark" />
       {/* Header */}
-      <Header title="Promotions" onBackPress={() => router.back()} showBellIcon={false} />
+      <Header title="Promotions" onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} showBellIcon={false} />
 
       {/* Main Content */}
       <View className="flex-1 px-4 pt-4">

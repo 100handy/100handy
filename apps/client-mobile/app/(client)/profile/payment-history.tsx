@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import { useQuery } from '@tanstack/react-query';
 import { getClientPaymentHistory, type PaymentHistoryEntry } from '@shared/supabase/payments';
 import { useAuthStore } from '@shared/store/auth';
+import { goBackOrReplace } from '@/lib/navigation';
 
 function StatusBadge({ status }: { status: string | null }) {
   const config: Record<string, { label: string; bg: string; text: string }> = {
@@ -68,7 +69,7 @@ export default function PaymentHistoryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <Header title="Payment History" onBackPress={() => router.back()} showBellIcon={false} />
+      <Header title="Payment History" onBackPress={() => goBackOrReplace(router, '/(client)/profile/payments')} showBellIcon={false} />
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">

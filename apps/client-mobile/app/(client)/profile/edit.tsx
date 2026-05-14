@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 
 import { Input, InputField } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 // Import icons
 import { ChevronLeft, Upload, User, Phone, Home } from 'lucide-react-native';
@@ -114,7 +115,7 @@ export default function EditProfileScreen() {
       <View className="flex-1">
         {/* Header */}
         <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-200">
-          <Pressable onPress={() => router.back()} className="flex-row items-center">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} className="flex-row items-center">
             <ChevronLeft size={24} color="#333A31" />
             <Text className="text-lg font-semibold text-[#333A31] ml-2">Profile</Text>
           </Pressable>

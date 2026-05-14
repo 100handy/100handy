@@ -2,6 +2,7 @@ import React from 'react';
 import { useUpdatePrivacySettings } from '@shared/query';
 import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollView, View, Text, Pressable, Switch, ActivityIndicator } from 'react-native'; import { useRouter } from 'expo-router'; import Header from '@/components/Header'; import { usePrivacySettings } from '@shared/query';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 interface PrivacyToggleProps {
   title: string;
@@ -65,7 +66,7 @@ export default function PrivacySettingsScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <Header title="Privacy Settings" onBackPress={() => router.back()} showBellIcon={false} />
+        <Header title="Privacy Settings" onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} showBellIcon={false} />
 
         <ScrollView className="flex-1">
           {isLoading ? (

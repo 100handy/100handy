@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { saveChatTemplate } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function NewChatTemplateScreen() {
     const router = useRouter();
@@ -27,7 +28,7 @@ export default function NewChatTemplateScreen() {
 
             if (result) {
                 Alert.alert('Success', 'Template saved successfully', [
-                    { text: 'OK', onPress: () => router.back() }
+                    { text: 'OK', onPress: () => goBackOrReplace(router, '/(professional)/profile/chat-templates') }
                 ]);
             } else {
                 Alert.alert('Error', 'Failed to save template. Please try again.');
@@ -46,7 +47,7 @@ export default function NewChatTemplateScreen() {
         <SafeAreaView className="flex-1 bg-white" edges={['top']}>
             {/* Header */}
             <View className="flex-row py-4 px-5 items-center justify-between border-b border-gray-100 bg-white z-10">
-                <Pressable className="w-10 items-start" onPress={() => router.back()}>
+                <Pressable className="w-10 items-start" onPress={() => goBackOrReplace(router, '/(professional)/profile/chat-templates')}>
                     <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
                 </Pressable>
                 <Text className="font-worksans-bold text-xl text-theme-font">

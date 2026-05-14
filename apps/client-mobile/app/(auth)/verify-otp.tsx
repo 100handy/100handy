@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { resendOTP, sendPasswordResetOTP, verifyOTP, verifyPasswordResetOTP } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
 import { OtpInput, OtpInputRef } from 'react-native-otp-entry';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function VerifyOtp() {
   const params = useLocalSearchParams();
@@ -124,7 +125,7 @@ export default function VerifyOtp() {
           <View className="flex-col flex-1">
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-6">
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => goBackOrReplace(router, '/(auth)/welcome')}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>

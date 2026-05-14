@@ -3,6 +3,7 @@ import { useLocationStore } from '@shared/store';
 import { type HandymanFilters, type Coordinate, type WorkArea, doesAvailabilitySlotApplyToDate, type AvailabilitySlot } from '@shared/query';
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker'; import { useHandymenByCategory } from '@shared/query'; import { getWorkAreaByUserId, isLocationInWorkArea, getAvailabilityByUserId } from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
+import { goBackOrReplace } from '@/lib/navigation';
 
 const filterOptions = ['Within a week', 'Flexible', 'Price'];
 
@@ -249,7 +250,7 @@ export default function SelectTaskerScreen() {
         style={{ borderBottomWidth: 1, borderBottomColor: '#E5E7EB' }}
       >
         <View className="flex-row items-center justify-between">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')}>
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
           

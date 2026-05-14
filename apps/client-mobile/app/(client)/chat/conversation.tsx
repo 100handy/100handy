@@ -4,6 +4,7 @@ import { useConversationMessages, useSendConversationMessage, useMarkAsRead } fr
 import { View, Text, Image, ActivityIndicator, Pressable, KeyboardAvoidingView, Platform, Alert } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft, MoreVertical } from 'lucide-react-native'; import { useConversation } from '@shared/query'; import { subscribeToConversation, unsubscribeFromConversation } from '@shared/supabase';
 import { ConversationMessageList } from '../../../components/chat';
 import { MessageInput } from '../../../components/support/MessageInput';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ConversationScreen() {
   const router = useRouter();
@@ -148,7 +149,7 @@ export default function ConversationScreen() {
           <Text className="text-base font-semibold text-[#30352D] mb-2 text-center">
             Conversation not found
           </Text>
-          <Pressable onPress={() => router.back()} className="px-6 py-3 rounded-full bg-[#C1856A]">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/messages')} className="px-6 py-3 rounded-full bg-[#C1856A]">
             <Text className="text-white font-semibold">Go back</Text>
           </Pressable>
         </View>
@@ -180,7 +181,7 @@ export default function ConversationScreen() {
           <Pressable
             onPress={() => {
               refetchMessages();
-              router.back();
+              goBackOrReplace(router, '/(client)/(tabs)/messages');
             }}
             className="px-6 py-3 rounded-full bg-[#C1856A]"
           >
@@ -201,7 +202,7 @@ export default function ConversationScreen() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
           {/* Back Button */}
-          <Pressable onPress={() => router.back()} className="mr-3">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/messages')} className="mr-3">
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
 

@@ -8,6 +8,7 @@ import { NextStepsGuide } from '@/components/booking/NextStepsGuide';
 import { CancelBookingModal } from '@/components/booking/CancelBookingModal';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
+import { goBackOrReplace } from '@/lib/navigation';
 
 function StatusBanner({ status, taskerName }: { status: BookingStatus; taskerName?: string }) {
   if (status === 'pending') {
@@ -239,7 +240,7 @@ export default function BookingDetailScreen() {
       <SafeAreaView className="flex-1 bg-gray-50">
         {/* Header */}
         <View className="px-5 py-4 flex-row items-center border-b border-gray-200 bg-white">
-          <Pressable onPress={() => router.back()} className="mr-3">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')} className="mr-3">
             <ChevronLeft size={24} color="#30352D" />
           </Pressable>
           <Text className="text-lg font-worksans-semibold" style={{ color: '#30352D' }}>
@@ -259,7 +260,7 @@ export default function BookingDetailScreen() {
             We couldn&apos;t find the booking you&apos;re looking for.
           </Text>
           <Button
-            onPress={() => router.back()}
+            onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')}
             className="rounded-full"
             style={{ backgroundColor: '#C1856A' }}
           >
@@ -278,7 +279,7 @@ export default function BookingDetailScreen() {
       <SafeAreaView className="flex-1 bg-gray-50">
         {/* Header */}
         <View className="px-5 py-4 flex-row items-center border-b border-gray-200 bg-white">
-          <Pressable onPress={() => router.back()} className="mr-3">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')} className="mr-3">
             <ChevronLeft size={24} color="#30352D" />
           </Pressable>
           <Text className="text-lg font-worksans-semibold" style={{ color: '#30352D' }}>
@@ -298,7 +299,7 @@ export default function BookingDetailScreen() {
             You do not have permission to view this booking.
           </Text>
           <Button
-            onPress={() => router.back()}
+            onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')}
             className="rounded-full"
             style={{ backgroundColor: '#C1856A' }}
           >
@@ -319,7 +320,7 @@ export default function BookingDetailScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="px-5 py-4 flex-row items-center border-b border-gray-200 bg-white">
-        <Pressable onPress={() => router.back()} className="mr-3">
+        <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')} className="mr-3">
           <ChevronLeft size={24} color="#30352D" />
         </Pressable>
         <Text className="text-lg font-worksans-semibold flex-1" style={{ color: '#30352D' }}>

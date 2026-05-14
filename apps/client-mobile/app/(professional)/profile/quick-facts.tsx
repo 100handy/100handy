@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { useProfessionalProfileStore } from '@shared/store';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 const QUICK_FACTS_LIST = [
   'I have pet allergies',
@@ -45,7 +46,7 @@ export default function QuickFactsScreen() {
     try {
       await setQuickFacts(selectedFacts);
       toast.success('Saved', 'Your quick facts have been updated');
-      router.back();
+      goBackOrReplace(router, '/(professional)/(tabs)/profile');
     } catch (error) {
       toast.error('Error', 'Failed to save quick facts');
     }
@@ -55,7 +56,7 @@ export default function QuickFactsScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="flex-row items-center px-5 py-4">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text className="flex-1 text-center text-lg font-semibold text-brand-dark pr-6" style={{ fontFamily: 'WorkSans_600SemiBold' }}>

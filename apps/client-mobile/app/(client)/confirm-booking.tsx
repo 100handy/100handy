@@ -6,6 +6,8 @@ import { useAuthStore } from '@shared/store';
 import { useToast } from '@/components/ui/toast';
 import { FrequencySelector } from '@/components/booking';
 import { confirmStripePayment, getUnsupportedNativeFeatureMessage, supportsStripeNative } from '@/lib/native-feature-support';
+import { PullDownDismiss } from '@/components/ui/pull-down-dismiss';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ConfirmBookingScreen() {
   const router = useRouter();
@@ -117,7 +119,7 @@ export default function ConfirmBookingScreen() {
             style: 'destructive',
             onPress: () => {
               clearPendingBooking();
-              router.back();
+              goBackOrReplace(router, '/(client)/(tabs)/home');
             },
           },
         ]
@@ -126,7 +128,7 @@ export default function ConfirmBookingScreen() {
     }
 
     // No pending booking, just go back normally
-    router.back();
+    goBackOrReplace(router, '/(client)/(tabs)/home');
     return true;
   }, [
     categoryId,
@@ -545,8 +547,9 @@ export default function ConfirmBookingScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="flex-col px-5 py-6 gap-6">
+      <PullDownDismiss onDismiss={handleBackPress}>
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <View className="flex-col px-5 py-6 gap-6">
           {/* Tasker Info */}
           <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
             <Text className="text-base font-semibold text-brand-dark-alt mb-4">
@@ -807,26 +810,27 @@ export default function ConfirmBookingScreen() {
               You won&apos;t be billed until your task is complete.
             </Text>
           </View>
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
 
-      {/* Bottom Confirm Button */}
-      <View className="flex-col px-5 py-4 bg-white border-t border-gray-200">
-        <Pressable
-          onPress={handleCreateBooking}
-          disabled={isSubmitting}
-          className="w-full py-4 rounded-full items-center"
-          style={{ backgroundColor: isSubmitting ? '#D1D5DB' : '#C1856A' }}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <Text className="text-base font-semibold text-white">
-              Confirm and chat
-            </Text>
-          )}
-        </Pressable>
-      </View>
+        {/* Bottom Confirm Button */}
+        <View className="flex-col px-5 py-4 bg-white border-t border-gray-200">
+          <Pressable
+            onPress={handleCreateBooking}
+            disabled={isSubmitting}
+            className="w-full py-4 rounded-full items-center"
+            style={{ backgroundColor: isSubmitting ? '#D1D5DB' : '#C1856A' }}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text className="text-base font-semibold text-white">
+                Confirm and chat
+              </Text>
+            )}
+          </Pressable>
+        </View>
+      </PullDownDismiss>
     </SafeAreaView>
   );
 }

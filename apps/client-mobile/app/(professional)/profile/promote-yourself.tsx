@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, Share, Text, View } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { ChevronLeft, ExternalLink } from 'lucide-react-native'; import { buildReferralDeepLink, ensureReferralCode } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function PromoteYourselfScreen() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function PromoteYourselfScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center px-5 py-4">
-        <Pressable onPress={() => router.back()} className="p-2 -ml-2">
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')} className="p-2 -ml-2">
           <ChevronLeft size={24} color="#000000" />
         </Pressable>
         <Text className="flex-1 text-center text-2xl font-worksans-bold text-[#333A31] pr-8">
@@ -106,4 +107,3 @@ export default function PromoteYourselfScreen() {
     </SafeAreaView>
   );
 }
-

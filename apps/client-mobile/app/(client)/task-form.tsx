@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { DynamicFormRenderer } from '@/components/booking'; import type { FormResponse } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function TaskFormScreen() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function TaskFormScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-row items-center px-5 pt-4 pb-4 border-b border-gray-200">
-          <Pressable onPress={() => router.back()} className="mr-4">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="mr-4">
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
           <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
@@ -32,7 +33,7 @@ export default function TaskFormScreen() {
             The task category could not be determined. Please go back and try again.
           </Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')}
             className="px-8 py-3 rounded-full"
             style={{ backgroundColor: '#C1856A' }}
           >
@@ -69,7 +70,7 @@ export default function TaskFormScreen() {
   };
 
   const handleCancel = () => {
-    router.back();
+    goBackOrReplace(router, '/(client)/(tabs)/home');
   };
 
   return (

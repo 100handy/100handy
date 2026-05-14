@@ -20,6 +20,7 @@ import {
 } from "lucide-react-native";
 import { updateUserSkill, getSkillRateSuggestions } from "@shared/supabase/profile";
 import { toast } from "sonner-native";
+import { goBackOrReplace } from '@/lib/navigation';
 
 const DEFAULT_HOURLY_RATES = [17, 18, 19, 20, 25, 30];
 const DEFAULT_SUGGESTED_RATE = 18;
@@ -140,7 +141,7 @@ export default function SkillRateScreen() {
       {/* Header */}
       <View className="border-b border-gray-200">
         <View className="flex-row items-center justify-center px-4 py-4">
-          <Pressable onPress={() => router.back()} className="absolute left-4">
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/skills/my-skills')} className="absolute left-4">
             <ChevronLeft size={24} color="#1F2937" strokeWidth={2} />
           </Pressable>
           <Text

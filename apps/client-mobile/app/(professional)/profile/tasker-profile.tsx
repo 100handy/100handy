@@ -3,6 +3,7 @@ import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Eye, ChevronRight } from 'lucide-react-native';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function TaskerProfileScreen() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function TaskerProfileScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
           <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
         </Pressable>
         <Text className="text-xl font-bold text-[#30352D]" style={{ fontFamily: 'WorkSans_700Bold' }}>

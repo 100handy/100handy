@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollView, View, Text, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native'; import { useRouter } from 'expo-router'; import { ChevronLeft, MessageCircle, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react-native'; import Header from '@/components/Header'; import { useSupportStore } from '@shared/store/support'; import { formatDistanceToNow } from 'date-fns'; import { SupportTicket } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 interface TicketItemProps {
   ticket: SupportTicket;
@@ -154,7 +155,7 @@ export default function TicketsScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <View className="flex-1">
         {/* Header */}
-        <Header title="My Tickets" onBackPress={() => router.back()} showBellIcon={false} />
+        <Header title="My Tickets" onBackPress={() => goBackOrReplace(router, '/(client)/profile/support')} showBellIcon={false} />
 
         {/* Create New Ticket Button */}
         <View className="bg-white px-5 py-3 border-b border-gray-200">

@@ -3,6 +3,7 @@ import { ScrollView, View, Text, Pressable, Image, Alert } from 'react-native'; 
 import { completeOnboarding, getHandyProfile } from '@shared/supabase/profile';
 import { useToast } from '@/components/ui/toast';
 import { getUnsupportedNativeFeatureMessage, presentStripeIdentityVerificationSheet, supportsStripeNative } from '@/lib/native-feature-support';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function VerifyDocumentUpload() {
   const [isLoading, setIsLoading] = useState(false);
@@ -128,7 +129,7 @@ export default function VerifyDocumentUpload() {
           <View className="flex-col flex-1">
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-5">
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/dashboard')}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>

@@ -3,6 +3,7 @@ import { useAuthStore } from '@shared/store';
 import { useConversations } from '@shared/query';
 import { View, Text, Pressable, FlatList, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, Mail, MessageCircle } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useProfileStore } from '@shared/store'; import { subscribeToConversationList, unsubscribeFromConversation } from '@shared/supabase';
 import { ConversationItem } from '@/components/chat';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function InboxScreen() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function InboxScreen() {
     return (
       <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
         <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-[#F0F0F0]">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/dashboard')}>
             <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
           </Pressable>
           <Text className="font-worksans-bold text-[18px] text-[#30352D]">
@@ -68,7 +69,7 @@ export default function InboxScreen() {
     return (
       <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
         <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-[#F0F0F0]">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/dashboard')}>
             <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
           </Pressable>
           <Text className="font-worksans-bold text-[18px] text-[#30352D]">
@@ -114,7 +115,7 @@ export default function InboxScreen() {
     <SafeAreaView className="flex-1 bg-[#F5F5F5]" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 py-4 bg-white border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/dashboard')}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-[#30352D]">

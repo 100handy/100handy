@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useAuthStore } from '@shared/store';
 import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router, useFocusEffect } from 'expo-router'; import { ChevronLeft, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react-native'; import { getUserSkills, UserSkill } from '@shared/supabase/profile'; import { getEliteProgress, type EliteProgress } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 type TabType = 'progress' | 'about';
 
@@ -92,7 +93,7 @@ export default function EliteScreen() {
       {/* Header */}
       <View className="px-4 py-4 border-b border-gray-200">
         <View className="flex-row items-center">
-          <Pressable onPress={() => router.back()} className="mr-4">
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/performance')} className="mr-4">
             <ChevronLeft size={24} color="#1F2937" strokeWidth={2} />
           </Pressable>
           <Text

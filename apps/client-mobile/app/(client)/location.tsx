@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input, InputField } from '@/components/ui/input'; import { Button, ButtonText } from '@/components/ui/button'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { LocationAutocomplete, type LocationResult, type AddressComponents } from '@/components/location'; import { useLocationStore } from '@shared/store';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function LocationScreen() {
   const router = useRouter();
@@ -61,20 +62,20 @@ export default function LocationScreen() {
       longitude: selectedLongitude,
     });
 
-    router.back();
+    goBackOrReplace(router, '/(client)/(tabs)/home');
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-[#30352D]">
           Location
         </Text>
-        <Pressable onPress={() => router.back()} className="w-7" />
+        <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="w-7" />
       </View>
 
       <ScrollView

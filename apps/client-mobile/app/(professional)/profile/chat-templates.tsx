@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ScrollView, View, Text, Pressable, ActivityIndicator, Alert } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { useFocusEffect } from '@react-navigation/native'; import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react-native'; import { getAllChatTemplates, deleteChatTemplateById, ChatTemplate } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 interface TemplateItem {
   title: string;
@@ -87,7 +88,7 @@ export default function ChatTemplatesScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <View className="flex-row py-4 px-5 items-center justify-between border-b border-gray-100">
-        <Pressable className="w-10 items-start" onPress={() => router.back()}>
+        <Pressable className="w-10 items-start" onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-xl text-theme-font">

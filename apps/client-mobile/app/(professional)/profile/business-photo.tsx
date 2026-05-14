@@ -26,6 +26,7 @@ import {
   ModalBackdrop,
   ModalContent,
 } from '@/components/ui/modal';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function BusinessPhotosScreen() {
   const [skills, setSkills] = useState<UserSkill[]>([]);
@@ -180,7 +181,7 @@ export default function BusinessPhotosScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="flex-row items-center px-5 py-4">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text

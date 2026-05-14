@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { getSkillSets, getSkillTools, SkillSet, SkillTool } from '@shared/supabase/profile';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function SkillDetailsScreen() {
   const params = useLocalSearchParams<{ skillId: string; skillName: string }>();
@@ -63,7 +64,7 @@ export default function SkillDetailsScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/skills/my-skills')}>
           <ChevronLeft size={24} color="#111827" strokeWidth={2} />
         </Pressable>
         <Text

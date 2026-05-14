@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Image, Alert, KeyboardAvoidingView, Platform, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input } from '@/components/ui/input'; import { InputField } from '@/components/ui/input'; import { useRouter } from 'expo-router'; import { ChevronLeft, Camera, X } from 'lucide-react-native'; import * as ImagePicker from 'expo-image-picker'; import { useProfileStore } from '@shared/store';
 import AddProfilePhotoModal from '@/components/modals/AddProfilePhotoModal';
+import { goBackOrReplace } from '@/lib/navigation';
 
 interface FormData {
   first_name: string;
@@ -155,7 +156,7 @@ export default function AccountDetailEditScreen() {
       >
         {/* Header */}
         <View className="flex-row py-4 px-6 items-center justify-between border-b border-gray-100">
-          <Pressable onPress={() => router.back()} className="w-10">
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/profile/account-detail')} className="w-10">
             <ChevronLeft color="#30352D" size={24} strokeWidth={1.5} />
           </Pressable>
           <Text className="font-worksans-bold text-xl text-theme-font">

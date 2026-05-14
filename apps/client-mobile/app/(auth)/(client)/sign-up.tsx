@@ -9,6 +9,7 @@ import SignUpForm from '@/components/auth/SignUpForm';
 import { useToast } from '@/components/ui/toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ClientSignUp() {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +60,7 @@ export default function ClientSignUp() {
           <View className="flex-col flex-1 w-full self-center" style={{ maxWidth: 560 }}>
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-2">
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => goBackOrReplace(router, '/(auth)/welcome')}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>

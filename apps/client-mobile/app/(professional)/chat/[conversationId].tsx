@@ -4,6 +4,7 @@ import { useConversationMessages, useSendConversationMessage, useMarkAsRead } fr
 import { View, Text, Image, ActivityIndicator, Pressable, Alert } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft, MoreVertical } from 'lucide-react-native'; import { useConversation } from '@shared/query'; import { subscribeToConversation, unsubscribeFromConversation } from '@shared/supabase';
 import { ConversationMessageList } from '@/components/chat';
 import { MessageInput } from '@/components/support/MessageInput';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ProfessionalConversationScreen() {
   const router = useRouter();
@@ -168,7 +169,7 @@ export default function ProfessionalConversationScreen() {
             This conversation could not be loaded right now.
           </Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => goBackOrReplace(router, '/(professional)/inbox')}
             className="px-6 py-3 rounded-full"
             style={{ backgroundColor: '#4A5347' }}
           >
@@ -184,7 +185,7 @@ export default function ProfessionalConversationScreen() {
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-[#F0F0F0]">
         {/* Back Button */}
-        <Pressable onPress={() => router.back()} className="mr-3">
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/inbox')} className="mr-3">
           <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
         </Pressable>
 

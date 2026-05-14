@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input, InputField, InputSlot } from '@/components/ui/input'; import {   ChevronLeft, Search, ChevronRight, } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useGroupedSubcategories } from '@shared/query';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
+import { goBackOrReplace } from '@/lib/navigation';
 import { getCategoryIcon } from '@/lib/category-icons';
 
 export default function SearchServicesScreen() {
@@ -39,7 +40,7 @@ export default function SearchServicesScreen() {
       {/* Header with Search */}
       <View className="flex-col px-5 py-3 bg-white border-b border-gray-200">
         <View className="flex-row items-center gap-3">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')}>
             <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
           </Pressable>
 

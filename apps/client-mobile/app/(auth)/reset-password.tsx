@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { resetPasswordSchema, type ResetPasswordFormData } from '@shared/schemas/auth';
 import { signOut, updatePassword } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +59,7 @@ export default function ResetPassword() {
           <View className="flex-col flex-1">
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-4">
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => goBackOrReplace(router, '/(auth)/welcome')}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>

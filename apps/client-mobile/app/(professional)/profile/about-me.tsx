@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, KeyboardAvoidingView, Platform, View, Text, Pressable, TextInput } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { useProfessionalProfileStore } from '@shared/store';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 const MAX_CHARACTERS = 500;
 
@@ -23,7 +24,7 @@ export default function AboutMeScreen() {
     try {
       await setAboutMe(text);
       toast.success('Saved', 'Your about me has been updated');
-      router.back();
+      goBackOrReplace(router, '/(professional)/(tabs)/profile');
     } catch (error) {
       toast.error('Error', 'Failed to save about me');
     }
@@ -37,7 +38,7 @@ export default function AboutMeScreen() {
       >
         {/* Header */}
         <View className="flex-row items-center px-5 py-4">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
             <ChevronLeft size={24} color="#000" />
           </Pressable>
           <Text 

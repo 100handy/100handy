@@ -20,6 +20,7 @@ import {
   deleteUserSkill,
   UserSkill,
 } from "@shared/supabase/profile";
+import { goBackOrReplace } from '@/lib/navigation';
 
 const MAX_CHARS = 500;
 
@@ -465,7 +466,7 @@ export default function SkillEditScreen() {
         experience_description: experience,
         supplies_owned: Array.from(suppliesOwned),
       });
-      router.back();
+      goBackOrReplace(router, '/(professional)/skills/my-skills');
     } catch (error) {
       console.error("Error saving skill details:", error);
       Alert.alert("Error", "Failed to save changes. Please try again.");
@@ -541,7 +542,7 @@ export default function SkillEditScreen() {
         >
           Skill not found
         </Text>
-        <Pressable onPress={() => router.back()} className="mt-4">
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/skills/my-skills')} className="mt-4">
           <Text
             className="text-[#C1856A] font-semibold"
             style={{ fontFamily: "WorkSans_600SemiBold" }}

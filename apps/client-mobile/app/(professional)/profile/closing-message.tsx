@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, TextInput, Alert, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { useProfessionalProfileStore } from '@shared/store';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ClosingMessageScreen() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function ClosingMessageScreen() {
     try {
       await setChatTemplate(templateType, message);
       Alert.alert('Success', 'Message saved successfully', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => goBackOrReplace(router, '/(professional)/(tabs)/profile') }
       ]);
     } catch (error) {
       Alert.alert('Error', 'Failed to save message. Please try again.');
@@ -64,7 +65,7 @@ export default function ClosingMessageScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <View className="flex-row py-4 px-5 items-center justify-between border-b border-gray-100">
-        <Pressable className="w-10 items-start" onPress={() => router.back()}>
+        <Pressable className="w-10 items-start" onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-xl text-theme-font">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import Header from '@/components/Header'; import { StatusBar } from 'expo-status-bar'; import { useAccountBalance } from '@shared/query'; import { formatBalanceDisplay } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function RedemptionsScreen() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function RedemptionsScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <Header title="Redemptions" onBackPress={() => router.back()} showBellIcon={false} />
+      <Header title="Redemptions" onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} showBellIcon={false} />
 
       {/* Content */}
       <View className="flex-1">

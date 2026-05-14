@@ -6,6 +6,7 @@ import { ScheduleSelectionSheet } from '@/components/tasker/ScheduleSelectionShe
 import { DynamicFormRenderer } from '@/components/booking/DynamicFormRenderer';
 import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr + 'T00:00:00');
@@ -84,7 +85,7 @@ export default function EditBookingScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-row items-center px-5 py-4 border-b border-gray-200">
-          <Pressable onPress={() => router.back()} className="mr-3">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')} className="mr-3">
             <ChevronLeft size={24} color="#30352D" />
           </Pressable>
           <Text className="text-lg font-worksans-semibold" style={{ color: '#30352D' }}>
@@ -206,7 +207,7 @@ export default function EditBookingScreen() {
       }
 
       if (Object.keys(updates).length === 0) {
-        router.back();
+        goBackOrReplace(router, '/(client)/(tabs)/tasks');
         return;
       }
 
@@ -218,7 +219,7 @@ export default function EditBookingScreen() {
 
       if (success) {
         toast.success('Updated', 'Your booking has been updated.');
-        router.back();
+        goBackOrReplace(router, '/(client)/(tabs)/tasks');
       } else {
         toast.error('Error', 'Could not update booking. It may no longer be pending.');
       }
@@ -246,7 +247,7 @@ export default function EditBookingScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="flex-row items-center px-5 py-4 border-b border-gray-200 bg-white">
-        <Pressable onPress={() => router.back()} className="mr-3">
+        <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/tasks')} className="mr-3">
           <ChevronLeft size={24} color="#30352D" />
         </Pressable>
         <Text className="text-lg font-worksans-semibold flex-1" style={{ color: '#30352D' }}>

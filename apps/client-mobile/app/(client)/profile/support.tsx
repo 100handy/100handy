@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollVi
 import { useToast } from '@/components/ui/toast';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 import Constants from 'expo-constants';
+import { goBackOrReplace } from '@/lib/navigation';
 
 interface MenuItemProps {
   title: string;
@@ -95,7 +96,7 @@ export default function SupportScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <Header title="Support" onBackPress={() => router.back()} showBellIcon={false} />
+        <Header title="Support" onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} showBellIcon={false} />
 
         <ScrollView className="flex-1">
           <View className="flex-col pt-6">

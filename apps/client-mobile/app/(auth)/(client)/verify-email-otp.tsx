@@ -4,6 +4,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native'; import { SafeA
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getHandyProfile } from '@shared/supabase/profile';
 import { buildPendingBookingRoute, resolveAuthenticatedRoute } from '@/lib/auth-routing';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ClientVerifyEmailOtp() {
   const params = useLocalSearchParams();
@@ -108,7 +109,7 @@ export default function ClientVerifyEmailOtp() {
           <View className="flex-col flex-1">
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-6">
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => goBackOrReplace(router, '/(auth)/welcome')}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-[18px] font-worksans-medium" style={{ color: '#333A31' }}>

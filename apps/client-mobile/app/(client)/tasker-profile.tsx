@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useHandymanReviews, type HandymanReview } from '@shared/query';
 import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, Star, SlidersHorizontal } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import {   RatingFilter, RatingFilterSheet, ScheduleSelectionSheet, } from '@/components/tasker'; import { useHandymanProfile } from '@shared/query';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function TaskerProfileScreen() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function TaskerProfileScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
           <View className="flex-row items-center">
-            <Pressable onPress={() => router.back()} className="mr-4">
+            <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="mr-4">
               <ChevronLeft size={24} color="#000000" strokeWidth={2} />
             </Pressable>
             <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
@@ -79,7 +80,7 @@ export default function TaskerProfileScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
           <View className="flex-row items-center">
-            <Pressable onPress={() => router.back()} className="mr-4">
+            <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="mr-4">
               <ChevronLeft size={24} color="#000000" strokeWidth={2} />
             </Pressable>
             <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
@@ -104,7 +105,7 @@ export default function TaskerProfileScreen() {
       {/* Header */}
       <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
         <View className="flex-row items-center">
-          <Pressable onPress={() => router.back()} className="mr-4">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="mr-4">
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
 

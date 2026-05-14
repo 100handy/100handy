@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, View, Text, ActivityIndicator, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useCategoryFormFields } from '@shared/query'; import { validateFormResponses, shouldShowField, groupFieldsBySection, type FormResponse } from '@shared/supabase';
 import { FormFieldRenderer } from './FormFieldRenderer';
+import { PullDownDismiss } from '@/components/ui/pull-down-dismiss';
 
 interface DynamicFormRendererProps {
   categoryId: string;
@@ -196,57 +197,59 @@ export function DynamicFormRenderer({
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="flex-col px-5 py-6">
-          {/* Render fields grouped by section */}
-          {Array.from(fieldsBySection.entries()).map(([sectionName, sectionFields], index) => (
-            <View key={sectionName} className={index > 0 ? 'mt-8' : ''}>
-              {/* Section header (if not 'general') */}
-              {sectionName !== 'general' && (
-                <Text className="text-lg font-bold text-[#30352D] mb-4 capitalize">
-                  {sectionName.replace(/_/g, ' ')}
-                </Text>
-              )}
+      <PullDownDismiss onDismiss={handleCancel}>
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <View className="flex-col px-5 py-6">
+            {/* Render fields grouped by section */}
+            {Array.from(fieldsBySection.entries()).map(([sectionName, sectionFields], index) => (
+              <View key={sectionName} className={index > 0 ? 'mt-8' : ''}>
+                {/* Section header (if not 'general') */}
+                {sectionName !== 'general' && (
+                  <Text className="text-lg font-bold text-[#30352D] mb-4 capitalize">
+                    {sectionName.replace(/_/g, ' ')}
+                  </Text>
+                )}
 
-              {/* Render fields in this section */}
-              {sectionFields.map((field) => (
-                <FormFieldRenderer
-                  key={field.id}
-                  field={field}
-                  value={responses[field.field_key]}
-                  onChange={handleChange}
-                  error={errors[field.field_key]}
-                />
-              ))}
-            </View>
-          ))}
+                {/* Render fields in this section */}
+                {sectionFields.map((field) => (
+                  <FormFieldRenderer
+                    key={field.id}
+                    field={field}
+                    value={responses[field.field_key]}
+                    onChange={handleChange}
+                    error={errors[field.field_key]}
+                  />
+                ))}
+              </View>
+            ))}
 
-          {/* Validation summary */}
-          {attemptedSubmit && Object.keys(errors).length > 0 && (
-            <View className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
-              <Text className="text-sm font-semibold text-red-700 mb-2">
-                Please fix the following errors:
-              </Text>
-              {Object.values(errors).map((error, index) => (
-                <Text key={index} className="text-sm text-red-600 ml-2">
-                  • {error}
+            {/* Validation summary */}
+            {attemptedSubmit && Object.keys(errors).length > 0 && (
+              <View className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                <Text className="text-sm font-semibold text-red-700 mb-2">
+                  Please fix the following errors:
                 </Text>
-              ))}
-            </View>
-          )}
+                {Object.values(errors).map((error, index) => (
+                  <Text key={index} className="text-sm text-red-600 ml-2">
+                    • {error}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+        </ScrollView>
+
+        {/* Bottom Submit Button */}
+        <View className="flex-col px-5 py-4 bg-white border-t border-gray-200">
+          <Pressable
+            onPress={handleSubmit}
+            className="w-full py-4 rounded-full items-center"
+            style={{ backgroundColor: '#C1856A' }}
+          >
+            <Text className="text-base font-semibold text-white">Continue</Text>
+          </Pressable>
         </View>
-      </ScrollView>
-
-      {/* Bottom Submit Button */}
-      <View className="flex-col px-5 py-4 bg-white border-t border-gray-200">
-        <Pressable
-          onPress={handleSubmit}
-          className="w-full py-4 rounded-full items-center"
-          style={{ backgroundColor: '#C1856A' }}
-        >
-          <Text className="text-base font-semibold text-white">Continue</Text>
-        </Pressable>
-      </View>
+      </PullDownDismiss>
     </SafeAreaView>
   );
 }

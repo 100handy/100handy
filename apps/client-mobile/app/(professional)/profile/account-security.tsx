@@ -5,6 +5,7 @@ import { useAuthStore } from '@shared/store';
 import { Alert, ActivityIndicator, View, Text, Pressable, TextInput } from 'react-native';
 import { Modal, ModalBackdrop, ModalBody, ModalContent } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ProfessionalAccountSecurityScreen() {
   const router = useRouter();
@@ -152,7 +153,7 @@ export default function ProfessionalAccountSecurityScreen() {
       <View className="flex-1">
         {/* Header */}
         <View className="flex-row items-center p-4 border-b border-gray-200">
-          <Pressable onPress={() => router.back()} className="p-2">
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')} className="p-2">
             <ChevronLeft size={24} color="#000000" />
           </Pressable>
           <Text className="flex-1 text-center text-lg font-worksans-semibold">Account Security</Text>

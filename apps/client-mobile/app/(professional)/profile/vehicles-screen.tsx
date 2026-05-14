@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { useProfessionalProfileStore } from '@shared/store';
+import { goBackOrReplace } from '@/lib/navigation';
 import { useToast } from '@/components/ui/toast';
 
 interface Vehicle {
@@ -61,7 +62,7 @@ export default function VehiclesScreen() {
     try {
       await setVehicles(selectedVehicles);
       toast.success('Saved', 'Your vehicles have been updated');
-      router.back();
+      goBackOrReplace(router, '/(professional)/(tabs)/profile');
     } catch (error) {
       toast.error('Error', 'Failed to save vehicles');
     }
@@ -71,7 +72,7 @@ export default function VehiclesScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="flex-row items-center px-5 py-4">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/profile')}>
           <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text className="flex-1 text-center text-lg font-semibold text-brand-dark pr-6" style={{ fontFamily: 'WorkSans_600SemiBold' }}>

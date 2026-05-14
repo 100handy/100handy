@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useLocalSearchParams, useRouter } from 'expo-router'; import { useQuery } from '@tanstack/react-query'; import { ChevronLeft } from 'lucide-react-native'; import { supabase } from '@shared/supabase';
+import { goBackOrReplace } from '@/lib/navigation';
 
 function useClientProfile(userId: string) {
   return useQuery({
@@ -48,7 +49,7 @@ export default function ClientProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-row items-center justify-between px-5 py-4 border-b border-[#F0F0F0]">
-        <Pressable onPress={() => router.back()} className="w-10">
+        <Pressable onPress={() => goBackOrReplace(router, '/(professional)/(tabs)/jobs')} className="w-10">
           <ChevronLeft size={24} color="#30352D" strokeWidth={2} />
         </Pressable>
         <Text className="text-xl font-bold text-[#30352D]">Client Profile</Text>

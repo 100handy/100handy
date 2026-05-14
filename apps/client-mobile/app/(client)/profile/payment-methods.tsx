@@ -11,6 +11,7 @@ import {
   setDefaultPaymentMethod,
   PaymentMethod,
 } from '@shared/supabase/payment-methods';
+import { goBackOrReplace } from '@/lib/navigation';
 
 // Card brand to logo mapping (we'll use text for now, can add actual logos later)
 const CARD_BRANDS: Record<string, string> = {
@@ -106,7 +107,7 @@ export default function PaymentMethodsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <Header title="Payment Methods" onBackPress={() => router.back()} showBellIcon={false} />
+      <Header title="Payment Methods" onBackPress={() => goBackOrReplace(router, '/(client)/profile/payments')} showBellIcon={false} />
 
       {isLoading && !hasLoadedOnce ? (
         <View className="flex-1 px-5 py-6">

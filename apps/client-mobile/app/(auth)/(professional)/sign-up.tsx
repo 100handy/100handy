@@ -7,6 +7,7 @@ import { signUp } from '@shared/supabase/auth';
 import AuthLogo from '@/components/auth/AuthLogo';
 import SignUpForm from '@/components/auth/SignUpForm';
 import { useToast } from '@/components/ui/toast';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ProfessionalSignUp() {
   const [isLoading, setIsLoading] = useState(false);
@@ -44,13 +45,13 @@ export default function ProfessionalSignUp() {
           <View className="flex-col flex-1 w-full self-center" style={{ maxWidth: 560 }}>
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-2 pb-2">
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => goBackOrReplace(router, '/(auth)/welcome')}>
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
                 Sign Up
               </Text>
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => goBackOrReplace(router, '/(auth)/(client)')}>
                 <Text className="text-sm font-worksans-medium" style={{ color: '#333A31' }}>
                   Not now
                 </Text>

@@ -6,6 +6,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { MessageList } from '@/components/support/MessageList';
 import { MessageInput } from '@/components/support/MessageInput';
 import { useSupportStore } from '@shared/store/support';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function MessageSupportScreen() {
   const router = useRouter();
@@ -68,7 +69,7 @@ export default function MessageSupportScreen() {
           [
             {
               text: 'OK',
-              onPress: () => router.back(),
+              onPress: () => goBackOrReplace(router, '/(client)/profile/support'),
             },
           ]
         );
@@ -118,7 +119,7 @@ export default function MessageSupportScreen() {
   };
 
   const handleBack = () => {
-    router.back();
+    goBackOrReplace(router, '/(client)/profile/support');
   };
 
   if (isInitializing || isCreatingTicket) {

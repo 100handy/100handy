@@ -12,6 +12,7 @@ import {
   presentStripePaymentSheet,
   supportsStripeNative,
 } from '@/lib/native-feature-support';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function PaymentsScreen() {
     const router = useRouter();
@@ -72,7 +73,7 @@ export default function PaymentsScreen() {
             {/* Header */}
             <Header 
                 title="Payment"
-                onBackPress={() => router.back()} 
+                onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} 
                 showBellIcon={false}
                 showFilterIcon={false}
             />

@@ -22,6 +22,7 @@ import {
   Hammer,
 } from 'lucide-react-native';
 import { getSkillsByCategory, getUserSkills, Skill } from '@shared/supabase/profile';
+import { goBackOrReplace } from '@/lib/navigation';
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<any>> = {
   Assembly: Wrench,
@@ -105,7 +106,7 @@ export default function AddSkillsScreen() {
       {/* Header */}
       <View className="bg-white shadow-sm">
         <View className="flex-row items-center justify-between px-4 py-4">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/skills/my-skills')}>
             <ChevronLeft size={28} color="#1F2937" strokeWidth={2} />
           </Pressable>
           <Text
@@ -114,7 +115,7 @@ export default function AddSkillsScreen() {
           >
             Add skills
           </Text>
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => goBackOrReplace(router, '/(professional)/skills/my-skills')}>
             <X size={28} color="#1F2937" strokeWidth={2} />
           </Pressable>
         </View>

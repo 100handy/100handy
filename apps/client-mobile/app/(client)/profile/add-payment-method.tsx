@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
 import { getUnsupportedNativeFeatureMessage, supportsStripeNative } from '@/lib/native-feature-support';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function AddPaymentMethodScreen() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function AddPaymentMethodScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <Header title="Add Payment Method" onBackPress={() => router.back()} showBellIcon={false} />
+      <Header title="Add Payment Method" onBackPress={() => goBackOrReplace(router, '/(client)/profile/payment-methods')} showBellIcon={false} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="flex-col px-5 py-6 gap-6">
