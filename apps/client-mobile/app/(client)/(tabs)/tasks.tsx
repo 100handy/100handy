@@ -151,18 +151,18 @@ export default function TasksScreen() {
 
         {/* Content */}
         <ScrollView
-          contentContainerStyle={{ paddingBottom: 24 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
           refreshControl={
             <RefreshControl refreshing={showLoading} onRefresh={onRefresh} />
           }
         >
           {!user?.id ? (
-            <View className="flex-col items-center justify-center py-12">
+            <View className="flex-1 flex-col items-center justify-center px-8">
               <ClipboardList size={64} color="#C1856A" />
               <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
                 Please sign in
               </Text>
-              <Text className="text-sm text-[#666666] text-center px-8 mb-6">
+              <Text className="text-sm text-[#666666] text-center mb-6">
                 You need to be signed in to view your tasks.
               </Text>
               <Pressable

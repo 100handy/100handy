@@ -139,12 +139,13 @@ const TaskersScreen = () => {
         {/* Taskers List */}
         <ScrollView
           className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
           refreshControl={
             <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
           }
         >
           {!user?.id ? (
-            <View className="flex-col items-center justify-center py-12 px-8">
+            <View className="flex-1 flex-col items-center justify-center px-8">
               <Users size={64} color="#C1856A" />
               <Text className="text-lg font-medium text-brand-dark mt-4 mb-2">
                 Please sign in
