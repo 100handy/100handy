@@ -10,7 +10,7 @@ export default function WelcomeSplash() {
   const router = useRouter();
 
   const handleGetStarted = (): void => {
-    router.push('/(auth)/(client)');
+    router.push('/(auth)/(client)/start');
   };
 
   return (
