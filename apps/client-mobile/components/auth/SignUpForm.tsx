@@ -100,6 +100,7 @@ export default function SignUpForm({
   const handleSignUp = (formData: MobileSignUpWithDateOfBirthFormData): void => {
     const trimmedPhone = formData.phone.trim();
     const trimmedPostcode = formData.postcode.trim();
+    const trimmedDateOfBirth = formData.dateOfBirth.trim();
     const fullPhone = trimmedPhone ? `+${callingCode}${trimmedPhone}` : undefined;
     const metadata = {
       first_name: formData.firstName,
@@ -108,8 +109,8 @@ export default function SignUpForm({
       role: userRole === 'professional' ? 'handy' : 'customer',
       ...(trimmedPostcode ? { postcode: trimmedPostcode } : {}),
       ...(fullPhone ? { phone: fullPhone } : {}),
+      ...(trimmedDateOfBirth ? { date_of_birth: trimmedDateOfBirth } : {}),
       marketing_opt_out: marketingOptOut,
-      date_of_birth: formData.dateOfBirth,
     };
 
     onSubmit(formData.email, formData.password, metadata);
@@ -359,7 +360,7 @@ export default function SignUpForm({
       {/* Date of Birth */}
       <View className="mb-2">
         <Text className="text-[14px] font-worksans-medium mb-1" style={{ color: '#30352D' }}>
-          Date of Birth
+          Date of Birth <Text style={{ color: '#6B7280' }}>(optional)</Text>
         </Text>
         <Controller
           control={control}

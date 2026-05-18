@@ -12,27 +12,36 @@ export default function ProfessionalSignIn() {
   const { setLocation } = useLocationStore();
 
   const navigateAfterAuth = async () => {
-    // Wait for auth listener (triggered by setSession) instead of calling checkAuth()
-    // which redundantly re-fetches the session and profile role
+    // Wait for auth listener and role hydration before resolving a destination.
     let attempts = 0;
-    while (!useAuthStore.getState().isAuthenticated && attempts < 20) {
+    while (attempts < 50) {
+      const state = useAuthStore.getState();
+      if (state.isAuthenticated && state.isRoleResolved) {
+        break;
+      }
       await new Promise((r) => setTimeout(r, 100));
       attempts++;
     }
 
-    const { isAuthenticated, isEmailVerified, userRole, hasCompletedOnboarding, user } =
+    const { isAuthenticated, isEmailVerified, userRole, hasCompletedOnboarding, user, isRoleResolved } =
       useAuthStore.getState();
     if (!isAuthenticated) {
       throw new Error('Authentication check failed');
     }
 
-    if (userRole === 'customer') {
+    const effectiveRole =
+      userRole ?? ((user?.user_metadata?.role as 'customer' | 'handy' | undefined) ?? null);
+    if (!isRoleResolved && !effectiveRole) {
+      throw new Error('Authentication state is still resolving');
+    }
+
+    if (effectiveRole === 'customer') {
       toast.info('Client account', 'This account is registered as a client. Redirecting to your home screen.');
     }
 
     const route = await resolveAuthenticatedRoute({
       isEmailVerified,
-      userRole,
+      userRole: effectiveRole,
       hasCompletedOnboarding,
       userEmail: user?.email,
       userId: user?.id,

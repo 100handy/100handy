@@ -62,11 +62,19 @@ const isAtLeast18 = (dateString: string): boolean => {
   return age >= 18;
 };
 
-const dateOfBirthSchema = z.string()
-  .min(1, 'Date of birth is required')
-  .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Please enter a valid date (DD/MM/YYYY)')
-  .refine(isValidDateOfBirth, 'Please enter a valid date (DD/MM/YYYY)')
-  .refine(isAtLeast18, 'You must be at least 18 years old to sign up');
+const optionalDateOfBirthSchema = z.string()
+  .refine(
+    (value) => value.trim() === '' || /^\d{2}\/\d{2}\/\d{4}$/.test(value),
+    'Please enter a valid date (DD/MM/YYYY)'
+  )
+  .refine(
+    (value) => value.trim() === '' || isValidDateOfBirth(value),
+    'Please enter a valid date (DD/MM/YYYY)'
+  )
+  .refine(
+    (value) => value.trim() === '' || isAtLeast18(value),
+    'You must be at least 18 years old to sign up'
+  );
 
 // Base schema without country-specific validation
 export const signUpSchema = z.object({
@@ -95,7 +103,7 @@ export const signUpSchema = z.object({
 });
 
 export const signUpWithDateOfBirthSchema = signUpSchema.extend({
-  dateOfBirth: dateOfBirthSchema,
+  dateOfBirth: optionalDateOfBirthSchema,
 });
 
 export const mobileSignUpSchema = signUpSchema.extend({
@@ -112,7 +120,7 @@ export const mobileSignUpSchema = signUpSchema.extend({
 });
 
 export const mobileSignUpWithDateOfBirthSchema = mobileSignUpSchema.extend({
-  dateOfBirth: dateOfBirthSchema,
+  dateOfBirth: optionalDateOfBirthSchema,
 });
 
 // Factory function to create schema with country-specific postcode validation

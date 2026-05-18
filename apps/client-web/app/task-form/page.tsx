@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense, useRef, type TouchEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/marketing/footer";
@@ -63,6 +63,7 @@ function TaskFormContent() {
   }, [categoriesData]);
 
   const taskCategory = category?.name || categoryFromUrl || "";
+  const normalizedTaskCategory = taskCategory.trim().toLowerCase();
 
   // Track if pending booking was restored
   const [pendingBookingRestored, setPendingBookingRestored] = useState(false);
@@ -78,9 +79,20 @@ function TaskFormContent() {
   const [taskOptionsCompleted, setTaskOptionsCompleted] = useState(false);
   const [showBrowsePros, setShowBrowsePros] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [sheetOffsetY, setSheetOffsetY] = useState(0);
+  const [isSheetDragging, setIsSheetDragging] = useState(false);
+  const sheetDragStartYRef = useRef<number | null>(null);
 
   // Sort state
   const [selectedSort, setSelectedSort] = useState<SortOption>('recommended');
+
+  useEffect(() => {
+    const updateViewport = () => setIsMobileViewport(window.innerWidth < 640);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
 
   // Fetch handymen using shared hook
   // Only fetch when we have a valid category ID and are showing browse pros
@@ -596,6 +608,48 @@ function TaskFormContent() {
     { number: 3, label: "Confirm details", mobileLabel: "Confirm", active: getCurrentStep() === 3 },
   ];
 
+  const enableMobilePullDownDismiss =
+    isMobileViewport &&
+    normalizedTaskCategory === "tv mounting" &&
+    !showBrowsePros &&
+    !showConfirmation;
+
+  const dismissTaskForm = useCallback(() => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push("/");
+  }, [router]);
+
+  const handleSheetTouchStart = useCallback((event: TouchEvent<HTMLDivElement>) => {
+    if (!enableMobilePullDownDismiss) return;
+    sheetDragStartYRef.current = event.touches[0]?.clientY ?? null;
+    setIsSheetDragging(true);
+  }, [enableMobilePullDownDismiss]);
+
+  const handleSheetTouchMove = useCallback((event: TouchEvent<HTMLDivElement>) => {
+    if (!enableMobilePullDownDismiss || sheetDragStartYRef.current === null) return;
+
+    const currentY = event.touches[0]?.clientY ?? sheetDragStartYRef.current;
+    const deltaY = Math.max(0, currentY - sheetDragStartYRef.current);
+    setSheetOffsetY(Math.min(deltaY, 240));
+  }, [enableMobilePullDownDismiss]);
+
+  const handleSheetTouchEnd = useCallback(() => {
+    if (!enableMobilePullDownDismiss) return;
+
+    setIsSheetDragging(false);
+    sheetDragStartYRef.current = null;
+
+    if (sheetOffsetY > 120) {
+      dismissTaskForm();
+      return;
+    }
+
+    setSheetOffsetY(0);
+  }, [dismissTaskForm, enableMobilePullDownDismiss, sheetOffsetY]);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header with Progress Stepper */}
@@ -686,7 +740,7 @@ function TaskFormContent() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 py-8">
+      <main className={`flex-1 ${enableMobilePullDownDismiss ? "py-0 sm:py-8 bg-[#EFE6DB]" : "py-8"}`}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8">
           {showConfirmation ? (
             /* Confirmation Step */
@@ -722,7 +776,17 @@ function TaskFormContent() {
               )}
             </div>
           ) : !showBrowsePros ? (
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div
+              className={`max-w-3xl mx-auto space-y-6 ${enableMobilePullDownDismiss ? "sm:space-y-6 space-y-0" : ""}`}
+              style={
+                enableMobilePullDownDismiss
+                  ? {
+                      transform: `translateY(${sheetOffsetY}px)`,
+                      transition: isSheetDragging ? "none" : "transform 220ms ease-out",
+                    }
+                  : undefined
+              }
+            >
               {/* Error Message (shown at top if category fails to load) */}
               {error && !category && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -736,13 +800,35 @@ function TaskFormContent() {
                 </div>
               )}
 
-              {/* Task Title */}
-              <h1 className="text-brand-dark font-bold text-2xl sm:text-3xl">
-                {taskCategory || 'Select a Service'}
-              </h1>
+              <div
+                className={
+                  enableMobilePullDownDismiss
+                    ? "min-h-[calc(100vh-176px)] bg-white rounded-t-[32px] border border-[#E6DED4] border-b-0 px-4 pt-3 pb-8 shadow-[0_-10px_30px_rgba(0,0,0,0.08)]"
+                    : ""
+                }
+              >
+                {enableMobilePullDownDismiss && (
+                  <div
+                    className="flex flex-col items-center gap-2 pb-4"
+                    onTouchStart={handleSheetTouchStart}
+                    onTouchMove={handleSheetTouchMove}
+                    onTouchEnd={handleSheetTouchEnd}
+                    onTouchCancel={handleSheetTouchEnd}
+                  >
+                    <div className="h-1.5 w-12 rounded-full bg-gray-300" />
+                    <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-gray-400">
+                      Pull down to close
+                    </span>
+                  </div>
+                )}
+
+                {/* Task Title */}
+                <h1 className="text-brand-dark font-bold text-2xl sm:text-3xl">
+                  {taskCategory || 'Select a Service'}
+                </h1>
 
             {/* Your task location */}
-            <div className="bg-white rounded-lg border border-gray-300 p-6">
+            <div className={`rounded-lg border p-6 mt-6 ${enableMobilePullDownDismiss ? "bg-[#FAF8F4] border-[#E6DED4]" : "bg-white border-gray-300"}`}>
               {!locationConfirmed ? (
                 // Edit Mode - Show input fields
                 <>
@@ -828,6 +914,7 @@ function TaskFormContent() {
                 <p className="text-red-800 text-sm">{error}</p>
               </div>
             )}
+            </div>
           </div>
         ) : (
           /* Browse Pros Section */
