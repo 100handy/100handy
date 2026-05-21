@@ -94,15 +94,15 @@ export function Services() {
 
   return (
     <section className="border-y border-gray-200 bg-white py-8">
-      <div className="mx-auto max-w-[1920px] px-8">
+      <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8">
         {/* Main Categories with Icons Above */}
         <div className="mb-6">
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-y-6 gap-x-4 justify-items-center">
+          <div className="grid grid-cols-4 gap-x-2 gap-y-6 justify-items-center sm:grid-cols-8 sm:gap-x-4">
             {loadingMainCategories ? (
               <>
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="flex flex-col items-center gap-2">
-                    <div className="h-16 w-16 animate-pulse rounded-full bg-gray-200" />
+                    <div className="h-14 w-14 animate-pulse rounded-full bg-gray-200 sm:h-16 sm:w-16" />
                     <div className="h-4 w-16 animate-pulse rounded bg-gray-200" />
                   </div>
                 ))}
@@ -112,21 +112,21 @@ export function Services() {
               <button
                 key={category.id}
                 onClick={() => handleMainCategoryClick(category as Category)}
-                className="group flex flex-col items-center gap-2"
+                className="group flex w-full max-w-[88px] flex-col items-center gap-2 sm:max-w-[120px]"
               >
                 {/* Category Icon */}
                 {(() => {
                   const Icon = getCategoryIcon(category.name);
                   return (
                     <div
-                      className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${
+                      className={`flex h-14 w-14 items-center justify-center rounded-full transition-all sm:h-20 sm:w-20 ${
                         activeCategory === category.name
                           ? "bg-brand-terracotta/10"
                           : "bg-gray-100 hover:bg-gray-200"
                       }`}
                     >
                       <Icon
-                        className={`h-10 w-10 ${
+                        className={`h-6 w-6 sm:h-10 sm:w-10 ${
                           activeCategory === category.name ? "text-brand-terracotta" : "text-gray-500"
                         }`}
                       />
@@ -135,7 +135,7 @@ export function Services() {
                 })()}
                 {/* Category Name */}
                 <span
-                  className={`whitespace-nowrap text-[16px] transition-colors ${
+                  className={`min-h-[2.5rem] text-center text-[13px] leading-tight transition-colors sm:min-h-[3rem] sm:text-[16px] ${
                     activeCategory === category.name
                       ? "font-bold text-brand-terracotta"
                       : "font-medium text-brand-dark-alt hover:text-brand-terracotta"
