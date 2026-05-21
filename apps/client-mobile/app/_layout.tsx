@@ -1,5 +1,6 @@
 import "@/globals.css";
-import { SplashScreen, Stack, router } from "expo-router"; import { useFonts } from "expo-font"; import { useEffect, useRef } from "react"; import { AppState, Platform } from "react-native"; import * as Linking from "expo-linking"; import { GestureHandlerRootView } from "react-native-gesture-handler"; import { supabase } from "@shared/supabase/supabaseClient"; import { useAuthStore } from '@shared/store'; import { upsertDevicePushToken } from '@shared/supabase';
+import { SplashScreen, Stack, router } from "expo-router"; import { useFonts } from "expo-font"; import { useCallback, useEffect, useRef } from "react"; import { AppState, Platform } from "react-native"; import * as Linking from "expo-linking"; import { GestureHandlerRootView } from "react-native-gesture-handler"; import { supabase } from "@shared/supabase/supabaseClient"; import { useAuthStore } from '@shared/store'; import { upsertDevicePushToken } from '@shared/supabase';
+import { Asset } from "expo-asset";
 import { QueryProvider } from "@/components/providers";
 import { ToastProvider } from "@/components/ui/toast";
 import { StripeProviderWrapper } from "@/components/StripeProviderWrapper";
@@ -10,9 +11,12 @@ import {
   registerForPushNotificationsAsync,
   supportsPushNotifications,
 } from "@/lib/notifications";
+import { useState } from "react";
 
 // Initialize pending booking storage with AsyncStorage
 initializePendingBookingStorage();
+
+const SPLASH_BACKGROUND_COLOR = "#30352D";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -21,6 +25,7 @@ export default function RootLayout() {
   const initializeAuth = useAuthStore((state) => state.initialize);
   const cleanupAuth = useAuthStore((state) => state.cleanup);
   const setCurrentPushToken = useAuthStore((state) => state.setCurrentPushToken);
+  const [welcomeBackgroundReady, setWelcomeBackgroundReady] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     "Futura-Medium": require("../assets/fonts/futura-medium.ttf"),
     "SourceCodeProVariable": require("../assets/fonts/SourceCodePro-Regular.ttf"),
@@ -44,11 +49,30 @@ export default function RootLayout() {
   }, [cleanupAuth, initializeAuth]);
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
-      // Hide the splash screen after the fonts have loaded (or an error was returned)
+    let isMounted = true;
+
+    Asset.loadAsync(require("../assets/images/welcome-background.png"))
+      .then(() => {
+        if (isMounted) {
+          setWelcomeBackgroundReady(true);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setWelcomeBackgroundReady(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const onRootLayout = useCallback(() => {
+    if ((fontsLoaded || fontError) && welcomeBackgroundReady) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontError, fontsLoaded, welcomeBackgroundReady]);
 
   const userId = useAuthStore((state) => state.user?.id);
   const lastRegisteredUserIdRef = useRef<string | null>(null);
@@ -159,16 +183,24 @@ export default function RootLayout() {
   }, []);
 
   // Prevent rendering until the font has loaded or an error was returned
-  if (!fontsLoaded && !fontError) {
+  if ((!fontsLoaded && !fontError) || !welcomeBackgroundReady) {
     return null;
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView
+      onLayout={onRootLayout}
+      style={{ flex: 1, backgroundColor: SPLASH_BACKGROUND_COLOR }}
+    >
       <StripeProviderWrapper>
         <QueryProvider>
           <ToastProvider>
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: SPLASH_BACKGROUND_COLOR },
+              }}
+            >
               <Stack.Screen name="index" />
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(client)" />
