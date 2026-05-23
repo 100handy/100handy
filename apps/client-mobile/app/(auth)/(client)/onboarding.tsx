@@ -1,7 +1,8 @@
-import React, { useState, type ReactNode } from 'react';
+import React, { useEffect, useState, type ReactNode } from 'react';
 import { usePendingBookingStore, useLocationStore } from '@shared/store';
 import { View, Text, Pressable, Dimensions } from 'react-native'; import { Image } from 'expo-image'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronRight, MapPin, Calendar } from 'lucide-react-native'; import { router } from 'expo-router'; import Svg, { Path } from 'react-native-svg'; import StarRating from '@/assets/images/star-rating.svg'; import AuthLogo from '@/components/auth/AuthLogo'; import AsyncStorage from '@react-native-async-storage/async-storage'; import { useAuthStore } from '@shared/store'; import { supabase } from '@shared/supabase';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
+import { getPublicSiteSetting, resolvePublicAssetUrl } from '@/lib/public-settings';
 
 const CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX = '@clientOnboardingCompleted:';
 
@@ -23,7 +24,7 @@ const COLORS = {
 };
 
 // Onboarding content data
-const onboardingData = [
+const buildOnboardingData = (avatarLukasUri: string | null, avatarJanaUri: string | null) => [
   {
     id: 0,
     description: (
@@ -61,7 +62,7 @@ const onboardingData = [
         <View className="bg-[#F7F1EC] rounded-2xl p-4 shadow-sm">
           <View className="flex-row items-center gap-3">
             <Image
-              source={require('@/assets/images/avatar-lukas.png')}
+              source={avatarLukasUri ? { uri: avatarLukasUri } : require('@/assets/images/avatar-lukas.png')}
               className="w-10 h-10 rounded-full"
             />
             <View className="flex-col flex-1">
@@ -76,7 +77,7 @@ const onboardingData = [
         <View className="bg-[#F7F1EC] rounded-2xl p-4 shadow-sm">
           <View className="flex-row items-center gap-3">
             <Image
-              source={require('@/assets/images/avatar-jana.png')}
+              source={avatarJanaUri ? { uri: avatarJanaUri } : require('@/assets/images/avatar-jana.png')}
               className="w-10 h-10 rounded-full"
             />
             <View className="flex-col flex-1">
@@ -114,7 +115,7 @@ const onboardingData = [
         {/* Chat Message 2 with Avatar - Left aligned */}
         <View className="flex-row items-end gap-2">
           <Image
-            source={require('@/assets/images/avatar-lukas.png')}
+            source={avatarLukasUri ? { uri: avatarLukasUri } : require('@/assets/images/avatar-lukas.png')}
             className="w-10 h-10 rounded-full"
           />
           <View className="flex-col bg-white rounded-2xl px-4 py-3 max-w-[65%] shadow-sm">
@@ -133,7 +134,7 @@ const onboardingData = [
             <Text className="text-[10px] font-worksans-medium text-white/90">11:00am</Text>
           </View>
           <Image
-            source={require('@/assets/images/avatar-jana.png')}
+            source={avatarJanaUri ? { uri: avatarJanaUri } : require('@/assets/images/avatar-jana.png')}
             className="w-10 h-10 rounded-full"
           />
         </View>
@@ -174,7 +175,7 @@ const onboardingData = [
             <View className="flex-col items-end justify-between">
               <Text className="text-[10px] font-worksans-bold" style={{ color: COLORS.themeFont }}>£50</Text>
               <Image
-                source={require('@/assets/images/avatar-lukas.png')}
+                source={avatarLukasUri ? { uri: avatarLukasUri } : require('@/assets/images/avatar-lukas.png')}
                 className="w-[21px] h-[21px] rounded-full"
               />
             </View>
@@ -201,7 +202,7 @@ const onboardingData = [
             <View className="flex-col items-end justify-between">
               <Text className="text-[8px] font-worksans-bold" style={{ color: COLORS.themeFont }}>£150</Text>
               <Image
-                source={require('@/assets/images/avatar-jana.png')}
+                source={avatarJanaUri ? { uri: avatarJanaUri } : require('@/assets/images/avatar-jana.png')}
                 className="w-[21px] h-[21px] rounded-full"
               />
             </View>
@@ -230,7 +231,7 @@ const onboardingData = [
             <View className="flex-col items-end justify-between">
               <Text className="text-[8px] font-worksans-bold" style={{ color: COLORS.themeFont }}>£100</Text>
               <Image
-                source={require('@/assets/images/avatar-lukas.png')}
+                source={avatarLukasUri ? { uri: avatarLukasUri } : require('@/assets/images/avatar-lukas.png')}
                 className="w-[21px] h-[22px] rounded-full"
               />
             </View>
@@ -243,10 +244,26 @@ const onboardingData = [
 
 export default function ClientOnboarding() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [avatarLukasUri, setAvatarLukasUri] = useState<string | null>(null);
+  const [avatarJanaUri, setAvatarJanaUri] = useState<string | null>(null);
+  const onboardingData = buildOnboardingData(avatarLukasUri, avatarJanaUri);
   const totalSteps = onboardingData.length;
   const { isAuthenticated, updateOnboardingStatus, user } = useAuthStore();
   const { getPendingBooking, hasRestorablePendingBooking, markPendingBookingRestored } = usePendingBookingStore();
   const { setLocation } = useLocationStore();
+
+  useEffect(() => {
+    getPublicSiteSetting('app.images.onboarding').then((value) => {
+      const lukasUri = resolvePublicAssetUrl(value?.avatarLukas);
+      const janaUri = resolvePublicAssetUrl(value?.avatarJana);
+      if (lukasUri) {
+        setAvatarLukasUri(lukasUri);
+      }
+      if (janaUri) {
+        setAvatarJanaUri(janaUri);
+      }
+    });
+  }, []);
 
   // Check for pending booking and navigate there instead of home
   const checkAndRestorePendingBooking = (): boolean => {

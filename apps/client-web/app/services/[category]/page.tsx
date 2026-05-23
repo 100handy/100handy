@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Wrench } from "lucide-react";
 import type { Metadata } from "next";
+import { getServiceWebImageSettings } from "@/lib/content-platform";
 
 // Category display info with hero images
 const categoryMeta: Record<string, { title: string; description: string; heroImage: string }> = {
@@ -61,6 +62,7 @@ interface CategoryPageProps {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params;
+  const imageSettings = await getServiceWebImageSettings({ categoryHeroImages: {} })
   const meta = categoryMeta[category];
 
   if (!meta) {
@@ -75,11 +77,17 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
+  const imageSettings = await getServiceWebImageSettings({ categoryHeroImages: {} })
   const meta = categoryMeta[category];
   const categoryData = servicesData[category];
 
   if (!meta || !categoryData) {
     notFound();
+  }
+
+  const resolvedMeta = {
+    ...meta,
+    heroImage: imageSettings.categoryHeroImages?.[category] ?? meta.heroImage,
   }
 
   // Get all services in this category
@@ -95,8 +103,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {/* Hero Section */}
         <section className="relative h-[350px] bg-brand-dark">
           <Image
-            src={meta.heroImage}
-            alt={meta.title}
+            src={resolvedMeta.heroImage}
+            alt={resolvedMeta.title}
             fill
             className="object-cover opacity-40"
             priority
@@ -107,7 +115,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               {meta.title}
             </h1>
             <p className="mt-4 max-w-2xl text-[20px] text-white/90 drop-shadow-md">
-              {meta.description}
+              {resolvedMeta.description}
             </p>
           </div>
         </section>
@@ -120,7 +128,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <span>/</span>
               <Link href="/services" className="hover:text-brand-terracotta transition-colors">Services</Link>
               <span>/</span>
-              <span className="text-brand-dark-alt font-medium">{meta.title}</span>
+              <span className="text-brand-dark-alt font-medium">{resolvedMeta.title}</span>
             </nav>
           </div>
         </div>
@@ -129,10 +137,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <section className="bg-white py-12 md:py-16">
           <div className="mx-auto max-w-[1920px] px-8">
             <h2 className="mb-4 text-[31px] font-bold text-brand-dark-alt">
-              {meta.title} Services
+              {resolvedMeta.title} Services
             </h2>
             <p className="mb-10 text-[18px] text-gray-600">
-              Browse our {meta.title.toLowerCase()} services and book a trusted 100 Handy Pro today.
+              Browse our {resolvedMeta.title.toLowerCase()} services and book a trusted 100 Handy Pro today.
             </p>
 
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">

@@ -4,13 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { MessageSquare } from "lucide-react";
-import { getPageContent } from "@/lib/cms";
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: "About Us | 100 Handy",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageSeoMetadata('about-us', {
+    title: "About Us | 100 Handy",
+    description: "Learn about 100 Handy, our mission, and the team building trusted home services.",
+    canonicalUrl: "/about-us",
+  })
+}
 
 export default async function AboutUsPage() {
   const c = await getPageContent('about-us')

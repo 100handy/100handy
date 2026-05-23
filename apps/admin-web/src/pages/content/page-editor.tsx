@@ -1,20 +1,41 @@
 import { useState, useEffect, useRef } from 'react'
+import type { ChangeEvent, ReactNode } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ChevronDown, Save, ExternalLink, Upload, Loader2, Check } from 'lucide-react'
 import Header from '@/components/header'
 import { pageRegistry } from '@/lib/cms/page-registry'
-import { usePageContent, useSavePageContent, uploadContentImage } from '@/lib/api/site-content'
+import { usePageContent, usePageRecord, usePageSeo, useSavePageContent, useSavePageSettings, uploadContentImage } from '@/lib/api/site-content'
+import { useMediaAssets } from '@/lib/api/content-platform'
 import type { FieldType } from '@/lib/cms/page-registry'
 
 export default function PageEditorPage() {
   const { pageKey } = useParams<{ pageKey: string }>()
   const pageDef = pageKey ? pageRegistry[pageKey] : undefined
   const { data: savedContent, isLoading } = usePageContent(pageKey ?? '')
+  const { data: pageRecord, isLoading: isPageLoading } = usePageRecord(pageKey ?? '')
+  const { data: seoRecord, isLoading: isSeoLoading } = usePageSeo(pageKey ?? '')
+  const { data: mediaAssets = [] } = useMediaAssets()
   const saveContentMutation = useSavePageContent()
+  const saveSettingsMutation = useSavePageSettings()
 
   const [formValues, setFormValues] = useState<Record<string, string>>({})
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [pageTitle, setPageTitle] = useState('')
+  const [pageSlug, setPageSlug] = useState('')
+  const [templateKey, setTemplateKey] = useState('standard')
+  const [pageStatus, setPageStatus] = useState<'draft' | 'published' | 'archived'>('draft')
+  const [metaTitle, setMetaTitle] = useState('')
+  const [metaDescription, setMetaDescription] = useState('')
+  const [ogTitle, setOgTitle] = useState('')
+  const [ogDescription, setOgDescription] = useState('')
+  const [ogImageUrl, setOgImageUrl] = useState('')
+  const [twitterTitle, setTwitterTitle] = useState('')
+  const [twitterDescription, setTwitterDescription] = useState('')
+  const [twitterImageUrl, setTwitterImageUrl] = useState('')
+  const [canonicalUrl, setCanonicalUrl] = useState('')
+  const [robotsIndex, setRobotsIndex] = useState(true)
+  const [robotsFollow, setRobotsFollow] = useState(true)
 
   useEffect(() => {
     if (!pageDef) return
@@ -31,6 +52,27 @@ export default function PageEditorPage() {
     setFormValues(initial)
     setExpandedSections(expanded)
   }, [pageDef, savedContent])
+
+  useEffect(() => {
+    if (!pageDef || !pageKey) return
+
+    setPageTitle(pageRecord?.title ?? pageDef.label)
+    setPageSlug(pageRecord?.slug ?? pageDef.slug)
+    setTemplateKey(pageRecord?.template_key ?? 'standard')
+    setPageStatus(pageRecord?.status ?? 'draft')
+
+    setMetaTitle(seoRecord?.meta_title ?? '')
+    setMetaDescription(seoRecord?.meta_description ?? '')
+    setOgTitle(seoRecord?.og_title ?? '')
+    setOgDescription(seoRecord?.og_description ?? '')
+    setOgImageUrl(seoRecord?.og_image_url ?? '')
+    setTwitterTitle(seoRecord?.twitter_title ?? '')
+    setTwitterDescription(seoRecord?.twitter_description ?? '')
+    setTwitterImageUrl(seoRecord?.twitter_image_url ?? '')
+    setCanonicalUrl(seoRecord?.canonical_url ?? '')
+    setRobotsIndex(seoRecord?.robots_index ?? true)
+    setRobotsFollow(seoRecord?.robots_follow ?? true)
+  }, [pageDef, pageKey, pageRecord, seoRecord])
 
   const handleFieldChange = (key: string, value: string) => {
     setFormValues((prev) => ({ ...prev, [key]: value }))
@@ -59,6 +101,29 @@ export default function PageEditorPage() {
       }
     }
 
+    await saveSettingsMutation.mutateAsync({
+      pageKey,
+      page: {
+        title: pageTitle || pageDef.label,
+        slug: pageSlug || pageDef.slug,
+        template_key: templateKey || 'standard',
+        status: pageStatus,
+      },
+      seo: {
+        meta_title: metaTitle,
+        meta_description: metaDescription,
+        og_title: ogTitle,
+        og_description: ogDescription,
+        og_image_url: ogImageUrl,
+        twitter_title: twitterTitle,
+        twitter_description: twitterDescription,
+        twitter_image_url: twitterImageUrl,
+        canonical_url: canonicalUrl,
+        robots_index: robotsIndex,
+        robots_follow: robotsFollow,
+      },
+    })
+
     await saveContentMutation.mutateAsync({ pageKey, fields })
     setSaveSuccess(true)
     setTimeout(() => setSaveSuccess(false), 3000)
@@ -82,7 +147,7 @@ export default function PageEditorPage() {
     )
   }
 
-  if (isLoading) {
+  if (isLoading || isPageLoading || isSeoLoading) {
     return (
       <div className="flex-1 flex flex-col">
         <Header title={`Edit: ${pageDef.label}`} />
@@ -105,7 +170,7 @@ export default function PageEditorPage() {
             </Link>
             <div className="flex items-center gap-3">
               <a
-                href={`${import.meta.env.VITE_SITE_URL || ''}${pageDef.slug}`}
+                href={`${import.meta.env.VITE_SITE_URL || ''}${pageSlug || pageDef.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -115,10 +180,10 @@ export default function PageEditorPage() {
               </a>
               <button
                 onClick={handleSave}
-                disabled={saveContentMutation.isPending}
+                disabled={saveContentMutation.isPending || saveSettingsMutation.isPending}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50"
               >
-                {saveContentMutation.isPending ? (
+                {saveContentMutation.isPending || saveSettingsMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : saveSuccess ? (
                   <Check className="w-4 h-4" />
@@ -127,6 +192,149 @@ export default function PageEditorPage() {
                 )}
                 {saveSuccess ? 'Saved!' : 'Save Changes'}
               </button>
+            </div>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Page Settings</h3>
+              </div>
+              <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField label="Page Title">
+                  <input
+                    type="text"
+                    value={pageTitle}
+                    onChange={(e) => setPageTitle(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Slug">
+                  <input
+                    type="text"
+                    value={pageSlug}
+                    onChange={(e) => setPageSlug(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Template Key">
+                  <input
+                    type="text"
+                    value={templateKey}
+                    onChange={(e) => setTemplateKey(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Status">
+                  <select
+                    value={pageStatus}
+                    onChange={(e) => setPageStatus(e.target.value as 'draft' | 'published' | 'archived')}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </FormField>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">SEO</h3>
+              </div>
+              <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField label="Meta Title">
+                  <input
+                    type="text"
+                    value={metaTitle}
+                    onChange={(e) => setMetaTitle(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Canonical URL">
+                  <input
+                    type="text"
+                    value={canonicalUrl}
+                    onChange={(e) => setCanonicalUrl(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Meta Description" className="md:col-span-2">
+                  <textarea
+                    value={metaDescription}
+                    onChange={(e) => setMetaDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+                  />
+                </FormField>
+                <FormField label="Open Graph Title">
+                  <input
+                    type="text"
+                    value={ogTitle}
+                    onChange={(e) => setOgTitle(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Open Graph Image URL">
+                  <input
+                    type="text"
+                    value={ogImageUrl}
+                    onChange={(e) => setOgImageUrl(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Open Graph Description" className="md:col-span-2">
+                  <textarea
+                    value={ogDescription}
+                    onChange={(e) => setOgDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+                  />
+                </FormField>
+                <FormField label="Twitter Title">
+                  <input
+                    type="text"
+                    value={twitterTitle}
+                    onChange={(e) => setTwitterTitle(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Twitter Image URL">
+                  <input
+                    type="text"
+                    value={twitterImageUrl}
+                    onChange={(e) => setTwitterImageUrl(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </FormField>
+                <FormField label="Twitter Description" className="md:col-span-2">
+                  <textarea
+                    value={twitterDescription}
+                    onChange={(e) => setTwitterDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+                  />
+                </FormField>
+                <div className="md:col-span-2 flex flex-wrap gap-6 pt-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <input
+                      type="checkbox"
+                      checked={robotsIndex}
+                      onChange={(e) => setRobotsIndex(e.target.checked)}
+                    />
+                    Index page
+                  </label>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <input
+                      type="checkbox"
+                      checked={robotsFollow}
+                      onChange={(e) => setRobotsFollow(e.target.checked)}
+                    />
+                    Follow links
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -169,6 +377,7 @@ export default function PageEditorPage() {
                               onChange={(v) => handleFieldChange(compositeKey, v)}
                               onUpload={(file) => handleImageUpload(compositeKey, file)}
                               placeholder={fieldDef.placeholder}
+                              mediaAssets={mediaAssets}
                             />
                           ) : fieldDef.type === 'rich_text' ? (
                             <textarea
@@ -201,21 +410,52 @@ export default function PageEditorPage() {
   )
 }
 
+function FormField({
+  label,
+  children,
+  className = '',
+}: {
+  label: string
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div className={className}>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
 function ImageField({
   value,
   onChange,
   onUpload,
   placeholder,
+  mediaAssets,
 }: {
   value: string
   onChange: (v: string) => void
   onUpload: (file: File) => Promise<void>
   placeholder?: string
+  mediaAssets: Array<{ id: string; asset_type: string; asset_key: string; url: string; title?: string | null; alt_text?: string | null; active: boolean }>
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [showLibrary, setShowLibrary] = useState(false)
+  const [search, setSearch] = useState('')
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const filteredAssets = mediaAssets.filter((asset) => {
+    if (asset.asset_type !== 'image' || !asset.active) return false
+    const q = search.trim().toLowerCase()
+    if (!q) return true
+    return [asset.asset_key, asset.title ?? '', asset.alt_text ?? '', asset.url]
+      .some((candidate) => candidate.toLowerCase().includes(q))
+  })
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
@@ -259,7 +499,46 @@ function ImageField({
           {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
           Upload
         </button>
+        <button
+          type="button"
+          onClick={() => setShowLibrary((prev) => !prev)}
+          className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
+          Library
+        </button>
       </div>
+      {showLibrary && (
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search image library..."
+            className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 rounded-lg"
+          />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
+            {filteredAssets.map((asset) => (
+              <button
+                key={asset.id}
+                type="button"
+                onClick={() => {
+                  onChange(asset.url)
+                  setShowLibrary(false)
+                }}
+                className="text-left rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 hover:shadow-sm"
+              >
+                <div className="aspect-video bg-gray-100 dark:bg-gray-800">
+                  <img src={asset.url} alt={asset.alt_text ?? asset.title ?? asset.asset_key} className="w-full h-full object-cover" />
+                </div>
+                <div className="p-2">
+                  <p className="text-xs font-medium text-gray-900 dark:text-white truncate">{asset.asset_key}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{asset.title ?? asset.alt_text ?? asset.url}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

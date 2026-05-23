@@ -1,19 +1,23 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import { Menu, X } from "lucide-react";
-import { Logo } from "@/components/ui/logo";
-import { Button } from "@/components/ui/button";
+import HeaderClient from "./HeaderClient";
 
 interface HeaderProps {
   currentPage?: "get-e10" | "book-task" | "my-tasks" | "account";
 }
 
+const fallbackHeaderSettings = {
+  signedOutLinks: [
+    { href: "/services", label: "Services" },
+    { href: "/sign-in", label: "Sign up / Log in" },
+  ],
+  proCta: { href: "/become-100-handy-pro", label: "Become a Pro" },
+}
+
 export default function Header({ currentPage }: HeaderProps) {
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [settings, setSettings] = useState(fallbackHeaderSettings)
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -21,123 +25,37 @@ export default function Header({ currentPage }: HeaderProps) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsSignedIn(!!session);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsSignedIn(!!session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const closeMobile = () => setMobileOpen(false);
-
-  const signedInLinks = [
-    { href: "/referral", label: "Get £10", page: "get-e10" as const },
-    { href: "/dashboard", label: "Book a Task", page: "book-task" as const },
-    { href: "/my-tasks", label: "My Tasks", page: "my-tasks" as const },
-    { href: "/account", label: "Account", page: "account" as const },
-  ];
-
-  const signedOutLinks = [
-    { href: "/services", label: "Services" },
-    { href: "/sign-in", label: "Sign up / Log in" },
-  ];
+    Promise.all([
+      supabase
+        .from("navigation_items")
+        .select("label,href")
+        .eq("location", "header")
+        .eq("audience", "public")
+        .eq("visible", true)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("site_settings")
+        .select("value_json")
+        .eq("setting_key", "header.pro_cta")
+        .maybeSingle(),
+    ]).then(([navRes, ctaRes]) => {
+      const next = { ...fallbackHeaderSettings }
+      if (navRes.data && navRes.data.length > 0) {
+        next.signedOutLinks = navRes.data.map((item) => ({ href: item.href, label: item.label }))
+      }
+      const value = ctaRes.data?.value_json as Record<string, unknown> | undefined
+      if (typeof value?.href === "string" && typeof value?.label === "string") {
+        next.proCta = { href: value.href, label: value.label }
+      }
+      setSettings(next)
+    })
+  }, [])
 
   return (
-    <header className="bg-white border-b border-gray-200">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-8">
-        <div className="flex items-center justify-between h-[70px]">
-          <Link href="/" className="flex items-center">
-            <Logo />
-          </Link>
-
-          {/* Desktop Navigation */}
-          {isSignedIn ? (
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-              {signedInLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`font-medium hover:text-brand-terracotta transition-colors text-base ${
-                    currentPage === link.page ? "text-brand-terracotta" : "text-brand-dark"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          ) : (
-            <nav className="hidden md:flex items-center gap-4 lg:gap-6">
-              {signedOutLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="font-medium hover:text-brand-terracotta transition-colors text-base text-brand-dark"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Button variant="terracotta" size="sm" asChild>
-                <Link href="/become-100-handy-pro">Become a Pro</Link>
-              </Button>
-            </nav>
-          )}
-
-          {/* Mobile Hamburger */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 text-brand-dark-alt"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {mobileOpen && (
-        <nav className="md:hidden border-t border-gray-200 bg-white px-4 pb-4">
-          <div className="flex flex-col gap-1 pt-2">
-            {isSignedIn ? (
-              signedInLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={closeMobile}
-                  className={`font-medium py-3 transition-colors ${
-                    currentPage === link.page ? "text-brand-terracotta" : "text-brand-dark"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))
-            ) : (
-              <>
-                {signedOutLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={closeMobile}
-                    className="font-medium text-brand-dark py-3 transition-colors hover:text-brand-terracotta"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                <Button variant="terracotta" size="sm" asChild className="mt-2 text-center">
-                  <Link href="/become-100-handy-pro" onClick={closeMobile}>Become a Pro</Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </nav>
-      )}
-    </header>
-  );
+    <HeaderClient
+      currentPage={currentPage}
+      signedOutLinks={settings.signedOutLinks}
+      proCta={settings.proCta}
+    />
+  )
 }

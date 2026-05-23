@@ -8,6 +8,7 @@ import { getCategoryTree } from "@/lib/supabase/categories";
 import type { CategoryWithChildren } from "@/lib/supabase/types";
 import { getCategoryIcon } from "@/components/icons/category-icons";
 import { getCategoryRouteSlug, getServiceRoute } from "@/lib/service-routes";
+import { getServiceWebImageSettings } from "@/lib/content-platform";
 
 // Map category names to their card images (includes both DB and fallback names)
 const categoryImages: Record<string, string> = {
@@ -42,12 +43,18 @@ function slugify(text: string): string {
 }
 
 // Service Category Card Component
-function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
+function ServiceCategoryCard({
+  category,
+  imageOverrides,
+}: {
+  category: CategoryWithChildren
+  imageOverrides: Record<string, string>
+}) {
   const categorySlug = getCategoryRouteSlug(category.name) ?? slugify(category.name);
   const subcategories = category.subcategories || [];
   const Icon = getCategoryIcon(category.name);
 
-  const cardImage = categoryImages[category.name];
+  const cardImage = imageOverrides[category.name] ?? categoryImages[category.name];
 
   // Get first 6 subcategories to display
   const displayedSubcategories = subcategories.slice(0, 6);
@@ -109,13 +116,13 @@ function ServiceCategoryCard({ category }: { category: CategoryWithChildren }) {
 }
 
 // Hero Section
-function ServicesHero() {
+function ServicesHero({ heroImage }: { heroImage: string }) {
   return (
     <section className="relative h-[400px] md:h-[500px] bg-gray-900">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/images/services/hero.jpeg"
+          src={heroImage}
           alt="Services Hero"
           fill
           className="object-cover opacity-40"
@@ -143,14 +150,24 @@ export default function ServicesPage() {
   const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageOverrides, setImageOverrides] = useState<Record<string, string>>(categoryImages);
+  const [heroImage, setHeroImage] = useState('/images/services/hero.jpeg')
 
   useEffect(() => {
     async function fetchCategories() {
       try {
         setLoading(true);
-        const data = await getCategoryTree();
+        const [data, imageSettings] = await Promise.all([
+          getCategoryTree(),
+          getServiceWebImageSettings({
+            hero: '/images/services/hero.jpeg',
+            mainCategoryImages: categoryImages,
+          }),
+        ])
         // Only show main categories (level 0)
         setCategories(data);
+        setImageOverrides(imageSettings.mainCategoryImages ?? categoryImages)
+        setHeroImage(imageSettings.hero ?? '/images/services/hero.jpeg')
         setError(null);
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -167,7 +184,7 @@ export default function ServicesPage() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
       <main className="flex-1">
-        <ServicesHero />
+        <ServicesHero heroImage={heroImage} />
 
         {/* Services Grid */}
         <section className="py-12 md:py-16 bg-gray-50">
@@ -194,7 +211,7 @@ export default function ServicesPage() {
             {!loading && !error && categories.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {categories.map((category) => (
-                  <ServiceCategoryCard key={category.id} category={category} />
+                  <ServiceCategoryCard key={category.id} category={category} imageOverrides={imageOverrides} />
                 ))}
               </div>
             )}

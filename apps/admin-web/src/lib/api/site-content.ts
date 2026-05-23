@@ -13,6 +13,40 @@ export interface SiteContentRow {
   updated_by: string | null
 }
 
+export interface SitePageRecord {
+  id: string
+  page_key: string
+  title: string
+  slug: string
+  template_key: string
+  status: 'draft' | 'published' | 'archived'
+  is_system: boolean
+  created_at: string
+  updated_at: string
+  updated_by: string | null
+}
+
+export interface SeoMetadataRecord {
+  id: string
+  surface_type: 'page' | 'blog_post' | 'service_category' | 'service_subcategory' | 'location_page' | 'location_service_page' | 'app_screen'
+  surface_key: string
+  meta_title: string | null
+  meta_description: string | null
+  og_title: string | null
+  og_description: string | null
+  og_image_url: string | null
+  twitter_title: string | null
+  twitter_description: string | null
+  twitter_image_url: string | null
+  canonical_url: string | null
+  robots_index: boolean
+  robots_follow: boolean
+  schema_json: Record<string, unknown> | null
+  created_at: string
+  updated_at: string
+  updated_by: string | null
+}
+
 /**
  * Fetch all content for a given page.
  * Returns a map of "section_key.field_key" -> value
@@ -33,6 +67,41 @@ export function usePageContent(pageKey: string) {
         content[`${row.section_key}.${row.field_key}`] = row.value
       }
       return content
+    },
+    enabled: !!pageKey,
+  })
+}
+
+export function usePageRecord(pageKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'site-pages', pageKey],
+    queryFn: async (): Promise<SitePageRecord | null> => {
+      const { data, error } = await supabase
+        .from('site_pages')
+        .select('*')
+        .eq('page_key', pageKey)
+        .maybeSingle()
+
+      if (error) throw error
+      return data
+    },
+    enabled: !!pageKey,
+  })
+}
+
+export function usePageSeo(pageKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'seo-metadata', 'page', pageKey],
+    queryFn: async (): Promise<SeoMetadataRecord | null> => {
+      const { data, error } = await supabase
+        .from('seo_metadata')
+        .select('*')
+        .eq('surface_type', 'page')
+        .eq('surface_key', pageKey)
+        .maybeSingle()
+
+      if (error) throw error
+      return data
     },
     enabled: !!pageKey,
   })
@@ -71,6 +140,29 @@ interface SaveContentParams {
     content_type: FieldType
     value: string
   }>
+}
+
+interface SavePageSettingsParams {
+  pageKey: string
+  page: {
+    title: string
+    slug: string
+    template_key: string
+    status: 'draft' | 'published' | 'archived'
+  }
+  seo: {
+    meta_title: string
+    meta_description: string
+    og_title: string
+    og_description: string
+    og_image_url: string
+    twitter_title: string
+    twitter_description: string
+    twitter_image_url: string
+    canonical_url: string
+    robots_index: boolean
+    robots_follow: boolean
+  }
 }
 
 /**
@@ -132,6 +224,80 @@ export function useSavePageContent() {
     },
     onSuccess: (_, { pageKey }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'site-content', pageKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-content', 'last-updated'] })
+    },
+  })
+}
+
+export function useSavePageSettings() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ pageKey, page, seo }: SavePageSettingsParams) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const normalizedSlug = page.slug.startsWith('/') ? page.slug : `/${page.slug}`
+      const normalizedCanonical = seo.canonical_url.trim()
+
+      const pageRow = {
+        page_key: pageKey,
+        title: page.title.trim(),
+        slug: normalizedSlug,
+        template_key: page.template_key.trim() || 'standard',
+        status: page.status,
+        updated_by: user.id,
+      }
+
+      const { error: pageError } = await supabase
+        .from('site_pages')
+        .upsert(pageRow, { onConflict: 'page_key' })
+
+      if (pageError) throw pageError
+
+      const seoRow = {
+        surface_type: 'page' as const,
+        surface_key: pageKey,
+        meta_title: seo.meta_title.trim() || null,
+        meta_description: seo.meta_description.trim() || null,
+        og_title: seo.og_title.trim() || null,
+        og_description: seo.og_description.trim() || null,
+        og_image_url: seo.og_image_url.trim() || null,
+        twitter_title: seo.twitter_title.trim() || null,
+        twitter_description: seo.twitter_description.trim() || null,
+        twitter_image_url: seo.twitter_image_url.trim() || null,
+        canonical_url: normalizedCanonical ? normalizedCanonical : null,
+        robots_index: seo.robots_index,
+        robots_follow: seo.robots_follow,
+        updated_by: user.id,
+      }
+
+      const hasSeoValues = Object.entries(seoRow).some(([key, value]) => {
+        if (['surface_type', 'surface_key', 'updated_by', 'robots_index', 'robots_follow'].includes(key)) {
+          return false
+        }
+        return value !== null && value !== ''
+      })
+
+      if (hasSeoValues || !seo.robots_index || !seo.robots_follow) {
+        const { error: seoError } = await supabase
+          .from('seo_metadata')
+          .upsert(seoRow, { onConflict: 'surface_type,surface_key' })
+
+        if (seoError) throw seoError
+      } else {
+        const { error: deleteError } = await supabase
+          .from('seo_metadata')
+          .delete()
+          .eq('surface_type', 'page')
+          .eq('surface_key', pageKey)
+
+        if (deleteError) throw deleteError
+      }
+    },
+    onSuccess: (_, { pageKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-pages', pageKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'seo-metadata', 'page', pageKey] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'site-content', 'last-updated'] })
     },
   })

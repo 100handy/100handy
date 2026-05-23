@@ -1,12 +1,15 @@
 import { Header, Footer } from "@/components/layout";
-import { getPageContent } from "@/lib/cms";
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 import { Heart } from "lucide-react";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "100 Handy Cares | 100 Handy",
-  description: "Learn about how 100 Handy gives back to the community.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageSeoMetadata('for-good', {
+    title: "100 Handy Cares | 100 Handy",
+    description: "Learn about how 100 Handy gives back to the community.",
+    canonicalUrl: "/for-good",
+  })
+}
 
 export const dynamic = 'force-dynamic';
 

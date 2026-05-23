@@ -2,10 +2,19 @@ import React from 'react';
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { MessageIcon, SendEmailIcon, PhoneIcon, HelpIcon } from "@/components/icons";
-import { getPageContent } from "@/lib/cms";
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 import { ContactForm } from "@/components/contact/ContactForm";
+import type { Metadata } from "next";
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageSeoMetadata('contact', {
+    title: "Contact Us | 100 Handy",
+    description: "Contact 100 Handy support, send a message, or get help with your account and bookings.",
+    canonicalUrl: "/contact",
+  })
+}
 
 // --- Components --- //
 

@@ -1,15 +1,18 @@
 import { Header, Footer } from "@/components/layout";
 import { ValuesCarousel } from "@/components/careers";
-import { getPageContent } from "@/lib/cms";
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: "Careers | 100 Handy",
-  description: "Join the team that is redefining how the world gets work done. We're connecting neighbors, empowering professionals, and simplifying lives.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageSeoMetadata('careers', {
+    title: "Careers | 100 Handy",
+    description: "Join the team that is redefining how the world gets work done. We're connecting neighbors, empowering professionals, and simplifying lives.",
+    canonicalUrl: "/careers",
+  })
+}
 
 
 export default async function CareersPage() {

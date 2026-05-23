@@ -5,7 +5,9 @@
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
-import type { JSX } from "react";
+import type { ComponentType, JSX } from "react";
+import { useEffect, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 // TikTok icon (lucide doesn't include TikTok)
 function TikTokIcon({ className }: { className?: string }) {
@@ -21,7 +23,7 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-const socialLinks = [
+const fallbackSocialLinks = [
   { href: "https://www.tiktok.com/@100_handy", label: "TikTok", Icon: TikTokIcon },
   { href: "https://www.instagram.com/100_handy/", label: "Instagram", Icon: Instagram },
   { href: "https://www.facebook.com/100handy/", label: "Facebook", Icon: Facebook },
@@ -29,42 +31,132 @@ const socialLinks = [
   { href: "https://linkedin.com/company/100handy", label: "LinkedIn", Icon: Linkedin },
 ];
 
-const discoverLinks = [
-  { label: "Become a 100 Handy Pro", href: "/become-100-handy-pro" },
-  { label: "All Services", href: "/services" },
-  { label: "Services by City", href: "/services-by-city" },
-  { label: "100 Handy Stars", href: "/100-handy-star" },
+const fallbackSections = [
+  {
+    title: "Discover",
+    links: [
+      { label: "Become a 100 Handy Pro", href: "/become-100-handy-pro" },
+      { label: "All Services", href: "/services" },
+      { label: "Services by City", href: "/services-by-city" },
+      { label: "100 Handy Stars", href: "/100-handy-star" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Us", href: "/about-us" },
+      { label: "Careers", href: "/careers" },
+      { label: "Press", href: "/press" },
+      { label: "Blog", href: "/blog" },
+      { label: "Partner", href: "/partner" },
+      { label: "HandyCares", href: "/handycare" },
+      { label: "Help", href: "/help" },
+    ],
+  },
+  {
+    title: "Services",
+    links: [
+      { label: "Furniture Assembly", href: "/services/furniture-assembly/furniture-assembly" },
+      { label: "TV & Wall Mounting", href: "/services/tv-wall-mounting/tv-mounting" },
+      { label: "Home Repairs", href: "/services/home-repairs/minor-home-repairs" },
+      { label: "Plumbing", href: "/services/plumbing/leak-fixing" },
+      { label: "Electrical", href: "/services/electrical/light-installation" },
+      { label: "Cleaning", href: "/services/cleaning/sparkle-clean" },
+      { label: "Packing & Moving", href: "/services/packing-moving/moving-help" },
+      { label: "Outdoor Help", href: "/services/outdoor/great-outdoors" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Terms and Conditions", href: "/terms#terms-of-service" },
+      { label: "Privacy Policy", href: "/terms#privacy-policy" },
+      { label: "Cookie Settings", href: "/cookie-settings" },
+      { label: "Legal Requirements", href: "/terms#platform-rules" },
+    ],
+  },
 ];
 
-const serviceLinks = [
-  { label: "Furniture Assembly", href: "/services/furniture-assembly/furniture-assembly" },
-  { label: "TV & Wall Mounting", href: "/services/tv-wall-mounting/tv-mounting" },
-  { label: "Home Repairs", href: "/services/home-repairs/minor-home-repairs" },
-  { label: "Plumbing", href: "/services/plumbing/leak-fixing" },
-  { label: "Electrical", href: "/services/electrical/light-installation" },
-  { label: "Cleaning", href: "/services/cleaning/sparkle-clean" },
-  { label: "Packing & Moving", href: "/services/packing-moving/moving-help" },
-  { label: "Outdoor Help", href: "/services/outdoor/great-outdoors" },
-];
+const fallbackSettings = {
+  socialLinks: fallbackSocialLinks.map(({ href, label }) => ({ href, label })),
+  appDownloads: [
+    { href: "#", label: "iOS App Store" },
+    { href: "#", label: "Google Play" },
+  ],
+  followText: "Follow us we're friendly",
+};
 
-const companyLinks = [
-  { label: "About Us", href: "/about-us" },
-  { label: "Careers", href: "/careers" },
-  { label: "Press", href: "/press" },
-  { label: "Blog", href: "/blog" },
-  { label: "Partner", href: "/partner" },
-  { label: "HandyCares", href: "/handycare" },
-  { label: "Help", href: "/help" },
-];
-
-const legalLinks = [
-  { label: "Terms and Conditions", href: "/terms#terms-of-service" },
-  { label: "Privacy Policy", href: "/terms#privacy-policy" },
-  { label: "Cookie Settings", href: "/cookie-settings" },
-  { label: "Legal Requirements", href: "/terms#platform-rules" },
-];
+const iconMap = {
+  TikTok: TikTokIcon,
+  Instagram,
+  Facebook,
+  YouTube: Youtube,
+  LinkedIn: Linkedin,
+} satisfies Record<string, ComponentType<{ className?: string }>>
 
 export function Footer(): JSX.Element {
+  const [sections, setSections] = useState(fallbackSections)
+  const [settings, setSettings] = useState(fallbackSettings)
+
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    Promise.all([
+      supabase
+        .from("navigation_items")
+        .select("id,parent_id,label,href,sort_order")
+        .eq("location", "footer")
+        .eq("audience", "public")
+        .eq("visible", true)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("site_settings")
+        .select("setting_key,value_json")
+        .in("setting_key", ["footer.social_links", "footer.app_downloads", "footer.follow_text"]),
+    ]).then(([navRes, settingsRes]) => {
+      const nextSections = [...fallbackSections]
+      const nextSettings = { ...fallbackSettings }
+
+      if (navRes.data && navRes.data.length > 0) {
+        const parents = navRes.data.filter((item) => !item.parent_id)
+        const resolvedSections = parents.map((parent) => ({
+          title: parent.label,
+          links: navRes.data
+            .filter((item) => item.parent_id === parent.id)
+            .map((item) => ({ label: item.label, href: item.href })),
+        }))
+        if (resolvedSections.length > 0) {
+          setSections(resolvedSections)
+        } else {
+          setSections(nextSections)
+        }
+      }
+
+      for (const row of settingsRes.data ?? []) {
+        const value = row.value_json as Record<string, unknown> | undefined
+        if (row.setting_key === "footer.social_links" && Array.isArray(value?.items)) {
+          nextSettings.socialLinks = value.items as Array<{ href: string; label: string }>
+        }
+        if (row.setting_key === "footer.app_downloads" && Array.isArray(value?.items)) {
+          nextSettings.appDownloads = value.items as Array<{ href: string; label: string }>
+        }
+        if (row.setting_key === "footer.follow_text" && typeof value?.text === "string") {
+          nextSettings.followText = value.text
+        }
+      }
+
+      setSettings(nextSettings)
+    })
+  }, [])
+
+  const socialLinks = settings.socialLinks.map((link) => ({
+    ...link,
+    Icon: iconMap[link.label as keyof typeof iconMap] ?? TikTokIcon,
+  }))
+
   return (
     <footer className="bg-brand-dark-alt py-12 text-gray-300">
       <div className="mx-auto max-w-[1920px] px-8">
@@ -74,7 +166,7 @@ export function Footer(): JSX.Element {
             <Link href="/" className="mb-4 inline-block">
               <Logo variant="cream" size="lg" />
             </Link>
-            <p className="mb-4 text-sm text-gray-400">Follow us we&apos;re friendly</p>
+            <p className="mb-4 text-sm text-gray-400">{settings.followText}</p>
             <div className="flex gap-3">
               {socialLinks.map(({ href, label, Icon }) => (
                 <a
@@ -91,73 +183,23 @@ export function Footer(): JSX.Element {
             </div>
           </div>
 
-          {/* Discover */}
-          <div>
-            <h3 className="mb-4 text-[14px] font-bold text-white">Discover</h3>
-            <ul className="space-y-2">
-              {discoverLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-[14px] text-gray-300 transition-colors hover:text-white"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h3 className="mb-4 text-[14px] font-bold text-white">Company</h3>
-            <ul className="space-y-2">
-              {companyLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-[14px] text-gray-300 transition-colors hover:text-white"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h3 className="mb-4 text-[14px] font-bold text-white">Services</h3>
-            <ul className="space-y-2">
-              {serviceLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-[14px] text-gray-300 transition-colors hover:text-white"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h3 className="mb-4 text-[14px] font-bold text-white">Legal</h3>
-            <ul className="space-y-2">
-              {legalLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-[14px] text-gray-300 transition-colors hover:text-white"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {sections.map((section) => (
+            <div key={section.title}>
+              <h3 className="mb-4 text-[14px] font-bold text-white">{section.title}</h3>
+              <ul className="space-y-2">
+                {section.links.map((link) => (
+                  <li key={`${section.title}-${link.label}`}>
+                    <Link
+                      href={link.href}
+                      className="text-[14px] text-gray-300 transition-colors hover:text-white"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         {/* Download App */}
@@ -167,22 +209,22 @@ export function Footer(): JSX.Element {
               <h3 className="mb-3 text-[14px] font-bold text-white">Download the app</h3>
               <div className="flex gap-3">
                 <a
-                  href="#"
+                  href={settings.appDownloads[0]?.href ?? "#"}
                   className="flex h-10 items-center gap-2 rounded-lg bg-white/10 px-4 text-[13px] text-white transition-colors hover:bg-white/20"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
                   </svg>
-                  iOS App Store
+                  {settings.appDownloads[0]?.label ?? "iOS App Store"}
                 </a>
                 <a
-                  href="#"
+                  href={settings.appDownloads[1]?.href ?? "#"}
                   className="flex h-10 items-center gap-2 rounded-lg bg-white/10 px-4 text-[13px] text-white transition-colors hover:bg-white/20"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M3.18 23.73c.44.07.9-.03 1.3-.29l.02-.01 13.86-8.01-3.48-3.48-11.7 11.79zm-.6-1.22l.04-.05L14.19 10.9 10.7 7.43 2.03 20.17c-.19.37-.2.79-.05 1.17l.6 1.17zm.4-21.08c-.35-.2-.76-.24-1.14-.13l11.54 11.55 3.4-3.39L3.16 1.49l-.17-.06zM21.78 10.96L18.58 9.1l-3.71 3.71 3.72 3.72 3.19-1.84c.59-.34.96-.96.96-1.64 0-.69-.37-1.31-.96-1.64v.55z" />
                   </svg>
-                  Google Play
+                  {settings.appDownloads[1]?.label ?? "Google Play"}
                 </a>
               </div>
             </div>

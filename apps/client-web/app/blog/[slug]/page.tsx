@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getBlogPostBySlug, getSurfaceSeoMetadata } from "@/lib/content-platform";
 
 interface Section {
   heading?: string;
@@ -412,23 +413,59 @@ function getRelatedPosts(relatedSlugs: string[]) {
   return relatedSlugs.map((s) => posts[s]).filter(Boolean) as Post[];
 }
 
-export async function generateStaticParams() {
-  return Object.keys(posts).map((slug) => ({ slug }));
-}
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = posts[slug];
+  const livePost = await getBlogPostBySlug(slug);
+  const fallbackPost = posts[slug];
+  const post = livePost
+    ? {
+        title: livePost.title,
+        intro: livePost.excerpt ?? fallbackPost?.intro ?? '',
+        image: livePost.cover_image_url ?? fallbackPost?.image,
+      }
+    : fallbackPost;
+
   if (!post) return { title: "Post Not Found | 100 Handy" };
-  return {
+
+  return getSurfaceSeoMetadata('blog_post', slug, {
     title: `${post.title} | 100 Handy Blog`,
     description: post.intro,
-  };
+    openGraph: post.image ? { images: [{ url: post.image }] } : undefined,
+  });
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = posts[slug];
+  const livePost = await getBlogPostBySlug(slug);
+  const fallbackPost = posts[slug];
+
+  let post = fallbackPost;
+
+  if (livePost) {
+    let parsedBody: { intro?: string; readTime?: string; sections?: Section[]; relatedSlugs?: string[] } = {}
+    try {
+      parsedBody = livePost.body ? JSON.parse(livePost.body) : {}
+    } catch {
+      parsedBody = {}
+    }
+
+    post = {
+      slug: livePost.slug,
+      title: livePost.title,
+      date: livePost.published_at
+        ? new Date(livePost.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+        : fallbackPost?.date ?? '',
+      category: livePost.category ?? fallbackPost?.category ?? 'General',
+      readTime: parsedBody.readTime ?? fallbackPost?.readTime ?? '5 min read',
+      image: livePost.cover_image_url ?? fallbackPost?.image ?? '/images/hero/heroimage2.jpeg',
+      intro: parsedBody.intro ?? livePost.excerpt ?? fallbackPost?.intro ?? '',
+      sections: parsedBody.sections && parsedBody.sections.length > 0 ? parsedBody.sections : fallbackPost?.sections ?? [],
+      relatedSlugs: parsedBody.relatedSlugs ?? fallbackPost?.relatedSlugs ?? [],
+    };
+  }
+
   if (!post) notFound();
 
   const related = getRelatedPosts(post.relatedSlugs);

@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Pressable, Text, Dimensions, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
+import { getPublicSiteSetting, resolvePublicAssetUrl } from '@/lib/public-settings';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function WelcomeSplash() {
   const router = useRouter();
+  const [backgroundUri, setBackgroundUri] = useState<string | null>(null)
+
+  useEffect(() => {
+    getPublicSiteSetting('app.images.welcome').then((value) => {
+      const uri = resolvePublicAssetUrl(value?.background)
+      if (uri) {
+        setBackgroundUri(uri)
+      }
+    })
+  }, [])
 
   const handleGetStarted = (): void => {
     router.push('/(auth)/(client)/start');
@@ -16,7 +27,7 @@ export default function WelcomeSplash() {
   return (
     <ImageBackground
       className="flex-1"
-      source={require('@/assets/images/welcome-background.png')}
+      source={backgroundUri ? { uri: backgroundUri } : require('@/assets/images/welcome-background.png')}
       resizeMode="cover"
     >
       <SafeAreaView className="flex-1">

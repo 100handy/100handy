@@ -1,273 +1,272 @@
-import { useState } from 'react';
-import Header from '../../components/header';
-import { Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react'
+import { format } from 'date-fns'
+import { Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
+import Header from '@/components/header'
+import {
+  useAnnouncements,
+  useDeleteAnnouncement,
+  useSaveAnnouncement,
+} from '@/lib/api/content-platform'
 
-const popups = [
-    {
-        id: 1,
-        title: 'Summer Promo: 20% Off',
-        platform: 'Website & App',
-        status: true,
-        schedule: 'Aug 1 - Aug 15, 2024',
-    },
-    {
-        id: 2,
-        title: 'New Feature Announcement',
-        platform: 'App',
-        status: false,
-        schedule: 'Not Scheduled',
-    },
-    {
-        id: 3,
-        title: 'App Update Required',
-        platform: 'App',
-        status: true,
-        schedule: 'Ongoing',
-    },
-    {
-        id: 4,
-        title: 'Cookie Consent',
-        platform: 'Website',
-        status: true,
-        schedule: 'Ongoing',
-    },
-];
+const emptyPopup = {
+  audience: 'all' as const,
+  placement: 'modal' as const,
+  title: '',
+  body: '',
+  cta_label: '',
+  cta_href: '',
+  starts_at: '',
+  ends_at: '',
+  active: true,
+}
 
 export default function PopupsPage() {
-    const [popupList, setPopupList] = useState(popups);
-    const [popupTitle, setPopupTitle] = useState('');
-    const [platform, setPlatform] = useState('Website & App');
-    const [content, setContent] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [displayRule, setDisplayRule] = useState('specific');
+  const { data: popups = [], isLoading } = useAnnouncements()
+  const savePopup = useSaveAnnouncement()
+  const deletePopup = useDeleteAnnouncement()
 
-    const toggleStatus = (id: number) => {
-        setPopupList(
-            popupList.map((popup) =>
-                popup.id === id ? { ...popup, status: !popup.status } : popup
-            )
-        );
-    };
+  const [search, setSearch] = useState('')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [form, setForm] = useState(emptyPopup)
 
-    return (
-        <div className="flex-1 flex flex-col">
-            <Header title="Pop-ups on Website and App" />
+  const popupRows = useMemo(
+    () => popups.filter((item) => item.placement === 'modal' || item.placement === 'banner'),
+    [popups]
+  )
+  const selected = popupRows.find((item) => item.id === selectedId) ?? null
 
-            <main className="flex-1 p-6 space-y-6">
-                {/* Manage Pop-ups */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Manage Pop-ups</h3>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm">
-                            <Plus className="w-4 h-4" />
-                            <span>New Pop-up</span>
-                        </button>
-                    </div>
-                    <p className="text-gray-500 dark:text-gray-400 mb-6">
-                        Create, edit, and manage pop-up notifications for the website and mobile app.
-                    </p>
+  useEffect(() => {
+    if (!selected) {
+      setForm(emptyPopup)
+      return
+    }
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[800px] text-sm text-left">
-                            <thead className="text-xs text-gray-700 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50">
-                                <tr>
-                                    <th className="px-6 py-3">Pop-up Title</th>
-                                    <th className="px-6 py-3">Platform</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3">Schedule</th>
-                                    <th className="px-6 py-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {popupList.map((popup) => (
-                                    <tr
-                                        key={popup.id}
-                                        className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/20 last:border-0"
-                                    >
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                            {popup.title}
-                                        </td>
-                                        <td className="px-6 py-4">{popup.platform}</td>
-                                        <td className="px-6 py-4">
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    className="sr-only peer"
-                                                    checked={popup.status}
-                                                    onChange={() => toggleStatus(popup.id)}
-                                                />
-                                                <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                                <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    {popup.status ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </label>
-                                        </td>
-                                        <td className="px-6 py-4">{popup.schedule}</td>
-                                        <td className="px-6 py-4 text-right space-x-2">
-                                            <button className="text-primary hover:underline">Edit</button>
-                                            <button className="text-green-600 hover:underline">Preview</button>
-                                            <button className="text-red-600 hover:underline">Delete</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    setForm({
+      audience: selected.audience,
+      placement: selected.placement === 'banner' ? 'banner' : 'modal',
+      title: selected.title,
+      body: selected.body,
+      cta_label: selected.cta_label ?? '',
+      cta_href: selected.cta_href ?? '',
+      starts_at: selected.starts_at ? selected.starts_at.slice(0, 16) : '',
+      ends_at: selected.ends_at ? selected.ends_at.slice(0, 16) : '',
+      active: selected.active,
+    })
+  }, [selected])
 
-                {/* Create / Edit Pop-up */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                        Create / Edit Pop-up
-                    </h3>
-                    <form className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label
-                                    htmlFor="popup-title"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                >
-                                    Pop-up Title
-                                </label>
-                                <input
-                                    type="text"
-                                    id="popup-title"
-                                    value={popupTitle}
-                                    onChange={(e) => setPopupTitle(e.target.value)}
-                                    placeholder="e.g., Summer Promotion"
-                                    className="w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="platform"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                >
-                                    Platform
-                                </label>
-                                <select
-                                    id="platform"
-                                    value={platform}
-                                    onChange={(e) => setPlatform(e.target.value)}
-                                    className="w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                                >
-                                    <option>Website & App</option>
-                                    <option>Website Only</option>
-                                    <option>App Only</option>
-                                </select>
-                            </div>
-                        </div>
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return popupRows
+    return popupRows.filter((item) =>
+      [item.title, item.body, item.audience, item.placement].some((value) =>
+        value.toLowerCase().includes(q)
+      )
+    )
+  }, [popupRows, search])
 
-                        <div>
-                            <label
-                                htmlFor="popup-content"
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                            >
-                                Content
-                            </label>
-                            <textarea
-                                id="popup-content"
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                placeholder="Enter the pop-up message..."
-                                rows={4}
-                                className="w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                            />
-                        </div>
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header title="Pop-ups on Website and App" />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label
-                                    htmlFor="start-date"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                >
-                                    Start Date & Time
-                                </label>
-                                <input
-                                    type="datetime-local"
-                                    id="start-date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="end-date"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                >
-                                    End Date & Time
-                                </label>
-                                <input
-                                    type="datetime-local"
-                                    id="end-date"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Display Rules
-                            </label>
-                            <div className="space-y-2">
-                                <div className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        id="display-all"
-                                        name="display-rule"
-                                        value="all"
-                                        checked={displayRule === 'all'}
-                                        onChange={(e) => setDisplayRule(e.target.value)}
-                                        className="h-4 w-4 text-primary bg-background-light dark:bg-background-dark border-gray-300 dark:border-gray-700 focus:ring-primary"
-                                    />
-                                    <label
-                                        htmlFor="display-all"
-                                        className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
-                                    >
-                                        Show to all users
-                                    </label>
-                                </div>
-                                <div className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        id="display-specific"
-                                        name="display-rule"
-                                        value="specific"
-                                        checked={displayRule === 'specific'}
-                                        onChange={(e) => setDisplayRule(e.target.value)}
-                                        className="h-4 w-4 text-primary bg-background-light dark:bg-background-dark border-gray-300 dark:border-gray-700 focus:ring-primary"
-                                    />
-                                    <label
-                                        htmlFor="display-specific"
-                                        className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
-                                    >
-                                        Show to specific user segments
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-4">
-                            <button
-                                type="button"
-                                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm"
-                            >
-                                Save and Schedule
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </main>
+      <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search pop-ups..."
+              className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 dark:border-gray-700 dark:bg-gray-900"
+            />
+          </div>
+          <button
+            onClick={() => {
+              setSelectedId(null)
+              setForm(emptyPopup)
+            }}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            New Pop-up
+          </button>
         </div>
-    );
+
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
+          <table className="w-full min-w-[800px] text-left text-sm">
+            <thead className="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
+              <tr>
+                <th className="px-6 py-3">Pop-up Title</th>
+                <th className="px-6 py-3">Audience</th>
+                <th className="px-6 py-3">Placement</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Schedule</th>
+                <th className="px-6 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td className="px-6 py-6" colSpan={6}>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-6 text-center text-gray-500" colSpan={6}>
+                    No pop-ups found.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((popup) => (
+                  <tr key={popup.id} className="border-t border-gray-100 dark:border-gray-800">
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{popup.title}</td>
+                    <td className="px-6 py-4">{popup.audience}</td>
+                    <td className="px-6 py-4">{popup.placement}</td>
+                    <td className="px-6 py-4">{popup.active ? 'active' : 'inactive'}</td>
+                    <td className="px-6 py-4">
+                      {popup.starts_at ? format(new Date(popup.starts_at), 'MMM d, yyyy') : 'Immediately'}
+                      {popup.ends_at ? ` - ${format(new Date(popup.ends_at), 'MMM d, yyyy')}` : ''}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button className="mr-4 text-primary hover:underline" onClick={() => setSelectedId(popup.id)}>
+                        Edit
+                      </button>
+                      <button className="text-red-600 hover:underline" onClick={() => deletePopup.mutate(popup.id)}>
+                        <Trash2 className="inline h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+            {selectedId ? 'Edit Pop-up' : 'Create Pop-up'}
+          </h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Pop-up Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
+            <SelectField
+              label="Audience"
+              value={form.audience}
+              onChange={(value) => setForm((prev) => ({ ...prev, audience: value as typeof prev.audience }))}
+              options={['all', 'client', 'professional', 'web']}
+            />
+            <SelectField
+              label="Display Surface"
+              value={form.placement}
+              onChange={(value) => setForm((prev) => ({ ...prev, placement: value as typeof prev.placement }))}
+              options={['modal', 'banner']}
+            />
+            <ToggleField label="Active" checked={form.active} onChange={(checked) => setForm((prev) => ({ ...prev, active: checked }))} />
+            <div className="md:col-span-2">
+              <TextAreaField label="Content" value={form.body} onChange={(value) => setForm((prev) => ({ ...prev, body: value }))} rows={4} />
+            </div>
+            <Field label="CTA Label" value={form.cta_label} onChange={(value) => setForm((prev) => ({ ...prev, cta_label: value }))} />
+            <Field label="CTA Href" value={form.cta_href} onChange={(value) => setForm((prev) => ({ ...prev, cta_href: value }))} />
+            <DateTimeField label="Start Date & Time" value={form.starts_at} onChange={(value) => setForm((prev) => ({ ...prev, starts_at: value }))} />
+            <DateTimeField label="End Date & Time" value={form.ends_at} onChange={(value) => setForm((prev) => ({ ...prev, ends_at: value }))} />
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={() =>
+                savePopup.mutate({
+                  id: selected?.id,
+                  audience: form.audience,
+                  placement: form.placement,
+                  title: form.title,
+                  body: form.body,
+                  cta_label: form.cta_label,
+                  cta_href: form.cta_href,
+                  starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
+                  ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+                  active: form.active,
+                })
+              }
+              disabled={savePopup.isPending}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+            >
+              {savePopup.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save Pop-up
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900" />
+    </div>
+  )
+}
+
+function TextAreaField({
+  label,
+  value,
+  onChange,
+  rows,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  rows: number
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={rows} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900" />
+    </div>
+  )
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  options: string[]
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900">
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function DateTimeField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <input type="datetime-local" value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900" />
+    </div>
+  )
+}
+
+function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="flex items-center gap-3 pt-8 text-sm text-gray-700 dark:text-gray-300">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      {label}
+    </label>
+  )
 }

@@ -17,10 +17,19 @@ type StatusFilter = 'all' | BookingStatus
 
 const ITEMS_PER_PAGE = 10
 
-export default function TaskListPage() {
+interface TaskListPageProps {
+  pageTitle?: string
+  forcedStatus?: Exclude<StatusFilter, 'all'>
+}
+
+export default function TaskListPage({
+  pageTitle = 'Task List',
+  forcedStatus,
+}: TaskListPageProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(forcedStatus ?? 'all')
   const [currentPage, setCurrentPage] = useState(1)
+  const effectiveStatusFilter = forcedStatus ?? statusFilter
 
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -41,7 +50,7 @@ export default function TaskListPage() {
     error,
   } = useTasks({
     search: debouncedSearch || undefined,
-    status: statusFilter === 'all' ? undefined : statusFilter,
+    status: effectiveStatusFilter === 'all' ? undefined : effectiveStatusFilter,
     limit: ITEMS_PER_PAGE,
     offset: (currentPage - 1) * ITEMS_PER_PAGE,
   })
@@ -50,6 +59,7 @@ export default function TaskListPage() {
   const { data: statusCounts } = useTaskStatusCounts()
 
   const handleStatusFilterChange = (status: StatusFilter) => {
+    if (forcedStatus) return
     setStatusFilter(status)
     setCurrentPage(1)
   }
@@ -73,14 +83,14 @@ export default function TaskListPage() {
   }
 
   const totalCount =
-    statusFilter === 'all'
+    effectiveStatusFilter === 'all'
       ? statusCounts?.all || 0
-      : statusCounts?.[statusFilter as keyof typeof statusCounts] || 0
+      : statusCounts?.[effectiveStatusFilter as keyof typeof statusCounts] || 0
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden">
-      <Header title="Task List" />
+      <Header title={pageTitle} />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
@@ -103,12 +113,13 @@ export default function TaskListPage() {
             </div>
           </div>
 
-          <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          {!forcedStatus && (
+            <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+              <nav className="-mb-px flex space-x-8" aria-label="Tabs">
               <button
                 onClick={() => handleStatusFilterChange('all')}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  statusFilter === 'all'
+                  effectiveStatusFilter === 'all'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                 }`}
@@ -118,7 +129,7 @@ export default function TaskListPage() {
               <button
                 onClick={() => handleStatusFilterChange('pending')}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  statusFilter === 'pending'
+                  effectiveStatusFilter === 'pending'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                 }`}
@@ -128,7 +139,7 @@ export default function TaskListPage() {
               <button
                 onClick={() => handleStatusFilterChange('accepted')}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  statusFilter === 'accepted'
+                  effectiveStatusFilter === 'accepted'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                 }`}
@@ -138,7 +149,7 @@ export default function TaskListPage() {
               <button
                 onClick={() => handleStatusFilterChange('completed')}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  statusFilter === 'completed'
+                  effectiveStatusFilter === 'completed'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                 }`}
@@ -148,15 +159,16 @@ export default function TaskListPage() {
               <button
                 onClick={() => handleStatusFilterChange('cancelled')}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  statusFilter === 'cancelled'
+                  effectiveStatusFilter === 'cancelled'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                 }`}
               >
                 Cancelled {statusCounts?.cancelled !== undefined && `(${statusCounts.cancelled})`}
               </button>
-            </nav>
-          </div>
+              </nav>
+            </div>
+          )}
 
           {/* Loading state */}
           {isLoading && (

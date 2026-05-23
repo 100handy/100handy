@@ -1,201 +1,352 @@
-import { useState } from 'react';
-import Header from '../../components/header';
-import { Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react'
+import { format } from 'date-fns'
+import { Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
+import Header from '@/components/header'
+import {
+  useDeleteEmailTemplate,
+  useEmailTemplates,
+  useSaveEmailTemplate,
+} from '@/lib/api/content-platform'
 
-const emailTemplates = [
-    {
-        type: 'Welcome Email',
-        recipient: 'New Users & Handys',
-        isActive: true,
-        lastModified: '2024-07-15',
-    },
-    {
-        type: 'Task Confirmation',
-        recipient: 'Users',
-        isActive: true,
-        lastModified: '2024-07-20',
-    },
-    {
-        type: 'New Task Alert',
-        recipient: 'Handys',
-        isActive: true,
-        lastModified: '2024-07-22',
-    },
-    {
-        type: 'Password Reset',
-        recipient: 'All',
-        isActive: true,
-        lastModified: '2024-06-30',
-    },
-    {
-        type: 'Weekly Newsletter',
-        recipient: 'All',
-        isActive: false,
-        lastModified: '2024-07-28',
-    },
-];
+const emptyTemplate = {
+  template_key: '',
+  title: '',
+  template_kind: 'template' as const,
+  recipient_group: 'all',
+  subject: '',
+  preview_text: '',
+  body: '',
+  active: true,
+}
+
+const emptyCampaignDraft = {
+  template_key: '',
+  title: '',
+  recipient_group: 'all',
+  subject: '',
+  preview_text: '',
+  body: '',
+  active: false,
+}
 
 export default function EmailNotifications() {
-    const [templates, setTemplates] = useState(emailTemplates);
-    const [recipientType, setRecipientType] = useState('All Users');
-    const [subject, setSubject] = useState('');
-    const [message, setMessage] = useState('');
+  const { data: templates = [], isLoading } = useEmailTemplates()
+  const saveTemplate = useSaveEmailTemplate()
+  const deleteTemplate = useDeleteEmailTemplate()
 
-    const handleToggle = (index: number) => {
-        const newTemplates = [...templates];
-        newTemplates[index].isActive = !newTemplates[index].isActive;
-        setTemplates(newTemplates);
-    };
+  const [search, setSearch] = useState('')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [form, setForm] = useState(emptyTemplate)
+  const [draftForm, setDraftForm] = useState(emptyCampaignDraft)
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log('Send email', { recipientType, subject, message });
-    };
+  const selected = templates.find((template) => template.id === selectedId) ?? null
 
-    return (
-        <div className="flex-1 flex flex-col">
-            <Header title="Email Notifications" />
+  useEffect(() => {
+    if (!selected) {
+      setForm(emptyTemplate)
+      return
+    }
 
-            <main className="flex-1 p-6 space-y-6">
-                {/* Manage Email Notifications */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            Manage Email Notifications
-                        </h3>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm">
-                            <Plus className="w-4 h-4" />
-                            <span>New Email Template</span>
-                        </button>
-                    </div>
-                    <p className="text-gray-500 dark:text-gray-400 mb-6">
-                        Configure, edit, and send various types of email alerts to users and Handys.
-                    </p>
+    setForm({
+      template_key: selected.template_key,
+      title: selected.title,
+      template_kind: selected.template_kind,
+      recipient_group: selected.recipient_group,
+      subject: selected.subject,
+      preview_text: selected.preview_text ?? '',
+      body: selected.body,
+      active: selected.active,
+    })
+  }, [selected])
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[800px] text-sm text-left">
-                            <thead className="text-xs text-gray-700 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50">
-                                <tr>
-                                    <th className="px-6 py-3">Email Type</th>
-                                    <th className="px-6 py-3">Recipient</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3">Last Modified</th>
-                                    <th className="px-6 py-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {templates.map((template, idx) => (
-                                    <tr
-                                        key={idx}
-                                        className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/20"
-                                    >
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                            {template.type}
-                                        </td>
-                                        <td className="px-6 py-4">{template.recipient}</td>
-                                        <td className="px-6 py-4">
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input
-                                                    checked={template.isActive}
-                                                    className="sr-only peer"
-                                                    onChange={() => handleToggle(idx)}
-                                                    type="checkbox"
-                                                />
-                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                                                <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                    {template.isActive ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </label>
-                                        </td>
-                                        <td className="px-6 py-4">{template.lastModified}</td>
-                                        <td className="px-6 py-4 text-right space-x-2">
-                                            <button className="text-primary hover:underline">Edit</button>
-                                            <button className="text-green-600 hover:underline">Send Test</button>
-                                            <button className="text-red-600 hover:underline">Delete</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return templates
+    return templates.filter((item) =>
+      [item.title, item.template_key, item.subject, item.recipient_group].some((value) =>
+        value.toLowerCase().includes(q)
+      )
+    )
+  }, [templates, search])
 
-                {/* Send One-Time Email */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                        Send a One-Time Email
-                    </h3>
-                    <form className="space-y-4" onSubmit={handleSubmit}>
-                        <div>
-                            <label
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                htmlFor="recipient-type"
-                            >
-                                Recipient Group
-                            </label>
-                            <select
-                                className="w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                                id="recipient-type"
-                                onChange={(e) => setRecipientType(e.target.value)}
-                                value={recipientType}
-                            >
-                                <option>All Users</option>
-                                <option>All Handys</option>
-                                <option>Specific Users/Handys</option>
-                            </select>
-                        </div>
+  const templateRows = filtered.filter((item) => item.template_kind === 'template')
+  const draftRows = filtered.filter((item) => item.template_kind === 'campaign_draft')
 
-                        <div>
-                            <label
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                htmlFor="email-subject"
-                            >
-                                Subject
-                            </label>
-                            <input
-                                className="w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                                id="email-subject"
-                                onChange={(e) => setSubject(e.target.value)}
-                                placeholder="Enter email subject"
-                                type="text"
-                                value={subject}
-                            />
-                        </div>
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header title="Email Notifications" />
 
-                        <div>
-                            <label
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                                htmlFor="email-body"
-                            >
-                                Message
-                            </label>
-                            <textarea
-                                className="w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                                id="email-body"
-                                onChange={(e) => setMessage(e.target.value)}
-                                placeholder="Compose your email message..."
-                                rows={6}
-                                value={message}
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-4">
-                            <button
-                                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800"
-                                type="button"
-                            >
-                                Save as Draft
-                            </button>
-                            <button
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm"
-                                type="submit"
-                            >
-                                Send Email
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </main>
+      <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search email templates..."
+              className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 dark:border-gray-700 dark:bg-gray-900"
+            />
+          </div>
+          <button
+            onClick={() => {
+              setSelectedId(null)
+              setForm(emptyTemplate)
+            }}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            New Template
+          </button>
         </div>
-    );
+
+        <section className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
+          <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Manage Email Templates</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Templates are stored in the database and can be activated or revised without a deploy.
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px] text-left text-sm">
+              <thead className="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
+                <tr>
+                  <th className="px-6 py-3">Email Type</th>
+                  <th className="px-6 py-3">Recipient</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Last Modified</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td className="px-6 py-6" colSpan={5}>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    </td>
+                  </tr>
+                ) : templateRows.length === 0 ? (
+                  <tr>
+                    <td className="px-6 py-6 text-center text-gray-500" colSpan={5}>
+                      No templates found.
+                    </td>
+                  </tr>
+                ) : (
+                  templateRows.map((template) => (
+                    <tr key={template.id} className="border-t border-gray-100 dark:border-gray-800">
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{template.title}</td>
+                      <td className="px-6 py-4">{template.recipient_group}</td>
+                      <td className="px-6 py-4">{template.active ? 'active' : 'inactive'}</td>
+                      <td className="px-6 py-4">{format(new Date(template.updated_at), 'MMM d, yyyy')}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="mr-4 text-primary hover:underline" onClick={() => setSelectedId(template.id)}>
+                          Edit
+                        </button>
+                        <button className="text-red-600 hover:underline" onClick={() => deleteTemplate.mutate(template.id)}>
+                          <Trash2 className="inline h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+            {selectedId ? 'Edit Email Template' : 'Create Email Template'}
+          </h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Template Key" value={form.template_key} onChange={(value) => setForm((prev) => ({ ...prev, template_key: value }))} />
+            <Field label="Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
+            <SelectField
+              label="Recipient Group"
+              value={form.recipient_group}
+              onChange={(value) => setForm((prev) => ({ ...prev, recipient_group: value }))}
+              options={['all', 'client', 'professional', 'new_users', 'new_handys']}
+            />
+            <ToggleField label="Active" checked={form.active} onChange={(checked) => setForm((prev) => ({ ...prev, active: checked }))} />
+            <div className="md:col-span-2">
+              <Field label="Subject" value={form.subject} onChange={(value) => setForm((prev) => ({ ...prev, subject: value }))} />
+            </div>
+            <div className="md:col-span-2">
+              <Field label="Preview Text" value={form.preview_text} onChange={(value) => setForm((prev) => ({ ...prev, preview_text: value }))} />
+            </div>
+            <div className="md:col-span-2">
+              <TextAreaField label="Body" value={form.body} onChange={(value) => setForm((prev) => ({ ...prev, body: value }))} rows={10} />
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={() =>
+                saveTemplate.mutate({
+                  id: selected?.id,
+                  template_key: form.template_key,
+                  title: form.title,
+                  template_kind: 'template',
+                  recipient_group: form.recipient_group,
+                  subject: form.subject,
+                  preview_text: form.preview_text,
+                  body: form.body,
+                  active: form.active,
+                })
+              }
+              disabled={saveTemplate.isPending}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+            >
+              {saveTemplate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save Template
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">One-Time Email Drafts</h3>
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            One-time campaigns are stored as database drafts so they can be reviewed and reused later.
+          </p>
+          <div className="mb-6 space-y-3">
+            {draftRows.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No saved campaign drafts.</p>
+            ) : (
+              draftRows.map((draft) => (
+                <div key={draft.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{draft.title}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{draft.recipient_group} / {draft.subject}</p>
+                  </div>
+                  <div className="space-x-4">
+                    <button
+                      className="text-primary hover:underline"
+                      onClick={() =>
+                        setDraftForm({
+                          template_key: draft.template_key,
+                          title: draft.title,
+                          recipient_group: draft.recipient_group,
+                          subject: draft.subject,
+                          preview_text: draft.preview_text ?? '',
+                          body: draft.body,
+                          active: draft.active,
+                        })
+                      }
+                    >
+                      Load
+                    </button>
+                    <button className="text-red-600 hover:underline" onClick={() => deleteTemplate.mutate(draft.id)}>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Draft Key" value={draftForm.template_key} onChange={(value) => setDraftForm((prev) => ({ ...prev, template_key: value }))} />
+            <Field label="Draft Title" value={draftForm.title} onChange={(value) => setDraftForm((prev) => ({ ...prev, title: value }))} />
+            <SelectField
+              label="Recipient Group"
+              value={draftForm.recipient_group}
+              onChange={(value) => setDraftForm((prev) => ({ ...prev, recipient_group: value }))}
+              options={['all', 'client', 'professional']}
+            />
+            <Field label="Subject" value={draftForm.subject} onChange={(value) => setDraftForm((prev) => ({ ...prev, subject: value }))} />
+            <div className="md:col-span-2">
+              <Field label="Preview Text" value={draftForm.preview_text} onChange={(value) => setDraftForm((prev) => ({ ...prev, preview_text: value }))} />
+            </div>
+            <div className="md:col-span-2">
+              <TextAreaField label="Message" value={draftForm.body} onChange={(value) => setDraftForm((prev) => ({ ...prev, body: value }))} rows={8} />
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={() =>
+                saveTemplate.mutate({
+                  template_key: draftForm.template_key,
+                  title: draftForm.title,
+                  template_kind: 'campaign_draft',
+                  recipient_group: draftForm.recipient_group,
+                  subject: draftForm.subject,
+                  preview_text: draftForm.preview_text,
+                  body: draftForm.body,
+                  active: false,
+                })
+              }
+              disabled={saveTemplate.isPending}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+            >
+              {saveTemplate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save Draft
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900" />
+    </div>
+  )
+}
+
+function TextAreaField({
+  label,
+  value,
+  onChange,
+  rows,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  rows: number
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={rows} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900" />
+    </div>
+  )
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  options: string[]
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900">
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <label className="flex items-center gap-3 pt-8 text-sm text-gray-700 dark:text-gray-300">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      {label}
+    </label>
+  )
 }

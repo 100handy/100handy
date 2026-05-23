@@ -1,14 +1,16 @@
 import { Header, Footer } from "@/components/layout";
-import { getPageContent } from "@/lib/cms";
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Terms & Privacy | 100 Handy",
-  description:
-    "Terms of service, privacy policy, and platform rules for 100 Handy.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageSeoMetadata('terms', {
+    title: "Terms & Privacy | 100 Handy",
+    description: "Terms of service, privacy policy, and platform rules for 100 Handy.",
+    canonicalUrl: "/terms",
+  })
+}
 
 export default async function TermsPage() {
   const c = await getPageContent("terms");

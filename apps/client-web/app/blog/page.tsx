@@ -1,5 +1,6 @@
 import { Header, Footer } from "@/components/layout";
 import { getPageContent } from "@/lib/cms";
+import { getPublishedBlogPosts, getSurfaceSeoMetadata } from "@/lib/content-platform";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,10 +8,12 @@ import type { Metadata } from "next";
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: "Blog | 100 Handy",
-  description: "Tips, guides, and news from 100 Handy.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return getSurfaceSeoMetadata('page', 'blog', {
+    title: "Blog | 100 Handy",
+    description: "Tips, guides, and news from 100 Handy.",
+  })
+}
 
 const featuredPost = {
   date: "April 10, 2026",
@@ -107,14 +110,26 @@ export default async function BlogPage({
   const { category } = await searchParams;
   const activeCategory = category && categories.includes(category) ? category : "All";
   const c = await getPageContent('blog');
+  const publishedPosts = await getPublishedBlogPosts();
 
-  const allPosts = [featuredPost, ...blogPosts];
+  const livePosts = publishedPosts.map((post) => ({
+    date: post.published_at
+      ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+      : '',
+    category: post.category ?? 'General',
+    title: post.title,
+    excerpt: post.excerpt ?? '',
+    image: post.cover_image_url ?? '/images/hero/heroimage2.jpeg',
+    slug: post.slug,
+  }));
+
+  const featured = livePosts[0] ?? featuredPost;
+  const allListPosts = livePosts.length > 1 ? livePosts.slice(1) : blogPosts;
   const filteredPosts = activeCategory === "All"
-    ? blogPosts
-    : blogPosts.filter((p) => p.category === activeCategory);
+    ? allListPosts
+    : allListPosts.filter((p) => p.category === activeCategory);
 
-  const showFeatured =
-    activeCategory === "All" || featuredPost.category === activeCategory;
+  const showFeatured = activeCategory === "All" || featured.category === activeCategory;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -177,12 +192,12 @@ export default async function BlogPage({
               <p className="mb-6 text-[13px] font-semibold uppercase tracking-widest text-brand-terracotta">
                 Featured
               </p>
-              <Link href={`/blog/${featuredPost.slug}`} className="group block">
+              <Link href={`/blog/${featured.slug}`} className="group block">
                 <div className="grid gap-8 overflow-hidden rounded-2xl border border-gray-200 shadow-sm transition-shadow hover:shadow-lg md:grid-cols-2">
                   <div className="relative h-72 md:h-auto">
                     <Image
-                      src={featuredPost.image}
-                      alt={featuredPost.title}
+                      src={featured.image}
+                      alt={featured.title}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, 50vw"
@@ -190,16 +205,16 @@ export default async function BlogPage({
                   </div>
                   <div className="flex flex-col justify-center p-10">
                     <span className="mb-3 inline-block rounded-full bg-brand-cream px-4 py-1 text-[13px] font-semibold text-brand-dark-alt">
-                      {featuredPost.category}
+                      {featured.category}
                     </span>
                     <h2 className="mb-4 text-[32px] font-bold leading-tight text-brand-dark-alt group-hover:text-brand-terracotta transition-colors">
-                      {featuredPost.title}
+                      {featured.title}
                     </h2>
                     <p className="mb-6 text-[18px] leading-relaxed text-brand-dark-alt/70">
-                      {featuredPost.excerpt}
+                      {featured.excerpt}
                     </p>
                     <div className="flex items-center justify-between">
-                      <p className="text-[14px] text-brand-dark-alt/50">{featuredPost.date}</p>
+                      <p className="text-[14px] text-brand-dark-alt/50">{featured.date}</p>
                       <span className="text-[15px] font-semibold text-brand-terracotta group-hover:underline">
                         Read More →
                       </span>

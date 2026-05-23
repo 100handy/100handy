@@ -24,6 +24,7 @@ import PromotionsManagementPage from '@/pages/promotions/promotions-management'
 import ContentPagesPage from '@/pages/content/pages'
 import CreatePagePage from '@/pages/content/create-page'
 import PageEditorPage from '@/pages/content/page-editor'
+import PageSettingsPage from '@/pages/content/page-settings'
 import BlogsPage from '@/pages/content/blogs'
 import MediaPage from '@/pages/content/media'
 import FAQsPage from '@/pages/content/faqs'
@@ -42,10 +43,13 @@ import Invoices from '@/pages/finance/invoices'
 import SecurityOptions from '@/pages/accounts/security-options'
 import VerificationOptions from '@/pages/accounts/verification-options'
 import AccountStatus from '@/pages/accounts/account-status'
+import AccountsOverviewPage from '@/pages/accounts'
 import EmailNotifications from '@/pages/notifications/email-notifications'
 import PopupsPage from '@/pages/notifications/popups'
+import NotificationsOverviewPage from '@/pages/notifications'
 import SupportCentre from '@/pages/support/support-centre'
 import AnnouncementsPage from '@/pages/dashboard/announcements'
+import TaskQuestionsPage from '@/pages/tasks/task-questions'
 
 function AuthBootstrapScreen() {
   return (
@@ -98,15 +102,15 @@ function App() {
           <Route path="/tasks/categories/edit" element={<EditCategoriesPage />} />
           <Route path="/tasks/categories/delete" element={<DeleteCategoriesPage />} />
           <Route path="/tasks/list" element={<TaskListPage />} />
-          <Route path="/tasks/open" element={<div className="p-6">Open Tasks Page</div>} />
-          <Route path="/tasks/scheduled" element={<div className="p-6">Scheduled Tasks Page</div>} />
+          <Route path="/tasks/open" element={<TaskListPage pageTitle="Open Tasks" forcedStatus="pending" />} />
+          <Route path="/tasks/scheduled" element={<TaskListPage pageTitle="Scheduled Tasks" forcedStatus="accepted" />} />
           <Route path="/tasks/details" element={<TaskDetailsPage />} />
           <Route path="/tasks/edit/:id" element={<EditTaskPage />} />
           <Route path="/tasks/reschedule/:id" element={<RescheduleTaskPage />} />
           <Route path="/tasks/cancel/:id" element={<CancelTaskPage />} />
-          <Route path="/tasks/completed" element={<div className="p-6">Completed Tasks Page</div>} />
-          <Route path="/tasks/cancelled" element={<div className="p-6">Cancelled Tasks Page</div>} />
-          <Route path="/tasks/questions" element={<div className="p-6">Task Questions Page</div>} />
+          <Route path="/tasks/completed" element={<TaskListPage pageTitle="Completed Tasks" forcedStatus="completed" />} />
+          <Route path="/tasks/cancelled" element={<TaskListPage pageTitle="Cancelled Tasks" forcedStatus="cancelled" />} />
+          <Route path="/tasks/questions" element={<TaskQuestionsPage />} />
           <Route path="/handys" element={<HandysPage />} />
           <Route path="/handys/selection-process" element={<HandySelectionProcess />} />
           <Route path="/handys/availability" element={<AvailabilityManagement />} />
@@ -122,18 +126,18 @@ function App() {
           <Route path="/content/pages" element={<ContentPagesPage />} />
           <Route path="/content/pages/create" element={<CreatePagePage />} />
           <Route path="/content/pages/:pageKey" element={<PageEditorPage />} />
-          <Route path="/content/page-settings" element={<div className="p-6">Page Settings</div>} />
+          <Route path="/content/page-settings" element={<PageSettingsPage />} />
           <Route path="/content/blogs" element={<BlogsPage />} />
           <Route path="/content/media" element={<MediaPage />} />
           <Route path="/content/faqs" element={<FAQsPage />} />
           <Route path="/content/navigation" element={<NavigationPage />} />
-          <Route path="/accounts" element={<div className="p-6">Accounts Page</div>} />
+          <Route path="/accounts" element={<AccountsOverviewPage />} />
           <Route path="/accounts/security" element={<SecurityOptions />} />
           <Route path="/accounts/verification" element={<VerificationOptions />} />
           <Route path="/accounts/deleted" element={<AccountStatus />} />
           <Route path="/accounts/paused" element={<AccountStatus />} />
           <Route path="/accounts/location" element={<AccountStatus />} />
-          <Route path="/notifications" element={<div className="p-6">Notifications Page</div>} />
+          <Route path="/notifications" element={<NotificationsOverviewPage />} />
           <Route path="/notifications/email" element={<EmailNotifications />} />
           <Route path="/notifications/popups" element={<PopupsPage />} />
           <Route path="/support/centre" element={<SupportCentre />} />

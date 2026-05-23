@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, ImageSourcePropType, View } from 'react-native';
+import { getPublicSiteSetting, resolvePublicAssetUrl } from '@/lib/public-settings';
 
 // Two logo variants matching the web:
 //   'green' — dark olive green text, used on light/white backgrounds
@@ -33,11 +34,22 @@ export default function AuthLogo({
 }: AuthLogoProps) {
   const width = LOGO_WIDTHS[size];
   const height = width / LOGO_ASPECT_RATIO;
+  const [remoteUri, setRemoteUri] = useState<string | null>(null)
+
+  useEffect(() => {
+    getPublicSiteSetting('app.images.brand').then((value) => {
+      const key = variant === 'green' ? 'greenLogo' : 'creamLogo'
+      const uri = resolvePublicAssetUrl(value?.[key])
+      if (uri) {
+        setRemoteUri(uri)
+      }
+    })
+  }, [variant])
 
   return (
     <View className={className}>
       <Image
-        source={LOGOS[variant]}
+        source={remoteUri ? { uri: remoteUri } : LOGOS[variant]}
         style={{ width, height }}
         resizeMode="contain"
       />

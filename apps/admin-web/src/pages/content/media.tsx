@@ -1,186 +1,304 @@
-import { Search, Plus, Edit, Trash2, Film } from 'lucide-react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Film, Loader2, Plus, Save, Search } from 'lucide-react'
 import Header from '@/components/header'
+import {
+  useDeleteMediaAsset,
+  useMediaAssets,
+  useSaveMediaAsset,
+  useSaveSiteSetting,
+  useSiteSettings,
+} from '@/lib/api/content-platform'
 
-const mediaItems = [
-  {
-    type: 'image',
-    src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDPIjjlEmxle-0o32H69Ai5JzvaKgybcDz42v57-KO0tLyPdUInL7bQCpjhMF1L3Vjx49jpKNCsra2ISMAR_jLApsi05SBadYpPd1QRRCWl0gTtzMzBboTkkquP5YdAlmIq3jAI-qBp5Bx0GkKLCztZl3Ig3w-r_RKFN19jNvvYXnaxh9wT7m-kE_W-oRz9BMiXj0XtqxJsz56SI6F394sKoFT9cprYe4y2rLxYVKHD3V28CZRfOyYTRWnpw4neqhzXVW8736Zr4N3g',
-    filename: 'renovation_tip_1.jpg',
-  },
-  {
-    type: 'image',
-    src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDY9FV2tAFSUMYl4zvElnojCp7dA3SqM5RvACtZ4nAVs6h4Tov2uona2ZoWgsA9YNDD_eZ2RVIVDehKnf9SxZh_MfIUJ7q2uKtJmXoTookb3hSFmajHSlETyHpcFfOXWVJg-frrpdOxiqN1Iz1S6MEzZ_hJnDzBePx8R1cHTLRJ9suFTl85CjnvBdpkHkqX_J-MER4PXCAAAjXRzmd4f3nMNrQRT1YxIIJ6pjBmB5In56c0vg5nIy6yNTtY9G8ycft4o6rGl5eXluZp',
-    filename: 'diy_vs_pro.png',
-  },
-  {
-    type: 'video',
-    filename: 'project_budget.mp4',
-  },
-  {
-    type: 'image',
-    src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6K43ekVPQRw7lcmt8lB6fjZHv0aYmniXkCUb8eHNp49Y8Ph3sjwlgM_muvtwBlb7iUBEVdkEuOoE18hKY1atMNowiPgfZ_H1taMSJYCjDWdqBcJEzpEt247Rffju6aWCZM09sUzM0PbT798Ey7AXmYosJ-zCEs3p1qgXsLxLWggZg4U2Osx_PoVcqOhB1EqK1s2zn1bmJI1IyCao956jtwLeBaLyidR4yl4CbPWzACOwBuY_3oQ96f5ZK3XIKK6FGqA-cCmV2qB-g',
-    filename: 'must_have_tools.jpg',
-  },
-  {
-    type: 'image',
-    src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDGx6oVTWUurlLp2RNjH7aFjchTJAAfgiAmbao0YyW5seyENuO20Iw4jJPGmkte2QEmIMkBVtZ1FH-xZ5ly9oTY0qyojl9tkCdZqd6pB8UPlRR-Tr9M-oyjAZjEGjcr3X3vmKhp_wtKPEUfV14Mx2Rv5cCx-EroeQnHXkzKVuyEeLiTlfuQsAl7pNrGJPJ8SU_qb_qFud0NL-LuZtqUWVSuG3QrH_ylOk3y7IZHVQ1BnQ5ef0GaiV9JDSyRaw3QtMQlPnW4fGFjfPIw',
-    filename: 'paint_color.jpeg',
-  },
-  {
-    type: 'image',
-    src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAkA52g1Cmfzn4QyktyFJpqMBmRxm7wG9OJfsCEG0ad9nYvk7pHGEY3EKCjSeLdiKXBaNnD2o-OYIAZVhbPMAWTj4wMrsJSSuDZPAR9hpsGocKKokP3OYfe92Sj5wK0W2agAsOrY4RYm16RKX-hARBQ65DlG0v50c7JMPGTt0tydLxsEeBbxB9UCHFEXmvel8WQZbxfAsCtoM70jGE3OiF2YRIM3QnqDY0WjEDazUgExPWXWa7SQY_53KO8vBHnEQob0uj16yuGp2r0',
-    filename: 'budget_planning.jpg',
-  },
-  {
-    type: 'video',
-    filename: 'intro_video.mov',
-  },
-  {
-    type: 'image',
-    src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCbzP9zfU4yiw51ixPXoQXO6HDea5w8mPmTnLlT50kQrDCPBTyLrekzWLa62Cw5fwmJhf23xGCJhbIZIlb8qAoMRuO7Qob-9eNvl_3kk9WsqE-6S-7CjpFy9i3HqDumHeE9sxX2Tyo5PQJ6pPNoeUajY7jZnfBP8-yRHxt62FCcHHkE27KMwPuEjDWPlFKdDPgCaU12czmDFBCvmxlF9RD0KIbXakKEO8lPqSsHiKO2NBojNSILFMo2bQ_ZvXoYrsI0AslCUKU2DlqD',
-    filename: 'featured_image.png',
-  },
-]
+const emptyAsset = {
+  asset_key: '',
+  asset_type: 'image' as const,
+  url: '',
+  title: '',
+  alt_text: '',
+  tags: '',
+  usage_scope: 'shared' as const,
+  active: true,
+}
 
 export default function MediaPage() {
+  const { data: media = [], isLoading } = useMediaAssets()
+  const { data: settings = [] } = useSiteSettings([
+    'brand.logos',
+    'services.web_images',
+    'app.images.brand',
+    'app.images.welcome',
+    'app.images.onboarding',
+    'app.images.categories',
+  ])
+  const saveMedia = useSaveMediaAsset()
+  const deleteMedia = useDeleteMediaAsset()
+  const saveSetting = useSaveSiteSetting()
+  const [search, setSearch] = useState('')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [assetForm, setAssetForm] = useState(emptyAsset)
+  const [brandLogosJson, setBrandLogosJson] = useState('{}')
+  const [serviceImagesJson, setServiceImagesJson] = useState('{}')
+  const [appBrandImagesJson, setAppBrandImagesJson] = useState('{}')
+  const [appWelcomeImagesJson, setAppWelcomeImagesJson] = useState('{}')
+  const [appOnboardingImagesJson, setAppOnboardingImagesJson] = useState('{}')
+  const [appCategoryImagesJson, setAppCategoryImagesJson] = useState('{}')
+
+  const selected = media.find((item) => item.id === selectedId) ?? null
+
+  useEffect(() => {
+    if (!selected) {
+      setAssetForm(emptyAsset)
+      return
+    }
+    setAssetForm({
+      asset_key: selected.asset_key,
+      asset_type: selected.asset_type,
+      url: selected.url,
+      title: selected.title ?? '',
+      alt_text: selected.alt_text ?? '',
+      tags: (selected.tags ?? []).join(', '),
+      usage_scope: selected.usage_scope,
+      active: selected.active,
+    })
+  }, [selected])
+
+  useEffect(() => {
+    const brandLogos = settings.find((setting) => setting.setting_key === 'brand.logos')
+    const serviceImages = settings.find((setting) => setting.setting_key === 'services.web_images')
+    const appBrandImages = settings.find((setting) => setting.setting_key === 'app.images.brand')
+    const appWelcomeImages = settings.find((setting) => setting.setting_key === 'app.images.welcome')
+    const appOnboardingImages = settings.find((setting) => setting.setting_key === 'app.images.onboarding')
+    const appCategoryImages = settings.find((setting) => setting.setting_key === 'app.images.categories')
+    setBrandLogosJson(JSON.stringify(brandLogos?.value_json ?? {}, null, 2))
+    setServiceImagesJson(JSON.stringify(serviceImages?.value_json ?? {}, null, 2))
+    setAppBrandImagesJson(JSON.stringify(appBrandImages?.value_json ?? {}, null, 2))
+    setAppWelcomeImagesJson(JSON.stringify(appWelcomeImages?.value_json ?? {}, null, 2))
+    setAppOnboardingImagesJson(JSON.stringify(appOnboardingImages?.value_json ?? {}, null, 2))
+    setAppCategoryImagesJson(JSON.stringify(appCategoryImages?.value_json ?? {}, null, 2))
+  }, [settings])
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return media
+    return media.filter((item) =>
+      [item.asset_key, item.url, item.title ?? '', item.alt_text ?? '', ...(item.tags ?? [])]
+        .some((value) => value.toLowerCase().includes(q))
+    )
+  }, [media, search])
+
   return (
     <div className="flex-1 flex flex-col">
       <Header title="Media Library" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
-        <div className="w-full">
-          {/* Search, Filters, and Upload Button */}
-          <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="relative w-64">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="relative w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 type="text"
                 placeholder="Search media..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                All
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                Images
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                Videos
-              </button>
-            </div>
+            <button
+              className="bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary/90"
+              onClick={() => {
+                setSelectedId(null)
+                setAssetForm(emptyAsset)
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              New Asset
+            </button>
           </div>
-          <button className="bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary/90">
-            <Plus className="w-4 h-4" />
-            Upload Media
-          </button>
-        </div>
 
-        {/* Media Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-          {mediaItems.map((item, index) => (
-            <div key={index} className="relative group aspect-square">
-              {item.type === 'image' ? (
-                <img
-                  src={item.src}
-                  alt="Media file"
-                  className="w-full h-full object-cover rounded-xl"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-200 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                  <Film className="w-16 h-16 text-gray-400 dark:text-gray-600" />
-                </div>
-              )}
-              
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col justify-between p-3 text-white">
-                <div className="flex justify-between items-start">
-                  <p className="text-xs font-medium">{item.filename}</p>
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button className="p-1.5 rounded-full bg-white/20 hover:bg-white/30">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button className="p-1.5 rounded-full bg-white/20 hover:bg-white/30">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : filtered.map((item) => (
+              <div key={item.id} className="relative group aspect-square border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-800/50">
+                {item.asset_type === 'image' ? (
+                  <img src={item.url} alt={item.alt_text ?? item.title ?? item.asset_key} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                    <Film className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-black/70 text-white p-2 text-xs">
+                  <p className="truncate font-medium">{item.asset_key}</p>
+                  <div className="mt-1 flex justify-between">
+                    <button onClick={() => setSelectedId(item.id)} className="underline">Edit</button>
+                    <button onClick={() => deleteMedia.mutate(item.id)} className="underline text-red-300">Delete</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Pagination */}
-        <div className="mt-8 flex justify-center">
-          <nav aria-label="Page navigation">
-            <ul className="inline-flex items-center -space-x-px">
-              <li>
-                <a
-                  href="#"
-                  className="py-2 px-3 ml-0 leading-tight text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-l-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-white"
-                >
-                  Previous
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="py-2 px-3 leading-tight text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-white"
-                >
-                  1
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="py-2 px-3 leading-tight text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-white"
-                >
-                  2
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  aria-current="page"
-                  className="py-2 px-3 text-primary bg-blue-50 dark:bg-gray-700 border border-gray-300 dark:border-primary hover:bg-blue-100 hover:text-blue-700"
-                >
-                  3
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="py-2 px-3 leading-tight text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-white"
-                >
-                  4
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="py-2 px-3 leading-tight text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-white"
-                >
-                  5
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="py-2 px-3 leading-tight text-gray-500 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-r-lg hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-white"
-                >
-                  Next
-                </a>
-              </li>
-            </ul>
-          </nav>
+          <Panel title={selectedId ? 'Edit Media Asset' : 'Create Media Asset'}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Asset Key" value={assetForm.asset_key} onChange={(value) => setAssetForm((prev) => ({ ...prev, asset_key: value }))} />
+              <Field label="URL" value={assetForm.url} onChange={(value) => setAssetForm((prev) => ({ ...prev, url: value }))} />
+              <Field label="Title" value={assetForm.title} onChange={(value) => setAssetForm((prev) => ({ ...prev, title: value }))} />
+              <Field label="Alt Text" value={assetForm.alt_text} onChange={(value) => setAssetForm((prev) => ({ ...prev, alt_text: value }))} />
+              <Field label="Tags (comma separated)" value={assetForm.tags} onChange={(value) => setAssetForm((prev) => ({ ...prev, tags: value }))} />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asset Type</label>
+                <select value={assetForm.asset_type} onChange={(e) => setAssetForm((prev) => ({ ...prev, asset_type: e.target.value as typeof prev.asset_type }))} className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg">
+                  <option value="image">image</option>
+                  <option value="video">video</option>
+                  <option value="document">document</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usage Scope</label>
+                <select value={assetForm.usage_scope} onChange={(e) => setAssetForm((prev) => ({ ...prev, usage_scope: e.target.value as typeof prev.usage_scope }))} className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg">
+                  <option value="shared">shared</option>
+                  <option value="web">web</option>
+                  <option value="mobile">mobile</option>
+                  <option value="admin">admin</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2 pt-8">
+                <input type="checkbox" checked={assetForm.active} onChange={(e) => setAssetForm((prev) => ({ ...prev, active: e.target.checked }))} />
+                <span className="text-sm text-gray-700 dark:text-gray-300">Active</span>
+              </div>
+            </div>
+            <div className="flex justify-end pt-4">
+              <button
+                onClick={() => saveMedia.mutate({
+                  id: selected?.id,
+                  asset_key: assetForm.asset_key,
+                  asset_type: assetForm.asset_type,
+                  url: assetForm.url,
+                  title: assetForm.title,
+                  alt_text: assetForm.alt_text,
+                  tags: assetForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+                  usage_scope: assetForm.usage_scope,
+                  active: assetForm.active,
+                })}
+                disabled={saveMedia.isPending}
+                className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50"
+              >
+                {saveMedia.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Save Asset
+              </button>
+            </div>
+          </Panel>
+
+          <Panel title="Brand Logos">
+            <JsonField label="brand.logos" value={brandLogosJson} onChange={setBrandLogosJson} />
+            <SaveSettingButton
+              isPending={saveSetting.isPending}
+              onClick={() => saveSetting.mutate({
+                setting_group: 'brand',
+                setting_key: 'brand.logos',
+                value_json: JSON.parse(brandLogosJson),
+              })}
+            />
+          </Panel>
+
+          <Panel title="Service Web Images">
+            <JsonField label="services.web_images" value={serviceImagesJson} onChange={setServiceImagesJson} />
+            <SaveSettingButton
+              isPending={saveSetting.isPending}
+              onClick={() => saveSetting.mutate({
+                setting_group: 'services',
+                setting_key: 'services.web_images',
+                value_json: JSON.parse(serviceImagesJson),
+              })}
+            />
+          </Panel>
+
+          <Panel title="App Brand Images">
+            <JsonField label="app.images.brand" value={appBrandImagesJson} onChange={setAppBrandImagesJson} />
+            <SaveSettingButton
+              isPending={saveSetting.isPending}
+              onClick={() => saveSetting.mutate({
+                setting_group: 'app_images',
+                setting_key: 'app.images.brand',
+                value_json: JSON.parse(appBrandImagesJson),
+              })}
+            />
+          </Panel>
+
+          <Panel title="App Welcome Images">
+            <JsonField label="app.images.welcome" value={appWelcomeImagesJson} onChange={setAppWelcomeImagesJson} />
+            <SaveSettingButton
+              isPending={saveSetting.isPending}
+              onClick={() => saveSetting.mutate({
+                setting_group: 'app_images',
+                setting_key: 'app.images.welcome',
+                value_json: JSON.parse(appWelcomeImagesJson),
+              })}
+            />
+          </Panel>
+
+          <Panel title="App Onboarding Images">
+            <JsonField label="app.images.onboarding" value={appOnboardingImagesJson} onChange={setAppOnboardingImagesJson} />
+            <SaveSettingButton
+              isPending={saveSetting.isPending}
+              onClick={() => saveSetting.mutate({
+                setting_group: 'app_images',
+                setting_key: 'app.images.onboarding',
+                value_json: JSON.parse(appOnboardingImagesJson),
+              })}
+            />
+          </Panel>
+
+          <Panel title="App Category Images">
+            <JsonField label="app.images.categories" value={appCategoryImagesJson} onChange={setAppCategoryImagesJson} />
+            <SaveSettingButton
+              isPending={saveSetting.isPending}
+              onClick={() => saveSetting.mutate({
+                setting_group: 'app_images',
+                setting_key: 'app.images.categories',
+                value_json: JSON.parse(appCategoryImagesJson),
+              })}
+            />
+          </Panel>
         </div>
       </div>
     </div>
+  )
+}
+
+function Panel({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
+      {children}
+    </div>
+  )
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg" />
+    </div>
+  )
+}
+
+function JsonField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+      <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={12} className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg font-mono text-xs" />
+    </div>
+  )
+}
+
+function SaveSettingButton({ isPending, onClick }: { isPending: boolean; onClick: () => void }) {
+  return (
+    <div className="flex justify-end">
+      <button onClick={onClick} disabled={isPending} className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50">
+        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        Save Settings
+      </button>
     </div>
   )
 }
