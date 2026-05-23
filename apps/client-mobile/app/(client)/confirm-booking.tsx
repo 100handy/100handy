@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { useLocationStore, usePendingBookingStore, type PendingBookingData } from '@shared/store';
 import { useCreateBooking, doesAvailabilitySlotApplyToDate, type Coordinate } from '@shared/query';
-import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler, Switch } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native'; import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'; import { useHandymanProfile } from '@shared/query'; import { type FormResponse, listPaymentMethods, type PaymentMethod, createPaymentIntent, cancelPaymentIntent, checkBookingConflict, getWorkAreaByUserId, getAvailabilityByUserId, isLocationInWorkArea, type BookingFrequency, FREQUENCY_OPTIONS, calculateDiscountedRate } from '@shared/supabase';
+import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler, Switch, Platform } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native'; import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'; import { useHandymanProfile } from '@shared/query'; import { type FormResponse, listPaymentMethods, type PaymentMethod, createPaymentIntent, cancelPaymentIntent, checkBookingConflict, getWorkAreaByUserId, getAvailabilityByUserId, isLocationInWorkArea, type BookingFrequency, FREQUENCY_OPTIONS, calculateDiscountedRate } from '@shared/supabase';
 import { useAuthStore } from '@shared/store';
 import { useToast } from '@/components/ui/toast';
 import { FrequencySelector } from '@/components/booking';
-import { confirmStripePayment, getUnsupportedNativeFeatureMessage, supportsStripeNative } from '@/lib/native-feature-support';
+import { getUnsupportedNativeFeatureMessage, initStripePaymentSheet, presentStripePaymentSheet, supportsStripeNative } from '@/lib/native-feature-support';
 import { PullDownDismiss } from '@/components/ui/pull-down-dismiss';
 import { goBackOrReplace } from '@/lib/navigation';
 
@@ -294,17 +294,6 @@ export default function ConfirmBookingScreen() {
       return;
     }
 
-    let availablePaymentMethods = paymentMethods;
-    if (availablePaymentMethods.length === 0) {
-      availablePaymentMethods = await fetchPaymentMethods();
-    }
-
-    // Check if payment method is added
-    if (availablePaymentMethods.length === 0) {
-      toast.error('Payment Required', 'Please add a payment method to continue');
-      return;
-    }
-
     if (selectedFrequency !== 'once') {
       toast.error(
         'Recurring Booking Unavailable',
@@ -409,14 +398,6 @@ export default function ConfirmBookingScreen() {
       // Taskrabbit-style: authorize (hold) now, capture later when job is completed.
       // Match web behavior: hold minimum 2 hours worth of the hourly rate.
       // Use discounted rate for recurring bookings.
-      const defaultMethod = availablePaymentMethods.find((m) => m.isDefault) ?? availablePaymentMethods[0];
-      const paymentMethodId = defaultMethod?.id;
-      if (!paymentMethodId) {
-        setIsSubmitting(false);
-        Alert.alert('Payment Error', 'No valid payment method found. Please add a payment method and try again.');
-        return;
-      }
-
       const paymentIntent = await createPaymentIntent(authorizationAmountCents, {
         handy_id: profile.user_id,
         category_id: categoryId,
@@ -430,32 +411,33 @@ export default function ConfirmBookingScreen() {
         return;
       }
 
-      const { error: paymentError, paymentIntent: confirmedPaymentIntent } = await confirmStripePayment(
-        paymentIntent.clientSecret,
-        {
-          paymentMethodType: 'Card',
-          paymentMethodData: {
-            paymentMethodId,
-          },
-        }
-      );
+      const { error: initPaymentError } = await initStripePaymentSheet({
+        paymentIntentClientSecret: paymentIntent.clientSecret,
+        merchantDisplayName: '100Handy',
+        ...(Platform.OS === 'ios' ? { applePay: { merchantCountryCode: 'GB' } } : {}),
+        ...(Platform.OS === 'android'
+          ? { googlePay: { merchantCountryCode: 'GB', testEnv: __DEV__ } }
+          : {}),
+        style: 'automatic',
+      });
+
+      if (initPaymentError) {
+        setIsSubmitting(false);
+        Alert.alert('Payment Error', initPaymentError.message || 'Failed to initialize payment authorization. Please try again.');
+        return;
+      }
+
+      const { error: paymentError } = await presentStripePaymentSheet();
 
       if (paymentError) {
         setIsSubmitting(false);
-        Alert.alert('Payment Error', paymentError.message || 'Payment authorization failed. Please try again.');
+        if (paymentError.code !== 'Canceled') {
+          Alert.alert('Payment Error', paymentError.message || 'Payment authorization failed. Please try again.');
+        }
         return;
       }
 
-      if (!confirmedPaymentIntent || confirmedPaymentIntent.status !== 'RequiresCapture') {
-        setIsSubmitting(false);
-        Alert.alert(
-          'Payment Error',
-          `Unexpected payment status: ${confirmedPaymentIntent?.status || 'unknown'}`
-        );
-        return;
-      }
-
-      authorizedPaymentIntentId = confirmedPaymentIntent.id;
+      authorizedPaymentIntentId = paymentIntent.paymentIntentId;
 
       // Create booking(s) - use recurring bookings for non-once frequencies
       const bookingInput = {
@@ -747,7 +729,7 @@ export default function ConfirmBookingScreen() {
               ) : (
                 <>
                   <Text className="text-base text-brand-terracotta">
-                    Add payment
+                    Apple Pay or card
                   </Text>
                   <ChevronRight size={20} color="#C1856A" />
                 </>

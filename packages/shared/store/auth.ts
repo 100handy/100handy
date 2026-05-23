@@ -5,7 +5,8 @@ import { supabase } from '../supabase/supabaseClient';
 import { queryClient } from '../query/queryClient';
 import { deleteDevicePushToken } from '../supabase/pushTokens';
 
-const PROFILE_ROLE_TIMEOUT_MS = 8000;
+const PROFILE_ROLE_TIMEOUT_MS = 3500;
+const PROFILE_ROLE_MAX_ATTEMPTS = 3;
 
 interface AuthState {
   user: User | null;
@@ -35,25 +36,35 @@ interface AuthState {
  * This prevents a client from elevating their role by calling supabase.auth.updateUser().
  */
 async function fetchProfileRole(userId: string): Promise<'customer' | 'handy' | null> {
-  try {
-    const query = supabase
-      .from('profiles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-    const { data } = await Promise.race([
-      query,
-      new Promise<never>((_, reject) => {
-        setTimeout(
-          () => reject(new Error('Timed out resolving profile role')),
-          PROFILE_ROLE_TIMEOUT_MS
-        );
-      }),
-    ]);
-    return (data?.role as 'customer' | 'handy' | null) ?? null;
-  } catch {
-    return null;
+  for (let attempt = 1; attempt <= PROFILE_ROLE_MAX_ATTEMPTS; attempt++) {
+    try {
+      const query = supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+      const { data } = await Promise.race([
+        query,
+        new Promise<never>((_, reject) => {
+          setTimeout(
+            () => reject(new Error('Timed out resolving profile role')),
+            PROFILE_ROLE_TIMEOUT_MS
+          );
+        }),
+      ]);
+      const role = (data?.role as 'customer' | 'handy' | null) ?? null;
+      if (role) {
+        return role;
+      }
+    } catch {
+      // fall through to retry
+    }
+
+    if (attempt < PROFILE_ROLE_MAX_ATTEMPTS) {
+      await new Promise((resolve) => setTimeout(resolve, 400 * attempt));
+    }
   }
+  return null;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({

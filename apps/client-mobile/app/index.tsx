@@ -79,10 +79,10 @@ export default function Index() {
       hasRouted.current = true;
       if (userRole === 'handy') {
         router.replace('/(professional)/(tabs)/dashboard');
-      } else if (userRole === 'customer') {
-        router.replace('/(client)/(tabs)/home');
       } else {
-        router.replace('/(auth)/welcome');
+        // Default authenticated users (including null role) to the client home
+        // rather than /welcome — sending them to welcome reads as "sign in again".
+        router.replace('/(client)/(tabs)/home');
       }
     } finally {
       setIsChecking(false);

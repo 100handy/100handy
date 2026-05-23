@@ -120,14 +120,16 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
               </Text>
             </View>
 
-            <View className="mb-3">
-              <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
-                DATE OF BIRTH
-              </Text>
-              <Text className="text-[16px] font-worksans-medium" style={{ color: '#30352D' }}>
-                {formData.dateOfBirth}
-              </Text>
-            </View>
+            {formData.dateOfBirth ? (
+              <View className="mb-3">
+                <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
+                  DATE OF BIRTH
+                </Text>
+                <Text className="text-[16px] font-worksans-medium" style={{ color: '#30352D' }}>
+                  {formData.dateOfBirth}
+                </Text>
+              </View>
+            ) : null}
 
             <View className="mb-3">
               <Text className="text-[13px] font-worksans-bold mb-1 tracking-wide" style={{ color: '#30352D' }}>
@@ -301,10 +303,6 @@ export default function VerifyInformation() {
       toast.error('Missing info', 'Please enter your surname');
       return;
     }
-    if (!formData.dateOfBirth) {
-      toast.error('Missing info', 'Please select your date of birth');
-      return;
-    }
     if (!formData.streetAddress.trim()) {
       toast.error('Missing info', 'Please enter your street address');
       return;
@@ -325,18 +323,21 @@ export default function VerifyInformation() {
       setShowModal(false);
       setIsLoading(true);
 
-      // Convert date from dd/mm/yyyy to YYYY-MM-DD format for PostgreSQL
-      const formattedDate = convertDateFormat(formData.dateOfBirth);
-      if (!formattedDate || !/^\d{4}-\d{2}-\d{2}$/.test(formattedDate)) {
-        toast.error('Invalid date', 'Please select a valid date of birth');
-        return;
+      // DOB is optional — only validate format if provided.
+      let formattedDate: string | undefined;
+      if (formData.dateOfBirth.trim()) {
+        formattedDate = convertDateFormat(formData.dateOfBirth);
+        if (!formattedDate || !/^\d{4}-\d{2}-\d{2}$/.test(formattedDate)) {
+          toast.error('Invalid date', 'Please enter a valid date of birth');
+          return;
+        }
       }
 
       // Save verification data to backend
       const success = await updateVerificationData({
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
-        date_of_birth: formattedDate,
+        ...(formattedDate ? { date_of_birth: formattedDate } : {}),
         street_address: formData.streetAddress.trim(),
         apartment: formData.apt.trim(),
         city: formData.city.trim(),
@@ -437,7 +438,7 @@ export default function VerifyInformation() {
               {/* Date of birth */}
               <View className="mb-4">
                 <Text className="text-[15px] font-worksans-medium mb-2" style={{ color: '#30352D' }}>
-                  Date of birth
+                  Date of birth <Text style={{ color: '#6B7280' }}>(optional)</Text>
                 </Text>
                 <Pressable
                   onPress={() => setShowDatePicker(true)}

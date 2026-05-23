@@ -511,7 +511,7 @@ export interface HandyProfile {
 export interface VerificationData {
   first_name: string;
   last_name: string;
-  date_of_birth: string;
+  date_of_birth?: string;
   street_address: string;
   apartment?: string;
   city: string;
@@ -739,10 +739,11 @@ export async function updateVerificationData(data: VerificationData): Promise<bo
     }
 
     // Update handy_profiles with verification data
+    // Omit date_of_birth when not provided so we don't overwrite existing values with null.
     const { error: handyError } = await supabase
       .from('handy_profiles')
       .update({
-        date_of_birth: data.date_of_birth,
+        ...(data.date_of_birth ? { date_of_birth: data.date_of_birth } : {}),
         street_address: data.street_address,
         apartment: data.apartment,
         city: data.city,

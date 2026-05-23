@@ -80,24 +80,29 @@ serve(async (req) => {
     // Create a PaymentIntent with manual capture (authorization hold)
     // This places a hold on the customer's card without charging it
     // The hold is valid for 7 days for online card payments
-    const paymentIntent = await stripe.paymentIntents.create(
-      {
-        amount,
-        currency: currency.toLowerCase(),
-        customer: customerId,
-        capture_method: 'manual', // Authorization hold - charge later when task completes
-        automatic_payment_methods: {
-          enabled: true,
-          allow_redirects: 'never', // Cards only, no redirect-based methods
-        },
-        metadata: {
-          ...metadata,
-          expected_amount_cents: String(amount),
-          hourly_rate_cents: String(hourlyRateCents),
-          platform: '100handy',
-          user_id: user.id,
-        },
+    const paymentIntentParams: Stripe.PaymentIntentCreateParams = {
+      amount,
+      currency: currency.toLowerCase(),
+      capture_method: 'manual', // Authorization hold - charge later when task completes
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: 'never', // Cards only, no redirect-based methods
       },
+      metadata: {
+        ...metadata,
+        expected_amount_cents: String(amount),
+        hourly_rate_cents: String(hourlyRateCents),
+        platform: '100handy',
+        user_id: user.id,
+      },
+    };
+
+    if (customerId) {
+      paymentIntentParams.customer = customerId;
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create(
+      paymentIntentParams,
       bookingId ? { idempotencyKey: `${bookingId}_create` } : undefined
     );
 

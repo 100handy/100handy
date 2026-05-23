@@ -106,5 +106,9 @@ export async function resolveAuthenticatedRoute({
     return getPendingBookingRoute() ?? '/(client)/(tabs)/home';
   }
 
-  return '/(auth)/welcome';
+  // Authenticated user with an indeterminate role (DB fetch failed or metadata
+  // missing). Default to the client home instead of bouncing back to /welcome,
+  // which looks identical to "you need to sign in again". The user can switch
+  // roles from settings if they were a professional.
+  return getPendingBookingRoute() ?? '/(client)/(tabs)/home';
 }
