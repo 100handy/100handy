@@ -4,6 +4,16 @@ import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { goBackOrReplace } from '@/lib/navigation';
 import { getCategoryIcon } from '@/lib/category-icons';
 import { getAppCategoryImageMap, getAppCategoryImageUri, type AppCategoryImageMap } from '@/lib/category-images';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'search.placeholder': 'Search for services...',
+  'loading.text': 'Loading categories...',
+  'error.title': 'Error loading categories',
+  'error.body': 'Please try again later',
+  'empty.title': 'No services found',
+  'empty.body': 'Try searching with different keywords',
+} as const;
 
 export default function SearchServicesScreen() {
   const router = useRouter();
@@ -12,6 +22,7 @@ export default function SearchServicesScreen() {
   const [selectedCategory, setSelectedCategory] = useState({ id: '', name: '' });
   const [categoryImages, setCategoryImages] = useState<AppCategoryImageMap>({});
   const { data: groupedCategories, isLoading, isError } = useGroupedSubcategories();
+  const content = useAppContent('client_search_services', DEFAULT_CONTENT);
 
   useEffect(() => {
     getAppCategoryImageMap().then(setCategoryImages);
@@ -59,7 +70,7 @@ export default function SearchServicesScreen() {
               <Search size={18} color="#6B6B6B" />
             </InputSlot>
             <InputField
-              placeholder="Search for services..."
+              placeholder={getAppContentValue(content, 'search.placeholder', DEFAULT_CONTENT['search.placeholder'])}
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholderTextColor="#6B6B6B"
@@ -79,15 +90,17 @@ export default function SearchServicesScreen() {
         {isLoading ? (
           <View className="flex-col items-center justify-center py-20">
             <ActivityIndicator size="large" color="#30352D" />
-            <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-3">Loading categories...</Text>
+            <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-3">
+              {getAppContentValue(content, 'loading.text', DEFAULT_CONTENT['loading.text'])}
+            </Text>
           </View>
         ) : isError ? (
           <View className="flex-col items-center justify-center py-20 px-6">
             <Text className="font-worksans-semibold text-[16px] text-[#30352D] mb-2 text-center">
-              Error loading categories
+              {getAppContentValue(content, 'error.title', DEFAULT_CONTENT['error.title'])}
             </Text>
             <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center">
-              Please try again later
+              {getAppContentValue(content, 'error.body', DEFAULT_CONTENT['error.body'])}
             </Text>
           </View>
         ) : filteredCategories.length > 0 ? (
@@ -130,10 +143,10 @@ export default function SearchServicesScreen() {
               <Search size={32} color="#6B6B6B" strokeWidth={1.5} />
             </View>
             <Text className="font-worksans-semibold text-[16px] text-[#30352D] mb-2 text-center">
-              No services found
+              {getAppContentValue(content, 'empty.title', DEFAULT_CONTENT['empty.title'])}
             </Text>
             <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center">
-              Try searching with different keywords
+              {getAppContentValue(content, 'empty.body', DEFAULT_CONTENT['empty.body'])}
             </Text>
           </View>
         )}

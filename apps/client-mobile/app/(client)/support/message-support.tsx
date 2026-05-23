@@ -7,6 +7,21 @@ import { MessageList } from '@/components/support/MessageList';
 import { MessageInput } from '@/components/support/MessageInput';
 import { useSupportStore } from '@shared/store/support';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': '100Handy Support',
+  'header.subtitle': "We're here to help",
+  'loading.creating_ticket': 'Creating support ticket...',
+  'loading.generic': 'Loading...',
+  'messages.empty': 'No messages yet. Start the conversation!',
+  'input.active_placeholder': 'Type a message',
+  'input.new_placeholder': 'Start a conversation with support',
+  'errors.init_title': 'Error',
+  'errors.init_body': 'Failed to load support chat. Please try again.',
+  'errors.send_title': 'Error',
+  'errors.send_prefix': 'Failed to send message:',
+} as const;
 
 export default function MessageSupportScreen() {
   const router = useRouter();
@@ -29,6 +44,7 @@ export default function MessageSupportScreen() {
   } = useSupportStore();
 
   const [isInitializing, setIsInitializing] = useState(true);
+  const content = useAppContent('client_support_chat', DEFAULT_CONTENT);
 
   // Initialize ticket on mount
   useEffect(() => {
@@ -64,8 +80,8 @@ export default function MessageSupportScreen() {
       } catch (error) {
         console.error('Error initializing support:', error);
         Alert.alert(
-          'Error',
-          'Failed to load support chat. Please try again.',
+          getAppContentValue(content, 'errors.init_title', DEFAULT_CONTENT['errors.init_title']),
+          getAppContentValue(content, 'errors.init_body', DEFAULT_CONTENT['errors.init_body']),
           [
             {
               text: 'OK',
@@ -112,8 +128,8 @@ export default function MessageSupportScreen() {
     } catch (error) {
       console.error('Error sending message:', error);
       Alert.alert(
-        'Error',
-        `Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`
+        getAppContentValue(content, 'errors.send_title', DEFAULT_CONTENT['errors.send_title']),
+        `${getAppContentValue(content, 'errors.send_prefix', DEFAULT_CONTENT['errors.send_prefix'])} ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   };
@@ -128,7 +144,9 @@ export default function MessageSupportScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#C1856A" />
           <Text className="text-[16px] text-[#666666] mt-4">
-            {isCreatingTicket ? 'Creating support ticket...' : 'Loading...'}
+            {isCreatingTicket
+              ? getAppContentValue(content, 'loading.creating_ticket', DEFAULT_CONTENT['loading.creating_ticket'])
+              : getAppContentValue(content, 'loading.generic', DEFAULT_CONTENT['loading.generic'])}
           </Text>
         </View>
       </SafeAreaView>
@@ -145,10 +163,10 @@ export default function MessageSupportScreen() {
           </Pressable>
           <View className="flex-1 items-center">
             <Text className="text-[18px] font-bold text-white">
-              100Handy Support
+              {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
             </Text>
             <Text className="text-[12px] text-white/80">
-              We're here to help
+              {getAppContentValue(content, 'header.subtitle', DEFAULT_CONTENT['header.subtitle'])}
             </Text>
           </View>
           {/* Spacer for centering */}
@@ -160,6 +178,7 @@ export default function MessageSupportScreen() {
           <MessageList
             messages={messages}
             loading={isLoadingMessages}
+            emptyText={getAppContentValue(content, 'messages.empty', DEFAULT_CONTENT['messages.empty'])}
             onRefresh={() => {
               if (activeTicket) {
                 openTicket(activeTicket.id);
@@ -172,7 +191,11 @@ export default function MessageSupportScreen() {
         <MessageInput
           onSend={handleSendMessage}
           disabled={isSendingMessage}
-          placeholder={activeTicket ? 'Type a message' : 'Start a conversation with support'}
+          placeholder={
+            activeTicket
+              ? getAppContentValue(content, 'input.active_placeholder', DEFAULT_CONTENT['input.active_placeholder'])
+              : getAppContentValue(content, 'input.new_placeholder', DEFAULT_CONTENT['input.new_placeholder'])
+          }
         />
       </View>
     </SafeAreaView>

@@ -101,6 +101,16 @@ export interface CategoryFormFieldInput {
   section: string
 }
 
+export interface AppContentInput {
+  id?: string
+  platform: 'shared' | 'ios' | 'android'
+  screen_key: string
+  section_key: string
+  field_key: string
+  value: string
+  status: 'draft' | 'published' | 'archived'
+}
+
 export function useBlogPosts() {
   return useQuery({
     queryKey: ['admin', 'blog-posts'],
@@ -524,6 +534,56 @@ export function useDeleteAnnouncement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
+    },
+  })
+}
+
+export function useAppContentEntries(platform?: AppContentInput['platform'], screenKey?: string) {
+  return useQuery({
+    queryKey: ['admin', 'app-content', platform ?? 'all', screenKey ?? 'all'],
+    queryFn: async () => {
+      let query = supabase
+        .from('app_content')
+        .select('*')
+        .order('platform', { ascending: true })
+        .order('screen_key', { ascending: true })
+        .order('section_key', { ascending: true })
+        .order('field_key', { ascending: true })
+
+      if (platform) query = query.eq('platform', platform)
+      if (screenKey) query = query.eq('screen_key', screenKey)
+
+      const { data, error } = await query
+      if (error) throw error
+      return data ?? []
+    },
+  })
+}
+
+export function useSaveAppContentEntry() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: AppContentInput) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const row = {
+        ...input,
+        updated_by: user.id,
+      }
+
+      const { error } = await supabase
+        .from('app_content')
+        .upsert(row, { onConflict: 'platform,screen_key,section_key,field_key' })
+
+      if (error) throw error
+    },
+    onSuccess: (_, input) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content', input.platform] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content', input.platform, input.screen_key] })
     },
   })
 }

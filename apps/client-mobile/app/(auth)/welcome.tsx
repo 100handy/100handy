@@ -4,12 +4,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { getPublicSiteSetting, resolvePublicAssetUrl } from '@/lib/public-settings';
+import { useAppContent, getAppContentValue } from '@/lib/app-content';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const DEFAULT_CONTENT = {
+  'hero.title': 'Welcome',
+  'footer.cta': 'Get started',
+} as const;
 
 export default function WelcomeSplash() {
   const router = useRouter();
   const [backgroundUri, setBackgroundUri] = useState<string | null>(null)
+  const content = useAppContent('auth_welcome', DEFAULT_CONTENT)
 
   useEffect(() => {
     getPublicSiteSetting('app.images.welcome').then((value) => {
@@ -39,7 +45,7 @@ export default function WelcomeSplash() {
                 className="font-worksans-light text-[32px]"
                 style={{ color: '#FFFFFF' }}
               >
-                Welcome
+                {getAppContentValue(content, 'hero.title', DEFAULT_CONTENT['hero.title'])}
               </Text>
             </View>
           </View>
@@ -52,7 +58,7 @@ export default function WelcomeSplash() {
                   className="text-[18px] font-worksans-medium"
                   style={{ color: '#A0B194' }}
                 >
-                  Get started
+                  {getAppContentValue(content, 'footer.cta', DEFAULT_CONTENT['footer.cta'])}
                 </Text>
                 <ChevronRight size={18} color="#A0B194" />
               </View>

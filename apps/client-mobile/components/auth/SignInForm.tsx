@@ -10,6 +10,20 @@ import { signInSchema, type SignInFormData } from '@shared/schemas/auth';
 import { useOAuthSignIn } from '@/lib/useOAuthSignIn';
 import GoogleLogo from '@/assets/images/google-logo.svg';
 import AppleLogo from '@/assets/images/apple-logo.svg';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'fields.email_placeholder': 'Email',
+  'fields.password_placeholder': 'Password',
+  'actions.submit': 'Log in',
+  'actions.submitting': 'Logging in...',
+  'links.forgot_prefix': 'Forgot your password?',
+  'links.forgot_cta': 'Reset it',
+  'oauth.divider': 'Or continue with',
+  'oauth.google_label': 'Google',
+  'oauth.google_loading': 'Connecting...',
+  'oauth.apple_label': 'Apple',
+} as const;
 
 interface SignInFormProps {
   onSubmit: (data: SignInFormData) => void;
@@ -28,6 +42,7 @@ export default function SignInForm({
   const [oauthLoading, setOauthLoading] = useState(false);
   const { signInWithGoogle, signInWithApple } = useOAuthSignIn();
   const isBusy = isLoading || oauthLoading;
+  const content = useAppContent('auth_sign_in', DEFAULT_CONTENT)
 
   const handleOAuth = async (provider: () => Promise<boolean>) => {
     setOauthLoading(true);
@@ -75,7 +90,7 @@ export default function SignInForm({
                     className="absolute left-4 text-[15px] font-worksans"
                     style={{ color: '#9CA3AF' }}
                   >
-                    Email
+                    {getAppContentValue(content, 'fields.email_placeholder', DEFAULT_CONTENT['fields.email_placeholder'])}
                   </Text>
                 ) : null}
                 <InputField
@@ -117,7 +132,7 @@ export default function SignInForm({
                     className="absolute left-4 text-[15px] font-worksans"
                     style={{ color: '#9CA3AF' }}
                   >
-                    Password
+                    {getAppContentValue(content, 'fields.password_placeholder', DEFAULT_CONTENT['fields.password_placeholder'])}
                   </Text>
                 ) : null}
                 <InputField
@@ -162,22 +177,28 @@ export default function SignInForm({
           className="text-[18px] font-worksans-bold"
           style={{ color: isValid ? 'white' : '#B7B7B7' }}
         >
-          {isLoading ? 'Logging in...' : 'Log in'}
+          {isLoading
+            ? getAppContentValue(content, 'actions.submitting', DEFAULT_CONTENT['actions.submitting'])
+            : getAppContentValue(content, 'actions.submit', DEFAULT_CONTENT['actions.submit'])}
         </ButtonText>
       </Button>
 
       {/* Forgot Password */}
       <Pressable className="mb-6" onPress={() => router.push('/(auth)/forgot-password')}>
         <Text className="text-center text-[12px] font-worksans-medium" style={{ color: '#30352D' }}>
-          Forgot your password?{' '}
-          <Text style={{ color: '#C1856A' }}>Reset it</Text>
+          {getAppContentValue(content, 'links.forgot_prefix', DEFAULT_CONTENT['links.forgot_prefix'])}{' '}
+          <Text style={{ color: '#C1856A' }}>
+            {getAppContentValue(content, 'links.forgot_cta', DEFAULT_CONTENT['links.forgot_cta'])}
+          </Text>
         </Text>
       </Pressable>
 
       {/* OAuth divider */}
       <View className="flex-row items-center mb-4">
         <View className="flex-1 h-px bg-gray-200" />
-        <Text className="mx-3 text-xs font-worksans uppercase text-gray-400">Or continue with</Text>
+        <Text className="mx-3 text-xs font-worksans uppercase text-gray-400">
+          {getAppContentValue(content, 'oauth.divider', DEFAULT_CONTENT['oauth.divider'])}
+        </Text>
         <View className="flex-1 h-px bg-gray-200" />
       </View>
 
@@ -195,7 +216,9 @@ export default function SignInForm({
             <GoogleLogo width={18} height={18} />
           )}
           <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
-            {oauthLoading ? 'Connecting...' : 'Google'}
+            {oauthLoading
+              ? getAppContentValue(content, 'oauth.google_loading', DEFAULT_CONTENT['oauth.google_loading'])
+              : getAppContentValue(content, 'oauth.google_label', DEFAULT_CONTENT['oauth.google_label'])}
           </Text>
         </Pressable>
         <Pressable
@@ -205,7 +228,9 @@ export default function SignInForm({
           style={{ opacity: oauthLoading ? 0.5 : 1 }}
         >
           <AppleLogo width={18} height={18} />
-          <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>Apple</Text>
+          <Text className="text-[15px] font-worksans-medium" style={{ color: '#30352D' }}>
+            {getAppContentValue(content, 'oauth.apple_label', DEFAULT_CONTENT['oauth.apple_label'])}
+          </Text>
         </Pressable>
       </View>
     </View>

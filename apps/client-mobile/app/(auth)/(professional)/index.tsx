@@ -5,6 +5,18 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { router, useLocalSearchParams } from 'expo-router';
 import { countryCodeToFlagEmoji, getWelcomeCountry } from '@/lib/welcome-country';
 import AuthLogo from '@/components/auth/AuthLogo';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'hero.title': 'Offer services on 100Handy',
+  'actions.create_account': 'Create Account',
+  'actions.sign_in': 'Sign in',
+  'legal.prefix': 'I agree to the',
+  'legal.terms_label': 'Terms of Service',
+  'legal.middle': 'and have reviewed the',
+  'legal.privacy_label': 'Privacy Policy',
+  'legal.suffix': '.',
+} as const;
 
 export default function ProfessionalWelcome() {
   const params = useLocalSearchParams();
@@ -15,6 +27,7 @@ export default function ProfessionalWelcome() {
     if (typeof value === 'string' && value.trim().length > 0) return value.trim();
     return undefined;
   }, [params.ref]);
+  const content = useAppContent('auth_professional_start', DEFAULT_CONTENT);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,7 +74,7 @@ export default function ProfessionalWelcome() {
           <View className="flex-col flex-1 bg-white w-full self-center" style={{ maxWidth: 560 }}>
             {/* Welcome Text */}
             <Text className="text-[19px] font-worksans-bold text-center px-8 pt-10 pb-8 text-brand-dark-alt">
-              Offer services on 100Handy
+              {getAppContentValue(content, 'hero.title', DEFAULT_CONTENT['hero.title'])}
             </Text>
 
             {/* Create Account Button */}
@@ -74,9 +87,9 @@ export default function ProfessionalWelcome() {
                     params: { ...(ref ? { ref } : {}), via: 'welcome' },
                   } as Parameters<typeof router.push>[0])
                 }
-              >
+                >
                 <ButtonText className="text-[18px] font-worksans-bold">
-                  Create Account
+                  {getAppContentValue(content, 'actions.create_account', DEFAULT_CONTENT['actions.create_account'])}
                 </ButtonText>
               </Button>
 
@@ -89,30 +102,30 @@ export default function ProfessionalWelcome() {
                     params: ref ? { ref } : {},
                   } as Parameters<typeof router.push>[0])
                 }
-              >
+                >
                 <Text className="text-center text-[18px] font-worksans-bold text-brand-terracotta">
-                  Sign in
+                  {getAppContentValue(content, 'actions.sign_in', DEFAULT_CONTENT['actions.sign_in'])}
                 </Text>
               </Pressable>
 
               {/* Terms and Privacy */}
               <View className="pb-10">
                 <Text className="text-center text-[15px] font-worksans-medium leading-[22px] text-brand-dark-alt">
-                  I agree to the{' '}
+                  {getAppContentValue(content, 'legal.prefix', DEFAULT_CONTENT['legal.prefix'])}{' '}
                   <Text
                     className="text-brand-terracotta"
                     onPress={() => Linking.openURL('https://www.100handy.com/terms')}
                   >
-                    Terms of Service
+                    {getAppContentValue(content, 'legal.terms_label', DEFAULT_CONTENT['legal.terms_label'])}
                   </Text>
-                  {' '}and have reviewed the{' '}
+                  {' '}{getAppContentValue(content, 'legal.middle', DEFAULT_CONTENT['legal.middle'])}{' '}
                   <Text
                     className="text-brand-terracotta"
                     onPress={() => Linking.openURL('https://www.100handy.com/terms#privacy-policy')}
                   >
-                    Privacy Policy
+                    {getAppContentValue(content, 'legal.privacy_label', DEFAULT_CONTENT['legal.privacy_label'])}
                   </Text>
-                  .
+                  {getAppContentValue(content, 'legal.suffix', DEFAULT_CONTENT['legal.suffix'])}
                 </Text>
               </View>
             </View>

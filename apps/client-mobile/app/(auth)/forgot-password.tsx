@@ -12,10 +12,26 @@ import { forgotPasswordSchema, type ForgotPasswordFormData } from '@shared/schem
 import { sendPasswordResetOTP } from '@shared/supabase/auth';
 import { useToast } from '@/components/ui/toast';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Reset Password',
+  'body.description': "Enter your email address and we'll send you a verification code to reset your password.",
+  'fields.email_placeholder': 'Email',
+  'actions.submit': 'Send verification code',
+  'actions.submitting': 'Sending...',
+  'links.remember_prefix': 'Remember your password?',
+  'links.remember_cta': 'Sign in',
+  'feedback.success_title': 'Code sent!',
+  'feedback.success_body': 'Check your email for the verification code',
+  'feedback.error_title': 'Failed to send code',
+  'feedback.error_body': 'Please try again',
+} as const;
 
 export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
+  const content = useAppContent('auth_forgot_password', DEFAULT_CONTENT);
 
   const {
     control,
@@ -30,7 +46,10 @@ export default function ForgotPassword() {
     try {
       setIsLoading(true);
       await sendPasswordResetOTP(data.email);
-      toast.success('Code sent!', 'Check your email for the verification code');
+      toast.success(
+        getAppContentValue(content, 'feedback.success_title', DEFAULT_CONTENT['feedback.success_title']),
+        getAppContentValue(content, 'feedback.success_body', DEFAULT_CONTENT['feedback.success_body'])
+      );
 
       // Navigate to verify-otp screen with reset type
       router.push({
@@ -42,7 +61,12 @@ export default function ForgotPassword() {
       });
     } catch (error) {
       console.error('Password reset error:', error);
-      toast.error('Failed to send code', error instanceof Error ? error.message : 'Please try again');
+      toast.error(
+        getAppContentValue(content, 'feedback.error_title', DEFAULT_CONTENT['feedback.error_title']),
+        error instanceof Error
+          ? error.message
+          : getAppContentValue(content, 'feedback.error_body', DEFAULT_CONTENT['feedback.error_body'])
+      );
     } finally {
       setIsLoading(false);
     }
@@ -64,7 +88,7 @@ export default function ForgotPassword() {
                 <ChevronLeft size={24} color="#333A31" />
               </Pressable>
               <Text className="text-lg font-worksans-medium" style={{ color: '#333A31' }}>
-                Reset Password
+                {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
               </Text>
               <View className="w-6" />
             </View>
@@ -77,7 +101,7 @@ export default function ForgotPassword() {
             {/* Description */}
             <View className="px-5 mb-6">
               <Text className="text-base font-worksans text-typography-600 text-center leading-6">
-                Enter your email address and we'll send you a verification code to reset your password.
+                {getAppContentValue(content, 'body.description', DEFAULT_CONTENT['body.description'])}
               </Text>
             </View>
 
@@ -99,7 +123,7 @@ export default function ForgotPassword() {
                             className="absolute left-0 text-[15px] font-worksans"
                             style={{ color: '#9CA3AF' }}
                           >
-                            Email
+                            {getAppContentValue(content, 'fields.email_placeholder', DEFAULT_CONTENT['fields.email_placeholder'])}
                           </Text>
                         ) : null}
                         <InputField
@@ -136,14 +160,18 @@ export default function ForgotPassword() {
                   className="text-[18px] font-worksans-bold"
                   style={{ color: isValid ? 'white' : '#B7B7B7' }}
                 >
-                  {isLoading ? 'Sending...' : 'Send verification code'}
+                  {isLoading
+                    ? getAppContentValue(content, 'actions.submitting', DEFAULT_CONTENT['actions.submitting'])
+                    : getAppContentValue(content, 'actions.submit', DEFAULT_CONTENT['actions.submit'])}
                 </ButtonText>
               </Button>
 
               <Pressable onPress={() => goBackOrReplace(router, '/(auth)/(client)/sign-in')} className="mt-4">
                 <Text className="text-center text-sm font-worksans-medium" style={{ color: '#30352D' }}>
-                  Remember your password?{' '}
-                  <Text style={{ color: '#C1856A' }}>Sign in</Text>
+                  {getAppContentValue(content, 'links.remember_prefix', DEFAULT_CONTENT['links.remember_prefix'])}{' '}
+                  <Text style={{ color: '#C1856A' }}>
+                    {getAppContentValue(content, 'links.remember_cta', DEFAULT_CONTENT['links.remember_cta'])}
+                  </Text>
                 </Text>
               </Pressable>
             </View>

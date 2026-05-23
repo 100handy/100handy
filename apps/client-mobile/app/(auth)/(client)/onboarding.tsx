@@ -3,6 +3,7 @@ import { usePendingBookingStore, useLocationStore } from '@shared/store';
 import { View, Text, Pressable, Dimensions } from 'react-native'; import { Image } from 'expo-image'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronRight, MapPin, Calendar } from 'lucide-react-native'; import { router } from 'expo-router'; import Svg, { Path } from 'react-native-svg'; import StarRating from '@/assets/images/star-rating.svg'; import AuthLogo from '@/components/auth/AuthLogo'; import AsyncStorage from '@react-native-async-storage/async-storage'; import { useAuthStore } from '@shared/store'; import { supabase } from '@shared/supabase';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { getPublicSiteSetting, resolvePublicAssetUrl } from '@/lib/public-settings';
+import { getAppContentValue, getMultilineAppContent, useAppContent } from '@/lib/app-content';
 
 const CLIENT_ONBOARDING_COMPLETED_KEY_PREFIX = '@clientOnboardingCompleted:';
 
@@ -23,38 +24,44 @@ const COLORS = {
   cardBg: '#F7F1EC',
 };
 
+const DEFAULT_CONTENT = {
+  'slide_1.description': 'Help with everyday\nLife at your fingertips.',
+  'slide_2.description': 'See reviews prices\nof 140,000+\nbackground\nchecked Taskers.',
+  'slide_3.description': 'Chat with your 100Handy Pro to schedule\nThe job and get it done.',
+  'slide_4.description': 'Manage your tasks and build your\nInner circle of taskers.',
+  'actions.skip': 'Skip',
+  'actions.next': 'Got it',
+  'actions.complete': 'Get started',
+} as const;
+
+function renderDescriptionLines(lines: string[]) {
+  return (
+    <>
+      {lines.map((line, index) => (
+        <Text key={`${line}-${index}`} className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
+          {line}
+        </Text>
+      ))}
+    </>
+  );
+}
+
 // Onboarding content data
-const buildOnboardingData = (avatarLukasUri: string | null, avatarJanaUri: string | null) => [
+const buildOnboardingData = (
+  avatarLukasUri: string | null,
+  avatarJanaUri: string | null,
+  content: Record<string, string>
+) => [
   {
     id: 0,
-    description: (
-      <>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          Help with everyday
-        </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          Life at your fingertips.
-        </Text>
-      </>
+    description: renderDescriptionLines(
+      getMultilineAppContent(content, 'slide_1.description', DEFAULT_CONTENT['slide_1.description'])
     ),
   },
   {
     id: 1,
-    description: (
-      <>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          See reviews prices
-        </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          of 140,000+
-        </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          background
-        </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          checked Taskers.
-        </Text>
-      </>
+    description: renderDescriptionLines(
+      getMultilineAppContent(content, 'slide_2.description', DEFAULT_CONTENT['slide_2.description'])
     ),
     content: (
       <View className="flex-col gap-4 mt-12">
@@ -92,15 +99,8 @@ const buildOnboardingData = (avatarLukasUri: string | null, avatarJanaUri: strin
   },
   {
     id: 2,
-    description: (
-      <>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          Chat with your 100Handy Pro to schedule
-        </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          The job and get it done.
-        </Text>
-      </>
+    description: renderDescriptionLines(
+      getMultilineAppContent(content, 'slide_3.description', DEFAULT_CONTENT['slide_3.description'])
     ),
     content: (
       <View className="flex-col gap-4 mt-12">
@@ -143,15 +143,8 @@ const buildOnboardingData = (avatarLukasUri: string | null, avatarJanaUri: strin
   },
   {
     id: 3,
-    description: (
-      <>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          Manage your tasks and build your
-        </Text>
-        <Text className="text-[23px] leading-[28px] font-worksans-light" style={{ color: COLORS.themeFont }}>
-          Inner circle of taskers.
-        </Text>
-      </>
+    description: renderDescriptionLines(
+      getMultilineAppContent(content, 'slide_4.description', DEFAULT_CONTENT['slide_4.description'])
     ),
     content: (
       <View className="flex-col gap-4 mt-12">
@@ -246,7 +239,8 @@ export default function ClientOnboarding() {
   const [currentStep, setCurrentStep] = useState(0);
   const [avatarLukasUri, setAvatarLukasUri] = useState<string | null>(null);
   const [avatarJanaUri, setAvatarJanaUri] = useState<string | null>(null);
-  const onboardingData = buildOnboardingData(avatarLukasUri, avatarJanaUri);
+  const content = useAppContent('auth_client_onboarding', DEFAULT_CONTENT);
+  const onboardingData = buildOnboardingData(avatarLukasUri, avatarJanaUri, content);
   const totalSteps = onboardingData.length;
   const { isAuthenticated, updateOnboardingStatus, user } = useAuthStore();
   const { getPendingBooking, hasRestorablePendingBooking, markPendingBookingRestored } = usePendingBookingStore();
@@ -421,7 +415,7 @@ export default function ClientOnboarding() {
         <SafeAreaView className="absolute top-0 right-0" edges={['top']}>
           <Pressable onPress={handleSkip} className="px-6 py-4">
             <Text className="text-[14px] font-worksans-medium text-white">
-              Skip
+              {getAppContentValue(content, 'actions.skip', DEFAULT_CONTENT['actions.skip'])}
             </Text>
           </Pressable>
         </SafeAreaView>
@@ -457,7 +451,9 @@ export default function ClientOnboarding() {
               <Pressable onPress={handleGotIt}>
                 <View className="flex-row items-center gap-1">
                   <Text className="text-[18px] font-worksans-medium" style={{ color: COLORS.sageGreenFigma }}>
-                    {currentStep === totalSteps - 1 ? 'Get started' : 'Got it'}
+                    {currentStep === totalSteps - 1
+                      ? getAppContentValue(content, 'actions.complete', DEFAULT_CONTENT['actions.complete'])
+                      : getAppContentValue(content, 'actions.next', DEFAULT_CONTENT['actions.next'])}
                   </Text>
                   <ChevronRight size={18} color={COLORS.sageGreenFigma} />
                 </View>

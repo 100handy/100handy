@@ -7,6 +7,7 @@ interface MessageListProps {
   messages: SupportMessage[];
   loading?: boolean;
   onRefresh?: () => void;
+  emptyText?: string;
 }
 
 interface MessageWithDate extends SupportMessage {
@@ -22,7 +23,12 @@ const DateSeparator = ({ label }: { label: string }) => (
   </View>
 );
 
-export const MessageList = ({ messages, loading = false, onRefresh }: MessageListProps) => {
+export const MessageList = ({
+  messages,
+  loading = false,
+  onRefresh,
+  emptyText = 'No messages yet. Start the conversation!',
+}: MessageListProps) => {
   const flatListRef = useRef<FlatList>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -79,7 +85,7 @@ export const MessageList = ({ messages, loading = false, onRefresh }: MessageLis
   const renderEmpty = () => (
     <View className="flex-1 items-center justify-center p-6">
       <Text className="text-[16px] text-[#999999] text-center">
-        No messages yet. Start the conversation!
+        {emptyText}
       </Text>
     </View>
   );

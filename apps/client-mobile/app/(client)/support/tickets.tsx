@@ -1,6 +1,25 @@
 import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollView, View, Text, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native'; import { useRouter } from 'expo-router'; import { ChevronLeft, MessageCircle, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react-native'; import Header from '@/components/Header'; import { useSupportStore } from '@shared/store/support'; import { formatDistanceToNow } from 'date-fns'; import { SupportTicket } from '@shared/supabase';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'My Tickets',
+  'actions.create': 'Create New Ticket',
+  'loading.text': 'Loading tickets...',
+  'empty.title': 'No Support Tickets',
+  'empty.body': "You haven't created any support tickets yet",
+  'sections.active_prefix': 'Active',
+  'sections.closed_prefix': 'Closed',
+  'delete.title': 'Delete Ticket',
+  'delete.body_template': 'Are you sure you want to delete "{subject}"? This action cannot be undone.',
+  'delete.cancel_cta': 'Cancel',
+  'delete.confirm_cta': 'Delete',
+  'delete.success_title': 'Success',
+  'delete.success_body': 'Ticket deleted successfully',
+  'delete.error_title': 'Error',
+  'delete.error_body': 'Failed to delete ticket. Please try again.',
+} as const;
 
 interface TicketItemProps {
   ticket: SupportTicket;
@@ -86,6 +105,7 @@ export default function TicketsScreen() {
   const router = useRouter();
   const { tickets, isLoadingTickets, fetchTickets, deleteTicket } = useSupportStore();
   const [refreshing, setRefreshing] = React.useState(false);
+  const content = useAppContent('client_support_tickets', DEFAULT_CONTENT);
 
   useEffect(() => {
     fetchTickets();
@@ -113,22 +133,28 @@ export default function TicketsScreen() {
 
   const handleDeleteTicket = (ticketId: string, subject: string) => {
     Alert.alert(
-      'Delete Ticket',
-      `Are you sure you want to delete "${subject}"? This action cannot be undone.`,
+      getAppContentValue(content, 'delete.title', DEFAULT_CONTENT['delete.title']),
+      getAppContentValue(content, 'delete.body_template', DEFAULT_CONTENT['delete.body_template']).replace('{subject}', subject),
       [
         {
-          text: 'Cancel',
+          text: getAppContentValue(content, 'delete.cancel_cta', DEFAULT_CONTENT['delete.cancel_cta']),
           style: 'cancel',
         },
         {
-          text: 'Delete',
+          text: getAppContentValue(content, 'delete.confirm_cta', DEFAULT_CONTENT['delete.confirm_cta']),
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteTicket(ticketId);
-              Alert.alert('Success', 'Ticket deleted successfully');
+              Alert.alert(
+                getAppContentValue(content, 'delete.success_title', DEFAULT_CONTENT['delete.success_title']),
+                getAppContentValue(content, 'delete.success_body', DEFAULT_CONTENT['delete.success_body'])
+              );
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete ticket. Please try again.');
+              Alert.alert(
+                getAppContentValue(content, 'delete.error_title', DEFAULT_CONTENT['delete.error_title']),
+                getAppContentValue(content, 'delete.error_body', DEFAULT_CONTENT['delete.error_body'])
+              );
             }
           },
         },
@@ -145,7 +171,9 @@ export default function TicketsScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#C1856A" />
-          <Text className="text-sm text-gray-600 mt-3">Loading tickets...</Text>
+          <Text className="text-sm text-gray-600 mt-3">
+            {getAppContentValue(content, 'loading.text', DEFAULT_CONTENT['loading.text'])}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -155,7 +183,11 @@ export default function TicketsScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <View className="flex-1">
         {/* Header */}
-        <Header title="My Tickets" onBackPress={() => goBackOrReplace(router, '/(client)/profile/support')} showBellIcon={false} />
+        <Header
+          title={getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
+          onBackPress={() => goBackOrReplace(router, '/(client)/profile/support')}
+          showBellIcon={false}
+        />
 
         {/* Create New Ticket Button */}
         <View className="bg-white px-5 py-3 border-b border-gray-200">
@@ -163,7 +195,9 @@ export default function TicketsScreen() {
             onPress={handleCreateNew}
             className="bg-[#C1856A] rounded-lg py-3 items-center justify-center"
           >
-            <Text className="text-white font-semibold text-base">Create New Ticket</Text>
+            <Text className="text-white font-semibold text-base">
+              {getAppContentValue(content, 'actions.create', DEFAULT_CONTENT['actions.create'])}
+            </Text>
           </Pressable>
         </View>
 
@@ -177,9 +211,11 @@ export default function TicketsScreen() {
           {tickets.length === 0 ? (
             <View className="flex-1 items-center justify-center py-20">
               <MessageCircle size={64} color="#D1D5DB" strokeWidth={1.5} />
-              <Text className="text-lg font-medium text-gray-500 mt-4">No Support Tickets</Text>
+              <Text className="text-lg font-medium text-gray-500 mt-4">
+                {getAppContentValue(content, 'empty.title', DEFAULT_CONTENT['empty.title'])}
+              </Text>
               <Text className="text-sm text-gray-400 mt-2 text-center px-10">
-                You haven't created any support tickets yet
+                {getAppContentValue(content, 'empty.body', DEFAULT_CONTENT['empty.body'])}
               </Text>
             </View>
           ) : (
@@ -188,7 +224,7 @@ export default function TicketsScreen() {
               {openTickets.length > 0 && (
                 <View className="mt-4">
                   <Text className="text-xs font-semibold text-gray-500 uppercase px-5 mb-2">
-                    Active ({openTickets.length})
+                    {getAppContentValue(content, 'sections.active_prefix', DEFAULT_CONTENT['sections.active_prefix'])} ({openTickets.length})
                   </Text>
                   {openTickets.map((ticket) => (
                     <TicketItem
@@ -205,7 +241,7 @@ export default function TicketsScreen() {
               {closedTickets.length > 0 && (
                 <View className="mt-6">
                   <Text className="text-xs font-semibold text-gray-500 uppercase px-5 mb-2">
-                    Closed ({closedTickets.length})
+                    {getAppContentValue(content, 'sections.closed_prefix', DEFAULT_CONTENT['sections.closed_prefix'])} ({closedTickets.length})
                   </Text>
                   {closedTickets.map((ticket) => (
                     <TicketItem

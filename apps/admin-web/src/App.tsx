@@ -29,6 +29,7 @@ import BlogsPage from '@/pages/content/blogs'
 import MediaPage from '@/pages/content/media'
 import FAQsPage from '@/pages/content/faqs'
 import NavigationPage from '@/pages/content/navigation'
+import AppContentPage from '@/pages/content/app-content'
 import AddUserPage from '@/pages/users/add-user'
 import RemoveUsersPage from '@/pages/users/remove-users'
 import UserProfilePage from '@/pages/users/user-profile'
@@ -131,6 +132,7 @@ function App() {
           <Route path="/content/media" element={<MediaPage />} />
           <Route path="/content/faqs" element={<FAQsPage />} />
           <Route path="/content/navigation" element={<NavigationPage />} />
+          <Route path="/content/app-content" element={<AppContentPage />} />
           <Route path="/accounts" element={<AccountsOverviewPage />} />
           <Route path="/accounts/security" element={<SecurityOptions />} />
           <Route path="/accounts/verification" element={<VerificationOptions />} />

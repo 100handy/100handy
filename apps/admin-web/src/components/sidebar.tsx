@@ -85,6 +85,7 @@ const groups = [
       { label: 'Media', path: '/content/media' },
       { label: 'FAQs', path: '/content/faqs' },
       { label: 'Navigation', path: '/content/navigation' },
+      { label: 'App Content', path: '/content/app-content' },
     ],
   },
   {

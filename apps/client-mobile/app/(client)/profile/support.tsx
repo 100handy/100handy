@@ -5,6 +5,32 @@ import { useToast } from '@/components/ui/toast';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 import Constants from 'expo-constants';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Support',
+  'menu.message_support': 'Message Support',
+  'menu.view_tickets': 'View My Tickets',
+  'menu.support_center': 'Support Center',
+  'menu.support_center_url': 'https://100handy.com/support',
+  'menu.cancellation_policy': 'Cancellation Policy',
+  'policy.title': 'Cancellation Policy',
+  'policy.body': 'Free cancellation up to 24 hours before your booking start time.\n\nCancellations made less than 24 hours before the booking will incur a 50% cancellation fee.\n\nNo-shows will be charged the full booking amount.',
+  'menu.delete_account': 'Delete Account',
+  'delete.title': 'Delete Account',
+  'delete.warning': 'This action cannot be undone. All your data, bookings, and reviews will be permanently deleted.',
+  'delete.prompt': 'Enter your password to confirm.',
+  'delete.password_placeholder': 'Password',
+  'delete.confirm_cta': 'Delete My Account',
+  'delete.cancel_cta': 'Cancel',
+  'delete.success_title': 'Success',
+  'delete.success_body': 'Your account has been deleted',
+  'delete.error_title': 'Error',
+  'delete.wrong_password': 'Incorrect password. Please try again.',
+  'delete.generic_error': 'Failed to delete account. Please try again or contact support.',
+  'support_center.error_title': 'Error',
+  'support_center.error_body': 'Unable to open support center',
+} as const;
 
 interface MenuItemProps {
   title: string;
@@ -31,6 +57,7 @@ export default function SupportScreen() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+  const content = useAppContent('client_support', DEFAULT_CONTENT);
 
   const handleMessageSupport = () => {
     router.push('/(client)/support/message-support');
@@ -41,22 +68,23 @@ export default function SupportScreen() {
   };
 
   const handleSupportCenter = async () => {
-    const url = 'https://100handy.com/support'; // Replace with actual support center URL
+    const url = getAppContentValue(content, 'menu.support_center_url', DEFAULT_CONTENT['menu.support_center_url']);
     const supported = await Linking.canOpenURL(url);
 
     if (supported) {
       await Linking.openURL(url);
     } else {
-      Alert.alert('Error', 'Unable to open support center');
+      Alert.alert(
+        getAppContentValue(content, 'support_center.error_title', DEFAULT_CONTENT['support_center.error_title']),
+        getAppContentValue(content, 'support_center.error_body', DEFAULT_CONTENT['support_center.error_body'])
+      );
     }
   };
 
   const handleCancellationPolicy = () => {
     Alert.alert(
-      'Cancellation Policy',
-      'Free cancellation up to 24 hours before your booking start time.\n\n' +
-      'Cancellations made less than 24 hours before the booking will incur a 50% cancellation fee.\n\n' +
-      'No-shows will be charged the full booking amount.',
+      getAppContentValue(content, 'policy.title', DEFAULT_CONTENT['policy.title']),
+      getAppContentValue(content, 'policy.body', DEFAULT_CONTENT['policy.body']),
       [{ text: 'OK' }]
     );
   };
@@ -76,7 +104,10 @@ export default function SupportScreen() {
       if (success) {
         setShowDeleteConfirm(false);
         setDeletePassword('');
-        toast.success('Success', 'Your account has been deleted');
+        toast.success(
+          getAppContentValue(content, 'delete.success_title', DEFAULT_CONTENT['delete.success_title']),
+          getAppContentValue(content, 'delete.success_body', DEFAULT_CONTENT['delete.success_body'])
+        );
         router.replace('/(auth)/(client)');
       } else {
         throw new Error('Failed to delete account');
@@ -84,9 +115,9 @@ export default function SupportScreen() {
     } catch (err) {
       console.error('Error deleting account:', err);
       const message = err instanceof Error && err.message.includes('Invalid login credentials')
-        ? 'Incorrect password. Please try again.'
-        : 'Failed to delete account. Please try again or contact support.';
-      toast.error('Error', message);
+        ? getAppContentValue(content, 'delete.wrong_password', DEFAULT_CONTENT['delete.wrong_password'])
+        : getAppContentValue(content, 'delete.generic_error', DEFAULT_CONTENT['delete.generic_error']);
+      toast.error(getAppContentValue(content, 'delete.error_title', DEFAULT_CONTENT['delete.error_title']), message);
     } finally {
       setIsDeleting(false);
     }
@@ -96,32 +127,36 @@ export default function SupportScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <Header title="Support" onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} showBellIcon={false} />
+        <Header
+          title={getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
+          onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')}
+          showBellIcon={false}
+        />
 
         <ScrollView className="flex-1">
           <View className="flex-col pt-6">
             <MenuItem
-              title="Message Support"
+              title={getAppContentValue(content, 'menu.message_support', DEFAULT_CONTENT['menu.message_support'])}
               onPress={handleMessageSupport}
             />
 
             <MenuItem
-              title="View My Tickets"
+              title={getAppContentValue(content, 'menu.view_tickets', DEFAULT_CONTENT['menu.view_tickets'])}
               onPress={handleViewTickets}
             />
 
             <MenuItem
-              title="Support Center"
+              title={getAppContentValue(content, 'menu.support_center', DEFAULT_CONTENT['menu.support_center'])}
               onPress={handleSupportCenter}
             />
 
             <MenuItem
-              title="Cancellation Policy"
+              title={getAppContentValue(content, 'menu.cancellation_policy', DEFAULT_CONTENT['menu.cancellation_policy'])}
               onPress={handleCancellationPolicy}
             />
 
             <MenuItem
-              title="Delete Account"
+              title={getAppContentValue(content, 'menu.delete_account', DEFAULT_CONTENT['menu.delete_account'])}
               onPress={handleDeleteAccount}
               showDivider={false}
             />
@@ -141,17 +176,19 @@ export default function SupportScreen() {
         <ModalContent className="bg-white">
           <ModalBody>
             <View className="flex-col w-full px-4 py-6">
-              <Text className="text-xl font-semibold text-[#30352D] mb-2">Delete Account</Text>
+              <Text className="text-xl font-semibold text-[#30352D] mb-2">
+                {getAppContentValue(content, 'delete.title', DEFAULT_CONTENT['delete.title'])}
+              </Text>
               <Text className="text-sm text-gray-600 mb-2">
-                This action cannot be undone. All your data, bookings, and reviews will be permanently deleted.
+                {getAppContentValue(content, 'delete.warning', DEFAULT_CONTENT['delete.warning'])}
               </Text>
               <Text className="text-sm font-semibold text-gray-700 mb-4">
-                Enter your password to confirm.
+                {getAppContentValue(content, 'delete.prompt', DEFAULT_CONTENT['delete.prompt'])}
               </Text>
               <TextInput
                 value={deletePassword}
                 onChangeText={setDeletePassword}
-                placeholder="Password"
+                placeholder={getAppContentValue(content, 'delete.password_placeholder', DEFAULT_CONTENT['delete.password_placeholder'])}
                 placeholderTextColor="#9CA3AF"
                 secureTextEntry
                 autoFocus
@@ -167,14 +204,18 @@ export default function SupportScreen() {
                 {isDeleting ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
-                  <Text className="text-white font-semibold text-base">Delete My Account</Text>
+                  <Text className="text-white font-semibold text-base">
+                    {getAppContentValue(content, 'delete.confirm_cta', DEFAULT_CONTENT['delete.confirm_cta'])}
+                  </Text>
                 )}
               </Pressable>
               <Pressable
                 onPress={() => { setShowDeleteConfirm(false); setDeletePassword(''); }}
                 className="w-full py-3 items-center mt-2"
               >
-                <Text className="text-gray-500 text-base">Cancel</Text>
+                <Text className="text-gray-500 text-base">
+                  {getAppContentValue(content, 'delete.cancel_cta', DEFAULT_CONTENT['delete.cancel_cta'])}
+                </Text>
               </Pressable>
             </View>
           </ModalBody>

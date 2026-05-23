@@ -6,6 +6,20 @@ import { countryCodeToFlagEmoji, getWelcomeCountry } from '@/lib/welcome-country
 import AuthLogo from '@/components/auth/AuthLogo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.not_now': 'Not now',
+  'hero.title': 'Welcome to 100Handy',
+  'actions.create_account': 'Create Account',
+  'actions.sign_in': 'Sign in',
+  'legal.prefix': 'I agree to the',
+  'legal.terms_label': 'Terms of Service',
+  'legal.middle': 'and have reviewed the',
+  'legal.privacy_label': 'Privacy Policy',
+  'legal.suffix': '.',
+  'links.offer_services': 'Looking to offer services on 100Handy',
+} as const;
 
 export default function ClientWelcomeStart() {
   const params = useLocalSearchParams();
@@ -16,6 +30,7 @@ export default function ClientWelcomeStart() {
     if (typeof value === 'string' && value.trim().length > 0) return value.trim();
     return undefined;
   }, [params.ref]);
+  const content = useAppContent('auth_client_start', DEFAULT_CONTENT);
 
   useEffect(() => {
     let isMounted = true;
@@ -63,7 +78,9 @@ export default function ClientWelcomeStart() {
                   <Text className="text-white font-worksans-medium text-[15px]">{countryName}</Text>
                 </View>
                 <Pressable onPress={handleNotNow} className="px-1 py-2">
-                  <Text className="text-[15px] font-worksans-medium text-white">Not now</Text>
+                  <Text className="text-[15px] font-worksans-medium text-white">
+                    {getAppContentValue(content, 'header.not_now', DEFAULT_CONTENT['header.not_now'])}
+                  </Text>
                 </Pressable>
               </View>
 
@@ -75,7 +92,7 @@ export default function ClientWelcomeStart() {
                 className="text-2xl font-worksans-bold text-center px-8 pt-10 pb-8"
                 style={{ color: '#30352D' }}
               >
-                Welcome to 100Handy
+                {getAppContentValue(content, 'hero.title', DEFAULT_CONTENT['hero.title'])}
               </Text>
 
               <View className="px-5">
@@ -90,7 +107,7 @@ export default function ClientWelcomeStart() {
                   }
                 >
                   <Text className="text-center text-[18px] font-worksans-bold text-white">
-                    Create Account
+                    {getAppContentValue(content, 'actions.create_account', DEFAULT_CONTENT['actions.create_account'])}
                   </Text>
                 </Pressable>
 
@@ -108,7 +125,7 @@ export default function ClientWelcomeStart() {
                     className="text-center text-[18px] font-worksans-bold"
                     style={{ color: '#C1856A' }}
                   >
-                    Sign in
+                    {getAppContentValue(content, 'actions.sign_in', DEFAULT_CONTENT['actions.sign_in'])}
                   </Text>
                 </Pressable>
 
@@ -117,21 +134,21 @@ export default function ClientWelcomeStart() {
                     className="text-center text-[15px] font-worksans-medium leading-[22px]"
                     style={{ color: '#30352D' }}
                   >
-                    I agree to the{' '}
+                    {getAppContentValue(content, 'legal.prefix', DEFAULT_CONTENT['legal.prefix'])}{' '}
                     <Text
                       style={{ color: '#C1856A' }}
                       onPress={() => Linking.openURL('https://www.100handy.com/terms')}
                     >
-                      Terms of Service
+                      {getAppContentValue(content, 'legal.terms_label', DEFAULT_CONTENT['legal.terms_label'])}
                     </Text>
-                    {' '}and have reviewed the{' '}
+                    {' '}{getAppContentValue(content, 'legal.middle', DEFAULT_CONTENT['legal.middle'])}{' '}
                     <Text
                       style={{ color: '#C1856A' }}
                       onPress={() => Linking.openURL('https://www.100handy.com/terms#privacy-policy')}
                     >
-                      Privacy Policy
+                      {getAppContentValue(content, 'legal.privacy_label', DEFAULT_CONTENT['legal.privacy_label'])}
                     </Text>
-                    .
+                    {getAppContentValue(content, 'legal.suffix', DEFAULT_CONTENT['legal.suffix'])}
                   </Text>
                   <Pressable
                     className="mt-5"
@@ -146,7 +163,7 @@ export default function ClientWelcomeStart() {
                       className="text-center text-[14px] font-worksans-medium"
                       style={{ color: '#30352D' }}
                     >
-                      Looking to offer services on <Text style={{ color: '#C1856A' }}>100Handy</Text>
+                      {getAppContentValue(content, 'links.offer_services', DEFAULT_CONTENT['links.offer_services'])}
                     </Text>
                   </Pressable>
                 </View>
