@@ -50,7 +50,8 @@ function ServiceCategoryCard({
   category: CategoryWithChildren
   imageOverrides: Record<string, string>
 }) {
-  const categorySlug = getCategoryRouteSlug(category.name) ?? slugify(category.name);
+  const categorySlug =
+    category.route_slug ?? getCategoryRouteSlug(category.name) ?? slugify(category.name);
   const subcategories = category.subcategories || [];
   const Icon = getCategoryIcon(category.name);
 
@@ -80,10 +81,10 @@ function ServiceCategoryCard({
       {/* Category Content */}
       <div className="p-6">
         <h2 className="text-[20px] font-bold text-brand-dark-alt mb-2">
-          {category.name}
+          {category.marketing_title || category.name}
         </h2>
         <p className="text-[14px] text-gray-600 mb-4">
-          {category.description || `Explore ${category.name} services`}
+          {category.marketing_description || category.description || `Explore ${category.name} services`}
         </p>
 
         {/* Subcategory Links */}
@@ -91,9 +92,10 @@ function ServiceCategoryCard({
           <ul className="space-y-2 mb-4">
             {displayedSubcategories.map((subcategory) => {
               const route = getServiceRoute(subcategory.name);
+              const serviceSlug = subcategory.route_slug ?? slugify(subcategory.name);
               const href = route
                 ? `/services/${route.category}/${route.service}`
-                : `/services/${categorySlug}/${slugify(subcategory.name)}`;
+                : `/services/${categorySlug}/${serviceSlug}`;
               const SubIcon = getCategoryIcon(subcategory.name);
               return (
                 <li key={subcategory.id}>

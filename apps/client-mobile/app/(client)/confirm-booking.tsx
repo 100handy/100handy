@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { useLocationStore, usePendingBookingStore, type PendingBookingData } from '@shared/store';
-import { useCreateBooking, doesAvailabilitySlotApplyToDate, type Coordinate } from '@shared/query';
+import { useCreateBooking, useCategoryById, doesAvailabilitySlotApplyToDate, type Coordinate } from '@shared/query';
 import { ScrollView, Image, Alert, ActivityIndicator, View, Text, Pressable, BackHandler, Switch, Platform } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, MapPin, Calendar, Clock, Edit, ChevronRight, CreditCard } from 'lucide-react-native'; import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'; import { useHandymanProfile } from '@shared/query'; import { type FormResponse, listPaymentMethods, type PaymentMethod, createPaymentIntent, cancelPaymentIntent, checkBookingConflict, getWorkAreaByUserId, getAvailabilityByUserId, isLocationInWorkArea, type BookingFrequency, FREQUENCY_OPTIONS, calculateDiscountedRate } from '@shared/supabase';
 import { useAuthStore } from '@shared/store';
 import { useToast } from '@/components/ui/toast';
@@ -21,7 +21,9 @@ export default function ConfirmBookingScreen() {
   const selectedTime = params.selectedTime as string;
   const selectedFrequencyParam =
     typeof params.selectedFrequency === 'string' ? params.selectedFrequency : 'once';
-  const supportsRecurringFrequency = categoryName.toLowerCase().includes('clean');
+  const { data: selectedCategory } = useCategoryById(categoryId);
+  const supportsRecurringFrequency =
+    selectedCategory?.supports_recurring ?? categoryName.toLowerCase().includes('clean');
 
   // Parse form responses
   const formResponses: FormResponse = useMemo(() => {

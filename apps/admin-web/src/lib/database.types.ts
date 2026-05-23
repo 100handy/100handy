@@ -65,22 +65,70 @@ export interface Database {
       }
       categories: {
         Row: {
+          active: boolean
+          benefits_json: Json
+          content_image_url: string | null
+          created_at: string
+          display_order: number
+          faqs_json: Json
+          hero_image_url: string | null
           id: string
-          name: string
           description: string | null
           icon_url: string | null
+          level: number
+          long_description: string | null
+          marketing_description: string | null
+          marketing_title: string | null
+          name: string
+          parent_id: string | null
+          route_slug: string | null
+          supports_recurring: boolean
+          tasks_json: Json
+          updated_at: string
         }
         Insert: {
+          active?: boolean
+          benefits_json?: Json
+          content_image_url?: string | null
+          created_at?: string
+          display_order?: number
+          faqs_json?: Json
+          hero_image_url?: string | null
           id?: string
-          name: string
           description?: string | null
           icon_url?: string | null
+          level?: number
+          long_description?: string | null
+          marketing_description?: string | null
+          marketing_title?: string | null
+          name: string
+          parent_id?: string | null
+          route_slug?: string | null
+          supports_recurring?: boolean
+          tasks_json?: Json
+          updated_at?: string
         }
         Update: {
+          active?: boolean
+          benefits_json?: Json
+          content_image_url?: string | null
+          created_at?: string
+          display_order?: number
+          faqs_json?: Json
+          hero_image_url?: string | null
           id?: string
-          name?: string
           description?: string | null
           icon_url?: string | null
+          level?: number
+          long_description?: string | null
+          marketing_description?: string | null
+          marketing_title?: string | null
+          name?: string
+          parent_id?: string | null
+          route_slug?: string | null
+          supports_recurring?: boolean
+          tasks_json?: Json
+          updated_at?: string
         }
       }
       bookings: {

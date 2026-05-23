@@ -76,13 +76,24 @@ export interface Transaction {
 }
 
 export interface Category {
+  active: boolean;
+  benefits_json: Array<{ title: string; description: string }>;
+  content_image_url: string | null;
   id: string;
   name: string;
   description: string | null;
+  faqs_json: Array<{ question: string; answer: string }>;
+  hero_image_url: string | null;
   icon_url: string | null;
   parent_id: string | null;
   level: number;
+  long_description: string | null;
   display_order: number;
+  route_slug: string | null;
+  marketing_title: string | null;
+  marketing_description: string | null;
+  supports_recurring: boolean;
+  tasks_json: Array<{ title: string; description: string }>;
   created_at: string;
   updated_at: string;
 }
@@ -152,4 +163,3 @@ export interface Review {
   comment: string | null;
   created_at: string;
 }
-

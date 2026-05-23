@@ -39,6 +39,11 @@ export default function BrowseCategoriesPage() {
 
   const trendingColors = ['blue', 'green', 'yellow', 'purple'] as const
 
+  const levelLabels = {
+    0: 'Main',
+    1: 'Sub',
+  } as const
+
   const badgeColors = {
     blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
     green: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
@@ -156,7 +161,13 @@ export default function BrowseCategoriesPage() {
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
-                      Description
+                      Public Routing
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
+                      Status
                     </th>
                     <th
                       scope="col"
@@ -172,11 +183,39 @@ export default function BrowseCategoriesPage() {
                 <tbody className="bg-white dark:bg-gray-800/50 divide-y divide-gray-200 dark:divide-gray-800">
                   {categories.map((category) => (
                     <tr key={category.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        {category.name}
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="flex flex-col gap-1">
+                          <span>{category.name}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs rounded-full px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                              {levelLabels[category.level as 0 | 1] ?? `Level ${category.level}`}
+                            </span>
+                            {category.supports_recurring && (
+                              <span className="text-xs rounded-full px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                Recurring
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                        {category.description || 'No description'}
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                        <div className="space-y-1">
+                          <div>{category.route_slug ? `/services/${category.route_slug}` : 'No route slug'}</div>
+                          <div className="truncate">
+                            {category.marketing_title || category.marketing_description || category.description || 'No public copy'}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                            category.active
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                          }`}
+                        >
+                          {category.active ? 'Live' : 'Hidden'}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {category.tasks_count}

@@ -1,59 +1,25 @@
 import { Header, Footer } from "@/components/layout";
 import { notFound } from "next/navigation";
-import { servicesData } from "@/lib/services-data";
 import Image from "next/image";
 import Link from "next/link";
 import { Wrench } from "lucide-react";
 import type { Metadata } from "next";
 import { getServiceWebImageSettings } from "@/lib/content-platform";
+import { getCategoryByRouteSlug, getMainCategories, getSubcategories } from "@/lib/supabase/categories";
 
-// Category display info with hero images
-const categoryMeta: Record<string, { title: string; description: string; heroImage: string }> = {
-  "furniture-assembly": {
-    title: "Furniture Assembly",
-    description: "From flat-pack builds to full room setups, our vetted Pros handle all your furniture assembly needs quickly and with care.",
-    heroImage: "/images/services/assembly/hero.jpeg",
-  },
-  "tv-wall-mounting": {
-    title: "TV & Wall Mounting",
-    description: "Professional mounting for TVs, shelves, pictures, light fixtures, curtains, and blinds - secure, level, and built to last.",
-    heroImage: "/images/services/mounting/hero.png",
-  },
-  "home-repairs": {
-    title: "Home Repairs & Fixes",
-    description: "From minor fixes to flooring, doors, windows, and carpentry - our Pros handle all your home maintenance needs.",
-    heroImage: "/images/services/home-repairs/hero.jpeg",
-  },
-  "plumbing": {
-    title: "Plumbing Services",
-    description: "Leak fixing, drain unblocking, tap replacement, and appliance installation - handled by experienced plumbers.",
-    heroImage: "/images/services/plumbing/hero.jpeg",
-  },
-  "electrical": {
-    title: "Electrical Services",
-    description: "Safe, reliable electrical work including lighting, sockets, switches, and cable repairs by certified electricians.",
-    heroImage: "/images/services/electrical/hero.jpeg",
-  },
-  "cleaning": {
-    title: "Cleaning Services",
-    description: "Standard cleans, deep cleans, end-of-tenancy, office cleaning, and AirBnB turnover - spotless results every time.",
-    heroImage: "/images/services/cleaning/hero.png",
-  },
-  "packing-moving": {
-    title: "Packing & Moving",
-    description: "Man and van, moving help, packing services, heavy lifting, and full-service moves - stress-free relocations.",
-    heroImage: "/images/services/moving/hero.jpeg",
-  },
-  "outdoor": {
-    title: "The Great Outdoors",
-    description: "Gardening, lawn care, landscaping, leaf removal, gutter cleaning, and hedge trimming - your garden, transformed.",
-    heroImage: "/images/services/outdoor/hero.jpeg",
-  },
-  "handyman": {
-    title: "Handyman Services",
-    description: "Expert help for every odd job, repair, and upgrade in your home - from assembly and painting to plumbing and electrical work.",
-    heroImage: "/images/services/home-repairs/hero.jpeg",
-  },
+const HANDYMAN_CATEGORY_META = {
+  title: "Handyman Services",
+  description:
+    "Expert help for every odd job, repair, and upgrade in your home - from assembly and painting to plumbing and electrical work.",
+  heroImage: "/images/services/home-repairs/hero.jpeg",
+  services: [
+    {
+      slug: "general",
+      title: "General Handyman Services",
+      description: "Expert help for every odd job, repair, and upgrade in your home.",
+      contentImage: undefined as string | undefined,
+    },
+  ],
 };
 
 interface CategoryPageProps {
@@ -62,39 +28,69 @@ interface CategoryPageProps {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params;
-  const imageSettings = await getServiceWebImageSettings({ categoryHeroImages: {} })
-  const meta = categoryMeta[category];
+  const dbCategory = await getCategoryByRouteSlug(category);
+  const meta = category === "handyman" ? HANDYMAN_CATEGORY_META : undefined;
+  const resolvedTitle =
+    dbCategory?.marketing_title || dbCategory?.name || meta?.title;
+  const resolvedDescription =
+    dbCategory?.marketing_description || dbCategory?.description || meta?.description;
 
-  if (!meta) {
+  if (!resolvedTitle) {
     return { title: "Services | 100 Handy" };
   }
 
   return {
-    title: `${meta.title} Services | 100 Handy`,
-    description: meta.description,
+    title: `${resolvedTitle} Services | 100 Handy`,
+    description: resolvedDescription || "Browse services from trusted 100 Handy Pros.",
   };
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
   const imageSettings = await getServiceWebImageSettings({ categoryHeroImages: {} })
-  const meta = categoryMeta[category];
-  const categoryData = servicesData[category];
+  const dbCategory = await getCategoryByRouteSlug(category);
+  const meta = category === "handyman" ? HANDYMAN_CATEGORY_META : undefined;
+  const dbChildren = dbCategory ? await getSubcategories(dbCategory.id) : [];
 
-  if (!meta || !categoryData) {
+  if ((!meta && !dbCategory) || (!meta?.services && dbChildren.length === 0)) {
     notFound();
   }
 
+  const fallbackMeta = meta || {
+    title: dbCategory?.marketing_title || dbCategory?.name || 'Services',
+    description:
+      dbCategory?.marketing_description ||
+      dbCategory?.description ||
+      'Browse services from trusted 100 Handy Pros.',
+    heroImage: '/images/services/hero.jpeg',
+  };
+
   const resolvedMeta = {
-    ...meta,
-    heroImage: imageSettings.categoryHeroImages?.[category] ?? meta.heroImage,
+    ...fallbackMeta,
+    title: dbCategory?.marketing_title || fallbackMeta.title,
+    description:
+      dbCategory?.marketing_description ||
+      dbCategory?.description ||
+      fallbackMeta.description,
+    heroImage:
+      imageSettings.categoryHeroImages?.[category] ??
+      dbCategory?.hero_image_url ??
+      fallbackMeta.heroImage,
   }
 
   // Get all services in this category
-  const services = Object.entries(categoryData).map(([slug, data]) => ({
-    slug,
-    ...data,
-  }));
+  const services =
+    dbChildren.length > 0
+      ? dbChildren.map((service) => ({
+          slug: service.route_slug || service.name.toLowerCase().replace(/\s+/g, '-'),
+          title: service.marketing_title || service.name,
+          description:
+            service.marketing_description ||
+            service.description ||
+            `Book ${service.name} with a trusted 100 Handy Pro.`,
+          contentImage: service.content_image_url || undefined,
+        }))
+      : meta?.services || [];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -112,7 +108,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           />
           <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
             <h1 className="text-[48px] font-bold text-white drop-shadow-lg">
-              {meta.title}
+              {resolvedMeta.title}
             </h1>
             <p className="mt-4 max-w-2xl text-[20px] text-white/90 drop-shadow-md">
               {resolvedMeta.description}
@@ -192,5 +188,17 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
 // Generate static params for all categories
 export async function generateStaticParams() {
-  return Object.keys(categoryMeta).map((category) => ({ category }));
+  const dbCategories = await getMainCategories();
+  const dbParams = dbCategories
+    .map((item) => item.route_slug)
+    .filter((slug): slug is string => Boolean(slug))
+    .map((slug) => ({ category: slug }));
+  const fallbackParams = [{ category: "handyman" }];
+  const seen = new Set<string>();
+
+  return [...dbParams, ...fallbackParams].filter((item) => {
+    if (seen.has(item.category)) return false;
+    seen.add(item.category);
+    return true;
+  });
 }

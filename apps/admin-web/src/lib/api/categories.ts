@@ -30,6 +30,19 @@ export interface CreateCategoryInput {
   name: string
   description?: string
   icon_url?: string
+  parent_id?: string | null
+  display_order?: number
+  route_slug?: string
+  marketing_title?: string
+  marketing_description?: string
+  active?: boolean
+  supports_recurring?: boolean
+  long_description?: string
+  hero_image_url?: string
+  content_image_url?: string
+  benefits_json?: Array<{ title: string; description: string }>
+  tasks_json?: Array<{ title: string; description: string }>
+  faqs_json?: Array<{ question: string; answer: string }>
 }
 
 export interface UpdateCategoryInput {
@@ -37,6 +50,19 @@ export interface UpdateCategoryInput {
   name?: string
   description?: string
   icon_url?: string
+  parent_id?: string | null
+  display_order?: number
+  route_slug?: string | null
+  marketing_title?: string | null
+  marketing_description?: string | null
+  active?: boolean
+  supports_recurring?: boolean
+  long_description?: string | null
+  hero_image_url?: string | null
+  content_image_url?: string | null
+  benefits_json?: Array<{ title: string; description: string }>
+  tasks_json?: Array<{ title: string; description: string }>
+  faqs_json?: Array<{ question: string; answer: string }>
 }
 
 // ============================================================================
@@ -58,12 +84,16 @@ export function useCategories(filters: CategoryFilters = {}) {
           bookings:bookings(id)
         `
         )
+        .order('level', { ascending: true })
+        .order('display_order', { ascending: true })
         .order('name', { ascending: true })
 
       // Apply search filter
       if (filters.search) {
         const searchTerm = `%${filters.search}%`
-        query = query.or(`name.ilike.${searchTerm},description.ilike.${searchTerm}`)
+        query = query.or(
+          `name.ilike.${searchTerm},description.ilike.${searchTerm},marketing_title.ilike.${searchTerm},marketing_description.ilike.${searchTerm},route_slug.ilike.${searchTerm}`
+        )
       }
 
       // Apply pagination
@@ -157,6 +187,20 @@ export function useCreateCategory() {
         name: input.name,
         description: input.description || null,
         icon_url: input.icon_url || null,
+        parent_id: input.parent_id ?? null,
+        level: input.parent_id ? 1 : 0,
+        display_order: input.display_order ?? 0,
+        route_slug: input.route_slug || null,
+        marketing_title: input.marketing_title || null,
+        marketing_description: input.marketing_description || null,
+        active: input.active ?? true,
+        supports_recurring: input.supports_recurring ?? false,
+        long_description: input.long_description || null,
+        hero_image_url: input.hero_image_url || null,
+        content_image_url: input.content_image_url || null,
+        benefits_json: input.benefits_json || [],
+        tasks_json: input.tasks_json || [],
+        faqs_json: input.faqs_json || [],
       }
 
       const { data, error } = await supabase.from('categories').insert(insertData).select().single()
@@ -184,6 +228,28 @@ export function useUpdateCategory() {
       if (input.name !== undefined) updateData.name = input.name
       if (input.description !== undefined) updateData.description = input.description
       if (input.icon_url !== undefined) updateData.icon_url = input.icon_url
+      if (input.parent_id !== undefined) {
+        updateData.parent_id = input.parent_id
+        updateData.level = input.parent_id ? 1 : 0
+      }
+      if (input.display_order !== undefined) updateData.display_order = input.display_order
+      if (input.route_slug !== undefined) updateData.route_slug = input.route_slug
+      if (input.marketing_title !== undefined) updateData.marketing_title = input.marketing_title
+      if (input.marketing_description !== undefined) {
+        updateData.marketing_description = input.marketing_description
+      }
+      if (input.active !== undefined) updateData.active = input.active
+      if (input.supports_recurring !== undefined) {
+        updateData.supports_recurring = input.supports_recurring
+      }
+      if (input.long_description !== undefined) updateData.long_description = input.long_description
+      if (input.hero_image_url !== undefined) updateData.hero_image_url = input.hero_image_url
+      if (input.content_image_url !== undefined) {
+        updateData.content_image_url = input.content_image_url
+      }
+      if (input.benefits_json !== undefined) updateData.benefits_json = input.benefits_json
+      if (input.tasks_json !== undefined) updateData.tasks_json = input.tasks_json
+      if (input.faqs_json !== undefined) updateData.faqs_json = input.faqs_json
 
       const { data, error } = await supabase
         .from('categories')

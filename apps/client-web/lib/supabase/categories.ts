@@ -10,6 +10,7 @@ export async function getAllCategories(): Promise<Category[]> {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
+    .eq('active', true)
     .order('display_order', { ascending: true });
 
   if (error) {
@@ -30,6 +31,7 @@ export async function getCategoriesByLevel(level: number): Promise<Category[]> {
     .from('categories')
     .select('*')
     .eq('level', level)
+    .eq('active', true)
     .order('display_order', { ascending: true });
 
   if (error) {
@@ -57,6 +59,7 @@ export async function getSubcategories(parentId: string): Promise<Category[]> {
     .from('categories')
     .select('*')
     .eq('parent_id', parentId)
+    .eq('active', true)
     .order('display_order', { ascending: true });
 
   if (error) {
@@ -77,6 +80,7 @@ export async function getCategoryById(id: string): Promise<Category | null> {
     .from('categories')
     .select('*')
     .eq('id', id)
+    .eq('active', true)
     .single();
 
   if (error) {
@@ -100,6 +104,7 @@ export async function getCategoryByName(name: string): Promise<Category | null> 
   const { data, error } = await supabase
     .from('categories')
     .select('*')
+    .eq('active', true)
     .ilike('name', normalizedName)
     .single();
 
@@ -111,6 +116,7 @@ export async function getCategoryByName(name: string): Promise<Category | null> 
   const { data: partialMatches } = await supabase
     .from('categories')
     .select('*')
+    .eq('active', true)
     .ilike('name', `%${normalizedName}%`)
     .order('level', { ascending: false }) // Prefer subcategories (more specific)
     .limit(1);
@@ -122,6 +128,58 @@ export async function getCategoryByName(name: string): Promise<Category | null> 
 
   console.error(`No category found matching "${name}"`);
   return null;
+}
+
+export async function getCategoryByRouteSlug(routeSlug: string): Promise<Category | null> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('route_slug', routeSlug)
+    .eq('active', true)
+    .maybeSingle();
+
+  if (error) {
+    console.error(`Error fetching category by route slug ${routeSlug}:`, error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getServiceCategoryByRoute(
+  categorySlug: string,
+  serviceSlug: string
+): Promise<{ parent: Category; service: Category } | null> {
+  const parent = await getCategoryByRouteSlug(categorySlug);
+  if (!parent) return null;
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('parent_id', parent.id)
+    .eq('route_slug', serviceSlug)
+    .eq('active', true)
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      `Error fetching service category by route ${categorySlug}/${serviceSlug}:`,
+      error
+    );
+    return null;
+  }
+
+  if (!data) {
+    if (parent.route_slug === serviceSlug) {
+      return { parent, service: parent };
+    }
+    return null;
+  }
+
+  return { parent, service: data };
 }
 
 /**
@@ -183,6 +241,7 @@ export async function searchCategories(searchTerm: string): Promise<Category[]> 
   const { data, error } = await supabase
     .from('categories')
     .select('*')
+    .eq('active', true)
     .ilike('name', `%${searchTerm}%`)
     .order('level', { ascending: true })
     .order('display_order', { ascending: true });

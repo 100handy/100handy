@@ -9,6 +9,17 @@ export interface Category {
   parent_id: string | null;
   level: number;
   display_order: number;
+  route_slug: string | null;
+  marketing_title: string | null;
+  marketing_description: string | null;
+  active: boolean;
+  supports_recurring: boolean;
+  long_description: string | null;
+  hero_image_url: string | null;
+  content_image_url: string | null;
+  benefits_json: Array<{ title: string; description: string }>;
+  tasks_json: Array<{ title: string; description: string }>;
+  faqs_json: Array<{ question: string; answer: string }>;
 }
 
 // Query keys for categories
@@ -16,6 +27,8 @@ export const categoryKeys = {
   all: ['categories'] as const,
   lists: () => [...categoryKeys.all, 'list'] as const,
   list: (filters: string[]) => [...categoryKeys.lists(), { filters }] as const,
+  detail: (categoryId: string | null | undefined) =>
+    [...categoryKeys.all, 'detail', categoryId] as const,
 };
 
 // Fetch all categories ordered by hierarchy
@@ -23,6 +36,7 @@ const getCategories = async (): Promise<Category[]> => {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
+    .eq('active', true)
     .order('level')
     .order('display_order');
 
@@ -39,6 +53,7 @@ const getTopLevelCategories = async (): Promise<Category[]> => {
     .from('categories')
     .select('*')
     .is('parent_id', null)
+    .eq('active', true)
     .order('display_order');
 
   if (error) {
@@ -54,6 +69,7 @@ const getSubcategories = async (parentId: string): Promise<Category[]> => {
     .from('categories')
     .select('*')
     .eq('parent_id', parentId)
+    .eq('active', true)
     .order('display_order');
 
   if (error) {
@@ -69,6 +85,7 @@ const getCategoriesByLevel = async (level: number): Promise<Category[]> => {
     .from('categories')
     .select('*')
     .eq('level', level)
+    .eq('active', true)
     .order('display_order');
 
   if (error) {
@@ -94,6 +111,7 @@ const getCategoriesByNames = async (names: string[]): Promise<Category[]> => {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
+    .eq('active', true)
     .or(orConditions)
     .order('name');
 
@@ -169,6 +187,7 @@ const getGroupedSubcategories = async (): Promise<GroupedCategory[]> => {
   const { data: categories, error } = await supabase
     .from('categories')
     .select('*')
+    .eq('active', true)
     .order('level')
     .order('display_order');
 
@@ -189,6 +208,21 @@ const getGroupedSubcategories = async (): Promise<GroupedCategory[]> => {
   }));
 };
 
+const getCategoryById = async (categoryId: string): Promise<Category | null> => {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('id', categoryId)
+    .eq('active', true)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to fetch category: ${error.message}`);
+  }
+
+  return data;
+};
+
 // Hook to get subcategories grouped by parent category (for TaskRabbit-style home screen)
 export const useGroupedSubcategories = () => {
   return useQuery({
@@ -196,6 +230,16 @@ export const useGroupedSubcategories = () => {
     queryFn: getGroupedSubcategories,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+  });
+};
+
+export const useCategoryById = (categoryId: string | null | undefined) => {
+  return useQuery({
+    queryKey: categoryKeys.detail(categoryId),
+    queryFn: () => (categoryId ? getCategoryById(categoryId) : Promise.resolve(null)),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    enabled: !!categoryId,
   });
 };
 
@@ -239,4 +283,5 @@ export {
   getTopLevelCategories,
   getSubcategories,
   getCategoriesByLevel,
+  getCategoryById,
 };
