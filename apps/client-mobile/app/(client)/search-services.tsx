@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
-import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input, InputField, InputSlot } from '@/components/ui/input'; import {   ChevronLeft, Search, ChevronRight, } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useGroupedSubcategories } from '@shared/query';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, ActivityIndicator, View, Text, Pressable, Image } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Input, InputField, InputSlot } from '@/components/ui/input'; import {   ChevronLeft, Search, ChevronRight, } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { useGroupedSubcategories } from '@shared/query';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { goBackOrReplace } from '@/lib/navigation';
 import { getCategoryIcon } from '@/lib/category-icons';
+import { getAppCategoryImageMap, getAppCategoryImageUri, type AppCategoryImageMap } from '@/lib/category-images';
 
 export default function SearchServicesScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showBookingSheet, setShowBookingSheet] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState({ id: '', name: '' });
+  const [categoryImages, setCategoryImages] = useState<AppCategoryImageMap>({});
   const { data: groupedCategories, isLoading, isError } = useGroupedSubcategories();
+
+  useEffect(() => {
+    getAppCategoryImageMap().then(setCategoryImages);
+  }, []);
 
   // Flatten grouped subcategories into a single list, excluding parent/main categories
   // Only subcategories (those with a parent_id) are included
@@ -88,6 +94,7 @@ export default function SearchServicesScreen() {
           <View className="flex-col py-2">
             {filteredCategories.map((category) => {
               const Icon = category.icon;
+              const imageUri = getAppCategoryImageUri(category.name, categoryImages);
               return (
                 <Pressable
                   key={category.id}
@@ -96,9 +103,17 @@ export default function SearchServicesScreen() {
                 >
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center gap-3 flex-1">
-                      <View className="w-10 h-10 bg-[#F5F5F5] rounded-full items-center justify-center">
-                        <Icon size={20} color="#30352D" strokeWidth={1.5} />
-                      </View>
+                      {imageUri ? (
+                        <Image
+                          source={{ uri: imageUri }}
+                          style={{ width: 40, height: 40, borderRadius: 20 }}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View className="w-10 h-10 bg-[#F5F5F5] rounded-full items-center justify-center">
+                          <Icon size={20} color="#30352D" strokeWidth={1.5} />
+                        </View>
+                      )}
                       <Text className="font-worksans text-[15px] text-[#30352D] flex-1">
                         {category.name}
                       </Text>

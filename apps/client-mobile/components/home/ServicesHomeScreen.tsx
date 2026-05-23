@@ -1,20 +1,67 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect, useState } from 'react';
 import { useGroupedSubcategories, type Category } from '@shared/query';
-import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable } from 'react-native'; import AuthLogo from '@/components/auth/AuthLogo'; import {   MapPin, Search, ChevronRight, } from 'lucide-react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { useLocationStore } from '@shared/store';
+import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable, ImageBackground } from 'react-native'; import AuthLogo from '@/components/auth/AuthLogo'; import {   MapPin, Search, ChevronRight, } from 'lucide-react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { useLocationStore } from '@shared/store';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { getCategoryIcon } from '@/lib/category-icons';
+import { getAppCategoryImageMap, getAppCategoryImageUri, type AppCategoryImageMap } from '@/lib/category-images';
 
 // Subcategory card component for horizontal scroll
 interface SubcategoryCardProps {
   category: Category;
   index: number;
   onPress: () => void;
+  imageMap: AppCategoryImageMap;
 }
 
-const SubcategoryCard = React.memo(function SubcategoryCard({ category, index, onPress }: SubcategoryCardProps) {
+const SubcategoryCard = React.memo(function SubcategoryCard({ category, index, onPress, imageMap }: SubcategoryCardProps) {
   const Icon = getCategoryIcon(category.name);
   // Alternating colors matching original design
   const bgColor = index % 2 === 0 ? '#30352d' : '#BFA28D';
+  const imageUri = getAppCategoryImageUri(category.name, imageMap);
+
+  const content = (
+    <>
+      <Icon size={32} color="white" strokeWidth={1.5} />
+      <Text
+        className="text-xs text-center text-white mt-2"
+        style={{ fontWeight: '500' }}
+        numberOfLines={2}
+      >
+        {category.name}
+      </Text>
+    </>
+  )
+
+  if (imageUri) {
+    return (
+      <Pressable
+        onPress={onPress}
+        className="items-center justify-center mr-3 rounded-2xl overflow-hidden"
+        style={{
+          width: 120,
+          height: 100,
+        }}
+      >
+        <ImageBackground
+          source={{ uri: imageUri }}
+          resizeMode="cover"
+          style={{ width: '100%', height: '100%' }}
+          imageStyle={{ borderRadius: 16 }}
+        >
+          <View
+            className="items-center justify-center rounded-2xl"
+            style={{
+              flex: 1,
+              padding: 12,
+              backgroundColor: 'rgba(48, 53, 45, 0.55)',
+            }}
+          >
+            {content}
+          </View>
+        </ImageBackground>
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable
@@ -27,14 +74,7 @@ const SubcategoryCard = React.memo(function SubcategoryCard({ category, index, o
         padding: 12,
       }}
     >
-      <Icon size={32} color="white" strokeWidth={1.5} />
-      <Text
-        className="text-xs text-center text-white mt-2"
-        style={{ fontWeight: '500' }}
-        numberOfLines={2}
-      >
-        {category.name}
-      </Text>
+      {content}
     </Pressable>
   );
 });
@@ -44,9 +84,10 @@ interface CategorySectionProps {
   title: string;
   subcategories: Category[];
   onSelectCategory: (id: string, name: string) => void;
+  imageMap: AppCategoryImageMap;
 }
 
-const CategorySection = React.memo(function CategorySection({ title, subcategories, onSelectCategory }: CategorySectionProps) {
+const CategorySection = React.memo(function CategorySection({ title, subcategories, onSelectCategory, imageMap }: CategorySectionProps) {
   if (subcategories.length === 0) return null;
 
   return (
@@ -70,6 +111,7 @@ const CategorySection = React.memo(function CategorySection({ title, subcategori
             key={subcategory.id}
             category={subcategory}
             index={index}
+            imageMap={imageMap}
             onPress={() => onSelectCategory(subcategory.id, subcategory.name)}
           />
         ))}
@@ -82,8 +124,13 @@ export function ServicesHomeScreen() {
   const router = useRouter();
   const { location } = useLocationStore();
   const { data: groupedCategories, isLoading } = useGroupedSubcategories();
-  const [showBookingSheet, setShowBookingSheet] = React.useState(false);
-  const [selectedCategory, setSelectedCategory] = React.useState({ id: '', name: '' });
+  const [showBookingSheet, setShowBookingSheet] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState({ id: '', name: '' });
+  const [categoryImages, setCategoryImages] = useState<AppCategoryImageMap>({});
+
+  useEffect(() => {
+    getAppCategoryImageMap().then(setCategoryImages);
+  }, []);
 
   // Parse location for display
   const getLocationDisplay = () => {
@@ -243,6 +290,7 @@ export function ServicesHomeScreen() {
                     key={group.id}
                     title={group.name.toLowerCase() === 'clean' ? 'Domestic Cleaning' : group.name}
                     subcategories={group.subcategories}
+                    imageMap={categoryImages}
                     onSelectCategory={handleServicePress}
                   />
                 ))
