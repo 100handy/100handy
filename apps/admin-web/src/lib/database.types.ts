@@ -353,6 +353,279 @@ export interface Database {
           marketing_emails?: boolean
         }
       }
+      device_push_tokens: {
+        Row: {
+          id: string
+          user_id: string
+          expo_push_token: string
+          platform: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          expo_push_token: string
+          platform: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          expo_push_token?: string
+          platform?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      email_templates: {
+        Row: {
+          id: string
+          template_key: string
+          title: string
+          template_kind: 'template' | 'campaign_draft'
+          recipient_group: string
+          subject: string
+          preview_text: string | null
+          body: string
+          active: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          template_key: string
+          title: string
+          template_kind: 'template' | 'campaign_draft'
+          recipient_group: string
+          subject: string
+          preview_text?: string | null
+          body: string
+          active?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          template_key?: string
+          title?: string
+          template_kind?: 'template' | 'campaign_draft'
+          recipient_group?: string
+          subject?: string
+          preview_text?: string | null
+          body?: string
+          active?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+      }
+      email_delivery_jobs: {
+        Row: {
+          id: string
+          template_id: string | null
+          template_key: string
+          title: string
+          recipient_group: string
+          subject: string
+          preview_text: string | null
+          body: string
+          delivery_status: 'queued' | 'processing' | 'sent' | 'failed'
+          recipient_count: number
+          sent_count: number
+          failed_count: number
+          error_message: string | null
+          triggered_by: string | null
+          triggered_at: string
+          completed_at: string | null
+          audience_filters: Json
+          scheduled_for: string | null
+          test_recipient: string | null
+        }
+        Insert: {
+          id?: string
+          template_id?: string | null
+          template_key: string
+          title: string
+          recipient_group: string
+          subject: string
+          preview_text?: string | null
+          body: string
+          delivery_status?: 'queued' | 'processing' | 'sent' | 'failed'
+          recipient_count?: number
+          sent_count?: number
+          failed_count?: number
+          error_message?: string | null
+          triggered_by?: string | null
+          triggered_at?: string
+          completed_at?: string | null
+          audience_filters?: Json
+          scheduled_for?: string | null
+          test_recipient?: string | null
+        }
+        Update: {
+          id?: string
+          template_id?: string | null
+          template_key?: string
+          title?: string
+          recipient_group?: string
+          subject?: string
+          preview_text?: string | null
+          body?: string
+          delivery_status?: 'queued' | 'processing' | 'sent' | 'failed'
+          recipient_count?: number
+          sent_count?: number
+          failed_count?: number
+          error_message?: string | null
+          triggered_by?: string | null
+          triggered_at?: string
+          completed_at?: string | null
+          audience_filters?: Json
+          scheduled_for?: string | null
+          test_recipient?: string | null
+        }
+      }
+      push_notification_campaigns: {
+        Row: {
+          id: string
+          campaign_key: string
+          title: string
+          campaign_kind: 'template' | 'campaign_draft'
+          recipient_group: string
+          message_title: string
+          message_body: string
+          route: string | null
+          active: boolean
+          created_at: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          campaign_key: string
+          title: string
+          campaign_kind: 'template' | 'campaign_draft'
+          recipient_group: string
+          message_title: string
+          message_body: string
+          route?: string | null
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          campaign_key?: string
+          title?: string
+          campaign_kind?: 'template' | 'campaign_draft'
+          recipient_group?: string
+          message_title?: string
+          message_body?: string
+          route?: string | null
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+      }
+      push_delivery_jobs: {
+        Row: {
+          id: string
+          campaign_id: string | null
+          campaign_key: string
+          title: string
+          recipient_group: string
+          message_title: string
+          message_body: string
+          route: string | null
+          delivery_status: 'queued' | 'processing' | 'sent' | 'failed'
+          recipient_count: number
+          sent_count: number
+          failed_count: number
+          error_message: string | null
+          triggered_by: string | null
+          triggered_at: string
+          completed_at: string | null
+          audience_filters: Json
+          scheduled_for: string | null
+          test_recipient: string | null
+        }
+        Insert: {
+          id?: string
+          campaign_id?: string | null
+          campaign_key: string
+          title: string
+          recipient_group: string
+          message_title: string
+          message_body: string
+          route?: string | null
+          delivery_status?: 'queued' | 'processing' | 'sent' | 'failed'
+          recipient_count?: number
+          sent_count?: number
+          failed_count?: number
+          error_message?: string | null
+          triggered_by?: string | null
+          triggered_at?: string
+          completed_at?: string | null
+          audience_filters?: Json
+          scheduled_for?: string | null
+          test_recipient?: string | null
+        }
+        Update: {
+          id?: string
+          campaign_id?: string | null
+          campaign_key?: string
+          title?: string
+          recipient_group?: string
+          message_title?: string
+          message_body?: string
+          route?: string | null
+          delivery_status?: 'queued' | 'processing' | 'sent' | 'failed'
+          recipient_count?: number
+          sent_count?: number
+          failed_count?: number
+          error_message?: string | null
+          triggered_by?: string | null
+          triggered_at?: string
+          completed_at?: string | null
+          audience_filters?: Json
+          scheduled_for?: string | null
+          test_recipient?: string | null
+        }
+      }
+      notification_audit_events: {
+        Row: {
+          id: string
+          channel: 'email' | 'push' | 'announcement'
+          action: string
+          entity_type: string
+          entity_id: string | null
+          actor_id: string | null
+          metadata_json: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          channel: 'email' | 'push' | 'announcement'
+          action: string
+          entity_type: string
+          entity_id?: string | null
+          actor_id?: string | null
+          metadata_json?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          channel?: 'email' | 'push' | 'announcement'
+          action?: string
+          entity_type?: string
+          entity_id?: string | null
+          actor_id?: string | null
+          metadata_json?: Json
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

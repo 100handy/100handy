@@ -119,6 +119,30 @@ export interface PushDeliveryJobRecord {
   completed_at: string | null
 }
 
+export interface NotificationAudienceFilters {
+  postcode_prefix?: string
+  require_marketing_opt_in?: boolean
+  require_push_enabled?: boolean
+  require_device_token?: boolean
+}
+
+export interface NotificationAudiencePreviewInput {
+  channel: 'email' | 'push'
+  recipientGroup: string
+  filters?: NotificationAudienceFilters
+}
+
+export interface NotificationAuditEventRecord {
+  id: string
+  channel: 'email' | 'push' | 'announcement'
+  action: string
+  entity_type: string
+  entity_id: string | null
+  actor_id: string | null
+  metadata_json: Record<string, unknown>
+  created_at: string
+}
+
 export interface AnnouncementInput {
   id?: string
   audience: 'all' | 'client' | 'professional' | 'web'
@@ -276,6 +300,99 @@ async function getNextRevisionVersion(
   const { data, error } = await query.order('version_number', { ascending: false }).limit(1).maybeSingle()
   if (error) throw error
   return (data?.version_number ?? 0) + 1
+}
+
+function matchesNotificationRecipientGroup(role: string | null | undefined, recipientGroup: string) {
+  switch (recipientGroup) {
+    case 'client':
+    case 'new_users':
+      return role === 'client' || role === 'customer'
+    case 'professional':
+    case 'new_handys':
+      return role === 'professional' || role === 'handy'
+    case 'admin':
+      return role === 'admin'
+    case 'all':
+    default:
+      return role === 'client' || role === 'customer' || role === 'professional' || role === 'handy'
+  }
+}
+
+async function createNotificationAuditEvent(
+  userId: string,
+  channel: NotificationAuditEventRecord['channel'],
+  action: string,
+  entityType: string,
+  entityId: string | null,
+  metadata: Record<string, unknown> = {},
+) {
+  const { error } = await supabase.from('notification_audit_events').insert({
+    channel,
+    action,
+    entity_type: entityType,
+    entity_id: entityId,
+    actor_id: userId,
+    metadata_json: metadata,
+  })
+  if (error) throw error
+}
+
+async function previewNotificationAudienceCount(input: NotificationAudiencePreviewInput) {
+  await requireAdminPermission('notifications.manage')
+
+  const { data: profiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select('user_id, role, postcode, account_status')
+  if (profilesError) throw profilesError
+
+  const matchingProfiles = (profiles ?? []).filter((profile) => {
+    if (profile.account_status !== 'active') return false
+    if (!matchesNotificationRecipientGroup(profile.role, input.recipientGroup)) return false
+    const postcodePrefix = input.filters?.postcode_prefix?.trim().toLowerCase()
+    if (postcodePrefix && !(profile.postcode ?? '').trim().toLowerCase().startsWith(postcodePrefix)) {
+      return false
+    }
+    return true
+  })
+
+  let filteredUserIds = matchingProfiles.map((profile) => profile.user_id)
+
+  if (input.channel === 'email' && input.filters?.require_marketing_opt_in) {
+    const { data: settings, error: settingsError } = await supabase
+      .from('notification_settings')
+      .select('user_id, marketing_emails')
+      .in('user_id', filteredUserIds)
+    if (settingsError) throw settingsError
+    const allowed = new Set((settings ?? []).filter((row) => row.marketing_emails !== false).map((row) => row.user_id))
+    filteredUserIds = filteredUserIds.filter((id) => allowed.has(id))
+  }
+
+  if (input.channel === 'push') {
+    if (input.filters?.require_push_enabled) {
+      const { data: settings, error: settingsError } = await supabase
+        .from('notification_settings')
+        .select('user_id, push_notifications')
+        .in('user_id', filteredUserIds)
+      if (settingsError) throw settingsError
+      const allowed = new Set((settings ?? []).filter((row) => row.push_notifications !== false).map((row) => row.user_id))
+      filteredUserIds = filteredUserIds.filter((id) => allowed.has(id))
+    }
+
+    if (input.filters?.require_device_token) {
+      const { data: tokens, error: tokensError } = await supabase
+        .from('device_push_tokens')
+        .select('user_id')
+        .in('user_id', filteredUserIds)
+      if (tokensError) throw tokensError
+      const allowed = new Set((tokens ?? []).map((row) => row.user_id))
+      filteredUserIds = filteredUserIds.filter((id) => allowed.has(id))
+    }
+  }
+
+  return {
+    count: filteredUserIds.length,
+    filters: input.filters ?? {},
+  }
 }
 
 export function useBlogPosts() {
@@ -1268,6 +1385,12 @@ export function useSaveEmailTemplate() {
         .from('email_templates')
         .upsert(row, { onConflict: 'template_key' })
       if (error) throw error
+
+      await createNotificationAuditEvent(user.id, 'email', input.id ? 'update_template' : 'create_template', 'email_template', input.id ?? input.template_key, {
+        template_key: input.template_key,
+        template_kind: input.template_kind,
+        recipient_group: input.recipient_group,
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'email-templates'] })
@@ -1279,9 +1402,10 @@ export function useDeleteEmailTemplate() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      await requireAdminPermission('notifications.manage')
+      const { user } = await requireAdminPermission('notifications.manage')
       const { error } = await supabase.from('email_templates').delete().eq('id', id)
       if (error) throw error
+      await createNotificationAuditEvent(user.id, 'email', 'delete_template', 'email_template', id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'email-templates'] })
@@ -1299,6 +1423,32 @@ export function useEmailDeliveryJobs() {
         .order('triggered_at', { ascending: false })
       if (error) throw error
       return data ?? []
+    },
+  })
+}
+
+export function useNotificationAudiencePreview(input: NotificationAudiencePreviewInput) {
+  return useQuery({
+    queryKey: ['admin', 'notification-audience-preview', input.channel, input.recipientGroup, input.filters ?? {}],
+    queryFn: async () => previewNotificationAudienceCount(input),
+    enabled: !!input.recipientGroup,
+    staleTime: 15 * 1000,
+  })
+}
+
+export function useNotificationAuditEvents(channel?: NotificationAuditEventRecord['channel']) {
+  return useQuery({
+    queryKey: ['admin', 'notification-audit-events', channel ?? 'all'],
+    queryFn: async (): Promise<NotificationAuditEventRecord[]> => {
+      let query = supabase
+        .from('notification_audit_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(25)
+      if (channel) query = query.eq('channel', channel)
+      const { data, error } = await query
+      if (error) throw error
+      return (data ?? []) as NotificationAuditEventRecord[]
     },
   })
 }
@@ -1334,6 +1484,12 @@ export function useSavePushNotificationCampaign() {
         .from('push_notification_campaigns')
         .upsert(row, { onConflict: 'campaign_key' })
       if (error) throw error
+
+      await createNotificationAuditEvent(user.id, 'push', input.id ? 'update_campaign' : 'create_campaign', 'push_campaign', input.id ?? input.campaign_key, {
+        campaign_key: input.campaign_key,
+        campaign_kind: input.campaign_kind,
+        recipient_group: input.recipient_group,
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'push-notification-campaigns'] })
@@ -1346,9 +1502,10 @@ export function useDeletePushNotificationCampaign() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      await requireAdminPermission('notifications.manage')
+      const { user } = await requireAdminPermission('notifications.manage')
       const { error } = await supabase.from('push_notification_campaigns').delete().eq('id', id)
       if (error) throw error
+      await createNotificationAuditEvent(user.id, 'push', 'delete_campaign', 'push_campaign', id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'push-notification-campaigns'] })
@@ -1382,8 +1539,11 @@ export function useSendPushCampaign() {
       messageTitle: string
       messageBody: string
       route: string
+      audienceFilters?: NotificationAudienceFilters
+      scheduledFor?: string | null
     }) => {
       const { user } = await requireAdminPermission('notifications.manage')
+      const isScheduled = Boolean(input.scheduledFor && new Date(input.scheduledFor).getTime() > Date.now())
 
       const { data: job, error: jobError } = await supabase
         .from('push_delivery_jobs')
@@ -1396,21 +1556,32 @@ export function useSendPushCampaign() {
           message_body: input.messageBody,
           route: input.route || null,
           delivery_status: 'queued',
+          audience_filters: input.audienceFilters ?? {},
+          scheduled_for: input.scheduledFor ?? null,
           triggered_by: user.id,
         })
         .select('*')
         .single()
       if (jobError) throw jobError
 
-      const { error: invokeError } = await supabase.functions.invoke('send-push-notification', {
-        body: { event: 'admin_campaign', delivery_job_id: job.id },
+      if (!isScheduled) {
+        const { error: invokeError } = await supabase.functions.invoke('send-push-notification', {
+          body: { event: 'admin_campaign', delivery_job_id: job.id },
+        })
+        if (invokeError) throw invokeError
+      }
+
+      await createNotificationAuditEvent(user.id, 'push', isScheduled ? 'schedule_campaign' : 'send_campaign', 'push_delivery_job', job.id, {
+        recipient_group: input.recipientGroup,
+        scheduled_for: input.scheduledFor ?? null,
+        audience_filters: input.audienceFilters ?? {},
       })
-      if (invokeError) throw invokeError
 
       return job
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'push-delivery-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
     },
   })
 }
@@ -1426,8 +1597,11 @@ export function useSendEmailCampaign() {
       subject: string
       previewText: string
       body: string
+      audienceFilters?: NotificationAudienceFilters
+      scheduledFor?: string | null
     }) => {
       const { user } = await requireAdminPermission('notifications.manage')
+      const isScheduled = Boolean(input.scheduledFor && new Date(input.scheduledFor).getTime() > Date.now())
 
       const { data: job, error: jobError } = await supabase
         .from('email_delivery_jobs')
@@ -1440,21 +1614,134 @@ export function useSendEmailCampaign() {
           preview_text: input.previewText || null,
           body: input.body,
           delivery_status: 'queued',
+          audience_filters: input.audienceFilters ?? {},
+          scheduled_for: input.scheduledFor ?? null,
           triggered_by: user.id,
         })
         .select('*')
         .single()
       if (jobError) throw jobError
 
-      const { error: invokeError } = await supabase.functions.invoke('send-admin-email-campaign', {
-        body: { delivery_job_id: job.id },
+      if (!isScheduled) {
+        const { error: invokeError } = await supabase.functions.invoke('send-admin-email-campaign', {
+          body: { delivery_job_id: job.id },
+        })
+        if (invokeError) throw invokeError
+      }
+
+      await createNotificationAuditEvent(user.id, 'email', isScheduled ? 'schedule_campaign' : 'send_campaign', 'email_delivery_job', job.id, {
+        recipient_group: input.recipientGroup,
+        scheduled_for: input.scheduledFor ?? null,
+        audience_filters: input.audienceFilters ?? {},
       })
-      if (invokeError) throw invokeError
 
       return job
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'email-delivery-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
+    },
+  })
+}
+
+export function useSendTestEmailCampaign() {
+  return useMutation({
+    mutationFn: async (input: { testEmail: string; subject: string; body: string }) => {
+      const { user } = await requireAdminPermission('notifications.manage')
+      const { error } = await supabase.functions.invoke('send-admin-email-campaign', {
+        body: {
+          test_email: input.testEmail,
+          subject: input.subject,
+          body: input.body,
+        },
+      })
+      if (error) throw error
+      await createNotificationAuditEvent(user.id, 'email', 'send_test', 'email_test', input.testEmail, {
+        subject: input.subject,
+      })
+      return true
+    },
+  })
+}
+
+export function useSendTestPushCampaign() {
+  return useMutation({
+    mutationFn: async (input: { recipientEmail: string; title: string; body: string; route: string }) => {
+      const { user } = await requireAdminPermission('notifications.manage')
+      const { error } = await supabase.functions.invoke('send-push-notification', {
+        body: {
+          event: 'admin_test',
+          recipient_email: input.recipientEmail,
+          title: input.title,
+          body: input.body,
+          route: input.route,
+        },
+      })
+      if (error) throw error
+      await createNotificationAuditEvent(user.id, 'push', 'send_test', 'push_test', input.recipientEmail, {
+        route: input.route,
+      })
+      return true
+    },
+  })
+}
+
+export function useRunScheduledEmailJobs() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { user } = await requireAdminPermission('notifications.manage')
+      const now = new Date().toISOString()
+      const { data: jobs, error } = await supabase
+        .from('email_delivery_jobs')
+        .select('id')
+        .eq('delivery_status', 'queued')
+        .not('scheduled_for', 'is', null)
+        .lte('scheduled_for', now)
+      if (error) throw error
+      let processed = 0
+      for (const job of jobs ?? []) {
+        const { error: invokeError } = await supabase.functions.invoke('send-admin-email-campaign', {
+          body: { delivery_job_id: job.id },
+        })
+        if (!invokeError) processed += 1
+      }
+      await createNotificationAuditEvent(user.id, 'email', 'run_scheduled', 'email_delivery_jobs', null, { processed })
+      return processed
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'email-delivery-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
+    },
+  })
+}
+
+export function useRunScheduledPushJobs() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { user } = await requireAdminPermission('notifications.manage')
+      const now = new Date().toISOString()
+      const { data: jobs, error } = await supabase
+        .from('push_delivery_jobs')
+        .select('id')
+        .eq('delivery_status', 'queued')
+        .not('scheduled_for', 'is', null)
+        .lte('scheduled_for', now)
+      if (error) throw error
+      let processed = 0
+      for (const job of jobs ?? []) {
+        const { error: invokeError } = await supabase.functions.invoke('send-push-notification', {
+          body: { event: 'admin_campaign', delivery_job_id: job.id },
+        })
+        if (!invokeError) processed += 1
+      }
+      await createNotificationAuditEvent(user.id, 'push', 'run_scheduled', 'push_delivery_jobs', null, { processed })
+      return processed
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'push-delivery-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
     },
   })
 }

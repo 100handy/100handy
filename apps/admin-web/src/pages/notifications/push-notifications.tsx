@@ -1,15 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { BellRing, ExternalLink, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-react'
+import { BellRing, CalendarClock, Loader2, Play, Plus, Save, Search, Send, TestTube2, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   useDeletePushNotificationCampaign,
+  useNotificationAudiencePreview,
+  useNotificationAuditEvents,
   usePushDeliveryJobs,
   usePushNotificationCampaigns,
+  useRunScheduledPushJobs,
   useSavePushNotificationCampaign,
   useSendPushCampaign,
+  useSendTestPushCampaign,
 } from '@/lib/api/content-platform'
 
 const emptyTemplate = {
@@ -38,14 +42,34 @@ export default function PushNotificationsPage() {
   const canManageNotifications = hasPermission('notifications.manage')
   const { data: campaigns = [], isLoading } = usePushNotificationCampaigns()
   const { data: deliveryJobs = [] } = usePushDeliveryJobs()
+  const { data: auditEvents = [] } = useNotificationAuditEvents('push')
   const saveCampaign = useSavePushNotificationCampaign()
   const deleteCampaign = useDeletePushNotificationCampaign()
   const sendCampaign = useSendPushCampaign()
+  const sendTestPush = useSendTestPushCampaign()
+  const runScheduledJobs = useRunScheduledPushJobs()
 
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyTemplate)
   const [draftForm, setDraftForm] = useState(emptyDraft)
+  const [draftFilters, setDraftFilters] = useState({
+    postcode_prefix: '',
+    require_push_enabled: true,
+    require_device_token: true,
+  })
+  const [scheduledFor, setScheduledFor] = useState('')
+  const [testRecipientEmail, setTestRecipientEmail] = useState('')
+
+  const { data: audiencePreview, isLoading: previewLoading } = useNotificationAudiencePreview({
+    channel: 'push',
+    recipientGroup: draftForm.recipient_group,
+    filters: {
+      postcode_prefix: draftFilters.postcode_prefix || undefined,
+      require_push_enabled: draftFilters.require_push_enabled,
+      require_device_token: draftFilters.require_device_token,
+    },
+  })
 
   const selected = campaigns.find((campaign) => campaign.id === selectedId) ?? null
 
@@ -81,6 +105,8 @@ export default function PushNotificationsPage() {
   const draftRows = filtered.filter((item) => item.campaign_kind === 'campaign_draft')
   const failedJobs = deliveryJobs.filter((job) => job.delivery_status === 'failed')
   const sentJobs = deliveryJobs.filter((job) => job.delivery_status === 'sent')
+  const scheduledJobs = deliveryJobs.filter((job) => job.scheduled_for && job.delivery_status === 'queued')
+  const isScheduled = Boolean(scheduledFor && new Date(scheduledFor).getTime() > Date.now())
 
   const templateErrors = {
     campaign_key: !form.campaign_key.trim() ? 'Campaign key is required.' : null,
@@ -205,19 +231,30 @@ export default function PushNotificationsPage() {
         </section>
 
         <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-          <div className="mb-6 grid gap-4 md:grid-cols-3">
+          <div className="mb-6 grid gap-4 md:grid-cols-4">
             <DeliveryStatCard label="Total jobs" value={deliveryJobs.length} />
             <DeliveryStatCard label="Sent jobs" value={sentJobs.length} />
+            <DeliveryStatCard label="Scheduled jobs" value={scheduledJobs.length} />
             <DeliveryStatCard label="Failed jobs" value={failedJobs.length} tone={failedJobs.length > 0 ? 'danger' : 'default'} />
           </div>
           <div className="mb-4 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delivery Jobs</h3>
-            <div className="mt-3 space-y-2">
+            <div className="mb-3 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delivery Jobs</h3>
+              <button
+                onClick={() => runScheduledJobs.mutate()}
+                disabled={runScheduledJobs.isPending || !canManageNotifications}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
+              >
+                {runScheduledJobs.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                Run Due Jobs
+              </button>
+            </div>
+            <div className="space-y-2">
               {deliveryJobs.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">No push delivery jobs yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[720px] text-left text-sm">
+                  <table className="w-full min-w-[760px] text-left text-sm">
                     <thead className="text-xs uppercase text-gray-500 dark:text-gray-400">
                       <tr>
                         <th className="py-2 pr-4">Campaign</th>
@@ -225,6 +262,7 @@ export default function PushNotificationsPage() {
                         <th className="py-2 pr-4">Status</th>
                         <th className="py-2 pr-4">Result</th>
                         <th className="py-2 pr-4">Triggered</th>
+                        <th className="py-2 pr-4">Scheduled</th>
                         <th className="py-2 text-right">Actions</th>
                       </tr>
                     </thead>
@@ -233,20 +271,13 @@ export default function PushNotificationsPage() {
                         <tr key={job.id} className="border-t border-gray-200 dark:border-gray-700">
                           <td className="py-3 pr-4">
                             <div className="font-medium text-gray-900 dark:text-white">{job.title}</div>
-                            {job.error_message && (
-                              <div className="mt-1 text-xs text-red-600 dark:text-red-300">{job.error_message}</div>
-                            )}
+                            {job.error_message && <div className="mt-1 text-xs text-red-600 dark:text-red-300">{job.error_message}</div>}
                           </td>
                           <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">{job.recipient_group}</td>
-                          <td className="py-3 pr-4">
-                            <StatusBadge status={job.delivery_status} />
-                          </td>
-                          <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                            {job.sent_count}/{job.recipient_count} delivered
-                          </td>
-                          <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400">
-                            {format(new Date(job.triggered_at), 'MMM d, yyyy HH:mm')}
-                          </td>
+                          <td className="py-3 pr-4"><StatusBadge status={job.delivery_status} /></td>
+                          <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">{job.sent_count}/{job.recipient_count} delivered</td>
+                          <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400">{format(new Date(job.triggered_at), 'MMM d, yyyy HH:mm')}</td>
+                          <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400">{job.scheduled_for ? format(new Date(job.scheduled_for), 'MMM d, yyyy HH:mm') : 'Now'}</td>
                           <td className="py-3 text-right">
                             <button
                               onClick={() =>
@@ -258,6 +289,7 @@ export default function PushNotificationsPage() {
                                   messageTitle: job.message_title,
                                   messageBody: job.message_body,
                                   route: job.route ?? '/',
+                                  audienceFilters: (job.audience_filters as Record<string, unknown>) ?? {},
                                 })
                               }
                               disabled={sendCampaign.isPending || !canManageNotifications}
@@ -335,7 +367,7 @@ export default function PushNotificationsPage() {
         <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">One-Time Push Drafts</h3>
           <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-            Save reusable push drafts or send a one-off campaign immediately.
+            Save reusable push drafts, send a test, or schedule a campaign for later.
           </p>
           <div className="mb-6 space-y-3">
             {draftRows.length === 0 ? (
@@ -400,9 +432,46 @@ export default function PushNotificationsPage() {
               <TextAreaField label="Push Body" value={draftForm.message_body} onChange={(value) => setDraftForm((prev) => ({ ...prev, message_body: value }))} rows={6} />
               <FieldErrorText error={draftErrors.message_body} />
             </div>
+            <div>
+              <Field label="Postcode prefix filter" value={draftFilters.postcode_prefix} onChange={(value) => setDraftFilters((prev) => ({ ...prev, postcode_prefix: value }))} />
+            </div>
+            <ToggleField label="Require push enabled" checked={draftFilters.require_push_enabled} onChange={(checked) => setDraftFilters((prev) => ({ ...prev, require_push_enabled: checked }))} />
+            <ToggleField label="Require device token" checked={draftFilters.require_device_token} onChange={(checked) => setDraftFilters((prev) => ({ ...prev, require_device_token: checked }))} />
+            <DateTimeField label="Schedule for" value={scheduledFor} onChange={setScheduledFor} />
+            <div className="md:col-span-2">
+              <Field label="Test recipient email" value={testRecipientEmail} onChange={setTestRecipientEmail} />
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">Recipient preview</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Current filters applied to the selected audience.</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs uppercase tracking-wide text-gray-400">Estimated recipients</div>
+                <div className="text-2xl font-semibold text-gray-900 dark:text-white">{previewLoading ? '...' : audiencePreview?.count ?? 0}</div>
+              </div>
+            </div>
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
+            <button
+              onClick={() =>
+                sendTestPush.mutate({
+                  recipientEmail: testRecipientEmail,
+                  title: draftForm.message_title,
+                  body: draftForm.message_body,
+                  route: draftForm.route || '/',
+                })
+              }
+              disabled={sendTestPush.isPending || !testRecipientEmail.trim() || !draftForm.message_title.trim() || !draftForm.message_body.trim() || !canManageNotifications}
+              className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-900/60 dark:text-indigo-300 dark:hover:bg-indigo-950/20"
+            >
+              {sendTestPush.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <TestTube2 className="h-4 w-4" />}
+              Send Test
+            </button>
             <button
               onClick={() =>
                 sendCampaign.mutate({
@@ -412,13 +481,19 @@ export default function PushNotificationsPage() {
                   messageTitle: draftForm.message_title,
                   messageBody: draftForm.message_body,
                   route: draftForm.route,
+                  audienceFilters: {
+                    postcode_prefix: draftFilters.postcode_prefix || undefined,
+                    require_push_enabled: draftFilters.require_push_enabled,
+                    require_device_token: draftFilters.require_device_token,
+                  },
+                  scheduledFor: scheduledFor || null,
                 })
               }
               disabled={sendCampaign.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-900/60 dark:text-emerald-300 dark:hover:bg-emerald-950/20"
             >
               {sendCampaign.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send Draft
+              {isScheduled ? 'Schedule Draft' : 'Send Draft'}
             </button>
             <button
               onClick={() =>
@@ -445,10 +520,7 @@ export default function PushNotificationsPage() {
             <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Push Preview</span>
-                <span className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <ExternalLink className="h-4 w-4" />
-                  {draftForm.route || '/'}
-                </span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{draftForm.route || '/'}</span>
               </div>
               <div className="bg-slate-100 p-6 dark:bg-slate-950">
                 <div className="mx-auto max-w-sm rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -461,48 +533,38 @@ export default function PushNotificationsPage() {
                       <div className="text-xs text-gray-500 dark:text-gray-400">now</div>
                     </div>
                   </div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {draftForm.message_title || 'No title'}
-                  </div>
-                  <div className="mt-1 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">
-                    {draftForm.message_body || 'No message body'}
-                  </div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">{draftForm.message_title || 'No title'}</div>
+                  <div className="mt-1 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{draftForm.message_body || 'No message body'}</div>
                 </div>
               </div>
             </div>
           )}
+
+          <div className="mt-6 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div className="mb-3 flex items-center gap-2">
+              <CalendarClock className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Audit Trail</span>
+            </div>
+            <div className="space-y-2">
+              {auditEvents.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No push notification audit events yet.</p>
+              ) : (
+                auditEvents.slice(0, 8).map((event) => (
+                  <div key={event.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">{event.action.replaceAll('_', ' ')}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{event.entity_type}</div>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{format(new Date(event.created_at), 'MMM d, yyyy HH:mm')}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </section>
       </main>
     </div>
   )
-}
-
-function DeliveryStatCard({
-  label,
-  value,
-  tone = 'default',
-}: {
-  label: string
-  value: number
-  tone?: 'default' | 'danger'
-}) {
-  return (
-    <div className={`rounded-xl border p-4 ${tone === 'danger' ? 'border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20' : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-950/20'}`}>
-      <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
-      <div className={`mt-2 text-2xl font-semibold ${tone === 'danger' ? 'text-red-700 dark:text-red-300' : 'text-gray-900 dark:text-white'}`}>{value}</div>
-    </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const tone =
-    status === 'sent'
-      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
-      : status === 'failed'
-        ? 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-300'
-        : 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
-
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{status}</span>
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
@@ -573,4 +635,49 @@ function ToggleField({
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
     </label>
   )
+}
+
+function DateTimeField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <input type="datetime-local" value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900" />
+    </div>
+  )
+}
+
+function DeliveryStatCard({
+  label,
+  value,
+  tone = 'default',
+}: {
+  label: string
+  value: number
+  tone?: 'default' | 'danger'
+}) {
+  return (
+    <div className={`rounded-xl border p-4 ${tone === 'danger' ? 'border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20' : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-950/20'}`}>
+      <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
+      <div className={`mt-2 text-2xl font-semibold ${tone === 'danger' ? 'text-red-700 dark:text-red-300' : 'text-gray-900 dark:text-white'}`}>{value}</div>
+    </div>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const tone =
+    status === 'sent'
+      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
+      : status === 'failed'
+        ? 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-300'
+        : 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
+
+  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{status}</span>
 }

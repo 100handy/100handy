@@ -6,7 +6,8 @@ type PushEvent =
   | { event: 'chat_message'; conversationId: string; messagePreview?: string }
   | { event: 'booking_status'; bookingId: string; status: string }
   | { event: 'test'; route?: string; title?: string; body?: string }
-  | { event: 'admin_campaign'; delivery_job_id: string };
+  | { event: 'admin_campaign'; delivery_job_id: string }
+  | { event: 'admin_test'; recipient_email: string; route?: string; title?: string; body?: string };
 
 type UserRole = 'customer' | 'handy' | 'admin';
 
@@ -27,6 +28,26 @@ function buildBookingRouteForRecipient(role: UserRole, bookingId: string): strin
   return role === 'handy'
     ? `/(professional)/job-details/${bookingId}`
     : `/(client)/booking-details/${bookingId}`;
+}
+
+function matchesRecipientGroup(role: string | null | undefined, recipientGroup: string) {
+  switch (recipientGroup) {
+    case 'client':
+    case 'new_users':
+      return role === 'client' || role === 'customer';
+    case 'professional':
+    case 'new_handys':
+      return role === 'professional' || role === 'handy';
+    case 'admin':
+      return role === 'admin';
+    case 'all':
+    default:
+      return role === 'client' || role === 'customer' || role === 'professional' || role === 'handy';
+  }
+}
+
+function normalise(text: string | null | undefined) {
+  return (text ?? '').trim().toLowerCase();
 }
 
 async function handleAdminCampaign(
@@ -66,25 +87,18 @@ async function handleAdminCampaign(
 
   const { data: profiles, error: profilesError } = await serviceClient
     .from('profiles')
-    .select('user_id, role, account_status');
+    .select('user_id, role, account_status, postcode');
 
   if (profilesError) throw profilesError;
 
+  const audienceFilters = (job.audience_filters ?? {}) as Record<string, unknown>;
+
   const recipients = (profiles ?? []).filter((row) => {
     if (row.account_status !== 'active') return false;
-    switch (job.recipient_group) {
-      case 'client':
-      case 'new_users':
-        return row.role === 'client' || row.role === 'customer';
-      case 'professional':
-      case 'new_handys':
-        return row.role === 'professional' || row.role === 'handy';
-      case 'admin':
-        return row.role === 'admin';
-      case 'all':
-      default:
-        return row.role === 'client' || row.role === 'customer' || row.role === 'professional' || row.role === 'handy';
-    }
+    if (!matchesRecipientGroup(row.role, job.recipient_group)) return false;
+    const postcodePrefix = normalise((audienceFilters.postcode_prefix as string | undefined) ?? '');
+    if (postcodePrefix && !normalise(row.postcode).startsWith(postcodePrefix)) return false;
+    return true;
   });
 
   const recipientIds = recipients.map((row) => row.user_id);
@@ -121,6 +135,7 @@ async function handleAdminCampaign(
   );
 
   const recipientUsers = recipientIds.filter((userId) => pushEnabledByUser.get(userId) !== false);
+  const requireDeviceToken = audienceFilters.require_device_token === true;
   const tokenRows = (tokens ?? []).filter(
     (row) =>
       recipientUsers.includes(row.user_id) &&
@@ -129,6 +144,21 @@ async function handleAdminCampaign(
   );
 
   const uniqueTokens = [...new Set(tokenRows.map((row) => row.expo_push_token))];
+
+  if (requireDeviceToken && uniqueTokens.length === 0) {
+    await serviceClient
+      .from('push_delivery_jobs')
+      .update({
+        delivery_status: 'failed',
+        recipient_count: recipientUsers.length,
+        sent_count: 0,
+        failed_count: 0,
+        error_message: 'No recipients with device tokens matched the selected audience.',
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', deliveryJobId);
+    return json({ ok: false, skipped: true, reason: 'no matching device tokens' }, { status: 400 });
+  }
 
   if (uniqueTokens.length === 0) {
     await serviceClient
@@ -207,6 +237,68 @@ async function handleAdminCampaign(
   });
 }
 
+async function handleAdminTest(
+  serviceClient: ReturnType<typeof createClient>,
+  userId: string,
+  recipientEmail: string,
+  title: string,
+  body: string,
+  route: string,
+) {
+  const { data: adminProfile, error: adminProfileError } = await serviceClient
+    .from('profiles')
+    .select('role, account_status')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (adminProfileError) throw adminProfileError;
+  if (!adminProfile || adminProfile.role !== 'admin' || adminProfile.account_status !== 'active') {
+    return json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const authUsers = await serviceClient.auth.admin.listUsers();
+  const matchingUser = authUsers.data.users.find((entry) => normalise(entry.email) === normalise(recipientEmail));
+  if (!matchingUser) return json({ error: 'Recipient not found' }, { status: 404 });
+
+  const { data: tokens, error: tokensError } = await serviceClient
+    .from('device_push_tokens')
+    .select('expo_push_token')
+    .eq('user_id', matchingUser.id);
+  if (tokensError) throw tokensError;
+
+  const expoPushTokens = (tokens ?? [])
+    .map((t) => t.expo_push_token)
+    .filter((t) => typeof t === 'string' && t.length > 0);
+
+  if (expoPushTokens.length === 0) {
+    return json({ ok: true, skipped: true, reason: 'no device tokens' });
+  }
+
+  const messages = expoPushTokens.map((to) => ({
+    to,
+    sound: 'default',
+    title,
+    body,
+    data: { route },
+  }));
+
+  const expoRes = await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(messages.length === 1 ? messages[0] : messages),
+  });
+
+  const expoJson = await expoRes.json().catch(() => null);
+  if (!expoRes.ok) {
+    return json({ error: 'Expo push send failed', details: expoJson }, { status: 502 });
+  }
+
+  return json({ ok: true, sent: expoPushTokens.length, expo: expoJson });
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -248,6 +340,21 @@ serve(async (req) => {
         return json({ error: 'delivery_job_id is required' }, { status: 400 });
       }
       return await handleAdminCampaign(serviceClient, user.id, deliveryJobId);
+    }
+
+    if (payload.event === 'admin_test') {
+      const recipientEmail = payload.recipient_email?.trim();
+      if (!recipientEmail) {
+        return json({ error: 'recipient_email is required' }, { status: 400 });
+      }
+      return await handleAdminTest(
+        serviceClient,
+        user.id,
+        recipientEmail,
+        payload.title ?? '100Handy push test',
+        payload.body ?? 'This is a test push notification.',
+        payload.route ?? '/',
+      );
     }
 
     let recipientId: string | null = null;
@@ -415,4 +522,3 @@ serve(async (req) => {
     return json({ error: error?.message ?? 'Unknown error' }, { status: 500 });
   }
 });
-

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { ExternalLink, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-react'
+import { CalendarClock, ExternalLink, Loader2, Play, Plus, Save, Search, Send, TestTube2, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { useAuth } from '@/contexts/AuthContext'
@@ -8,7 +8,11 @@ import {
   useDeleteEmailTemplate,
   useEmailDeliveryJobs,
   useEmailTemplates,
+  useNotificationAudiencePreview,
+  useNotificationAuditEvents,
+  useRunScheduledEmailJobs,
   useSendEmailCampaign,
+  useSendTestEmailCampaign,
   useSaveEmailTemplate,
 } from '@/lib/api/content-platform'
 
@@ -38,14 +42,29 @@ export default function EmailNotifications() {
   const canManageNotifications = hasPermission('notifications.manage')
   const { data: templates = [], isLoading } = useEmailTemplates()
   const { data: deliveryJobs = [] } = useEmailDeliveryJobs()
+  const { data: auditEvents = [] } = useNotificationAuditEvents('email')
   const saveTemplate = useSaveEmailTemplate()
   const deleteTemplate = useDeleteEmailTemplate()
   const sendCampaign = useSendEmailCampaign()
+  const sendTestEmail = useSendTestEmailCampaign()
+  const runScheduledJobs = useRunScheduledEmailJobs()
 
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyTemplate)
   const [draftForm, setDraftForm] = useState(emptyCampaignDraft)
+  const [draftFilters, setDraftFilters] = useState({ postcode_prefix: '', require_marketing_opt_in: true })
+  const [scheduledFor, setScheduledFor] = useState('')
+  const [testEmail, setTestEmail] = useState('')
+
+  const { data: audiencePreview, isLoading: previewLoading } = useNotificationAudiencePreview({
+    channel: 'email',
+    recipientGroup: draftForm.recipient_group,
+    filters: {
+      postcode_prefix: draftFilters.postcode_prefix || undefined,
+      require_marketing_opt_in: draftFilters.require_marketing_opt_in,
+    },
+  })
 
   const selected = templates.find((template) => template.id === selectedId) ?? null
 
@@ -72,8 +91,8 @@ export default function EmailNotifications() {
     if (!q) return templates
     return templates.filter((item) =>
       [item.title, item.template_key, item.subject, item.recipient_group].some((value) =>
-        value.toLowerCase().includes(q)
-      )
+        value.toLowerCase().includes(q),
+      ),
     )
   }, [templates, search])
 
@@ -81,6 +100,8 @@ export default function EmailNotifications() {
   const draftRows = filtered.filter((item) => item.template_kind === 'campaign_draft')
   const failedJobs = deliveryJobs.filter((job) => job.delivery_status === 'failed')
   const sentJobs = deliveryJobs.filter((job) => job.delivery_status === 'sent')
+  const scheduledJobs = deliveryJobs.filter((job) => job.scheduled_for && job.delivery_status === 'queued')
+  const isScheduled = Boolean(scheduledFor && new Date(scheduledFor).getTime() > Date.now())
 
   const templateErrors = {
     template_key: !form.template_key.trim() ? 'Template key is required.' : null,
@@ -88,15 +109,27 @@ export default function EmailNotifications() {
     subject: !form.subject.trim() ? 'Subject is required.' : null,
     body: !form.body.trim() ? 'Body is required.' : null,
   }
+
   const draftErrors = {
     template_key: !draftForm.template_key.trim() ? 'Draft key is required.' : null,
     title: !draftForm.title.trim() ? 'Draft title is required.' : null,
     subject: !draftForm.subject.trim() ? 'Subject is required.' : null,
     body: !draftForm.body.trim() ? 'Message is required.' : null,
   }
-  const canSaveTemplate = canManageNotifications && !templateErrors.template_key && !templateErrors.title && !templateErrors.subject && !templateErrors.body
-  const canSaveDraft = canManageNotifications && !draftErrors.template_key && !draftErrors.title && !draftErrors.subject && !draftErrors.body
-  const canSendDraft = canSaveDraft
+
+  const canSaveTemplate =
+    canManageNotifications &&
+    !templateErrors.template_key &&
+    !templateErrors.title &&
+    !templateErrors.subject &&
+    !templateErrors.body
+
+  const canSaveDraft =
+    canManageNotifications &&
+    !draftErrors.template_key &&
+    !draftErrors.title &&
+    !draftErrors.subject &&
+    !draftErrors.body
 
   return (
     <div className="flex-1 flex flex-col">
@@ -108,6 +141,7 @@ export default function EmailNotifications() {
             Your admin role can view email templates and delivery history, but it cannot change or send them.
           </div>
         )}
+
         <div className="flex items-center justify-between">
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -125,7 +159,7 @@ export default function EmailNotifications() {
               setSelectedId(null)
               setForm(emptyTemplate)
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             New Template
@@ -187,19 +221,30 @@ export default function EmailNotifications() {
         </section>
 
         <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-          <div className="mb-6 grid gap-4 md:grid-cols-3">
+          <div className="mb-6 grid gap-4 md:grid-cols-4">
             <DeliveryStatCard label="Total jobs" value={deliveryJobs.length} />
             <DeliveryStatCard label="Sent jobs" value={sentJobs.length} />
+            <DeliveryStatCard label="Scheduled jobs" value={scheduledJobs.length} />
             <DeliveryStatCard label="Failed jobs" value={failedJobs.length} tone={failedJobs.length > 0 ? 'danger' : 'default'} />
           </div>
           <div className="mb-4 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delivery Jobs</h3>
-            <div className="mt-3 space-y-2">
+            <div className="mb-3 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delivery Jobs</h3>
+              <button
+                onClick={() => runScheduledJobs.mutate()}
+                disabled={runScheduledJobs.isPending || !canManageNotifications}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
+              >
+                {runScheduledJobs.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                Run Due Jobs
+              </button>
+            </div>
+            <div className="space-y-2">
               {deliveryJobs.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">No delivery jobs yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[720px] text-left text-sm">
+                  <table className="w-full min-w-[760px] text-left text-sm">
                     <thead className="text-xs uppercase text-gray-500 dark:text-gray-400">
                       <tr>
                         <th className="py-2 pr-4">Campaign</th>
@@ -207,6 +252,7 @@ export default function EmailNotifications() {
                         <th className="py-2 pr-4">Status</th>
                         <th className="py-2 pr-4">Result</th>
                         <th className="py-2 pr-4">Triggered</th>
+                        <th className="py-2 pr-4">Scheduled</th>
                         <th className="py-2 text-right">Actions</th>
                       </tr>
                     </thead>
@@ -215,20 +261,13 @@ export default function EmailNotifications() {
                         <tr key={job.id} className="border-t border-gray-200 dark:border-gray-700">
                           <td className="py-3 pr-4">
                             <div className="font-medium text-gray-900 dark:text-white">{job.title}</div>
-                            {job.error_message && (
-                              <div className="mt-1 text-xs text-red-600 dark:text-red-300">{job.error_message}</div>
-                            )}
+                            {job.error_message && <div className="mt-1 text-xs text-red-600 dark:text-red-300">{job.error_message}</div>}
                           </td>
                           <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">{job.recipient_group}</td>
-                          <td className="py-3 pr-4">
-                            <StatusBadge status={job.delivery_status} />
-                          </td>
-                          <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                            {job.sent_count}/{job.recipient_count} sent
-                          </td>
-                          <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400">
-                            {format(new Date(job.triggered_at), 'MMM d, yyyy HH:mm')}
-                          </td>
+                          <td className="py-3 pr-4"><StatusBadge status={job.delivery_status} /></td>
+                          <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">{job.sent_count}/{job.recipient_count} sent</td>
+                          <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400">{format(new Date(job.triggered_at), 'MMM d, yyyy HH:mm')}</td>
+                          <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400">{job.scheduled_for ? format(new Date(job.scheduled_for), 'MMM d, yyyy HH:mm') : 'Now'}</td>
                           <td className="py-3 text-right">
                             <button
                               onClick={() =>
@@ -240,6 +279,7 @@ export default function EmailNotifications() {
                                   subject: job.subject,
                                   previewText: job.preview_text ?? '',
                                   body: job.body,
+                                  audienceFilters: (job.audience_filters as Record<string, unknown>) ?? {},
                                 })
                               }
                               disabled={sendCampaign.isPending || !canManageNotifications}
@@ -256,14 +296,19 @@ export default function EmailNotifications() {
               )}
             </div>
           </div>
+
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
             {selectedId ? 'Edit Email Template' : 'Create Email Template'}
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field label="Template Key" value={form.template_key} onChange={(value) => setForm((prev) => ({ ...prev, template_key: value }))} />
-            <FieldErrorText error={templateErrors.template_key} />
-            <Field label="Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
-            <FieldErrorText error={templateErrors.title} />
+            <div>
+              <Field label="Template Key" value={form.template_key} onChange={(value) => setForm((prev) => ({ ...prev, template_key: value }))} />
+              <FieldErrorText error={templateErrors.template_key} />
+            </div>
+            <div>
+              <Field label="Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
+              <FieldErrorText error={templateErrors.title} />
+            </div>
             <SelectField
               label="Recipient Group"
               value={form.recipient_group}
@@ -311,7 +356,7 @@ export default function EmailNotifications() {
         <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">One-Time Email Drafts</h3>
           <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-            One-time campaigns are stored as database drafts so they can be reviewed and reused later.
+            One-time campaigns can be sent now, scheduled, or saved for later reuse.
           </p>
           <div className="mb-6 space-y-3">
             {draftRows.length === 0 ? (
@@ -350,18 +395,24 @@ export default function EmailNotifications() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field label="Draft Key" value={draftForm.template_key} onChange={(value) => setDraftForm((prev) => ({ ...prev, template_key: value }))} />
-            <FieldErrorText error={draftErrors.template_key} />
-            <Field label="Draft Title" value={draftForm.title} onChange={(value) => setDraftForm((prev) => ({ ...prev, title: value }))} />
-            <FieldErrorText error={draftErrors.title} />
+            <div>
+              <Field label="Draft Key" value={draftForm.template_key} onChange={(value) => setDraftForm((prev) => ({ ...prev, template_key: value }))} />
+              <FieldErrorText error={draftErrors.template_key} />
+            </div>
+            <div>
+              <Field label="Draft Title" value={draftForm.title} onChange={(value) => setDraftForm((prev) => ({ ...prev, title: value }))} />
+              <FieldErrorText error={draftErrors.title} />
+            </div>
             <SelectField
               label="Recipient Group"
               value={draftForm.recipient_group}
               onChange={(value) => setDraftForm((prev) => ({ ...prev, recipient_group: value }))}
-              options={['all', 'client', 'professional']}
+              options={['all', 'client', 'professional', 'admin']}
             />
-            <Field label="Subject" value={draftForm.subject} onChange={(value) => setDraftForm((prev) => ({ ...prev, subject: value }))} />
-            <FieldErrorText error={draftErrors.subject} />
+            <div>
+              <Field label="Subject" value={draftForm.subject} onChange={(value) => setDraftForm((prev) => ({ ...prev, subject: value }))} />
+              <FieldErrorText error={draftErrors.subject} />
+            </div>
             <div className="md:col-span-2">
               <Field label="Preview Text" value={draftForm.preview_text} onChange={(value) => setDraftForm((prev) => ({ ...prev, preview_text: value }))} />
             </div>
@@ -369,9 +420,36 @@ export default function EmailNotifications() {
               <TextAreaField label="Message" value={draftForm.body} onChange={(value) => setDraftForm((prev) => ({ ...prev, body: value }))} rows={8} />
               <FieldErrorText error={draftErrors.body} />
             </div>
+            <div>
+              <Field label="Postcode prefix filter" value={draftFilters.postcode_prefix} onChange={(value) => setDraftFilters((prev) => ({ ...prev, postcode_prefix: value }))} />
+            </div>
+            <ToggleField label="Require marketing opt-in" checked={draftFilters.require_marketing_opt_in} onChange={(checked) => setDraftFilters((prev) => ({ ...prev, require_marketing_opt_in: checked }))} />
+            <DateTimeField label="Schedule for" value={scheduledFor} onChange={setScheduledFor} />
+            <Field label="Test email address" value={testEmail} onChange={setTestEmail} />
+          </div>
+
+          <div className="mt-4 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">Recipient preview</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Current filters applied to the selected audience.</div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs uppercase tracking-wide text-gray-400">Estimated recipients</div>
+                <div className="text-2xl font-semibold text-gray-900 dark:text-white">{previewLoading ? '...' : audiencePreview?.count ?? 0}</div>
+              </div>
+            </div>
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
+            <button
+              onClick={() => sendTestEmail.mutate({ testEmail, subject: draftForm.subject, body: draftForm.body })}
+              disabled={sendTestEmail.isPending || !testEmail.trim() || !draftForm.subject.trim() || !draftForm.body.trim() || !canManageNotifications}
+              className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-900/60 dark:text-indigo-300 dark:hover:bg-indigo-950/20"
+            >
+              {sendTestEmail.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <TestTube2 className="h-4 w-4" />}
+              Send Test
+            </button>
             <button
               onClick={() =>
                 sendCampaign.mutate({
@@ -381,13 +459,18 @@ export default function EmailNotifications() {
                   subject: draftForm.subject,
                   previewText: draftForm.preview_text,
                   body: draftForm.body,
+                  audienceFilters: {
+                    postcode_prefix: draftFilters.postcode_prefix || undefined,
+                    require_marketing_opt_in: draftFilters.require_marketing_opt_in,
+                  },
+                  scheduledFor: scheduledFor || null,
                 })
               }
-              disabled={sendCampaign.isPending || !canSendDraft}
+              disabled={sendCampaign.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-900/60 dark:text-emerald-300 dark:hover:bg-emerald-950/20"
             >
               {sendCampaign.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send Draft
+              {isScheduled ? 'Schedule Draft' : 'Send Draft'}
             </button>
             <button
               onClick={() =>
@@ -414,10 +497,7 @@ export default function EmailNotifications() {
             <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Preview</span>
-                <a
-                  href="mailto:"
-                  className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
-                >
+                <a href="mailto:" className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <ExternalLink className="h-4 w-4" />
                   Preview Layout
                 </a>
@@ -437,38 +517,32 @@ export default function EmailNotifications() {
               </div>
             </div>
           )}
+
+          <div className="mt-6 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div className="mb-3 flex items-center gap-2">
+              <CalendarClock className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Audit Trail</span>
+            </div>
+            <div className="space-y-2">
+              {auditEvents.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No email notification audit events yet.</p>
+              ) : (
+                auditEvents.slice(0, 8).map((event) => (
+                  <div key={event.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">{event.action.replaceAll('_', ' ')}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{event.entity_type}</div>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{format(new Date(event.created_at), 'MMM d, yyyy HH:mm')}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </section>
       </main>
     </div>
   )
-}
-
-function DeliveryStatCard({
-  label,
-  value,
-  tone = 'default',
-}: {
-  label: string
-  value: number
-  tone?: 'default' | 'danger'
-}) {
-  return (
-    <div className={`rounded-xl border p-4 ${tone === 'danger' ? 'border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20' : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-950/20'}`}>
-      <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
-      <div className={`mt-2 text-2xl font-semibold ${tone === 'danger' ? 'text-red-700 dark:text-red-300' : 'text-gray-900 dark:text-white'}`}>{value}</div>
-    </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const tone =
-    status === 'sent'
-      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
-      : status === 'failed'
-        ? 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-300'
-        : 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
-
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{status}</span>
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
@@ -524,11 +598,64 @@ function SelectField({
   )
 }
 
-function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+function ToggleField({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
   return (
-    <label className="flex items-center gap-3 pt-8 text-sm text-gray-700 dark:text-gray-300">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    <label className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
       {label}
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
     </label>
   )
+}
+
+function DateTimeField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+      <input type="datetime-local" value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900" />
+    </div>
+  )
+}
+
+function DeliveryStatCard({
+  label,
+  value,
+  tone = 'default',
+}: {
+  label: string
+  value: number
+  tone?: 'default' | 'danger'
+}) {
+  return (
+    <div className={`rounded-xl border p-4 ${tone === 'danger' ? 'border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20' : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-950/20'}`}>
+      <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
+      <div className={`mt-2 text-2xl font-semibold ${tone === 'danger' ? 'text-red-700 dark:text-red-300' : 'text-gray-900 dark:text-white'}`}>{value}</div>
+    </div>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const tone =
+    status === 'sent'
+      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
+      : status === 'failed'
+        ? 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-300'
+        : 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
+
+  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>{status}</span>
 }
