@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Search, Plus, Edit, Trash2, Loader2, ArrowUp, ArrowDown } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Loader2, ArrowUp, ArrowDown, Image as ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { useAuth } from '@/contexts/AuthContext'
@@ -194,6 +194,12 @@ export default function BrowseCategoriesPage() {
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
+                      Media
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                    >
                       Public Routing
                     </th>
                     <th
@@ -229,6 +235,13 @@ export default function BrowseCategoriesPage() {
                               </span>
                             )}
                           </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <MediaThumb src={category.icon_url} alt={`${category.name} icon`} label="Icon" />
+                          <MediaThumb src={category.hero_image_url} alt={`${category.name} hero`} label="Hero" />
+                          <MediaThumb src={category.content_image_url} alt={`${category.name} content`} label="Content" />
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs">
@@ -293,7 +306,7 @@ export default function BrowseCategoriesPage() {
                           to="/tasks/categories/edit"
                           className={`text-primary hover:text-primary/80 mr-4 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
                         >
-                          Edit
+                          Edit Media
                         </Link>
                         <Link
                           to="/tasks/categories/delete"
@@ -336,5 +349,32 @@ export default function BrowseCategoriesPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+function MediaThumb({
+  src,
+  alt,
+  label,
+}: {
+  src?: string | null
+  alt: string
+  label: string
+}) {
+  if (!src) {
+    return (
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-500" title={`${label}: not set`}>
+        <ImageIcon className="h-4 w-4" />
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      title={label}
+      className="h-12 w-12 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+    />
   )
 }

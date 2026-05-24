@@ -1,90 +1,202 @@
-import { Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ExternalLink, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { format } from 'date-fns'
 import Header from '@/components/header'
-import { pageRegistry } from '@/lib/cms/page-registry'
-import { useAllPagesLastUpdated } from '@/lib/api/site-content'
+import { useAuth } from '@/contexts/AuthContext'
+import { webPageInventory } from '@/lib/cms/web-page-inventory'
+
+const statusMeta = {
+  admin: {
+    label: 'Admin-managed',
+    className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  },
+  partial: {
+    label: 'Partial',
+    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+  },
+  code: {
+    label: 'Code only',
+    className: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+  },
+} as const
+
+const statusFilters = [
+  { value: 'all', label: 'All pages' },
+  { value: 'admin', label: 'Admin-managed' },
+  { value: 'partial', label: 'Partial' },
+  { value: 'code', label: 'Code only' },
+] as const
 
 export default function ContentPagesPage() {
-  const { data: lastUpdated } = useAllPagesLastUpdated()
+  const { hasPermission } = useAuth()
+  const canManageContent = hasPermission('content.manage') || hasPermission('seo.manage')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<(typeof statusFilters)[number]['value']>('all')
 
-  const pages = Object.entries(pageRegistry).map(([key, def]) => ({
-    key,
-    title: def.label,
-    slug: def.slug,
-    sectionCount: Object.keys(def.sections).length,
-    fieldCount: Object.values(def.sections).reduce(
-      (sum, s) => sum + Object.keys(s.fields).length,
-      0
-    ),
-    lastModified: lastUpdated?.[key] ?? null,
-  }))
+  const filteredPages = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    return webPageInventory.filter((page) => {
+      const matchesStatus = statusFilter === 'all' ? true : page.status === statusFilter
+      if (!matchesStatus) return false
+      if (!query) return true
+      return [page.title, page.route, page.area, page.source, page.notes ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(query)
+    })
+  }, [searchQuery, statusFilter])
+
+  const counts = useMemo(
+    () => ({
+      total: webPageInventory.length,
+      admin: webPageInventory.filter((page) => page.status === 'admin').length,
+      partial: webPageInventory.filter((page) => page.status === 'partial').length,
+      code: webPageInventory.filter((page) => page.status === 'code').length,
+    }),
+    []
+  )
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Content Pages" />
+      <Header title="Website Pages" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
-        <div className="w-full">
-          {/* Search */}
-          <div className="flex items-center mb-6">
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search pages..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              />
+        <div className="w-full space-y-6">
+          {!canManageContent && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+              Your admin role can view the website inventory, but it cannot edit content directly.
+            </div>
+          )}
+
+          <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-800/50">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Full website inventory</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  This list is built from the real route tree. It shows every web page, how it is managed, and where to edit it when admin support exists.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative min-w-[260px]">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search routes, titles, notes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-gray-900"
+                  />
+                </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as (typeof statusFilters)[number]['value'])}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-gray-900"
+                >
+                  {statusFilters.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <SummaryCard label="Total web pages" value={counts.total} />
+              <SummaryCard label="Admin-managed" value={counts.admin} tone="good" />
+              <SummaryCard label="Partial coverage" value={counts.partial} tone="warn" />
+              <SummaryCard label="Code only" value={counts.code} tone="muted" />
             </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800/50">
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
                 <tr>
-                  <th className="px-6 py-3" scope="col">Page</th>
-                  <th className="px-6 py-3" scope="col">URL</th>
-                  <th className="px-6 py-3" scope="col">Sections</th>
-                  <th className="px-6 py-3" scope="col">Fields</th>
-                  <th className="px-6 py-3" scope="col">Last Modified</th>
-                  <th className="px-6 py-3" scope="col">
+                  <th className="px-6 py-3">Page</th>
+                  <th className="px-6 py-3">Route</th>
+                  <th className="px-6 py-3">Area</th>
+                  <th className="px-6 py-3">Management</th>
+                  <th className="px-6 py-3">Coverage</th>
+                  <th className="px-6 py-3">Notes</th>
+                  <th className="px-6 py-3">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {pages.map((page) => (
+                {filteredPages.map((page) => (
                   <tr
-                    key={page.key}
-                    className="bg-white dark:bg-gray-800/50 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600/50"
+                    key={page.route}
+                    className="border-b border-gray-200 bg-white align-top hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50 dark:hover:bg-gray-700/30"
                   >
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                      {page.title}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">{page.slug}</td>
-                    <td className="px-6 py-4">{page.sectionCount}</td>
-                    <td className="px-6 py-4">{page.fieldCount}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{page.title}</td>
+                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-300">{page.route}</td>
+                    <td className="px-6 py-4">{page.area}</td>
+                    <td className="px-6 py-4">{page.source}</td>
                     <td className="px-6 py-4">
-                      {page.lastModified
-                        ? format(new Date(page.lastModified), 'MMM d, yyyy')
-                        : <span className="text-gray-400 italic">Not yet edited</span>
-                      }
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusMeta[page.status].className}`}>
+                        {statusMeta[page.status].label}
+                      </span>
                     </td>
+                    <td className="px-6 py-4 max-w-md text-sm">{page.notes ?? '—'}</td>
                     <td className="px-6 py-4 text-right">
-                      <Link
-                        to={`/content/pages/${page.key}`}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        Edit
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        {page.adminPath ? (
+                          <Link to={page.adminPath} className="font-medium text-primary hover:underline">
+                            Manage
+                          </Link>
+                        ) : (
+                          <span className="text-xs text-gray-400">No admin editor</span>
+                        )}
+                        <a
+                          href={page.route}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          View
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {filteredPages.length === 0 && (
+              <div className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                No pages match the current search or coverage filter.
+              </div>
+            )}
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function SummaryCard({
+  label,
+  value,
+  tone = 'default',
+}: {
+  label: string
+  value: number
+  tone?: 'default' | 'good' | 'warn' | 'muted'
+}) {
+  const toneClass =
+    tone === 'good'
+      ? 'text-emerald-700 dark:text-emerald-300'
+      : tone === 'warn'
+        ? 'text-amber-700 dark:text-amber-300'
+        : tone === 'muted'
+          ? 'text-slate-700 dark:text-slate-300'
+          : 'text-gray-900 dark:text-white'
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40">
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className={`mt-1 text-2xl font-semibold ${toneClass}`}>{value}</p>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ExternalLink, Plus, Edit, Trash2, Loader2, X, Save } from 'lucide-react'
+import { ExternalLink, Plus, Edit, Trash2, Loader2, X, Save, Image as ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
@@ -330,6 +330,11 @@ export default function EditCategoriesPage() {
                                   /services/{category.route_slug}
                                 </p>
                               )}
+                              <div className="mt-3 flex items-center gap-2">
+                                <MediaThumb src={category.icon_url} alt={`${category.name} icon`} label="Icon" />
+                                <MediaThumb src={category.hero_image_url} alt={`${category.name} hero`} label="Hero" />
+                                <MediaThumb src={category.content_image_url} alt={`${category.name} content`} label="Content" />
+                              </div>
                               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                 Order {category.display_order} · {category.tasks_count} tasks
                               </p>
@@ -505,80 +510,35 @@ export default function EditCategoriesPage() {
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Icon URL
-                        </label>
-                          <input
-                            type="text"
+                      <div className="space-y-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Category Media</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            These assets control how the category looks across the admin-managed web and app surfaces.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                          <MediaInputCard
+                            label="Icon"
                             value={formData.icon_url}
-                          onChange={(e) =>
-                            setFormData({ ...formData, icon_url: e.target.value })
-                          }
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            onChange={(value) => setFormData({ ...formData, icon_url: value })}
+                            options={imageOptions}
+                            error={formData.icon_url.trim() && !isValidUrl(formData.icon_url) ? 'Enter a valid absolute URL.' : null}
                           />
-                          <FieldErrorText error={formData.icon_url.trim() && !isValidUrl(formData.icon_url) ? 'Enter a valid absolute URL.' : null} />
-                        </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Hero Image URL
-                          </label>
-                          <input
-                            type="text"
+                          <MediaInputCard
+                            label="Hero Image"
                             value={formData.hero_image_url}
-                            onChange={(e) =>
-                              setFormData({ ...formData, hero_image_url: e.target.value })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            onChange={(value) => setFormData({ ...formData, hero_image_url: value })}
+                            options={imageOptions}
+                            error={formData.hero_image_url.trim() && !isValidUrl(formData.hero_image_url) ? 'Enter a valid absolute URL.' : null}
                           />
-                          <FieldErrorText error={formData.hero_image_url.trim() && !isValidUrl(formData.hero_image_url) ? 'Enter a valid absolute URL.' : null} />
-                          <select
-                            value=""
-                            onChange={(e) => {
-                              if (!e.target.value) return
-                              setFormData({ ...formData, hero_image_url: e.target.value })
-                            }}
-                            className="mt-2 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                          >
-                            <option value="">Choose from media library</option>
-                            {imageOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Content Image URL
-                          </label>
-                          <input
-                            type="text"
+                          <MediaInputCard
+                            label="Content Image"
                             value={formData.content_image_url}
-                            onChange={(e) =>
-                              setFormData({ ...formData, content_image_url: e.target.value })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            onChange={(value) => setFormData({ ...formData, content_image_url: value })}
+                            options={imageOptions}
+                            error={formData.content_image_url.trim() && !isValidUrl(formData.content_image_url) ? 'Enter a valid absolute URL.' : null}
                           />
-                          <FieldErrorText error={formData.content_image_url.trim() && !isValidUrl(formData.content_image_url) ? 'Enter a valid absolute URL.' : null} />
-                          <select
-                            value=""
-                            onChange={(e) => {
-                              if (!e.target.value) return
-                              setFormData({ ...formData, content_image_url: e.target.value })
-                            }}
-                            className="mt-2 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                          >
-                            <option value="">Choose from media library</option>
-                            {imageOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
                         </div>
                       </div>
 
@@ -713,6 +673,78 @@ export default function EditCategoriesPage() {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+function MediaThumb({
+  src,
+  alt,
+  label,
+}: {
+  src?: string | null
+  alt: string
+  label: string
+}) {
+  return src ? (
+    <img
+      src={src}
+      alt={alt}
+      title={label}
+      className="h-12 w-12 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+    />
+  ) : (
+    <div
+      className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-500"
+      title={`${label}: not set`}
+    >
+      <ImageIcon className="h-4 w-4" />
+    </div>
+  )
+}
+
+function MediaInputCard({
+  label,
+  value,
+  onChange,
+  options,
+  error,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  options: Array<{ label: string; value: string }>
+  error: string | null
+}) {
+  return (
+    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-gray-900 dark:text-white">{label}</p>
+        <MediaThumb src={value} alt={label} label={label} />
+      </div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="https://..."
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+      />
+      <FieldErrorText error={error} />
+      <select
+        value=""
+        onChange={(e) => {
+          if (!e.target.value) return
+          onChange(e.target.value)
+        }}
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+      >
+        <option value="">Choose from media library</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
     </div>
   )
 }

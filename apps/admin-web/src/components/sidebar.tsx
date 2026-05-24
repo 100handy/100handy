@@ -86,7 +86,7 @@ const groups = [
     defaultExpanded: true,
     items: [
       { label: 'Pages', path: '/content/pages', permissions: ['content.manage'] as AdminPermission[] },
-      { label: 'Page Settings', path: '/content/page-settings', permissions: ['content.manage', 'seo.manage'] as AdminPermission[] },
+      { label: 'Global Settings', path: '/content/page-settings', permissions: ['content.manage', 'seo.manage'] as AdminPermission[] },
       { label: 'Help Articles', path: '/content/help-articles', permissions: ['content.manage'] as AdminPermission[] },
       { label: 'Blogs', path: '/content/blogs', permissions: ['content.manage'] as AdminPermission[] },
       { label: 'Media', path: '/content/media', permissions: ['content.manage'] as AdminPermission[] },

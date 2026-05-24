@@ -111,7 +111,7 @@ export default function PageSettingsPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Page Settings" />
+      <Header title="Global Settings" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-4xl mx-auto space-y-6">
           <UnsavedChangesBanner show={isDirty} />
@@ -126,12 +126,35 @@ export default function PageSettingsPage() {
             </div>
           )}
           <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 px-4 py-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                These settings now stage as drafts before they update live help, booking, and SEO defaults.
-              </p>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Global SEO and shared website settings</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    This page controls global defaults and shared content blocks. It does not edit individual pages.
+                  </p>
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <SettingsSummaryCard
+                  title="SEO Defaults"
+                  description="Meta description, OG image, canonical base, robots defaults."
+                />
+                <SettingsSummaryCard
+                  title="Organization Schema"
+                  description="Global structured data for the website."
+                />
+                <SettingsSummaryCard
+                  title="Help Settings"
+                  description="Help UI labels and search configuration."
+                />
+                <SettingsSummaryCard
+                  title="Booking Copy"
+                  description="Shared copy used across booking confirmation surfaces."
+                />
               </div>
             </div>
             {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
@@ -156,9 +179,10 @@ export default function PageSettingsPage() {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Global SEO Defaults</h3>
-
+          <SectionCard
+            title="SEO Defaults"
+            description="Set the fallback metadata used across public pages when a page does not define its own SEO values."
+          >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
@@ -172,37 +196,36 @@ export default function PageSettingsPage() {
                 </div>
               </div>
             )}
-          </div>
+          </SectionCard>
 
-          <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Organization Schema</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Structured organization data used as the global SEO/source-of-truth block.
-            </p>
+          <SectionCard
+            title="Organization Schema"
+            description="Structured organization data used as the global SEO source of truth."
+          >
             <textarea
               value={organizationJson}
               onChange={(e) => setOrganizationJson(e.target.value)}
               rows={14}
               className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg font-mono text-xs"
             />
-          </div>
+          </SectionCard>
 
           <JsonPanel
-            title="Help UI"
-            description="Labels used across help layout surfaces."
+            title="Help Settings"
+            description="Labels, UI, and search entries used across help pages."
             value={helpUiJson}
             onChange={setHelpUiJson}
           />
 
           <JsonPanel
-            title="Help Search Index"
-            description="Search entries and popular searches for help pages."
+            title="Help Search Data"
+            description="Search entries and popular searches for the help experience."
             value={helpSearchJson}
             onChange={setHelpSearchJson}
           />
 
           <JsonPanel
-            title="Booking Web Copy"
+            title="Booking Copy"
             description="Shared copy used by booking confirmation components on the website."
             value={bookingCopyJson}
             onChange={setBookingCopyJson}
@@ -237,6 +260,35 @@ export default function PageSettingsPage() {
   )
 }
 
+function SettingsSummaryCard({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3">
+      <p className="text-sm font-semibold text-gray-900 dark:text-white">{title}</p>
+      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{description}</p>
+    </div>
+  )
+}
+
+function SectionCard({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+      <div className="space-y-1">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+      </div>
+      {children}
+    </div>
+  )
+}
+
 function JsonPanel({
   title,
   description,
@@ -250,8 +302,10 @@ function JsonPanel({
 }) {
   return (
     <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+      <div className="space-y-1">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+      </div>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
