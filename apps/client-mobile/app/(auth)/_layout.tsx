@@ -3,7 +3,7 @@ import { Loader } from '@/components/ui/loader';
 import { useAuthStore } from '@shared/store';
 
 export default function AuthLayout() {
-  const { isAuthenticated, isLoading, isRoleResolved, isEmailVerified, user, userRole } =
+  const { isAuthenticated, isLoading, isRoleResolved, isEmailVerified, user, userRole, accountStatus } =
     useAuthStore();
   const segments = useSegments().map(String);
   const professionalAuthSegmentIndex = segments.indexOf('(professional)');
@@ -27,6 +27,10 @@ export default function AuthLayout() {
     );
   }
 
+  if (isAuthenticated && accountStatus && accountStatus !== 'active') {
+    return <Redirect href="/(auth)/account-status" />;
+  }
+
   if (isAuthenticated && userRole === 'handy' && !isAllowedProfessionalOnboardingRoute) {
     return <Redirect href="/(professional)/(tabs)/dashboard" />;
   }
@@ -38,6 +42,7 @@ export default function AuthLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="welcome" />
+      <Stack.Screen name="account-status" />
       <Stack.Screen name="verify-email" />
       <Stack.Screen name="verify-otp" />
       <Stack.Screen name="(client)" />

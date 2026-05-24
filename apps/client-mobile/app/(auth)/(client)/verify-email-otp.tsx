@@ -45,10 +45,11 @@ export default function ClientVerifyEmailOtp() {
 
       if (result.user) {
         await checkAuth();
-        const { isEmailVerified, userRole, hasCompletedOnboarding, user } = useAuthStore.getState();
+        const { isEmailVerified, userRole, accountStatus, hasCompletedOnboarding, user } = useAuthStore.getState();
         const route = await resolveAuthenticatedRoute({
           isEmailVerified,
           userRole,
+          accountStatus,
           hasCompletedOnboarding,
           userEmail: user?.email,
           userId: user?.id,

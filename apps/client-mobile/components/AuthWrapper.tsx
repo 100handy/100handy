@@ -16,6 +16,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     isEmailVerified,
     hasCompletedOnboarding,
     userRole,
+    accountStatus,
     user,
     initialize,
     cleanup
@@ -124,6 +125,15 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         return;
       }
 
+      const isOnAccountStatusScreen = segmentStrings.includes('account-status');
+
+      if (accountStatus && accountStatus !== 'active') {
+        if (!isOnAccountStatusScreen) {
+          router.replace('/(auth)/account-status');
+        }
+        return;
+      }
+
       // Check email verification
       const isVerified = isEmailVerified;
       const isOnVerificationScreen = isOnVerifyEmail;
@@ -187,7 +197,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         router.replace('/(auth)/(client)');
       }
     }
-  }, [isAuthenticated, isEmailVerified, hasCompletedOnboarding, professionalOnboardingComplete, isIdentityVerified, userRole, user, isLoading, isCheckingOnboarding, segments, router]);
+  }, [accountStatus, isAuthenticated, isEmailVerified, hasCompletedOnboarding, professionalOnboardingComplete, isIdentityVerified, userRole, user, isLoading, isCheckingOnboarding, segments, router]);
 
   const stillLoading = !hasTimedOut && (isLoading || (isAuthenticated && userRole === 'handy' && isCheckingOnboarding) || (isAuthenticated && isIdentityVerified === null));
   if (stillLoading) {

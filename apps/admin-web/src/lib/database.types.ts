@@ -34,6 +34,10 @@ export interface Database {
           phone: string | null
           postcode: string | null
           avatar_url: string | null
+          account_status: 'active' | 'paused' | 'deleted'
+          status_reason: string | null
+          status_updated_at: string
+          deleted_at: string | null
           rating: number
           jobs_completed: number
           created_at: string
@@ -46,6 +50,10 @@ export interface Database {
           phone?: string | null
           postcode?: string | null
           avatar_url?: string | null
+          account_status?: 'active' | 'paused' | 'deleted'
+          status_reason?: string | null
+          status_updated_at?: string
+          deleted_at?: string | null
           rating?: number
           jobs_completed?: number
           created_at?: string
@@ -58,6 +66,10 @@ export interface Database {
           phone?: string | null
           postcode?: string | null
           avatar_url?: string | null
+          account_status?: 'active' | 'paused' | 'deleted'
+          status_reason?: string | null
+          status_updated_at?: string
+          deleted_at?: string | null
           rating?: number
           jobs_completed?: number
           created_at?: string

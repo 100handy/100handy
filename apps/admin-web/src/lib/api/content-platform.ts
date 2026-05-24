@@ -495,6 +495,38 @@ export function useAnnouncements(placement?: AnnouncementInput['placement']) {
   })
 }
 
+export function useNotificationsSummary() {
+  return useQuery({
+    queryKey: ['admin', 'notifications-summary'],
+    queryFn: async () => {
+      const [{ data: templates, error: templatesError }, { data: announcements, error: announcementsError }] =
+        await Promise.all([
+          supabase.from('email_templates').select('template_kind, active'),
+          supabase.from('announcements').select('placement, active'),
+        ])
+
+      if (templatesError) throw templatesError
+      if (announcementsError) throw announcementsError
+
+      const emailTemplates = (templates ?? []).filter((row) => row.template_kind === 'template')
+      const campaignDrafts = (templates ?? []).filter((row) => row.template_kind === 'campaign_draft')
+      const activeAnnouncements = (announcements ?? []).filter((row) => row.active)
+      const activeBannersAndModals = activeAnnouncements.filter(
+        (row) => row.placement === 'banner' || row.placement === 'modal',
+      )
+
+      return {
+        emailTemplates: emailTemplates.length,
+        activeEmailTemplates: emailTemplates.filter((row) => row.active).length,
+        campaignDrafts: campaignDrafts.length,
+        activeAnnouncements: activeAnnouncements.length,
+        activeBannersAndModals: activeBannersAndModals.length,
+      }
+    },
+    staleTime: 30 * 1000,
+  })
+}
+
 export function useSaveAnnouncement() {
   const queryClient = useQueryClient()
   return useMutation({

@@ -33,11 +33,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const supabase = createClient();
 
+    const resolveActiveUser = async (nextUser: User | null): Promise<User | null> => {
+      if (!nextUser) {
+        return null;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('account_status')
+          .eq('user_id', nextUser.id)
+          .single();
+
+        if (error) {
+          console.error('Error resolving web account status:', error);
+          return nextUser;
+        }
+
+        if (data?.account_status && data.account_status !== 'active') {
+          await supabase.auth.signOut();
+          return null;
+        }
+
+        return nextUser;
+      } catch (error) {
+        console.error('Unexpected web account status error:', error);
+        return nextUser;
+      }
+    };
+
     // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
+        setUser(await resolveActiveUser(session?.user ?? null));
       } catch (error) {
         console.error('Error getting session:', error);
       } finally {
@@ -49,8 +78,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+      void (async () => {
+        setUser(await resolveActiveUser(session?.user ?? null));
+        setLoading(false);
+      })();
     });
 
     return () => subscription.unsubscribe();
@@ -70,4 +101,3 @@ export function useAuthContext(): AuthContextType {
   }
   return context;
 }
-

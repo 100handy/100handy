@@ -23,7 +23,7 @@ export default function ProfessionalSignIn() {
       attempts++;
     }
 
-    const { isAuthenticated, isEmailVerified, userRole, hasCompletedOnboarding, user, isRoleResolved } =
+    const { isAuthenticated, isEmailVerified, userRole, accountStatus, hasCompletedOnboarding, user, isRoleResolved } =
       useAuthStore.getState();
     if (!isAuthenticated) {
       throw new Error('Authentication check failed');
@@ -42,6 +42,7 @@ export default function ProfessionalSignIn() {
     const route = await resolveAuthenticatedRoute({
       isEmailVerified,
       userRole: effectiveRole,
+      accountStatus,
       hasCompletedOnboarding,
       userEmail: user?.email,
       userId: user?.id,

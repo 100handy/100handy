@@ -19,6 +19,8 @@ interface AuthState {
   isPhoneVerified: boolean;
   hasCompletedOnboarding: boolean;
   userRole: 'customer' | 'handy' | null;
+  accountStatus: 'active' | 'paused' | 'deleted' | null;
+  accountStatusReason: string | null;
   authSubscription: { unsubscribe: () => void } | null;
   initialize: () => Promise<void>;
   cleanup: () => void;
@@ -35,12 +37,18 @@ interface AuthState {
  * Falls back to null if the row is missing or the query fails.
  * This prevents a client from elevating their role by calling supabase.auth.updateUser().
  */
-async function fetchProfileRole(userId: string): Promise<'customer' | 'handy' | null> {
+interface ProfileAuthState {
+  role: 'customer' | 'handy' | null;
+  accountStatus: 'active' | 'paused' | 'deleted' | null;
+  accountStatusReason: string | null;
+}
+
+async function fetchProfileAuthState(userId: string): Promise<ProfileAuthState> {
   for (let attempt = 1; attempt <= PROFILE_ROLE_MAX_ATTEMPTS; attempt++) {
     try {
       const query = supabase
         .from('profiles')
-        .select('role')
+        .select('role, account_status, status_reason')
         .eq('user_id', userId)
         .single();
       const { data } = await Promise.race([
@@ -53,8 +61,16 @@ async function fetchProfileRole(userId: string): Promise<'customer' | 'handy' | 
         }),
       ]);
       const role = (data?.role as 'customer' | 'handy' | null) ?? null;
-      if (role) {
-        return role;
+      const accountStatus =
+        (data?.account_status as 'active' | 'paused' | 'deleted' | null) ?? 'active';
+      const accountStatusReason = data?.status_reason ?? null;
+
+      if (role || accountStatus) {
+        return {
+          role,
+          accountStatus,
+          accountStatusReason,
+        };
       }
     } catch {
       // fall through to retry
@@ -64,7 +80,11 @@ async function fetchProfileRole(userId: string): Promise<'customer' | 'handy' | 
       await new Promise((resolve) => setTimeout(resolve, 400 * attempt));
     }
   }
-  return null;
+  return {
+    role: null,
+    accountStatus: null,
+    accountStatusReason: null,
+  };
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -78,6 +98,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isPhoneVerified: false,
   hasCompletedOnboarding: false,
   userRole: null,
+  accountStatus: null,
+  accountStatusReason: null,
   authSubscription: null,
 
   initialize: async () => {
@@ -105,16 +127,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isPhoneVerified: !!user?.phone_confirmed_at,
           hasCompletedOnboarding: metadata?.onboarding_completed || false,
           userRole: fallbackRole,
+          accountStatus: user ? 'active' : null,
+          accountStatusReason: null,
           isRoleResolved: !user,
           isLoading: false
         });
 
-        // Override with authoritative DB role to prevent client-side role elevation
+        // Override with authoritative DB profile state to prevent client-side role elevation
         if (user?.id) {
-          fetchProfileRole(user.id).then((dbRole) => {
+          fetchProfileAuthState(user.id).then((profileState) => {
             if (get().user?.id !== user.id) return;
             set({
-              userRole: dbRole ?? fallbackRole,
+              userRole: profileState.role ?? fallbackRole,
+              accountStatus: profileState.accountStatus ?? 'active',
+              accountStatusReason: profileState.accountStatusReason,
               isRoleResolved: true,
             });
           });
@@ -132,21 +158,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({
           user: null,
           session: null,
-          isAuthenticated: false,
-          isEmailVerified: false,
-          isPhoneVerified: false,
-          userRole: null,
-          isRoleResolved: true,
-          isLoading: false,
-        });
+        isAuthenticated: false,
+        isEmailVerified: false,
+        isPhoneVerified: false,
+        userRole: null,
+        accountStatus: null,
+        accountStatusReason: null,
+        isRoleResolved: true,
+        isLoading: false,
+      });
         return;
       }
 
       const user = session?.user;
       const metadata = user?.user_metadata;
 
-      // Fetch authoritative role from DB during initialization
-      const dbRole = user?.id ? await fetchProfileRole(user.id) : null;
+      // Fetch authoritative profile state from DB during initialization
+      const profileState = user?.id
+        ? await fetchProfileAuthState(user.id)
+        : { role: null, accountStatus: null, accountStatusReason: null };
 
       set({
         user: user || null,
@@ -155,7 +185,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isEmailVerified: !!user?.email_confirmed_at,
         isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
-        userRole: dbRole ?? (metadata?.role || null),
+        userRole: profileState.role ?? (metadata?.role || null),
+        accountStatus: user ? profileState.accountStatus ?? 'active' : null,
+        accountStatusReason: profileState.accountStatusReason,
         isRoleResolved: true,
         isLoading: false
       });
@@ -165,6 +197,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         user: null,
         session: null,
         isAuthenticated: false,
+        accountStatus: null,
+        accountStatusReason: null,
         isRoleResolved: true,
         isLoading: false,
       });
@@ -190,15 +224,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isPhoneVerified: !!user?.phone_confirmed_at,
       hasCompletedOnboarding: metadata?.onboarding_completed || false,
       userRole: fallbackRole,
+      accountStatus: user ? 'active' : null,
+      accountStatusReason: null,
       isRoleResolved: !user,
       isLoading: false
     });
 
     if (user?.id) {
-      fetchProfileRole(user.id).then((dbRole) => {
+      fetchProfileAuthState(user.id).then((profileState) => {
         if (get().user?.id !== user.id) return;
         set({
-          userRole: dbRole ?? fallbackRole,
+          userRole: profileState.role ?? fallbackRole,
+          accountStatus: profileState.accountStatus ?? 'active',
+          accountStatusReason: profileState.accountStatusReason,
           isRoleResolved: true,
         });
       });
@@ -218,15 +256,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isPhoneVerified: !!user?.phone_confirmed_at,
       hasCompletedOnboarding: metadata?.onboarding_completed || false,
       userRole: fallbackRole,
+      accountStatus: user ? 'active' : null,
+      accountStatusReason: null,
       isRoleResolved: !user,
       isLoading: false
     });
 
     if (user?.id) {
-      fetchProfileRole(user.id).then((dbRole) => {
+      fetchProfileAuthState(user.id).then((profileState) => {
         if (get().user?.id !== user.id) return;
         set({
-          userRole: dbRole ?? fallbackRole,
+          userRole: profileState.role ?? fallbackRole,
+          accountStatus: profileState.accountStatus ?? 'active',
+          accountStatusReason: profileState.accountStatusReason,
           isRoleResolved: true,
         });
       });
@@ -292,6 +334,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isPhoneVerified: false,
         hasCompletedOnboarding: false,
         userRole: null,
+        accountStatus: null,
+        accountStatusReason: null,
         isRoleResolved: true,
         currentPushToken: null,
         isLoading: false
@@ -331,16 +375,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isPhoneVerified: !!user?.phone_confirmed_at,
         hasCompletedOnboarding: metadata?.onboarding_completed || false,
         userRole: fallbackRole,
+        accountStatus: user ? 'active' : null,
+        accountStatusReason: null,
         isRoleResolved: !user,
         isLoading: false
       });
 
-      // Fetch authoritative DB role asynchronously (non-blocking for faster navigation)
+      // Fetch authoritative DB profile state asynchronously (non-blocking for faster navigation)
       if (user?.id) {
-        fetchProfileRole(user.id).then((dbRole) => {
+        fetchProfileAuthState(user.id).then((profileState) => {
           if (get().user?.id !== user.id) return;
           set({
-            userRole: dbRole ?? fallbackRole,
+            userRole: profileState.role ?? fallbackRole,
+            accountStatus: profileState.accountStatus ?? 'active',
+            accountStatusReason: profileState.accountStatusReason,
             isRoleResolved: true,
           });
         });

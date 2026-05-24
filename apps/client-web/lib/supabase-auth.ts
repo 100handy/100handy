@@ -112,6 +112,27 @@ export const supabaseAuth: {
 
         if (error) throw error;
 
+        if (data.user) {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('account_status')
+            .eq('user_id', data.user.id)
+            .single();
+
+          if (profileError) {
+            throw profileError;
+          }
+
+          if (profile?.account_status && profile.account_status !== 'active') {
+            await supabase.auth.signOut();
+            throw new Error(
+              profile.account_status === 'deleted'
+                ? 'This account is unavailable.'
+                : 'This account is currently paused.'
+            );
+          }
+        }
+
         callbacks?.onResponse?.();
         callbacks?.onSuccess?.();
         return data;

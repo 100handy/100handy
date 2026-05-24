@@ -1,281 +1,214 @@
-import { useState } from 'react';
-import Header from '../../components/header';
-import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
-
-const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-// Calendar days for November 2023
-const calendarDays = [
-    { day: 29, isCurrentMonth: false },
-    { day: 30, isCurrentMonth: false },
-    { day: 31, isCurrentMonth: false },
-    ...Array.from({ length: 30 }, (_, i) => ({ day: i + 1, isCurrentMonth: true })),
-    { day: 1, isCurrentMonth: false },
-    { day: 2, isCurrentMonth: false },
-];
+import Header from '../../components/header'
+import { AlertTriangle, Bell, CalendarRange, CheckCircle2, Loader2, Settings2 } from 'lucide-react'
+import { useAvailabilityOverview, useHandysWithAvailability } from '@/lib/api/handys'
 
 export default function CalendarSettings() {
-    const [currentMonth] = useState('November 2023');
-    const [notifications, setNotifications] = useState({
-        newBooking: true,
-        cancellations: false,
-        scheduleChanges: true,
-    });
-    const [defaultAvailability, setDefaultAvailability] = useState('Available');
-    const [bookingWindow, setBookingWindow] = useState('24');
+  const { data: summary, isLoading: summaryLoading, error: summaryError } = useAvailabilityOverview()
+  const { data: handys, isLoading: handysLoading, error: handysError } = useHandysWithAvailability()
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Handle form submission
-        console.log('Settings saved');
-    };
+  const loading = summaryLoading || handysLoading
+  const error = summaryError || handysError
 
-    return (
-        <div className="flex-1 flex flex-col">
-            <Header title="Calendar & Settings" />
+  const fullyConfigured = (handys ?? []).filter((handy) => handy.activeSlots > 0)
+  const partiallyConfigured = (handys ?? []).filter(
+    (handy) => handy.totalSlots > 0 && handy.activeSlots < handy.totalSlots,
+  )
+  const notConfigured = (handys ?? []).filter((handy) => handy.totalSlots === 0)
 
-            <main className="flex-1 p-6 lg:p-10">
-                <div className="max-w-7xl mx-auto">
-                    <div className="mb-8">
-                        <p className="mt-2 text-slate-500 dark:text-slate-400">
-                            Manage Handy schedules, integrations, and general settings.
-                        </p>
-                    </div>
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header title="Calendar & Settings" />
 
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                        {/* Calendar Section */}
-                        <div className="xl:col-span-2">
-                            <div className="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-slate-800">
-                                <div className="p-6">
-                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
-                                            Handy Schedule
-                                        </h3>
-                                        <div className="flex items-center gap-2">
-                                            <button className="p-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                                <ChevronLeft className="w-4 h-4" />
-                                            </button>
-                                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 min-w-[120px] text-center">
-                                                {currentMonth}
-                                            </span>
-                                            <button className="p-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                                <ChevronRight className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
+      <main className="flex-1 overflow-y-auto p-6 lg:p-10">
+        <div className="mx-auto max-w-7xl space-y-8">
+          <div>
+            <p className="mt-1 text-slate-500 dark:text-slate-400">
+              Operational overview for Handy scheduling. This page now reflects live availability coverage instead of a static calendar mock.
+            </p>
+          </div>
 
-                                    {/* Calendar Grid */}
-                                    <div className="grid grid-cols-7 gap-px text-center text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-t-lg">
-                                        {daysOfWeek.map((day) => (
-                                            <div key={day} className="py-2 bg-white dark:bg-background-dark">
-                                                {day}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="grid grid-cols-7 gap-px bg-slate-200 dark:bg-slate-700 border-x border-b border-slate-200 dark:border-slate-700 rounded-b-lg">
-                                        {calendarDays.map((item, idx) => (
-                                            <div
-                                                key={idx}
-                                                className={`bg-white dark:bg-background-dark p-2 h-24 text-sm relative ${!item.isCurrentMonth ? 'text-slate-400 dark:text-slate-500' : ''
-                                                    } ${item.day === 13 && item.isCurrentMonth ? 'bg-primary/5' : ''}`}
-                                            >
-                                                {item.day}
-                                                {item.day === 12 && item.isCurrentMonth && (
-                                                    <div className="absolute bottom-1 left-1 right-1 flex flex-col gap-0.5">
-                                                        <div className="text-[10px] bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 rounded px-1 truncate">
-                                                            J. Doe - Available
-                                                        </div>
-                                                        <div className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 rounded px-1 truncate">
-                                                            S. Jane - Booked
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right Sidebar */}
-                        <div className="xl:col-span-1 space-y-8">
-                            {/* Calendar Integrations */}
-                            <div className="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-slate-800">
-                                <div className="p-6">
-                                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
-                                        Calendar Integrations
-                                    </h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                                        Connect your calendars to sync Handy schedules.
-                                    </p>
-                                    <div className="space-y-4">
-                                        {/* Google Calendar */}
-                                        <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                                            <div className="flex items-center gap-4">
-                                                <img
-                                                    alt="Google Calendar Logo"
-                                                    className="h-8 w-8"
-                                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm1FCraN5-s4j1u5WHJxpKp2fetbVfRkEokFpb52irdls9USKJx945doWy820iUsZ1gQQKpwhc-l9HKo_16byv7AvTFib6xDsIru9hFebZPilMnFOyvw8hOL91G6DaTyIOW9yDCW1DneF0C6ZlCYHEt6H0xDSEmny6Uk-SSuk2DpYpgBObDIvjxTrBtMCSu9sB5Q5ERU2Sw_5lL5JNyYdLJ3L1l7h-Hy1pMKDFmDSDERFRrmQ5gk099D8ujAxY3F5ppvecH5RKD6BY"
-                                                />
-                                                <div>
-                                                    <h4 className="font-semibold text-slate-800 dark:text-white">
-                                                        Google Calendar
-                                                    </h4>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400">Not connected</p>
-                                                </div>
-                                            </div>
-                                            <button className="px-3 py-1.5 rounded-md text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20">
-                                                Connect
-                                            </button>
-                                        </div>
-
-                                        {/* Outlook Calendar */}
-                                        <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                                            <div className="flex items-center gap-4">
-                                                <img
-                                                    alt="Hotmail/Outlook Logo"
-                                                    className="h-8 w-8"
-                                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeyhlQnKaBLLM9v-pWoNNHnPiExT9UCQpy-yJVjALD0Uwo7lBIzsCtVX_RR2kK0LREKGxQ4lwTujwBEjzF5onBQrDwQIKp-gJapsQ3iMIfwMvCo-GXR93gtq8-PRoFo_ZMztDAzx_4eUnqyl5qHL-Wac7_Lt1tFjSLmGJZFnwl97w_t0ZTwGYIlXsty6Mwzb1UHy4orrdSxJ1MM8BeykssWHyQiUrciO5Fk7fcFsQjz1ZkoYalpXYv-wbrqMMiaGwZin4NoYZR-n66"
-                                                />
-                                                <div>
-                                                    <h4 className="font-semibold text-slate-800 dark:text-white">
-                                                        Hotmail/Outlook
-                                                    </h4>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs text-green-500">Connected</span>
-                                                        <CheckCircle className="w-4 h-4 text-green-500" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button className="px-3 py-1.5 rounded-md text-sm font-medium text-red-600 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/40">
-                                                Disconnect
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Settings */}
-                            <div className="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-slate-800">
-                                <div className="p-6">
-                                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
-                                        Settings
-                                    </h3>
-                                    <form className="space-y-6" onSubmit={handleSubmit}>
-                                        {/* Notification Settings */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                                Notification Settings
-                                            </label>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center">
-                                                    <input
-                                                        checked={notifications.newBooking}
-                                                        className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-primary focus:ring-primary"
-                                                        id="new-booking"
-                                                        onChange={(e) =>
-                                                            setNotifications({ ...notifications, newBooking: e.target.checked })
-                                                        }
-                                                        type="checkbox"
-                                                    />
-                                                    <label
-                                                        className="ml-3 text-sm text-slate-600 dark:text-slate-400"
-                                                        htmlFor="new-booking"
-                                                    >
-                                                        New booking confirmations
-                                                    </label>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <input
-                                                        checked={notifications.cancellations}
-                                                        className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-primary focus:ring-primary"
-                                                        id="cancellations"
-                                                        onChange={(e) =>
-                                                            setNotifications({ ...notifications, cancellations: e.target.checked })
-                                                        }
-                                                        type="checkbox"
-                                                    />
-                                                    <label
-                                                        className="ml-3 text-sm text-slate-600 dark:text-slate-400"
-                                                        htmlFor="cancellations"
-                                                    >
-                                                        Cancellations
-                                                    </label>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <input
-                                                        checked={notifications.scheduleChanges}
-                                                        className="h-4 w-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-primary focus:ring-primary"
-                                                        id="schedule-changes"
-                                                        onChange={(e) =>
-                                                            setNotifications({
-                                                                ...notifications,
-                                                                scheduleChanges: e.target.checked,
-                                                            })
-                                                        }
-                                                        type="checkbox"
-                                                    />
-                                                    <label
-                                                        className="ml-3 text-sm text-slate-600 dark:text-slate-400"
-                                                        htmlFor="schedule-changes"
-                                                    >
-                                                        Schedule changes
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Default Availability */}
-                                        <div>
-                                            <label
-                                                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                                                htmlFor="default-availability"
-                                            >
-                                                Default Availability Status
-                                            </label>
-                                            <select
-                                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-primary focus:border-primary px-3 py-2"
-                                                id="default-availability"
-                                                onChange={(e) => setDefaultAvailability(e.target.value)}
-                                                value={defaultAvailability}
-                                            >
-                                                <option>Available</option>
-                                                <option>Unavailable</option>
-                                            </select>
-                                        </div>
-
-                                        {/* Booking Window */}
-                                        <div>
-                                            <label
-                                                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                                                htmlFor="booking-window"
-                                            >
-                                                Minimum Booking Window (hours)
-                                            </label>
-                                            <input
-                                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-primary focus:border-primary px-3 py-2"
-                                                id="booking-window"
-                                                onChange={(e) => setBookingWindow(e.target.value)}
-                                                type="number"
-                                                value={bookingWindow}
-                                            />
-                                        </div>
-
-                                        <div className="flex justify-end pt-4">
-                                            <button
-                                                className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary/90"
-                                                type="submit"
-                                            >
-                                                Save Settings
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800/50 dark:bg-red-900/20">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-400" />
+                <div>
+                  <h3 className="font-semibold text-red-800 dark:text-red-300">Failed to load scheduling overview</h3>
+                  <p className="mt-1 text-sm text-red-700 dark:text-red-400/80">
+                    {error instanceof Error ? error.message : 'An unexpected error occurred'}
+                  </p>
                 </div>
-            </main>
+              </div>
+            </div>
+          )}
+
+          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <Card
+              title="Weekly Slot Coverage"
+              value={summary?.weeklySlots ?? 0}
+              helper="Recurring weekly slots configured"
+              icon={CalendarRange}
+              loading={loading}
+            />
+            <Card
+              title="One-Time Slots"
+              value={summary?.oneTimeSlots ?? 0}
+              helper="Date-specific availability overrides"
+              icon={Settings2}
+              loading={loading}
+            />
+            <Card
+              title="Fully Configured Handys"
+              value={fullyConfigured.length}
+              helper="At least one active slot"
+              icon={CheckCircle2}
+              loading={loading}
+            />
+            <Card
+              title="Needs Attention"
+              value={partiallyConfigured.length + notConfigured.length}
+              helper="Partial or missing setup"
+              icon={Bell}
+              loading={loading}
+            />
+          </section>
+
+          <section className="grid gap-8 xl:grid-cols-[1fr_1fr]">
+            <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark">
+              <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Configuration Health</h3>
+              </div>
+              <div className="space-y-4 p-6">
+                <HealthRow label="Fully configured" value={fullyConfigured.length} tone="green" />
+                <HealthRow label="Partially configured" value={partiallyConfigured.length} tone="yellow" />
+                <HealthRow label="No slots configured" value={notConfigured.length} tone="red" />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark">
+              <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Platform Scheduling Notes</h3>
+              </div>
+              <div className="space-y-4 p-6 text-sm text-slate-600 dark:text-slate-300">
+                <p>
+                  Calendar integrations are not wired to an external provider from the admin panel yet. The source of truth remains the Handy availability data stored in `professional_availability`.
+                </p>
+                <p>
+                  Use <span className="font-semibold text-slate-900 dark:text-white">Availability Management</span> to review coverage gaps and identify handys who need setup.
+                </p>
+                <p>
+                  If you want actual admin-side scheduling controls next, the right implementation is a real mutation layer for availability slots rather than static settings inputs.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark">
+            <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Handys Requiring Follow-up</h3>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Handys missing availability setup or carrying inactive coverage.
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/50 dark:text-slate-400">
+                  <tr>
+                    <th className="px-6 py-3">Handy</th>
+                    <th className="px-6 py-3">Active Slots</th>
+                    <th className="px-6 py-3">Total Slots</th>
+                    <th className="px-6 py-3">Recommended Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td className="px-6 py-6" colSpan={4}>
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      </td>
+                    </tr>
+                  ) : [...partiallyConfigured, ...notConfigured].length === 0 ? (
+                    <tr>
+                      <td className="px-6 py-8 text-center text-slate-500 dark:text-slate-400" colSpan={4}>
+                        No follow-up needed right now.
+                      </td>
+                    </tr>
+                  ) : (
+                    [...partiallyConfigured, ...notConfigured].map((handy) => (
+                      <tr key={handy.user_id} className="border-t border-slate-100 dark:border-slate-800">
+                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                          {[handy.first_name, handy.last_name].filter(Boolean).join(' ') || 'Unknown Handy'}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{handy.activeSlots}</td>
+                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{handy.totalSlots}</td>
+                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
+                          {handy.totalSlots === 0 ? 'Create initial availability slots' : 'Review and reactivate coverage'}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
-    );
+      </main>
+    </div>
+  )
+}
+
+function Card({
+  title,
+  value,
+  helper,
+  icon: Icon,
+  loading,
+}: {
+  title: string
+  value: number
+  helper: string
+  icon: typeof CalendarRange
+  loading: boolean
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-background-dark">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</span>
+        <div className="rounded-lg bg-primary/10 p-2 text-primary">
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+      <div className="mt-4">
+        {loading ? (
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        ) : (
+          <p className="text-3xl font-semibold text-slate-900 dark:text-white">{value}</p>
+        )}
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{helper}</p>
+      </div>
+    </div>
+  )
+}
+
+function HealthRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: number
+  tone: 'green' | 'yellow' | 'red'
+}) {
+  const toneClass =
+    tone === 'green'
+      ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+      : tone === 'yellow'
+        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'
+        : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
+
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-800">
+      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
+      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${toneClass}`}>{value}</span>
+    </div>
+  )
 }

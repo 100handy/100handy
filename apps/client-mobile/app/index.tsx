@@ -23,6 +23,7 @@ export default function Index() {
     isLoading,
     isRoleResolved,
     userRole,
+    accountStatus,
     isEmailVerified,
     hasCompletedOnboarding,
     user,
@@ -54,6 +55,7 @@ export default function Index() {
       const route = await resolveAuthenticatedRoute({
         isEmailVerified,
         userRole,
+        accountStatus,
         hasCompletedOnboarding,
         userEmail: user?.email,
         userId: user?.id,
@@ -91,6 +93,7 @@ export default function Index() {
     getPendingBookingRoute,
     hasCompletedOnboarding,
     isEmailVerified,
+    accountStatus,
     router,
     user?.id,
     user?.email,

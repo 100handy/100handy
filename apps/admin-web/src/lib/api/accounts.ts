@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 
 /**
@@ -25,6 +25,31 @@ export interface UserWithLocation {
     is_primary: boolean
     created_at: string
   } | null
+}
+
+export interface AccountsSummary {
+  totalUsers: number
+  usersWithDefaultLocation: number
+  handys: number
+  clients: number
+  pausedUsers: number
+  deletedUsers: number
+}
+
+export type AccountLifecycleStatus = 'active' | 'paused' | 'deleted'
+
+export interface AccountStatusUser {
+  user_id: string
+  first_name: string | null
+  last_name: string | null
+  email?: string
+  role: string
+  phone: string | null
+  account_status: AccountLifecycleStatus
+  status_reason: string | null
+  status_updated_at: string
+  deleted_at: string | null
+  created_at: string
 }
 
 // ============================================================================
@@ -125,3 +150,114 @@ export function useUsersWithLocation() {
   })
 }
 
+export function useAccountsSummary() {
+  return useQuery({
+    queryKey: ['accounts', 'summary'],
+    queryFn: async (): Promise<AccountsSummary> => {
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, role')
+
+      if (profilesError) throw profilesError
+
+      const { count: defaultLocationCount, error: addressesError } = await supabase
+        .from('addresses')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_primary', true)
+
+      if (addressesError) throw addressesError
+
+      const totalUsers = profiles?.length ?? 0
+      const handys = (profiles ?? []).filter((profile) => profile.role === 'handy').length
+      const clients = (profiles ?? []).filter((profile) => profile.role === 'customer').length
+      const pausedUsers = (profiles ?? []).filter((profile) => profile.account_status === 'paused').length
+      const deletedUsers = (profiles ?? []).filter((profile) => profile.account_status === 'deleted').length
+
+      return {
+        totalUsers,
+        usersWithDefaultLocation: defaultLocationCount ?? 0,
+        handys,
+        clients,
+        pausedUsers,
+        deletedUsers,
+      }
+    },
+    staleTime: 30 * 1000,
+  })
+}
+
+export function useAccountStatusUsers(status: AccountLifecycleStatus) {
+  return useQuery({
+    queryKey: ['accounts', 'status-users', status],
+    queryFn: async (): Promise<AccountStatusUser[]> => {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select(
+          'user_id, first_name, last_name, role, phone, account_status, status_reason, status_updated_at, deleted_at, created_at',
+        )
+        .eq('account_status', status)
+        .order('status_updated_at', { ascending: false })
+
+      if (error) throw error
+
+      const emailMap = new Map<string, string>()
+      for (const profile of profiles ?? []) {
+        try {
+          const { data: authData } = await supabase.auth.admin.getUserById(profile.user_id)
+          if (authData?.user?.email) {
+            emailMap.set(profile.user_id, authData.user.email)
+          }
+        } catch {
+          // optional
+        }
+      }
+
+      return (profiles ?? []).map((profile) => ({
+        ...profile,
+        email: emailMap.get(profile.user_id),
+      }))
+    },
+    staleTime: 30 * 1000,
+  })
+}
+
+export function useUpdateAccountLifecycleStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      status,
+      reason,
+    }: {
+      userId: string
+      status: AccountLifecycleStatus
+      reason?: string | null
+    }) => {
+      const payload = {
+        account_status: status,
+        status_reason: reason || null,
+        status_updated_at: new Date().toISOString(),
+        deleted_at: status === 'deleted' ? new Date().toISOString() : null,
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(payload)
+        .eq('user_id', userId)
+        .select(
+          'user_id, first_name, last_name, role, phone, account_status, status_reason, status_updated_at, deleted_at, created_at',
+        )
+        .single()
+
+      if (error) throw error
+
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'summary'] })
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'status-users'] })
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+    },
+  })
+}

@@ -25,6 +25,8 @@ interface Profile {
   last_name: string | null;
   phone: string | null;
   avatar_url: string | null;
+  account_status: "active" | "paused" | "deleted";
+  status_reason: string | null;
 }
 
 interface AuthContextType {
@@ -92,7 +94,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const queryPromise = supabase
         .from("profiles")
-        .select("user_id, role, first_name, last_name, phone, avatar_url")
+        .select("user_id, role, first_name, last_name, phone, avatar_url, account_status, status_reason")
         .eq("user_id", userId)
         .single();
 
@@ -144,6 +146,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return null;
       }
 
+      if (resolvedProfile.account_status !== "active") {
+        await supabase.auth.signOut();
+        clearAuthState();
+        return null;
+      }
+
       return resolvedProfile;
     },
     [clearAuthState, fetchProfile],
@@ -183,7 +191,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (!resolvedProfile) {
           return {
             error: {
-              message: "Access denied. Admin privileges required.",
+              message: "Access denied. Active admin access is required.",
               name: "AuthorizationError",
               status: 403,
             } as AuthError,

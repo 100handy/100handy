@@ -8,6 +8,7 @@ export type AuthRouteTarget =
 interface ResolveAuthenticatedRouteOptions {
   isEmailVerified: boolean;
   userRole: 'customer' | 'handy' | null;
+  accountStatus: 'active' | 'paused' | 'deleted' | null;
   hasCompletedOnboarding: boolean;
   userEmail?: string | null;
   userId?: string | null;
@@ -67,6 +68,7 @@ export function buildPendingBookingRoute({
 export async function resolveAuthenticatedRoute({
   isEmailVerified,
   userRole,
+  accountStatus,
   hasCompletedOnboarding,
   userEmail,
   userId,
@@ -74,6 +76,10 @@ export async function resolveAuthenticatedRoute({
   getProfessionalOnboardingCompleted,
   getPendingBookingRoute,
 }: ResolveAuthenticatedRouteOptions): Promise<AuthRouteTarget> {
+  if (accountStatus && accountStatus !== 'active') {
+    return '/(auth)/account-status';
+  }
+
   if (!isEmailVerified) {
     return {
       pathname: '/(auth)/verify-email',

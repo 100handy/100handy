@@ -29,6 +29,20 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: DO NOT REMOVE - refreshes the auth token
   const { data: { user } } = await supabase.auth.getUser()
+  let isActiveUser = true
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('account_status')
+      .eq('user_id', user.id)
+      .single()
+
+    if (profile?.account_status && profile.account_status !== 'active') {
+      isActiveUser = false
+      await supabase.auth.signOut()
+    }
+  }
 
   // Redirect logic for protected routes
   const protectedRoutes = ['/dashboard', '/profile', '/my-tasks', '/account']
@@ -37,7 +51,7 @@ export async function updateSession(request: NextRequest) {
   )
 
   if (
-    !user &&
+    (!user || !isActiveUser) &&
     isProtectedRoute
   ) {
     const url = request.nextUrl.clone()
@@ -52,15 +66,14 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   )
 
-  if (isAuthRoute && user) {
+  if (isAuthRoute && user && isActiveUser) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // Redirect signed-in users from homepage to dashboard
-  if (request.nextUrl.pathname === '/' && user) {
+  if (request.nextUrl.pathname === '/' && user && isActiveUser) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return supabaseResponse
 }
-

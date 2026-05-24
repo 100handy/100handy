@@ -7,7 +7,7 @@ import {
 import { Loader } from '@/components/ui/loader';
 
 export default function ProfessionalLayout() {
-  const { isAuthenticated, isLoading, isRoleResolved, isEmailVerified, user, userRole } = useAuthStore();
+  const { isAuthenticated, isLoading, isRoleResolved, isEmailVerified, user, userRole, accountStatus } = useAuthStore();
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
   const [isOnboardingComplete, setIsOnboardingComplete] = useState<boolean | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<ProfessionalVerificationStatus>(null);
@@ -83,6 +83,10 @@ export default function ProfessionalLayout() {
 
   if (!isAuthenticated) {
     return <Redirect href="/(auth)/(client)" />;
+  }
+
+  if (accountStatus && accountStatus !== 'active') {
+    return <Redirect href="/(auth)/account-status" />;
   }
 
   if (!isEmailVerified) {

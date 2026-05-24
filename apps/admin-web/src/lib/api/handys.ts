@@ -232,6 +232,38 @@ export interface HandyWithAvailability {
   totalSlots: number
 }
 
+export interface AvailabilityOverview {
+  totalHandys: number
+  handysWithAvailability: number
+  handysWithoutAvailability: number
+  activeSlots: number
+  inactiveSlots: number
+  weeklySlots: number
+  oneTimeSlots: number
+  weekdayCoverage: Array<{
+    dayIndex: number
+    label: string
+    activeSlots: number
+  }>
+}
+
+export interface AdminAvailabilitySlot {
+  id: string
+  user_id: string
+  day_of_week: number
+  start_time: string
+  end_time: string
+  recurrence_type: 'none' | 'daily' | 'weekly' | 'monthly'
+  starts_on: string
+  ends_on: string | null
+  ends_after_occurrences: number | null
+  day_of_month: number | null
+  timezone: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 /**
  * Fetch handys with their availability status
  * Derives status from professional_availability table
@@ -309,5 +341,147 @@ export function useHandysWithAvailability() {
       })
     },
     staleTime: 30 * 1000,
+  })
+}
+
+export function useAvailabilityOverview() {
+  return useQuery({
+    queryKey: ['handys', 'availability-overview'],
+    queryFn: async (): Promise<AvailabilityOverview> => {
+      const { data: handys, error: handysError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('role', 'handy')
+
+      if (handysError) throw handysError
+
+      const { data: slots, error: slotsError } = await supabase
+        .from('professional_availability')
+        .select('user_id, is_active, recurrence_type, day_of_week')
+
+      if (slotsError) throw slotsError
+
+      const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      const weekdayCoverage = weekdayLabels.map((label, dayIndex) => ({
+        dayIndex,
+        label,
+        activeSlots: 0,
+      }))
+
+      const handyIdsWithAnyAvailability = new Set<string>()
+      let activeSlots = 0
+      let inactiveSlots = 0
+      let weeklySlots = 0
+      let oneTimeSlots = 0
+
+      for (const slot of slots ?? []) {
+        handyIdsWithAnyAvailability.add(slot.user_id)
+
+        if (slot.is_active) {
+          activeSlots += 1
+          if (typeof slot.day_of_week === 'number' && weekdayCoverage[slot.day_of_week]) {
+            weekdayCoverage[slot.day_of_week].activeSlots += 1
+          }
+        } else {
+          inactiveSlots += 1
+        }
+
+        if (slot.recurrence_type === 'weekly') {
+          weeklySlots += 1
+        } else {
+          oneTimeSlots += 1
+        }
+      }
+
+      const totalHandys = handys?.length ?? 0
+      const handysWithAvailability = handyIdsWithAnyAvailability.size
+
+      return {
+        totalHandys,
+        handysWithAvailability,
+        handysWithoutAvailability: Math.max(0, totalHandys - handysWithAvailability),
+        activeSlots,
+        inactiveSlots,
+        weeklySlots,
+        oneTimeSlots,
+        weekdayCoverage,
+      }
+    },
+    staleTime: 30 * 1000,
+  })
+}
+
+export function useAdminAvailabilitySlots(userId: string | null) {
+  return useQuery({
+    queryKey: ['handys', 'admin-availability-slots', userId],
+    queryFn: async (): Promise<AdminAvailabilitySlot[]> => {
+      if (!userId) return []
+
+      const { data, error } = await supabase
+        .from('professional_availability')
+        .select(
+          'id, user_id, day_of_week, start_time, end_time, recurrence_type, starts_on, ends_on, ends_after_occurrences, day_of_month, timezone, is_active, created_at, updated_at',
+        )
+        .eq('user_id', userId)
+        .order('day_of_week', { ascending: true })
+        .order('start_time', { ascending: true })
+
+      if (error) throw error
+      return (data ?? []) as AdminAvailabilitySlot[]
+    },
+    enabled: !!userId,
+    staleTime: 30 * 1000,
+  })
+}
+
+export function useSaveAdminAvailabilitySlot() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: Omit<AdminAvailabilitySlot, 'created_at' | 'updated_at'>) => {
+      const row = {
+        ...input,
+        ends_on: input.ends_on || null,
+        ends_after_occurrences: input.ends_after_occurrences || null,
+        day_of_month: input.day_of_month || null,
+      }
+
+      const { data, error } = await supabase
+        .from('professional_availability')
+        .upsert(row, { onConflict: 'id' })
+        .select(
+          'id, user_id, day_of_week, start_time, end_time, recurrence_type, starts_on, ends_on, ends_after_occurrences, day_of_month, timezone, is_active, created_at, updated_at',
+        )
+        .single()
+
+      if (error) throw error
+      return data as AdminAvailabilitySlot
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['handys', 'admin-availability-slots', data.user_id] })
+      queryClient.invalidateQueries({ queryKey: ['handys', 'with-availability'] })
+      queryClient.invalidateQueries({ queryKey: ['handys', 'availability-overview'] })
+    },
+  })
+}
+
+export function useDeleteAdminAvailabilitySlot() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, userId }: { id: string; userId: string }) => {
+      const { error } = await supabase
+        .from('professional_availability')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      return { userId }
+    },
+    onSuccess: ({ userId }) => {
+      queryClient.invalidateQueries({ queryKey: ['handys', 'admin-availability-slots', userId] })
+      queryClient.invalidateQueries({ queryKey: ['handys', 'with-availability'] })
+      queryClient.invalidateQueries({ queryKey: ['handys', 'availability-overview'] })
+    },
   })
 }
