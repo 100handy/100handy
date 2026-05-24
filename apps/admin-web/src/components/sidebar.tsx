@@ -121,6 +121,7 @@ const groups = [
     items: [
       { label: 'Overview', path: '/notifications', permissions: ['notifications.manage'] as AdminPermission[] },
       { label: 'Email Notifications', path: '/notifications/email', permissions: ['notifications.manage'] as AdminPermission[] },
+      { label: 'Push Notifications', path: '/notifications/push', permissions: ['notifications.manage'] as AdminPermission[] },
       { label: 'Pop-ups', path: '/notifications/popups', permissions: ['notifications.manage'] as AdminPermission[] },
     ],
     permissions: ['notifications.manage'] as AdminPermission[],

@@ -5,7 +5,8 @@ import { corsHeaders } from '../_shared/cors.ts';
 type PushEvent =
   | { event: 'chat_message'; conversationId: string; messagePreview?: string }
   | { event: 'booking_status'; bookingId: string; status: string }
-  | { event: 'test'; route?: string; title?: string; body?: string };
+  | { event: 'test'; route?: string; title?: string; body?: string }
+  | { event: 'admin_campaign'; delivery_job_id: string };
 
 type UserRole = 'customer' | 'handy' | 'admin';
 
@@ -26,6 +27,184 @@ function buildBookingRouteForRecipient(role: UserRole, bookingId: string): strin
   return role === 'handy'
     ? `/(professional)/job-details/${bookingId}`
     : `/(client)/booking-details/${bookingId}`;
+}
+
+async function handleAdminCampaign(
+  serviceClient: ReturnType<typeof createClient>,
+  userId: string,
+  deliveryJobId: string,
+) {
+  const { data: adminProfile, error: adminProfileError } = await serviceClient
+    .from('profiles')
+    .select('role, admin_role, account_status')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (adminProfileError) throw adminProfileError;
+  if (
+    !adminProfile ||
+    adminProfile.role !== 'admin' ||
+    adminProfile.account_status !== 'active'
+  ) {
+    return json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const { data: job, error: jobError } = await serviceClient
+    .from('push_delivery_jobs')
+    .select('*')
+    .eq('id', deliveryJobId)
+    .single();
+
+  if (jobError || !job) {
+    return json({ error: 'Delivery job not found' }, { status: 404 });
+  }
+
+  await serviceClient
+    .from('push_delivery_jobs')
+    .update({ delivery_status: 'processing', error_message: null })
+    .eq('id', deliveryJobId);
+
+  const { data: profiles, error: profilesError } = await serviceClient
+    .from('profiles')
+    .select('user_id, role, account_status');
+
+  if (profilesError) throw profilesError;
+
+  const recipients = (profiles ?? []).filter((row) => {
+    if (row.account_status !== 'active') return false;
+    switch (job.recipient_group) {
+      case 'client':
+      case 'new_users':
+        return row.role === 'client' || row.role === 'customer';
+      case 'professional':
+      case 'new_handys':
+        return row.role === 'professional' || row.role === 'handy';
+      case 'admin':
+        return row.role === 'admin';
+      case 'all':
+      default:
+        return row.role === 'client' || row.role === 'customer' || row.role === 'professional' || row.role === 'handy';
+    }
+  });
+
+  const recipientIds = recipients.map((row) => row.user_id);
+  if (recipientIds.length === 0) {
+    await serviceClient
+      .from('push_delivery_jobs')
+      .update({
+        delivery_status: 'sent',
+        recipient_count: 0,
+        sent_count: 0,
+        failed_count: 0,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', deliveryJobId);
+    return json({ ok: true, sent: 0, skipped: true, reason: 'no recipients' });
+  }
+
+  const [{ data: settings, error: settingsError }, { data: tokens, error: tokensError }] = await Promise.all([
+    serviceClient
+      .from('notification_settings')
+      .select('user_id, push_notifications')
+      .in('user_id', recipientIds),
+    serviceClient
+      .from('device_push_tokens')
+      .select('user_id, expo_push_token')
+      .in('user_id', recipientIds),
+  ]);
+
+  if (settingsError) throw settingsError;
+  if (tokensError) throw tokensError;
+
+  const pushEnabledByUser = new Map(
+    (settings ?? []).map((row) => [row.user_id, row.push_notifications !== false]),
+  );
+
+  const recipientUsers = recipientIds.filter((userId) => pushEnabledByUser.get(userId) !== false);
+  const tokenRows = (tokens ?? []).filter(
+    (row) =>
+      recipientUsers.includes(row.user_id) &&
+      typeof row.expo_push_token === 'string' &&
+      row.expo_push_token.length > 0,
+  );
+
+  const uniqueTokens = [...new Set(tokenRows.map((row) => row.expo_push_token))];
+
+  if (uniqueTokens.length === 0) {
+    await serviceClient
+      .from('push_delivery_jobs')
+      .update({
+        delivery_status: 'sent',
+        recipient_count: recipientUsers.length,
+        sent_count: 0,
+        failed_count: 0,
+        completed_at: new Date().toISOString(),
+        error_message: 'No device tokens available for the selected audience.',
+      })
+      .eq('id', deliveryJobId);
+    return json({ ok: true, sent: 0, skipped: true, reason: 'no device tokens' });
+  }
+
+  const messages = uniqueTokens.map((to) => ({
+    to,
+    sound: 'default',
+    title: job.message_title,
+    body: job.message_body,
+    data: { route: job.route ?? '/' },
+  }));
+
+  const expoRes = await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(messages.length === 1 ? messages[0] : messages),
+  });
+
+  const expoJson = await expoRes.json().catch(() => null);
+
+  if (!expoRes.ok) {
+    const errorMessage = `Expo push send failed (${expoRes.status})`;
+    await serviceClient
+      .from('push_delivery_jobs')
+      .update({
+        delivery_status: 'failed',
+        recipient_count: recipientUsers.length,
+        sent_count: 0,
+        failed_count: uniqueTokens.length,
+        error_message: errorMessage,
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', deliveryJobId);
+
+    return json({ error: errorMessage, details: expoJson }, { status: 502 });
+  }
+
+  const resultRows = Array.isArray(expoJson?.data) ? expoJson.data : expoJson?.data ? [expoJson.data] : [];
+  const sentCount = resultRows.filter((row: { status?: string }) => row?.status === 'ok').length || uniqueTokens.length;
+  const failedCount = Math.max(uniqueTokens.length - sentCount, 0);
+
+  await serviceClient
+    .from('push_delivery_jobs')
+    .update({
+      delivery_status: failedCount > 0 && sentCount === 0 ? 'failed' : 'sent',
+      recipient_count: recipientUsers.length,
+      sent_count: sentCount,
+      failed_count: failedCount,
+      error_message: failedCount > 0 ? `${failedCount} push deliveries failed.` : null,
+      completed_at: new Date().toISOString(),
+    })
+    .eq('id', deliveryJobId);
+
+  return json({
+    ok: true,
+    sent: sentCount,
+    failed: failedCount,
+    recipient_count: recipientUsers.length,
+    expo: expoJson,
+  });
 }
 
 serve(async (req) => {
@@ -62,6 +241,14 @@ serve(async (req) => {
     }
 
     const payload = (await req.json()) as PushEvent;
+
+    if (payload.event === 'admin_campaign') {
+      const deliveryJobId = payload.delivery_job_id?.trim();
+      if (!deliveryJobId) {
+        return json({ error: 'delivery_job_id is required' }, { status: 400 });
+      }
+      return await handleAdminCampaign(serviceClient, user.id, deliveryJobId);
+    }
 
     let recipientId: string | null = null;
     let title = '100Handy';
@@ -228,5 +415,4 @@ serve(async (req) => {
     return json({ error: error?.message ?? 'Unknown error' }, { status: 500 });
   }
 });
-
 

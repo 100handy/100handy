@@ -1,5 +1,5 @@
 import Header from '@/components/header'
-import { Bell, Mail, MonitorSmartphone, Loader2, FileText } from 'lucide-react'
+import { Bell, Mail, MonitorSmartphone, Loader2, FileText, Smartphone, TriangleAlert } from 'lucide-react'
 import { useNotificationsSummary } from '@/lib/api/content-platform'
 
 export default function NotificationsOverviewPage() {
@@ -10,6 +10,12 @@ export default function NotificationsOverviewPage() {
       description: 'Manage reusable email templates and one-time campaign drafts.',
       href: '/notifications/email',
       icon: Mail,
+    },
+    {
+      title: 'Push Notifications',
+      description: 'Manage reusable push templates, one-time campaigns, and delivery jobs.',
+      href: '/notifications/push',
+      icon: Smartphone,
     },
     {
       title: 'Pop-ups',
@@ -33,10 +39,15 @@ export default function NotificationsOverviewPage() {
           <SummaryCard title="Email Templates" value={summary?.emailTemplates ?? 0} icon={Mail} loading={isLoading} />
           <SummaryCard title="Active Email Templates" value={summary?.activeEmailTemplates ?? 0} icon={Mail} loading={isLoading} />
           <SummaryCard title="Campaign Drafts" value={summary?.campaignDrafts ?? 0} icon={FileText} loading={isLoading} />
+          <SummaryCard title="Push Templates" value={summary?.pushTemplates ?? 0} icon={Smartphone} loading={isLoading} />
+          <SummaryCard title="Active Push Templates" value={summary?.activePushTemplates ?? 0} icon={Smartphone} loading={isLoading} />
+          <SummaryCard title="Push Drafts" value={summary?.pushDrafts ?? 0} icon={FileText} loading={isLoading} />
+          <SummaryCard title="Failed Email Jobs" value={summary?.failedEmailJobs ?? 0} icon={TriangleAlert} loading={isLoading} />
+          <SummaryCard title="Failed Push Jobs" value={summary?.failedPushJobs ?? 0} icon={TriangleAlert} loading={isLoading} />
           <SummaryCard title="Active Announcements" value={summary?.activeAnnouncements ?? 0} icon={Bell} loading={isLoading} />
           <SummaryCard title="Active Banners/Modals" value={summary?.activeBannersAndModals ?? 0} icon={MonitorSmartphone} loading={isLoading} />
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-4">
           {cards.map((card) => {
             const Icon = card.icon
             return (

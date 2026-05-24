@@ -48,6 +48,7 @@ import AccountStatus from '@/pages/accounts/account-status'
 import AccountsOverviewPage from '@/pages/accounts'
 import EmailNotifications from '@/pages/notifications/email-notifications'
 import PopupsPage from '@/pages/notifications/popups'
+import PushNotificationsPage from '@/pages/notifications/push-notifications'
 import NotificationsOverviewPage from '@/pages/notifications'
 import SupportCentre from '@/pages/support/support-centre'
 import AnnouncementsPage from '@/pages/dashboard/announcements'
@@ -162,6 +163,7 @@ function App() {
           <Route element={<ProtectedRoute permissions={['notifications.manage']} />}>
             <Route path="/notifications" element={<NotificationsOverviewPage />} />
             <Route path="/notifications/email" element={<EmailNotifications />} />
+            <Route path="/notifications/push" element={<PushNotificationsPage />} />
             <Route path="/notifications/popups" element={<PopupsPage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['support.view']} />}>

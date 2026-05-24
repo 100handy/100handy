@@ -88,6 +88,37 @@ export interface EmailDeliveryJobRecord {
   completed_at: string | null
 }
 
+export interface PushNotificationCampaignInput {
+  id?: string
+  campaign_key: string
+  title: string
+  campaign_kind: 'template' | 'campaign_draft'
+  recipient_group: string
+  message_title: string
+  message_body: string
+  route: string
+  active: boolean
+}
+
+export interface PushDeliveryJobRecord {
+  id: string
+  campaign_id: string | null
+  campaign_key: string
+  title: string
+  recipient_group: string
+  message_title: string
+  message_body: string
+  route: string | null
+  delivery_status: 'queued' | 'processing' | 'sent' | 'failed'
+  recipient_count: number
+  sent_count: number
+  failed_count: number
+  error_message: string | null
+  triggered_by: string | null
+  triggered_at: string
+  completed_at: string | null
+}
+
 export interface AnnouncementInput {
   id?: string
   audience: 'all' | 'client' | 'professional' | 'web'
@@ -1272,6 +1303,118 @@ export function useEmailDeliveryJobs() {
   })
 }
 
+export function usePushNotificationCampaigns() {
+  return useQuery({
+    queryKey: ['admin', 'push-notification-campaigns'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('push_notification_campaigns')
+        .select('*')
+        .order('campaign_kind', { ascending: true })
+        .order('updated_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+}
+
+export function useSavePushNotificationCampaign() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: PushNotificationCampaignInput) => {
+      const { user } = await requireAdminPermission('notifications.manage')
+
+      const row = {
+        ...input,
+        route: input.route || null,
+        updated_by: user.id,
+      }
+
+      const { error } = await supabase
+        .from('push_notification_campaigns')
+        .upsert(row, { onConflict: 'campaign_key' })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'push-notification-campaigns'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notifications-summary'] })
+    },
+  })
+}
+
+export function useDeletePushNotificationCampaign() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await requireAdminPermission('notifications.manage')
+      const { error } = await supabase.from('push_notification_campaigns').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'push-notification-campaigns'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notifications-summary'] })
+    },
+  })
+}
+
+export function usePushDeliveryJobs() {
+  return useQuery({
+    queryKey: ['admin', 'push-delivery-jobs'],
+    queryFn: async (): Promise<PushDeliveryJobRecord[]> => {
+      const { data, error } = await supabase
+        .from('push_delivery_jobs')
+        .select('*')
+        .order('triggered_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+}
+
+export function useSendPushCampaign() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      campaignId?: string
+      campaignKey: string
+      title: string
+      recipientGroup: string
+      messageTitle: string
+      messageBody: string
+      route: string
+    }) => {
+      const { user } = await requireAdminPermission('notifications.manage')
+
+      const { data: job, error: jobError } = await supabase
+        .from('push_delivery_jobs')
+        .insert({
+          campaign_id: input.campaignId ?? null,
+          campaign_key: input.campaignKey,
+          title: input.title,
+          recipient_group: input.recipientGroup,
+          message_title: input.messageTitle,
+          message_body: input.messageBody,
+          route: input.route || null,
+          delivery_status: 'queued',
+          triggered_by: user.id,
+        })
+        .select('*')
+        .single()
+      if (jobError) throw jobError
+
+      const { error: invokeError } = await supabase.functions.invoke('send-push-notification', {
+        body: { event: 'admin_campaign', delivery_job_id: job.id },
+      })
+      if (invokeError) throw invokeError
+
+      return job
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'push-delivery-jobs'] })
+    },
+  })
+}
+
 export function useSendEmailCampaign() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -1338,26 +1481,47 @@ export function useNotificationsSummary() {
   return useQuery({
     queryKey: ['admin', 'notifications-summary'],
     queryFn: async () => {
-      const [{ data: templates, error: templatesError }, { data: announcements, error: announcementsError }] =
+      const [
+        { data: templates, error: templatesError },
+        { data: announcements, error: announcementsError },
+        { data: pushCampaigns, error: pushCampaignsError },
+        { data: emailJobs, error: emailJobsError },
+        { data: pushJobs, error: pushJobsError },
+      ] =
         await Promise.all([
           supabase.from('email_templates').select('template_kind, active'),
           supabase.from('announcements').select('placement, active'),
+          supabase.from('push_notification_campaigns').select('campaign_kind, active'),
+          supabase.from('email_delivery_jobs').select('delivery_status'),
+          supabase.from('push_delivery_jobs').select('delivery_status'),
         ])
 
       if (templatesError) throw templatesError
       if (announcementsError) throw announcementsError
+      if (pushCampaignsError) throw pushCampaignsError
+      if (emailJobsError) throw emailJobsError
+      if (pushJobsError) throw pushJobsError
 
       const emailTemplates = (templates ?? []).filter((row) => row.template_kind === 'template')
       const campaignDrafts = (templates ?? []).filter((row) => row.template_kind === 'campaign_draft')
+      const pushTemplates = (pushCampaigns ?? []).filter((row) => row.campaign_kind === 'template')
+      const pushDrafts = (pushCampaigns ?? []).filter((row) => row.campaign_kind === 'campaign_draft')
       const activeAnnouncements = (announcements ?? []).filter((row) => row.active)
       const activeBannersAndModals = activeAnnouncements.filter(
         (row) => row.placement === 'banner' || row.placement === 'modal',
       )
+      const failedEmailJobs = (emailJobs ?? []).filter((row) => row.delivery_status === 'failed')
+      const failedPushJobs = (pushJobs ?? []).filter((row) => row.delivery_status === 'failed')
 
       return {
         emailTemplates: emailTemplates.length,
         activeEmailTemplates: emailTemplates.filter((row) => row.active).length,
         campaignDrafts: campaignDrafts.length,
+        pushTemplates: pushTemplates.length,
+        activePushTemplates: pushTemplates.filter((row) => row.active).length,
+        pushDrafts: pushDrafts.length,
+        failedEmailJobs: failedEmailJobs.length,
+        failedPushJobs: failedPushJobs.length,
         activeAnnouncements: activeAnnouncements.length,
         activeBannersAndModals: activeBannersAndModals.length,
       }

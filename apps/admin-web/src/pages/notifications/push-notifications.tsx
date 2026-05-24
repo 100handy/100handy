@@ -1,53 +1,53 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { ExternalLink, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-react'
+import { BellRing, ExternalLink, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { useAuth } from '@/contexts/AuthContext'
 import {
-  useDeleteEmailTemplate,
-  useEmailDeliveryJobs,
-  useEmailTemplates,
-  useSendEmailCampaign,
-  useSaveEmailTemplate,
+  useDeletePushNotificationCampaign,
+  usePushDeliveryJobs,
+  usePushNotificationCampaigns,
+  useSavePushNotificationCampaign,
+  useSendPushCampaign,
 } from '@/lib/api/content-platform'
 
 const emptyTemplate = {
-  template_key: '',
+  campaign_key: '',
   title: '',
-  template_kind: 'template' as const,
+  campaign_kind: 'template' as const,
   recipient_group: 'all',
-  subject: '',
-  preview_text: '',
-  body: '',
+  message_title: '',
+  message_body: '',
+  route: '/',
   active: true,
 }
 
-const emptyCampaignDraft = {
-  template_key: '',
+const emptyDraft = {
+  campaign_key: '',
   title: '',
   recipient_group: 'all',
-  subject: '',
-  preview_text: '',
-  body: '',
+  message_title: '',
+  message_body: '',
+  route: '/',
   active: false,
 }
 
-export default function EmailNotifications() {
+export default function PushNotificationsPage() {
   const { hasPermission } = useAuth()
   const canManageNotifications = hasPermission('notifications.manage')
-  const { data: templates = [], isLoading } = useEmailTemplates()
-  const { data: deliveryJobs = [] } = useEmailDeliveryJobs()
-  const saveTemplate = useSaveEmailTemplate()
-  const deleteTemplate = useDeleteEmailTemplate()
-  const sendCampaign = useSendEmailCampaign()
+  const { data: campaigns = [], isLoading } = usePushNotificationCampaigns()
+  const { data: deliveryJobs = [] } = usePushDeliveryJobs()
+  const saveCampaign = useSavePushNotificationCampaign()
+  const deleteCampaign = useDeletePushNotificationCampaign()
+  const sendCampaign = useSendPushCampaign()
 
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyTemplate)
-  const [draftForm, setDraftForm] = useState(emptyCampaignDraft)
+  const [draftForm, setDraftForm] = useState(emptyDraft)
 
-  const selected = templates.find((template) => template.id === selectedId) ?? null
+  const selected = campaigns.find((campaign) => campaign.id === selectedId) ?? null
 
   useEffect(() => {
     if (!selected) {
@@ -56,56 +56,72 @@ export default function EmailNotifications() {
     }
 
     setForm({
-      template_key: selected.template_key,
+      campaign_key: selected.campaign_key,
       title: selected.title,
-      template_kind: selected.template_kind,
+      campaign_kind: selected.campaign_kind,
       recipient_group: selected.recipient_group,
-      subject: selected.subject,
-      preview_text: selected.preview_text ?? '',
-      body: selected.body,
+      message_title: selected.message_title,
+      message_body: selected.message_body,
+      route: selected.route ?? '/',
       active: selected.active,
     })
   }, [selected])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return templates
-    return templates.filter((item) =>
-      [item.title, item.template_key, item.subject, item.recipient_group].some((value) =>
-        value.toLowerCase().includes(q)
-      )
+    if (!q) return campaigns
+    return campaigns.filter((item) =>
+      [item.title, item.campaign_key, item.message_title, item.recipient_group].some((value) =>
+        value.toLowerCase().includes(q),
+      ),
     )
-  }, [templates, search])
+  }, [campaigns, search])
 
-  const templateRows = filtered.filter((item) => item.template_kind === 'template')
-  const draftRows = filtered.filter((item) => item.template_kind === 'campaign_draft')
+  const templateRows = filtered.filter((item) => item.campaign_kind === 'template')
+  const draftRows = filtered.filter((item) => item.campaign_kind === 'campaign_draft')
   const failedJobs = deliveryJobs.filter((job) => job.delivery_status === 'failed')
   const sentJobs = deliveryJobs.filter((job) => job.delivery_status === 'sent')
 
   const templateErrors = {
-    template_key: !form.template_key.trim() ? 'Template key is required.' : null,
+    campaign_key: !form.campaign_key.trim() ? 'Campaign key is required.' : null,
     title: !form.title.trim() ? 'Title is required.' : null,
-    subject: !form.subject.trim() ? 'Subject is required.' : null,
-    body: !form.body.trim() ? 'Body is required.' : null,
+    message_title: !form.message_title.trim() ? 'Push title is required.' : null,
+    message_body: !form.message_body.trim() ? 'Push body is required.' : null,
+    route: form.route.trim() && !form.route.startsWith('/') ? 'Route must start with "/".' : null,
   }
+
   const draftErrors = {
-    template_key: !draftForm.template_key.trim() ? 'Draft key is required.' : null,
+    campaign_key: !draftForm.campaign_key.trim() ? 'Draft key is required.' : null,
     title: !draftForm.title.trim() ? 'Draft title is required.' : null,
-    subject: !draftForm.subject.trim() ? 'Subject is required.' : null,
-    body: !draftForm.body.trim() ? 'Message is required.' : null,
+    message_title: !draftForm.message_title.trim() ? 'Push title is required.' : null,
+    message_body: !draftForm.message_body.trim() ? 'Push body is required.' : null,
+    route: draftForm.route.trim() && !draftForm.route.startsWith('/') ? 'Route must start with "/".' : null,
   }
-  const canSaveTemplate = canManageNotifications && !templateErrors.template_key && !templateErrors.title && !templateErrors.subject && !templateErrors.body
-  const canSaveDraft = canManageNotifications && !draftErrors.template_key && !draftErrors.title && !draftErrors.subject && !draftErrors.body
-  const canSendDraft = canSaveDraft
+
+  const canSaveTemplate =
+    canManageNotifications &&
+    !templateErrors.campaign_key &&
+    !templateErrors.title &&
+    !templateErrors.message_title &&
+    !templateErrors.message_body &&
+    !templateErrors.route
+
+  const canSaveDraft =
+    canManageNotifications &&
+    !draftErrors.campaign_key &&
+    !draftErrors.title &&
+    !draftErrors.message_title &&
+    !draftErrors.message_body &&
+    !draftErrors.route
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Email Notifications" />
+      <Header title="Push Notifications" />
 
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         {!canManageNotifications && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-            Your admin role can view email templates and delivery history, but it cannot change or send them.
+            Your admin role can view push campaigns and delivery history, but it cannot change or send them.
           </div>
         )}
         <div className="flex items-center justify-between">
@@ -115,7 +131,7 @@ export default function EmailNotifications() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search email templates..."
+              placeholder="Search push campaigns..."
               className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 dark:border-gray-700 dark:bg-gray-900"
             />
           </div>
@@ -125,7 +141,7 @@ export default function EmailNotifications() {
               setSelectedId(null)
               setForm(emptyTemplate)
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             New Template
@@ -134,18 +150,19 @@ export default function EmailNotifications() {
 
         <section className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
           <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Manage Email Templates</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Manage Push Templates</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Templates are stored in the database and can be activated or revised without a deploy.
+              Templates define reusable push notifications for web and app audiences.
             </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px] text-left text-sm">
               <thead className="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
                 <tr>
-                  <th className="px-6 py-3">Email Type</th>
+                  <th className="px-6 py-3">Push Campaign</th>
                   <th className="px-6 py-3">Recipient</th>
                   <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Route</th>
                   <th className="px-6 py-3">Last Modified</th>
                   <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
@@ -153,28 +170,29 @@ export default function EmailNotifications() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td className="px-6 py-6" colSpan={5}>
+                    <td className="px-6 py-6" colSpan={6}>
                       <Loader2 className="h-5 w-5 animate-spin" />
                     </td>
                   </tr>
                 ) : templateRows.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-6 text-center text-gray-500" colSpan={5}>
-                      No templates found.
+                    <td className="px-6 py-6 text-center text-gray-500" colSpan={6}>
+                      No push templates found.
                     </td>
                   </tr>
                 ) : (
-                  templateRows.map((template) => (
-                    <tr key={template.id} className="border-t border-gray-100 dark:border-gray-800">
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{template.title}</td>
-                      <td className="px-6 py-4">{template.recipient_group}</td>
-                      <td className="px-6 py-4">{template.active ? 'active' : 'inactive'}</td>
-                      <td className="px-6 py-4">{format(new Date(template.updated_at), 'MMM d, yyyy')}</td>
+                  templateRows.map((campaign) => (
+                    <tr key={campaign.id} className="border-t border-gray-100 dark:border-gray-800">
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{campaign.title}</td>
+                      <td className="px-6 py-4">{campaign.recipient_group}</td>
+                      <td className="px-6 py-4">{campaign.active ? 'active' : 'inactive'}</td>
+                      <td className="px-6 py-4">{campaign.route ?? '/'}</td>
+                      <td className="px-6 py-4">{format(new Date(campaign.updated_at), 'MMM d, yyyy')}</td>
                       <td className="px-6 py-4 text-right">
-                        <button className="mr-4 text-primary hover:underline" onClick={() => setSelectedId(template.id)}>
+                        <button className="mr-4 text-primary hover:underline" onClick={() => setSelectedId(campaign.id)}>
                           Edit
                         </button>
-                        <button className="text-red-600 hover:underline" onClick={() => deleteTemplate.mutate(template.id)}>
+                        <button className="text-red-600 hover:underline" onClick={() => deleteCampaign.mutate(campaign.id)}>
                           <Trash2 className="inline h-4 w-4" />
                         </button>
                       </td>
@@ -196,7 +214,7 @@ export default function EmailNotifications() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delivery Jobs</h3>
             <div className="mt-3 space-y-2">
               {deliveryJobs.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">No delivery jobs yet.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No push delivery jobs yet.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[720px] text-left text-sm">
@@ -224,7 +242,7 @@ export default function EmailNotifications() {
                             <StatusBadge status={job.delivery_status} />
                           </td>
                           <td className="py-3 pr-4 text-gray-600 dark:text-gray-300">
-                            {job.sent_count}/{job.recipient_count} sent
+                            {job.sent_count}/{job.recipient_count} delivered
                           </td>
                           <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400">
                             {format(new Date(job.triggered_at), 'MMM d, yyyy HH:mm')}
@@ -233,13 +251,13 @@ export default function EmailNotifications() {
                             <button
                               onClick={() =>
                                 sendCampaign.mutate({
-                                  templateId: job.template_id ?? undefined,
-                                  templateKey: job.template_key,
+                                  campaignId: job.campaign_id ?? undefined,
+                                  campaignKey: job.campaign_key,
                                   title: job.title,
                                   recipientGroup: job.recipient_group,
-                                  subject: job.subject,
-                                  previewText: job.preview_text ?? '',
-                                  body: job.body,
+                                  messageTitle: job.message_title,
+                                  messageBody: job.message_body,
+                                  route: job.route ?? '/',
                                 })
                               }
                               disabled={sendCampaign.isPending || !canManageNotifications}
@@ -256,91 +274,97 @@ export default function EmailNotifications() {
               )}
             </div>
           </div>
+
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-            {selectedId ? 'Edit Email Template' : 'Create Email Template'}
+            {selectedId ? 'Edit Push Template' : 'Create Push Template'}
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field label="Template Key" value={form.template_key} onChange={(value) => setForm((prev) => ({ ...prev, template_key: value }))} />
-            <FieldErrorText error={templateErrors.template_key} />
-            <Field label="Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
-            <FieldErrorText error={templateErrors.title} />
+            <div>
+              <Field label="Campaign Key" value={form.campaign_key} onChange={(value) => setForm((prev) => ({ ...prev, campaign_key: value }))} />
+              <FieldErrorText error={templateErrors.campaign_key} />
+            </div>
+            <div>
+              <Field label="Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
+              <FieldErrorText error={templateErrors.title} />
+            </div>
             <SelectField
               label="Recipient Group"
               value={form.recipient_group}
               onChange={(value) => setForm((prev) => ({ ...prev, recipient_group: value }))}
-              options={['all', 'client', 'professional', 'new_users', 'new_handys']}
+              options={['all', 'client', 'professional', 'admin']}
             />
             <ToggleField label="Active" checked={form.active} onChange={(checked) => setForm((prev) => ({ ...prev, active: checked }))} />
-            <div className="md:col-span-2">
-              <Field label="Subject" value={form.subject} onChange={(value) => setForm((prev) => ({ ...prev, subject: value }))} />
-              <FieldErrorText error={templateErrors.subject} />
+            <div>
+              <Field label="Push Title" value={form.message_title} onChange={(value) => setForm((prev) => ({ ...prev, message_title: value }))} />
+              <FieldErrorText error={templateErrors.message_title} />
+            </div>
+            <div>
+              <Field label="Open Route" value={form.route} onChange={(value) => setForm((prev) => ({ ...prev, route: value }))} />
+              <FieldErrorText error={templateErrors.route} />
             </div>
             <div className="md:col-span-2">
-              <Field label="Preview Text" value={form.preview_text} onChange={(value) => setForm((prev) => ({ ...prev, preview_text: value }))} />
-            </div>
-            <div className="md:col-span-2">
-              <TextAreaField label="Body" value={form.body} onChange={(value) => setForm((prev) => ({ ...prev, body: value }))} rows={10} />
-              <FieldErrorText error={templateErrors.body} />
+              <TextAreaField label="Push Body" value={form.message_body} onChange={(value) => setForm((prev) => ({ ...prev, message_body: value }))} rows={6} />
+              <FieldErrorText error={templateErrors.message_body} />
             </div>
           </div>
 
           <div className="mt-6 flex justify-end">
             <button
               onClick={() =>
-                saveTemplate.mutate({
+                saveCampaign.mutate({
                   id: selected?.id,
-                  template_key: form.template_key,
+                  campaign_key: form.campaign_key,
                   title: form.title,
-                  template_kind: 'template',
+                  campaign_kind: 'template',
                   recipient_group: form.recipient_group,
-                  subject: form.subject,
-                  preview_text: form.preview_text,
-                  body: form.body,
+                  message_title: form.message_title,
+                  message_body: form.message_body,
+                  route: form.route,
                   active: form.active,
                 })
               }
-              disabled={saveTemplate.isPending || !canSaveTemplate}
+              disabled={saveCampaign.isPending || !canSaveTemplate}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              {saveTemplate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {saveCampaign.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save Template
             </button>
           </div>
         </section>
 
         <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-          <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">One-Time Email Drafts</h3>
+          <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">One-Time Push Drafts</h3>
           <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-            One-time campaigns are stored as database drafts so they can be reviewed and reused later.
+            Save reusable push drafts or send a one-off campaign immediately.
           </p>
           <div className="mb-6 space-y-3">
             {draftRows.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">No saved campaign drafts.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">No saved push drafts.</p>
             ) : (
               draftRows.map((draft) => (
                 <div key={draft.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{draft.title}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{draft.recipient_group} / {draft.subject}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{draft.recipient_group} / {draft.message_title}</p>
                   </div>
                   <div className="space-x-4">
                     <button
                       className="text-primary hover:underline"
                       onClick={() =>
                         setDraftForm({
-                          template_key: draft.template_key,
+                          campaign_key: draft.campaign_key,
                           title: draft.title,
                           recipient_group: draft.recipient_group,
-                          subject: draft.subject,
-                          preview_text: draft.preview_text ?? '',
-                          body: draft.body,
+                          message_title: draft.message_title,
+                          message_body: draft.message_body,
+                          route: draft.route ?? '/',
                           active: draft.active,
                         })
                       }
                     >
                       Load
                     </button>
-                    <button className="text-red-600 hover:underline" onClick={() => deleteTemplate.mutate(draft.id)}>
+                    <button className="text-red-600 hover:underline" onClick={() => deleteCampaign.mutate(draft.id)}>
                       Delete
                     </button>
                   </div>
@@ -350,24 +374,31 @@ export default function EmailNotifications() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field label="Draft Key" value={draftForm.template_key} onChange={(value) => setDraftForm((prev) => ({ ...prev, template_key: value }))} />
-            <FieldErrorText error={draftErrors.template_key} />
-            <Field label="Draft Title" value={draftForm.title} onChange={(value) => setDraftForm((prev) => ({ ...prev, title: value }))} />
-            <FieldErrorText error={draftErrors.title} />
+            <div>
+              <Field label="Draft Key" value={draftForm.campaign_key} onChange={(value) => setDraftForm((prev) => ({ ...prev, campaign_key: value }))} />
+              <FieldErrorText error={draftErrors.campaign_key} />
+            </div>
+            <div>
+              <Field label="Draft Title" value={draftForm.title} onChange={(value) => setDraftForm((prev) => ({ ...prev, title: value }))} />
+              <FieldErrorText error={draftErrors.title} />
+            </div>
             <SelectField
               label="Recipient Group"
               value={draftForm.recipient_group}
               onChange={(value) => setDraftForm((prev) => ({ ...prev, recipient_group: value }))}
-              options={['all', 'client', 'professional']}
+              options={['all', 'client', 'professional', 'admin']}
             />
-            <Field label="Subject" value={draftForm.subject} onChange={(value) => setDraftForm((prev) => ({ ...prev, subject: value }))} />
-            <FieldErrorText error={draftErrors.subject} />
-            <div className="md:col-span-2">
-              <Field label="Preview Text" value={draftForm.preview_text} onChange={(value) => setDraftForm((prev) => ({ ...prev, preview_text: value }))} />
+            <div>
+              <Field label="Push Title" value={draftForm.message_title} onChange={(value) => setDraftForm((prev) => ({ ...prev, message_title: value }))} />
+              <FieldErrorText error={draftErrors.message_title} />
             </div>
             <div className="md:col-span-2">
-              <TextAreaField label="Message" value={draftForm.body} onChange={(value) => setDraftForm((prev) => ({ ...prev, body: value }))} rows={8} />
-              <FieldErrorText error={draftErrors.body} />
+              <Field label="Open Route" value={draftForm.route} onChange={(value) => setDraftForm((prev) => ({ ...prev, route: value }))} />
+              <FieldErrorText error={draftErrors.route} />
+            </div>
+            <div className="md:col-span-2">
+              <TextAreaField label="Push Body" value={draftForm.message_body} onChange={(value) => setDraftForm((prev) => ({ ...prev, message_body: value }))} rows={6} />
+              <FieldErrorText error={draftErrors.message_body} />
             </div>
           </div>
 
@@ -375,15 +406,15 @@ export default function EmailNotifications() {
             <button
               onClick={() =>
                 sendCampaign.mutate({
-                  templateKey: draftForm.template_key,
+                  campaignKey: draftForm.campaign_key,
                   title: draftForm.title,
                   recipientGroup: draftForm.recipient_group,
-                  subject: draftForm.subject,
-                  previewText: draftForm.preview_text,
-                  body: draftForm.body,
+                  messageTitle: draftForm.message_title,
+                  messageBody: draftForm.message_body,
+                  route: draftForm.route,
                 })
               }
-              disabled={sendCampaign.isPending || !canSendDraft}
+              disabled={sendCampaign.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-900/60 dark:text-emerald-300 dark:hover:bg-emerald-950/20"
             >
               {sendCampaign.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -391,48 +422,51 @@ export default function EmailNotifications() {
             </button>
             <button
               onClick={() =>
-                saveTemplate.mutate({
-                  template_key: draftForm.template_key,
+                saveCampaign.mutate({
+                  campaign_key: draftForm.campaign_key,
                   title: draftForm.title,
-                  template_kind: 'campaign_draft',
+                  campaign_kind: 'campaign_draft',
                   recipient_group: draftForm.recipient_group,
-                  subject: draftForm.subject,
-                  preview_text: draftForm.preview_text,
-                  body: draftForm.body,
+                  message_title: draftForm.message_title,
+                  message_body: draftForm.message_body,
+                  route: draftForm.route,
                   active: false,
                 })
               }
-              disabled={saveTemplate.isPending || !canSaveDraft}
+              disabled={saveCampaign.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              {saveTemplate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {saveCampaign.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save Draft
             </button>
           </div>
 
-          {draftForm.body && (
+          {draftForm.message_body && (
             <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Preview</span>
-                <a
-                  href="mailto:"
-                  className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
-                >
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Push Preview</span>
+                <span className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <ExternalLink className="h-4 w-4" />
-                  Preview Layout
-                </a>
+                  {draftForm.route || '/'}
+                </span>
               </div>
-              <div className="bg-white p-6 text-sm">
-                <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">Subject</div>
-                <div className="mb-4 font-semibold text-gray-900">{draftForm.subject || 'No subject'}</div>
-                {draftForm.preview_text && (
-                  <>
-                    <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">Preview text</div>
-                    <div className="mb-4 text-gray-600">{draftForm.preview_text}</div>
-                  </>
-                )}
-                <div className="rounded-lg border border-gray-200 p-4 whitespace-pre-wrap text-gray-800">
-                  {draftForm.body || 'No message body'}
+              <div className="bg-slate-100 p-6 dark:bg-slate-950">
+                <div className="mx-auto max-w-sm rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="rounded-full bg-primary/10 p-2 text-primary">
+                      <BellRing className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">100Handy</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">now</div>
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {draftForm.message_title || 'No title'}
+                  </div>
+                  <div className="mt-1 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">
+                    {draftForm.message_body || 'No message body'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -524,11 +558,19 @@ function SelectField({
   )
 }
 
-function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+function ToggleField({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
   return (
-    <label className="flex items-center gap-3 pt-8 text-sm text-gray-700 dark:text-gray-300">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    <label className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
       {label}
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
     </label>
   )
 }
