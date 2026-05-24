@@ -10,6 +10,7 @@ import {
   ensureAndroidNotificationChannelAsync,
 } from '@/lib/notifications';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 interface MenuItem {
   label: string;
@@ -17,12 +18,33 @@ interface MenuItem {
   onPress?: () => void;
 }
 
+const DEFAULT_CONTENT = {
+  'header.title': 'Support',
+  'menu.support_center': '100Handy Support',
+  'menu.support_center_url': 'https://100handy.com/help',
+  'menu.test_notifications': 'Test push notifications',
+  'notifications.disabled_title': 'Notifications disabled',
+  'notifications.disabled_body': 'Enable notifications to test this feature.',
+  'notifications.sent_title': 'Test notification sent',
+  'notifications.sent_body': 'A banner should appear immediately.',
+  'notifications.error_title': 'Notification test failed',
+  'notifications.error_body': 'Unable to trigger the test notification.',
+  'version.prefix': 'Version',
+} as const;
+
 export default function SupportScreen() {
   const router = useRouter();
   const toast = useToast();
+  const content = useAppContent('professional_support', DEFAULT_CONTENT);
 
   const handleHandySupport = () => {
-    Linking.openURL('https://100handy.com/help');
+    Linking.openURL(
+      getAppContentValue(
+        content,
+        'menu.support_center_url',
+        DEFAULT_CONTENT['menu.support_center_url'],
+      ),
+    );
   };
 
   const handleTestNotifications = async () => {
@@ -39,7 +61,10 @@ export default function SupportScreen() {
       }
 
       if (finalStatus !== 'granted') {
-        toast.error('Notifications disabled', 'Enable notifications to test this feature.');
+        toast.error(
+          getAppContentValue(content, 'notifications.disabled_title', DEFAULT_CONTENT['notifications.disabled_title']),
+          getAppContentValue(content, 'notifications.disabled_body', DEFAULT_CONTENT['notifications.disabled_body']),
+        );
         return;
       }
 
@@ -52,21 +77,27 @@ export default function SupportScreen() {
         trigger: null,
       });
 
-      toast.success('Test notification sent', 'A banner should appear immediately.');
+      toast.success(
+        getAppContentValue(content, 'notifications.sent_title', DEFAULT_CONTENT['notifications.sent_title']),
+        getAppContentValue(content, 'notifications.sent_body', DEFAULT_CONTENT['notifications.sent_body']),
+      );
     } catch (e) {
       console.error('Test push notification error:', e);
-      toast.error('Notification test failed', 'Unable to trigger the test notification.');
+      toast.error(
+        getAppContentValue(content, 'notifications.error_title', DEFAULT_CONTENT['notifications.error_title']),
+        getAppContentValue(content, 'notifications.error_body', DEFAULT_CONTENT['notifications.error_body']),
+      );
     }
   };
 
   const menuItems: MenuItem[] = [
     {
-      label: '100Handy Support',
+      label: getAppContentValue(content, 'menu.support_center', DEFAULT_CONTENT['menu.support_center']),
       hasChevron: true,
       onPress: handleHandySupport,
     },
     {
-      label: 'Test push notifications',
+      label: getAppContentValue(content, 'menu.test_notifications', DEFAULT_CONTENT['menu.test_notifications']),
       hasChevron: true,
       onPress: handleTestNotifications,
     },
@@ -80,7 +111,7 @@ export default function SupportScreen() {
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-xl text-theme-font">
-          Support
+          {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
         </Text>
         <View className="w-10" />
       </View>
@@ -109,7 +140,7 @@ export default function SupportScreen() {
         {/* Version Info */}
         <View className="px-5 py-4">
           <Text className="font-worksans text-sm text-gray-500">
-            Version 1.2.0 (100Handy)
+            {getAppContentValue(content, 'version.prefix', DEFAULT_CONTENT['version.prefix'])} 1.2.0 (100Handy)
           </Text>
         </View>
       </ScrollView>

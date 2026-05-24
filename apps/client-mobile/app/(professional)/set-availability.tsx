@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useDeleteAvailabilitySlot, useReplaceAvailabilitySlots, type AvailabilitySlot, type RecurrenceType } from '@shared/query';
 import { ScrollView, View, Text, Pressable, Dimensions, ActivityIndicator, Switch, NativeSyntheticEvent, NativeScrollEvent, PanResponder } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import { Button, ButtonText } from '@/components/ui/button'; import {   Modal, ModalBackdrop, ModalContent, } from '@/components/ui/modal'; import { Plus, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react-native'; import { TimePickerWheel } from '@/components/availability'; import { useWeeklyAvailability } from '@shared/query';
 import { useToast } from '@/components/ui/toast';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 interface TimeSlot {
   id: string;
@@ -83,6 +84,34 @@ const clampMinutes = (value: number, min: number, max: number) => {
   return Math.min(Math.max(value, min), max);
 };
 
+const DEFAULT_CONTENT = {
+  'header.title': 'Set Availability',
+  'loading.text': 'Loading availability...',
+  'slot.available': 'Available',
+  'slot.repeats_weekly': 'Repeats weekly',
+  'slot.one_time': 'One-time',
+  'preview.merging': 'Merging...',
+  'preview.new_slot': 'New Slot',
+  'modal.title': 'Add Availability',
+  'modal.to': 'to',
+  'repeat.title': 'Repeat weekly',
+  'repeat.enabled_body': 'This availability will repeat every week on the selected days.',
+  'repeat.disabled_body': 'This availability will only be added for this date.',
+  'actions.saving': 'Saving...',
+  'actions.merge': 'Merge availability',
+  'actions.add': 'Add Availability',
+  'actions.discard': 'Discard',
+  'errors.invalid_time_title': 'Invalid time',
+  'errors.invalid_time_body': 'End time must be after start time',
+  'errors.missing_days_title': 'Missing weekdays',
+  'errors.missing_days_body': 'Select at least one weekday',
+  'toasts.saved_title': 'Saved',
+  'toasts.saved_body': 'Availability updated',
+  'toasts.save_failed_title': 'Save failed',
+  'toasts.retry_body': 'Please try again',
+  'toasts.resize_failed_title': 'Resize failed',
+} as const;
+
 // Helper to check if two time ranges overlap
 const isOverlapping = (start1: number, end1: number, start2: number, end2: number) => {
   return Math.max(start1, start2) < Math.min(end1, end2);
@@ -90,6 +119,7 @@ const isOverlapping = (start1: number, end1: number, start2: number, end2: numbe
 
 export default function SetAvailability() {
   const toast = useToast();
+  const content = useAppContent('professional_set_availability', DEFAULT_CONTENT);
   const weekPagerRef = useRef<ScrollView>(null);
   const timelineScrollRef = useRef<ScrollView>(null);
   const hasAutoSelectedAvailabilityDay = useRef(false);
@@ -283,7 +313,10 @@ export default function SetAvailability() {
 
   const handleSave = async () => {
     if (selectionEnd <= selectionStart) {
-      toast.error('Invalid time', 'End time must be after start time');
+      toast.error(
+        getAppContentValue(content, 'errors.invalid_time_title', DEFAULT_CONTENT['errors.invalid_time_title']),
+        getAppContentValue(content, 'errors.invalid_time_body', DEFAULT_CONTENT['errors.invalid_time_body']),
+      );
       return;
     }
 
@@ -292,7 +325,10 @@ export default function SetAvailability() {
       : [selectedDay];
 
     if (repeatWeekly && targetDays.length === 0) {
-      toast.error('Missing weekdays', 'Select at least one weekday');
+      toast.error(
+        getAppContentValue(content, 'errors.missing_days_title', DEFAULT_CONTENT['errors.missing_days_title']),
+        getAppContentValue(content, 'errors.missing_days_body', DEFAULT_CONTENT['errors.missing_days_body']),
+      );
       return;
     }
 
@@ -364,7 +400,10 @@ export default function SetAvailability() {
           recurrenceType: slot.recurrenceType,
         })),
       });
-      toast.success('Saved', 'Availability updated');
+      toast.success(
+        getAppContentValue(content, 'toasts.saved_title', DEFAULT_CONTENT['toasts.saved_title']),
+        getAppContentValue(content, 'toasts.saved_body', DEFAULT_CONTENT['toasts.saved_body']),
+      );
     } catch (error) {
       console.error('Failed to save availability:', error);
       setAvailability((prev) => ({
@@ -372,8 +411,10 @@ export default function SetAvailability() {
         ...previousByDay,
       }));
       toast.error(
-        'Save failed',
-        error instanceof Error ? error.message : 'Please try again'
+        getAppContentValue(content, 'toasts.save_failed_title', DEFAULT_CONTENT['toasts.save_failed_title']),
+        error instanceof Error
+          ? error.message
+          : getAppContentValue(content, 'toasts.retry_body', DEFAULT_CONTENT['toasts.retry_body']),
       );
     }
   };
@@ -512,8 +553,10 @@ export default function SetAvailability() {
           [selectedDay]: previousDaySlots,
         }));
         toast.error(
-          'Resize failed',
-          error instanceof Error ? error.message : 'Please try again',
+          getAppContentValue(content, 'toasts.resize_failed_title', DEFAULT_CONTENT['toasts.resize_failed_title']),
+          error instanceof Error
+            ? error.message
+            : getAppContentValue(content, 'toasts.retry_body', DEFAULT_CONTENT['toasts.retry_body']),
         );
       } finally {
         setResizingSlots((prev) => {
@@ -545,7 +588,9 @@ export default function SetAvailability() {
       <SafeAreaView className="flex-1 bg-white" edges={['top']}>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#047857" />
-          <Text className="text-brand-dark-alt text-lg mt-4">Loading availability...</Text>
+          <Text className="text-brand-dark-alt text-lg mt-4">
+            {getAppContentValue(content, 'loading.text', DEFAULT_CONTENT['loading.text'])}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -559,7 +604,7 @@ export default function SetAvailability() {
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-brand-dark-alt">
-          Set Availability
+          {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
         </Text>
         <View className="w-7" />
       </View>
@@ -712,13 +757,15 @@ export default function SetAvailability() {
                       ) : (
                         <>
                           <Text className="text-white font-worksans-bold text-base">
-                            Available
+                            {getAppContentValue(content, 'slot.available', DEFAULT_CONTENT['slot.available'])}
                           </Text>
                           <Text className="text-white font-worksans text-xs opacity-90">
                             {slot.startTime} - {slot.endTime}
                           </Text>
                           <Text className="text-white font-worksans text-[10px] opacity-80">
-                            {slot.recurrenceType === 'weekly' ? 'Repeats weekly' : 'One-time'}
+                            {slot.recurrenceType === 'weekly'
+                              ? getAppContentValue(content, 'slot.repeats_weekly', DEFAULT_CONTENT['slot.repeats_weekly'])
+                              : getAppContentValue(content, 'slot.one_time', DEFAULT_CONTENT['slot.one_time'])}
                           </Text>
                         </>
                       )}
@@ -762,7 +809,9 @@ export default function SetAvailability() {
                 className="rounded-lg justify-center items-center px-3"
               >
                 <Text className="text-emerald-700 font-worksans-bold">
-                  {isMerge ? 'Merging...' : 'New Slot'}
+                  {isMerge
+                    ? getAppContentValue(content, 'preview.merging', DEFAULT_CONTENT['preview.merging'])
+                    : getAppContentValue(content, 'preview.new_slot', DEFAULT_CONTENT['preview.new_slot'])}
                 </Text>
               </View>
             )}
@@ -787,7 +836,7 @@ export default function SetAvailability() {
             <View className="flex-col items-center mb-6">
               <View className="w-12 h-1 bg-[#E5E5E5] rounded-full mb-4" />
               <Text className="font-worksans-bold text-[20px] text-brand-dark-alt">
-                Add Availability
+                {getAppContentValue(content, 'modal.title', DEFAULT_CONTENT['modal.title'])}
               </Text>
             </View>
 
@@ -798,7 +847,9 @@ export default function SetAvailability() {
                   {startHour}:{startMinute}
                 </Text>
               </View>
-              <Text className="font-worksans text-[16px] text-[#6B6B6B]">to</Text>
+              <Text className="font-worksans text-[16px] text-[#6B6B6B]">
+                {getAppContentValue(content, 'modal.to', DEFAULT_CONTENT['modal.to'])}
+              </Text>
               <View className="px-6 py-3 rounded-lg bg-[#F5F5F5]">
                 <Text className="font-worksans-semibold text-[20px] text-brand-dark-alt">
                   {endHour}:{endMinute}
@@ -846,12 +897,12 @@ export default function SetAvailability() {
               <View className="flex-row items-center justify-between gap-4">
                 <View className="flex-1">
                   <Text className="font-worksans-semibold text-[15px] text-brand-dark-alt">
-                    Repeat weekly
+                    {getAppContentValue(content, 'repeat.title', DEFAULT_CONTENT['repeat.title'])}
                   </Text>
                   <Text className="font-worksans text-[13px] text-[#6B6B6B] mt-1">
                     {repeatWeekly
-                      ? 'This availability will repeat every week on the selected days.'
-                      : 'This availability will only be added for this date.'}
+                      ? getAppContentValue(content, 'repeat.enabled_body', DEFAULT_CONTENT['repeat.enabled_body'])
+                      : getAppContentValue(content, 'repeat.disabled_body', DEFAULT_CONTENT['repeat.disabled_body'])}
                   </Text>
                 </View>
                 <Switch
@@ -898,10 +949,10 @@ export default function SetAvailability() {
               >
                 <ButtonText className="font-worksans-semibold text-white text-[16px]">
                   {replaceAvailabilityMutation.isPending
-                    ? 'Saving...'
+                    ? getAppContentValue(content, 'actions.saving', DEFAULT_CONTENT['actions.saving'])
                     : isMerge
-                      ? 'Merge availability'
-                      : 'Add Availability'}
+                      ? getAppContentValue(content, 'actions.merge', DEFAULT_CONTENT['actions.merge'])
+                      : getAppContentValue(content, 'actions.add', DEFAULT_CONTENT['actions.add'])}
                 </ButtonText>
               </Button>
 
@@ -910,7 +961,7 @@ export default function SetAvailability() {
                 className="items-center py-3"
               >
                 <Text className="font-worksans-semibold text-[16px] text-brand-terracotta">
-                  Discard
+                  {getAppContentValue(content, 'actions.discard', DEFAULT_CONTENT['actions.discard'])}
                 </Text>
               </Pressable>
             </View>

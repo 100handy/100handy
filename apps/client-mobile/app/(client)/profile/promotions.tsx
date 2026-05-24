@@ -7,17 +7,29 @@ import Header from '@/components/Header';
 import { StatusBar } from 'expo-status-bar';
 import ReferralShareModal from '@/components/modals/ReferralShareModal';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Promotions',
+  'card.title': 'Help Your Friends, Get £10',
+  'card.subtitle': 'Refer a Friend',
+} as const;
 
 export default function PromotionsScreen() {
   const router = useRouter();
   const [showReferralModal, setShowReferralModal] = useState(false);
+  const content = useAppContent('client_promotions', DEFAULT_CONTENT);
 
   return (
     <>
       <SafeAreaView className="flex-1 bg-[#FBF4ED]" edges={['top', 'bottom']}>
         <StatusBar style="dark" />
       {/* Header */}
-      <Header title="Promotions" onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} showBellIcon={false} />
+      <Header
+        title={getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
+        onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')}
+        showBellIcon={false}
+      />
 
       {/* Main Content */}
       <View className="flex-1 px-4 pt-4">
@@ -30,10 +42,10 @@ export default function PromotionsScreen() {
           </View>
           <View className="flex-1">
             <Text className="text-base font-semibold text-[#333A31]">
-              Help Your Friends, Get £10
+              {getAppContentValue(content, 'card.title', DEFAULT_CONTENT['card.title'])}
             </Text>
             <Text className="text-sm text-[#333A31]/70 mt-1">
-              Refer a Friend
+              {getAppContentValue(content, 'card.subtitle', DEFAULT_CONTENT['card.subtitle'])}
             </Text>
           </View>
         </Pressable>

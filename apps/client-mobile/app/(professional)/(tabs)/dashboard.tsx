@@ -6,6 +6,37 @@ import { useWeeklyAvailability } from '@shared/query';
 import { getHandyProfile, getUserSkills } from '@shared/supabase/profile'; import { getConnectAccountStatus } from '@shared/supabase/payment-methods'; import { useWorkArea } from '@shared/query';
 import { useFocusEffect } from 'expo-router';
 import { getUnsupportedNativeFeatureMessage, presentStripeIdentityVerificationSheet, supportsStripeNative } from '@/lib/native-feature-support';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.greeting_prefix': 'Hello,',
+  'progress.label_prefix': 'Onboarding progress',
+  'progress.loading': 'Loading your progress...',
+  'tasks.verify_identity': 'Verify your identity',
+  'tasks.name_price': 'Name your price',
+  'tasks.direct_deposit': 'Set up direct deposit',
+  'tasks.profile_photo': 'Upload a profile photo',
+  'tasks.availability': 'Set availability',
+  'tasks.work_area': 'Set work area',
+  'alerts.verification_in_progress_title': 'Verification In Progress',
+  'alerts.verification_in_progress_body': 'Your identity verification is already being reviewed. Please wait.',
+  'alerts.verification_received_title': 'Verification received',
+  'alerts.verification_received_body': 'Stripe finished the verification flow. Your status will update after the backend confirms the result.',
+  'alerts.verification_failed_title': 'Verification Failed',
+  'alerts.verification_failed_body': 'Please try again.',
+  'alerts.verification_error_title': 'Error',
+  'alerts.verification_error_body': 'Failed to start verification. Please try again.',
+  'banner.verified_title': 'Account Verified',
+  'banner.verified_body': 'Your identity has been verified. You can now receive bookings.',
+  'banner.submitted_title': 'Verification In Progress',
+  'banner.submitted_body': 'Your identity verification is being reviewed. This usually takes a few minutes.',
+  'banner.rejected_title': 'Verification Failed',
+  'banner.rejected_body': 'Tap here to try again with clear photos of your ID.',
+  'banner.default_title': "Your account isn't live yet!",
+  'banner.default_body': 'Tap here to verify your identity and activate your account.',
+  'banner.starting': 'Starting verification...',
+  'misc.professional_fallback_name': 'Professional',
+} as const;
 
 type VerificationStatus = 'pending' | 'submitted' | 'verified' | 'rejected' | null;
 
@@ -20,6 +51,7 @@ export default function ProfessionalDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [hasLoadedProgress, setHasLoadedProgress] = useState(false);
   const hasHandledInitialFocusRef = useRef(false);
+  const content = useAppContent('professional_dashboard', DEFAULT_CONTENT);
 
   // Fetch work area and availability for progress calculation
   const { data: workArea } = useWorkArea();
@@ -141,7 +173,10 @@ export default function ProfessionalDashboard() {
   const handleStartVerification = useCallback(async () => {
     // Don't start a new verification if already submitted or verified
     if (verificationStatus === 'submitted') {
-      Alert.alert('Verification In Progress', 'Your identity verification is already being reviewed. Please wait.');
+      Alert.alert(
+        getAppContentValue(content, 'alerts.verification_in_progress_title', DEFAULT_CONTENT['alerts.verification_in_progress_title']),
+        getAppContentValue(content, 'alerts.verification_in_progress_body', DEFAULT_CONTENT['alerts.verification_in_progress_body'])
+      );
       return;
     }
     if (verificationStatus === 'verified') {
@@ -162,15 +197,21 @@ export default function ProfessionalDashboard() {
       if (result?.status === 'FlowCompleted') {
         await fetchVerificationStatus();
         Alert.alert(
-          'Verification received',
-          'Stripe finished the verification flow. Your status will update after the backend confirms the result.'
+          getAppContentValue(content, 'alerts.verification_received_title', DEFAULT_CONTENT['alerts.verification_received_title']),
+          getAppContentValue(content, 'alerts.verification_received_body', DEFAULT_CONTENT['alerts.verification_received_body'])
         );
       } else if (result?.status === 'FlowFailed') {
-        Alert.alert('Verification Failed', 'Please try again.');
+        Alert.alert(
+          getAppContentValue(content, 'alerts.verification_failed_title', DEFAULT_CONTENT['alerts.verification_failed_title']),
+          getAppContentValue(content, 'alerts.verification_failed_body', DEFAULT_CONTENT['alerts.verification_failed_body'])
+        );
       }
     } catch (error) {
       console.error('Error in verification:', error);
-      Alert.alert('Error', 'Failed to start verification. Please try again.');
+      Alert.alert(
+        getAppContentValue(content, 'alerts.verification_error_title', DEFAULT_CONTENT['alerts.verification_error_title']),
+        getAppContentValue(content, 'alerts.verification_error_body', DEFAULT_CONTENT['alerts.verification_error_body'])
+      );
     } finally {
       setStripeLoading(false);
       setIsVerifying(false);
@@ -189,7 +230,7 @@ export default function ProfessionalDashboard() {
   const onboardingTasks = [
     {
       icon: <ShieldCheck color={isAccountVerified ? "#6B7B6B" : isVerificationSubmitted ? "#856404" : "#C1856A"} size={28} strokeWidth={1.5} />,
-      title: 'Verify your identity',
+      title: getAppContentValue(content, 'tasks.verify_identity', DEFAULT_CONTENT['tasks.verify_identity']),
       duration: isVerificationSubmitted ? 'Under review' : '5 MIN',
       completed: isAccountVerified,
       disabled: false,
@@ -201,7 +242,7 @@ export default function ProfessionalDashboard() {
     },
     {
       icon: <DollarSign color={hasActiveSkill ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
-      title: 'Name your price',
+      title: getAppContentValue(content, 'tasks.name_price', DEFAULT_CONTENT['tasks.name_price']),
       duration: '4 MIN PER SKILL',
       completed: hasActiveSkill,
       disabled: false,
@@ -211,7 +252,7 @@ export default function ProfessionalDashboard() {
     },
     {
       icon: <Landmark color={hasDirectDeposit ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
-      title: 'Set up direct deposit',
+      title: getAppContentValue(content, 'tasks.direct_deposit', DEFAULT_CONTENT['tasks.direct_deposit']),
       duration: '2 MIN',
       completed: hasDirectDeposit,
       disabled: false,
@@ -221,7 +262,7 @@ export default function ProfessionalDashboard() {
     },
     {
       icon: <Smile color={hasProfilePhoto ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
-      title: 'Upload a profile photo',
+      title: getAppContentValue(content, 'tasks.profile_photo', DEFAULT_CONTENT['tasks.profile_photo']),
       duration: '2 MIN',
       completed: hasProfilePhoto,
       disabled: false, // Photo upload doesn't require verification
@@ -231,7 +272,7 @@ export default function ProfessionalDashboard() {
     },
     {
       icon: <Calendar color={hasAvailability ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
-      title: 'Set availability',
+      title: getAppContentValue(content, 'tasks.availability', DEFAULT_CONTENT['tasks.availability']),
       duration: '4 MIN',
       completed: hasAvailability,
       disabled: false,
@@ -241,7 +282,7 @@ export default function ProfessionalDashboard() {
     },
     {
       icon: <MapPin color={hasWorkArea ? "#6B7B6B" : "#C1856A"} size={28} strokeWidth={1.5} />,
-      title: 'Set work area',
+      title: getAppContentValue(content, 'tasks.work_area', DEFAULT_CONTENT['tasks.work_area']),
       duration: '4 MIN',
       completed: hasWorkArea,
       disabled: false,
@@ -261,10 +302,10 @@ export default function ProfessionalDashboard() {
             <ShieldCheck color="#155724" size={26} strokeWidth={2} />
             <View className="flex-col flex-1 ml-3">
               <Text className="font-worksans-bold text-[16px] text-[#155724]">
-                Account Verified
+                {getAppContentValue(content, 'banner.verified_title', DEFAULT_CONTENT['banner.verified_title'])}
               </Text>
               <Text className="font-worksans text-[11px] text-[#155724] leading-[15px]">
-                Your identity has been verified. You can now receive bookings.
+                {getAppContentValue(content, 'banner.verified_body', DEFAULT_CONTENT['banner.verified_body'])}
               </Text>
             </View>
           </View>
@@ -280,10 +321,10 @@ export default function ProfessionalDashboard() {
             <Clock color="#856404" size={26} strokeWidth={2} />
             <View className="flex-col flex-1 ml-3">
               <Text className="font-worksans-bold text-[16px] text-[#856404]">
-                Verification In Progress
+                {getAppContentValue(content, 'banner.submitted_title', DEFAULT_CONTENT['banner.submitted_title'])}
               </Text>
               <Text className="font-worksans text-[11px] text-[#856404] leading-[15px]">
-                Your identity verification is being reviewed. This usually takes a few minutes.
+                {getAppContentValue(content, 'banner.submitted_body', DEFAULT_CONTENT['banner.submitted_body'])}
               </Text>
             </View>
           </View>
@@ -304,10 +345,12 @@ export default function ProfessionalDashboard() {
               <AlertTriangle color="#721C24" size={26} strokeWidth={2} />
               <View className="flex-col flex-1 ml-3">
                 <Text className="font-worksans-bold text-[16px] text-[#721C24] mb-1">
-                  Verification Failed
+                  {getAppContentValue(content, 'banner.rejected_title', DEFAULT_CONTENT['banner.rejected_title'])}
                 </Text>
                 <Text className="font-worksans text-[11px] text-[#721C24] leading-[15px]">
-                  {isVerifying ? 'Starting verification...' : 'Tap here to try again with clear photos of your ID.'}
+                  {isVerifying
+                    ? getAppContentValue(content, 'banner.starting', DEFAULT_CONTENT['banner.starting'])
+                    : getAppContentValue(content, 'banner.rejected_body', DEFAULT_CONTENT['banner.rejected_body'])}
                 </Text>
               </View>
             </View>
@@ -329,12 +372,12 @@ export default function ProfessionalDashboard() {
             <AlertTriangle color="#30352D" size={26} strokeWidth={2} />
             <View className="flex-col flex-1 ml-3">
               <Text className="font-worksans-bold text-[16px] text-brand-dark-alt mb-1">
-                Your account isn't live yet!
+                {getAppContentValue(content, 'banner.default_title', DEFAULT_CONTENT['banner.default_title'])}
               </Text>
               <Text className="font-worksans text-[11px] text-brand-dark leading-[15px]">
                 {isVerifying
-                  ? 'Starting verification...'
-                  : 'Tap here to verify your identity and activate your account.'}
+                  ? getAppContentValue(content, 'banner.starting', DEFAULT_CONTENT['banner.starting'])
+                  : getAppContentValue(content, 'banner.default_body', DEFAULT_CONTENT['banner.default_body'])}
               </Text>
             </View>
           </View>
@@ -369,7 +412,7 @@ export default function ProfessionalDashboard() {
                 )}
               </View>
               <Text className="font-worksans-semibold text-white text-[26px]">
-                Hello, {profile?.first_name || 'Professional'}
+                {getAppContentValue(content, 'header.greeting_prefix', DEFAULT_CONTENT['header.greeting_prefix'])} {profile?.first_name || getAppContentValue(content, 'misc.professional_fallback_name', DEFAULT_CONTENT['misc.professional_fallback_name'])}
               </Text>
             </View>
 
@@ -394,7 +437,7 @@ export default function ProfessionalDashboard() {
       >
         <View className="flex-col px-5 pt-5 pb-3">
           <Text className="font-worksans-bold text-[18px] text-brand-dark-alt mb-2.5">
-            Onboarding progress ({completedTasks}/{totalTasks})
+            {getAppContentValue(content, 'progress.label_prefix', DEFAULT_CONTENT['progress.label_prefix'])} ({completedTasks}/{totalTasks})
           </Text>
           <View className="h-[3px] bg-[#E5E5E5] rounded-full overflow-hidden">
             <View
@@ -404,7 +447,7 @@ export default function ProfessionalDashboard() {
           </View>
           {isLoadingOverview ? (
             <Text className="font-worksans text-[12px] text-[#6B6B6B] mt-2">
-              Loading your progress...
+              {getAppContentValue(content, 'progress.loading', DEFAULT_CONTENT['progress.loading'])}
             </Text>
           ) : null}
         </View>

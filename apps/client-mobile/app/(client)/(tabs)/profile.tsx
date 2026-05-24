@@ -31,6 +31,31 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSecureNavigation } from '@/hooks/useSecureNavigation';
 import ReferralShareModal from '@/components/modals/ReferralShareModal';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Profile',
+  'auth.title': 'Please sign in',
+  'auth.body': 'You need to be signed in to view your profile.',
+  'auth.cta': 'Sign In',
+  'loading.text': 'Loading profile...',
+  'error.retry': 'Retry',
+  'referral.cta': 'Help your friends, Get £10',
+  'actions.offer_services': 'Offer services with 100Handy',
+  'actions.logging_out': 'Error',
+  'actions.logging_out_body': 'Failed to sign out. Please try again.',
+  'actions.logout': 'Log out',
+  'privacy.title': 'Privacy Notice',
+  'privacy.body': 'By selecting "Accept All", you agree to the app storing information to enhance device navigation, analyze usage, and assist in our marketing efforts',
+  'privacy.accept_cta': 'Accept All Cookies',
+  'privacy.settings_cta': 'Cookies Settings',
+  'verify.title': 'Verify Identity',
+  'verify.body': 'Enter your password to access this section.',
+  'verify.password_placeholder': 'Password',
+  'verify.cta': 'Continue',
+  'verify.cancel': 'Cancel',
+  'switch.error_title': 'Switch failed',
+} as const;
 
 const ROLE_SWITCH_TIMEOUT_MS = 15000;
 
@@ -70,6 +95,7 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [isSwitchingToProfessional, setIsSwitchingToProfessional] = useState(false);
+  const content = useAppContent('client_profile', DEFAULT_CONTENT);
 
   // Refetch profile when screen comes into focus (e.g., after changing 2FA settings)
   useFocusEffect(
@@ -95,7 +121,10 @@ export default function ProfileScreen() {
       router.replace('/');
     } catch (error) {
       console.error('Sign out error:', error);
-      toast.error('Error', 'Failed to sign out. Please try again.');
+      toast.error(
+        getAppContentValue(content, 'actions.logging_out', DEFAULT_CONTENT['actions.logging_out']),
+        getAppContentValue(content, 'actions.logging_out_body', DEFAULT_CONTENT['actions.logging_out_body'])
+      );
     }
   };
 
@@ -113,7 +142,10 @@ export default function ProfileScreen() {
       );
       if (!ok) {
         console.error('Failed to switch to professional role');
-        toast.error('Switch failed', 'Could not switch to professional role. Please try again.');
+        toast.error(
+          getAppContentValue(content, 'switch.error_title', DEFAULT_CONTENT['switch.error_title']),
+          'Could not switch to professional role. Please try again.'
+        );
         return;
       }
 
@@ -188,22 +220,24 @@ export default function ProfileScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <View className="bg-[#333A31] pt-12 pb-6 px-6">
           <Text className="text-white text-[32px] font-black leading-tight">
-            Profile
+            {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
           </Text>
         </View>
         <View className="flex-1 items-center justify-center py-12">
           <User size={64} color="#C1856A" />
           <Text className="text-lg font-medium text-[#333A31] mt-4 mb-2">
-            Please sign in
+            {getAppContentValue(content, 'auth.title', DEFAULT_CONTENT['auth.title'])}
           </Text>
           <Text className="text-sm text-[#666666] text-center px-8 mb-6">
-            You need to be signed in to view your profile.
+            {getAppContentValue(content, 'auth.body', DEFAULT_CONTENT['auth.body'])}
           </Text>
           <Pressable
             onPress={() => router.push('/(auth)/(client)/sign-in')}
             className="px-8 py-3 rounded-full bg-clay-orange"
           >
-            <Text className="text-white font-medium">Sign In</Text>
+            <Text className="text-white font-medium">
+              {getAppContentValue(content, 'auth.cta', DEFAULT_CONTENT['auth.cta'])}
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -214,7 +248,9 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 justify-center items-center">
-          <Text className="mt-4 text-gray-500">Loading profile...</Text>
+          <Text className="mt-4 text-gray-500">
+            {getAppContentValue(content, 'loading.text', DEFAULT_CONTENT['loading.text'])}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -231,7 +267,9 @@ export default function ProfileScreen() {
             onPress={() => refetch()}
             className="bg-brand-terracotta px-6 py-2.5 rounded-full"
           >
-            <Text className="text-white font-medium">Retry</Text>
+            <Text className="text-white font-medium">
+              {getAppContentValue(content, 'error.retry', DEFAULT_CONTENT['error.retry'])}
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -293,7 +331,9 @@ export default function ProfileScreen() {
               onPress={() => setShowReferralModal(true)}
             >
               <Gift size={20} color="#C1856A" className="mr-2" />
-              <Text className="text-[#C1856A] font-bold text-base">Help your friends, Get £10</Text>
+              <Text className="text-[#C1856A] font-bold text-base">
+                {getAppContentValue(content, 'referral.cta', DEFAULT_CONTENT['referral.cta'])}
+              </Text>
             </Pressable>
           </View>
 
@@ -328,7 +368,9 @@ export default function ProfileScreen() {
               disabled={isSwitchingToProfessional}
             >
               <Globe size={20} color="#C1856A" strokeWidth={1.5} />
-              <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Offer services with 100Handy</Text>
+              <Text className="flex-1 ml-4 text-lg text-[#C1856A]">
+                {getAppContentValue(content, 'actions.offer_services', DEFAULT_CONTENT['actions.offer_services'])}
+              </Text>
               {isSwitchingToProfessional && <ActivityIndicator size="small" color="#C1856A" />}
             </Pressable>
 
@@ -338,7 +380,9 @@ export default function ProfileScreen() {
               onPress={handleSignOut}
             >
               <LogOut size={20} color="#C1856A" strokeWidth={1.5} />
-              <Text className="flex-1 ml-4 text-lg text-[#C1856A]">Log out</Text>
+              <Text className="flex-1 ml-4 text-lg text-[#C1856A]">
+                {getAppContentValue(content, 'actions.logout', DEFAULT_CONTENT['actions.logout'])}
+              </Text>
             </Pressable>
           </ScrollView>
         </View>
@@ -357,13 +401,12 @@ export default function ProfileScreen() {
             <View className="flex-col w-full px-6 py-4 items-center">
               {/* Title */}
               <Text className="text-[#333A31] text-xl font-medium mb-4">
-                Privacy Notice
+                {getAppContentValue(content, 'privacy.title', DEFAULT_CONTENT['privacy.title'])}
               </Text>
 
               {/* Description */}
               <Text className="text-[#333A31] text-xs text-center leading-5 mb-6">
-                By selecting {`\"`}Accept All{`\"`}, you agree to the app storing information to
-                enhance device navigation, analyze usage, and assist in our marketing efforts
+                {getAppContentValue(content, 'privacy.body', DEFAULT_CONTENT['privacy.body'])}
               </Text>
 
               {/* Accept All Cookies Button */}
@@ -372,14 +415,14 @@ export default function ProfileScreen() {
                 onPress={handleAcceptCookies}
               >
                 <Text className="text-white text-base font-bold">
-                  Accept All Cookies
+                  {getAppContentValue(content, 'privacy.accept_cta', DEFAULT_CONTENT['privacy.accept_cta'])}
                 </Text>
               </Pressable>
 
               {/* Cookies Settings Link */}
               <Pressable onPress={handleCookiesSettings}>
                 <Text className="text-[#A0B194] text-base font-bold underline">
-                  Cookies Settings
+                  {getAppContentValue(content, 'privacy.settings_cta', DEFAULT_CONTENT['privacy.settings_cta'])}
                 </Text>
               </Pressable>
             </View>
@@ -395,14 +438,16 @@ export default function ProfileScreen() {
         <ModalContent className="bg-white" style={{ minHeight: '30%' }}>
           <ModalBody>
             <View className="flex-col w-full px-4 py-6">
-              <Text className="text-[#333A31] text-xl font-semibold mb-2">Verify Identity</Text>
+              <Text className="text-[#333A31] text-xl font-semibold mb-2">
+                {getAppContentValue(content, 'verify.title', DEFAULT_CONTENT['verify.title'])}
+              </Text>
               <Text className="text-gray-600 text-sm mb-6">
-                Enter your password to access this section.
+                {getAppContentValue(content, 'verify.body', DEFAULT_CONTENT['verify.body'])}
               </Text>
               <TextInput
                 value={verifyPassword}
                 onChangeText={setVerifyPassword}
-                placeholder="Password"
+                placeholder={getAppContentValue(content, 'verify.password_placeholder', DEFAULT_CONTENT['verify.password_placeholder'])}
                 placeholderTextColor="#9CA3AF"
                 secureTextEntry
                 autoFocus
@@ -421,14 +466,18 @@ export default function ProfileScreen() {
                 {isVerifying ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
-                  <Text className="text-white font-semibold text-base">Continue</Text>
+                  <Text className="text-white font-semibold text-base">
+                    {getAppContentValue(content, 'verify.cta', DEFAULT_CONTENT['verify.cta'])}
+                  </Text>
                 )}
               </Pressable>
               <Pressable
                 onPress={() => { cancelVerification(); setVerifyPassword(''); }}
                 className="w-full py-3 items-center mt-2"
               >
-                <Text className="text-gray-500 text-base">Cancel</Text>
+                <Text className="text-gray-500 text-base">
+                  {getAppContentValue(content, 'verify.cancel', DEFAULT_CONTENT['verify.cancel'])}
+                </Text>
               </Pressable>
             </View>
           </ModalBody>

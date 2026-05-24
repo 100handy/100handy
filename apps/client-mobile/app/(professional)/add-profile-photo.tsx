@@ -1,5 +1,26 @@
 import React, { useState } from 'react';
 import { ScrollView, Image, Alert, View, Text, Pressable } from 'react-native'; import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import * as ImagePicker from 'expo-image-picker'; import { useProfileStore } from '@shared/store';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Add profile photo',
+  'hero.title': 'Show off your best self!',
+  'tips.intro': 'A great photo increases your chances of being hired. Some tips:',
+  'tips.item_1': 'Center yourself and smile at the camera',
+  'tips.item_2': 'Take a headshot - from the chest up.',
+  'tips.item_3': "Make sure it's focused and well-lit.",
+  'actions.add_photo': 'Add Photo',
+  'sheet.title': 'Select a Photo',
+  'sheet.library': 'Library',
+  'sheet.camera': 'Take a photo',
+  'alerts.permission_title': 'Permission Required',
+  'alerts.library_permission_body': 'Sorry, we need camera roll permissions to upload a photo.',
+  'alerts.camera_permission_body': 'Sorry, we need camera permissions to take a photo.',
+  'alerts.success_title': 'Success',
+  'alerts.success_body': 'Profile photo updated successfully!',
+  'alerts.error_title': 'Error',
+  'alerts.error_body': 'Failed to upload photo. Please try again.',
+} as const;
 
 export default function AddProfilePhotoScreen() {
   const router = useRouter();
@@ -7,6 +28,7 @@ export default function AddProfilePhotoScreen() {
   const headerTopInset = Math.max(insets.top, 24);
   const { uploadAvatar, fetchProfile } = useProfileStore();
   const [showOptions, setShowOptions] = useState(false);
+  const content = useAppContent('professional_add_profile_photo', DEFAULT_CONTENT);
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -26,7 +48,10 @@ export default function AddProfilePhotoScreen() {
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to upload a photo.');
+      Alert.alert(
+        getAppContentValue(content, 'alerts.permission_title', DEFAULT_CONTENT['alerts.permission_title']),
+        getAppContentValue(content, 'alerts.library_permission_body', DEFAULT_CONTENT['alerts.library_permission_body']),
+      );
       return;
     }
 
@@ -41,11 +66,18 @@ export default function AddProfilePhotoScreen() {
       const uploaded = await uploadAvatar(result.assets[0].uri);
       if (uploaded) {
         await fetchProfile();
-        Alert.alert('Success', 'Profile photo updated successfully!', [
+        Alert.alert(
+          getAppContentValue(content, 'alerts.success_title', DEFAULT_CONTENT['alerts.success_title']),
+          getAppContentValue(content, 'alerts.success_body', DEFAULT_CONTENT['alerts.success_body']),
+          [
           { text: 'OK', onPress: handleBack }
-        ]);
+          ],
+        );
       } else {
-        Alert.alert('Error', 'Failed to upload photo. Please try again.');
+        Alert.alert(
+          getAppContentValue(content, 'alerts.error_title', DEFAULT_CONTENT['alerts.error_title']),
+          getAppContentValue(content, 'alerts.error_body', DEFAULT_CONTENT['alerts.error_body']),
+        );
       }
     }
   };
@@ -55,7 +87,10 @@ export default function AddProfilePhotoScreen() {
 
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Sorry, we need camera permissions to take a photo.');
+      Alert.alert(
+        getAppContentValue(content, 'alerts.permission_title', DEFAULT_CONTENT['alerts.permission_title']),
+        getAppContentValue(content, 'alerts.camera_permission_body', DEFAULT_CONTENT['alerts.camera_permission_body']),
+      );
       return;
     }
 
@@ -69,11 +104,18 @@ export default function AddProfilePhotoScreen() {
       const uploaded = await uploadAvatar(result.assets[0].uri);
       if (uploaded) {
         await fetchProfile();
-        Alert.alert('Success', 'Profile photo updated successfully!', [
+        Alert.alert(
+          getAppContentValue(content, 'alerts.success_title', DEFAULT_CONTENT['alerts.success_title']),
+          getAppContentValue(content, 'alerts.success_body', DEFAULT_CONTENT['alerts.success_body']),
+          [
           { text: 'OK', onPress: handleBack }
-        ]);
+          ],
+        );
       } else {
-        Alert.alert('Error', 'Failed to upload photo. Please try again.');
+        Alert.alert(
+          getAppContentValue(content, 'alerts.error_title', DEFAULT_CONTENT['alerts.error_title']),
+          getAppContentValue(content, 'alerts.error_body', DEFAULT_CONTENT['alerts.error_body']),
+        );
       }
     }
   };
@@ -93,7 +135,7 @@ export default function AddProfilePhotoScreen() {
           numberOfLines={1}
           style={{ fontFamily: 'WorkSans_600SemiBold' }}
         >
-          Add profile photo
+          {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
         </Text>
       </View>
 
@@ -101,7 +143,7 @@ export default function AddProfilePhotoScreen() {
         <View className="flex-col px-6 pt-8 pb-10 gap-7">
           {/* Title */}
           <Text className="text-[30px] leading-9 font-semibold text-center text-brand-dark" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
-            Show off your best self!
+            {getAppContentValue(content, 'hero.title', DEFAULT_CONTENT['hero.title'])}
           </Text>
 
           {/* Sample Photos */}
@@ -129,18 +171,18 @@ export default function AddProfilePhotoScreen() {
           {/* Tips */}
           <View className="flex-col gap-4">
             <Text className="text-center text-[18px] leading-7 text-brand-dark px-2" style={{ fontFamily: 'WorkSans_400Regular' }}>
-              A great photo increases your chances of being hired. Some tips:
+              {getAppContentValue(content, 'tips.intro', DEFAULT_CONTENT['tips.intro'])}
             </Text>
 
             <View className="flex-col gap-3 px-3">
               <Text className="text-center text-[17px] leading-6 text-[#666666]" style={{ fontFamily: 'WorkSans_400Regular' }}>
-                • Center yourself and smile at the camera
+                • {getAppContentValue(content, 'tips.item_1', DEFAULT_CONTENT['tips.item_1'])}
               </Text>
               <Text className="text-center text-[17px] leading-6 text-[#666666]" style={{ fontFamily: 'WorkSans_400Regular' }}>
-                • Take a headshot - from the chest up.
+                • {getAppContentValue(content, 'tips.item_2', DEFAULT_CONTENT['tips.item_2'])}
               </Text>
               <Text className="text-center text-[17px] leading-6 text-[#666666]" style={{ fontFamily: 'WorkSans_400Regular' }}>
-                • Make sure it&apos;s focused and well-lit.
+                • {getAppContentValue(content, 'tips.item_3', DEFAULT_CONTENT['tips.item_3'])}
               </Text>
             </View>
           </View>
@@ -151,7 +193,7 @@ export default function AddProfilePhotoScreen() {
             className="mt-2 py-4 rounded-full border-2 border-brand-terracotta items-center"
           >
             <Text className="text-base font-medium text-brand-terracotta" style={{ fontFamily: 'WorkSans_500Medium' }}>
-              Add Photo
+              {getAppContentValue(content, 'actions.add_photo', DEFAULT_CONTENT['actions.add_photo'])}
             </Text>
           </Pressable>
         </View>
@@ -173,7 +215,7 @@ export default function AddProfilePhotoScreen() {
           >
             <View className="flex-col px-6 pt-8 pb-6 gap-6">
               <Text className="text-xl font-semibold text-brand-dark" style={{ fontFamily: 'WorkSans_600SemiBold' }}>
-                Select a Photo
+                {getAppContentValue(content, 'sheet.title', DEFAULT_CONTENT['sheet.title'])}
               </Text>
 
               <View className="flex-row gap-4">
@@ -183,7 +225,7 @@ export default function AddProfilePhotoScreen() {
                   className="flex-1 py-4 bg-brand-terracotta rounded-full items-center"
                 >
                   <Text className="text-base font-medium text-white" style={{ fontFamily: 'WorkSans_500Medium' }}>
-                    Library
+                    {getAppContentValue(content, 'sheet.library', DEFAULT_CONTENT['sheet.library'])}
                   </Text>
                 </Pressable>
 
@@ -193,7 +235,7 @@ export default function AddProfilePhotoScreen() {
                   className="flex-1 py-4 rounded-full border-2 border-brand-terracotta items-center"
                 >
                   <Text className="text-base font-medium text-brand-terracotta" style={{ fontFamily: 'WorkSans_500Medium' }}>
-                    Take a photo
+                    {getAppContentValue(content, 'sheet.camera', DEFAULT_CONTENT['sheet.camera'])}
                   </Text>
                 </Pressable>
               </View>

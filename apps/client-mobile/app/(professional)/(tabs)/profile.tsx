@@ -7,6 +7,7 @@ import { queryClient } from "@shared/query/queryClient";
 import * as ImagePicker from "expo-image-picker";
 import AddProfilePhotoModal from "@/components/modals/AddProfilePhotoModal";
 import { useToast } from "@/components/ui/toast";
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -15,6 +16,37 @@ interface MenuItem {
   isDisabled?: boolean;
   onPress?: () => void;
 }
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Profile',
+  'photo.add': 'Add Photo',
+  'photo.change': 'Change Photo',
+  'photo.permission_title': 'Permission Required',
+  'photo.library_permission_body': 'Sorry, we need camera roll permissions to upload a photo.',
+  'photo.camera_permission_body': 'Sorry, we need camera permissions to take a photo.',
+  'photo.success_title': 'Success',
+  'photo.success_body': 'Profile photo updated successfully!',
+  'photo.error_title': 'Error',
+  'photo.error_body': 'Failed to upload photo. Please try again.',
+  'misc.fallback_name': 'Professional',
+  'menu.account_detail': 'Account detail',
+  'menu.pro_profile': 'Pro profile',
+  'menu.performance': 'Performance',
+  'menu.sync_calendar': 'Sync calendar',
+  'menu.chat_templates': 'Chat templates',
+  'menu.promote_yourself': 'Promote yourself',
+  'menu.payments': 'Payments',
+  'menu.notifications': 'Notifications',
+  'menu.support': 'Support',
+  'menu.account_security': 'Account security',
+  'menu.about': 'About',
+  'menu.password': 'Password',
+  'menu.switch_to_client': 'Go 100Handy',
+  'menu.logout': 'Log out',
+  'switch.error_title': 'Switch failed',
+  'switch.error_body': 'Could not switch to client mode. Please try again.',
+  'switch.generic_error_body': 'An error occurred while switching roles. Please try again.',
+} as const;
 
 export default function ProfessionalProfileScreen() {
   const router = useRouter();
@@ -25,6 +57,7 @@ export default function ProfessionalProfileScreen() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [isSwitchingToClient, setIsSwitchingToClient] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const content = useAppContent('professional_profile', DEFAULT_CONTENT);
 
   useEffect(() => {
     if (user) {
@@ -55,8 +88,8 @@ export default function ProfessionalProfileScreen() {
       if (!ok) {
         console.error("Failed to switch to customer role");
         toast.error(
-          "Switch failed",
-          "Could not switch to client mode. Please try again.",
+          getAppContentValue(content, 'switch.error_title', DEFAULT_CONTENT['switch.error_title']),
+          getAppContentValue(content, 'switch.error_body', DEFAULT_CONTENT['switch.error_body']),
         );
         return;
       }
@@ -68,8 +101,8 @@ export default function ProfessionalProfileScreen() {
     } catch (err) {
       console.error("Error switching to customer:", err);
       toast.error(
-        "Switch failed",
-        "An error occurred while switching roles. Please try again.",
+        getAppContentValue(content, 'switch.error_title', DEFAULT_CONTENT['switch.error_title']),
+        getAppContentValue(content, 'switch.generic_error_body', DEFAULT_CONTENT['switch.generic_error_body']),
       );
     } finally {
       setIsSwitchingToClient(false);
@@ -89,8 +122,8 @@ export default function ProfessionalProfileScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission Required",
-        "Sorry, we need camera roll permissions to upload a photo.",
+        getAppContentValue(content, 'photo.permission_title', DEFAULT_CONTENT['photo.permission_title']),
+        getAppContentValue(content, 'photo.library_permission_body', DEFAULT_CONTENT['photo.library_permission_body']),
       );
       return;
     }
@@ -103,12 +136,18 @@ export default function ProfessionalProfileScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      const uploaded = await uploadAvatar(result.assets[0].uri);
+        const uploaded = await uploadAvatar(result.assets[0].uri);
       if (uploaded) {
         await fetchProfile();
-        Alert.alert("Success", "Profile photo updated successfully!");
+        Alert.alert(
+          getAppContentValue(content, 'photo.success_title', DEFAULT_CONTENT['photo.success_title']),
+          getAppContentValue(content, 'photo.success_body', DEFAULT_CONTENT['photo.success_body']),
+        );
       } else {
-        Alert.alert("Error", "Failed to upload photo. Please try again.");
+        Alert.alert(
+          getAppContentValue(content, 'photo.error_title', DEFAULT_CONTENT['photo.error_title']),
+          getAppContentValue(content, 'photo.error_body', DEFAULT_CONTENT['photo.error_body']),
+        );
       }
     }
   };
@@ -117,8 +156,8 @@ export default function ProfessionalProfileScreen() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission Required",
-        "Sorry, we need camera permissions to take a photo.",
+        getAppContentValue(content, 'photo.permission_title', DEFAULT_CONTENT['photo.permission_title']),
+        getAppContentValue(content, 'photo.camera_permission_body', DEFAULT_CONTENT['photo.camera_permission_body']),
       );
       return;
     }
@@ -133,9 +172,15 @@ export default function ProfessionalProfileScreen() {
       const uploaded = await uploadAvatar(result.assets[0].uri);
       if (uploaded) {
         await fetchProfile();
-        Alert.alert("Success", "Profile photo updated successfully!");
+        Alert.alert(
+          getAppContentValue(content, 'photo.success_title', DEFAULT_CONTENT['photo.success_title']),
+          getAppContentValue(content, 'photo.success_body', DEFAULT_CONTENT['photo.success_body']),
+        );
       } else {
-        Alert.alert("Error", "Failed to upload photo. Please try again.");
+        Alert.alert(
+          getAppContentValue(content, 'photo.error_title', DEFAULT_CONTENT['photo.error_title']),
+          getAppContentValue(content, 'photo.error_body', DEFAULT_CONTENT['photo.error_body']),
+        );
       }
     }
   };
@@ -143,73 +188,73 @@ export default function ProfessionalProfileScreen() {
   const menuItems: MenuItem[] = [
     {
       icon: <User color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Account detail",
+      label: getAppContentValue(content, 'menu.account_detail', DEFAULT_CONTENT['menu.account_detail']),
       onPress: () => router.push("/(professional)/profile/account-detail"),
     },
     {
       icon: <FileText color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Pro profile",
+      label: getAppContentValue(content, 'menu.pro_profile', DEFAULT_CONTENT['menu.pro_profile']),
       onPress: () => router.push("/(professional)/profile/tasker-profile"),
     },
     {
       icon: <BarChart3 color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Performance",
+      label: getAppContentValue(content, 'menu.performance', DEFAULT_CONTENT['menu.performance']),
       onPress: () => router.push("/(professional)/(tabs)/performance"),
     },
     {
       icon: <Calendar color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Sync calendar",
+      label: getAppContentValue(content, 'menu.sync_calendar', DEFAULT_CONTENT['menu.sync_calendar']),
       onPress: () => router.push("/(professional)/profile/calendar-settings"),
     },
     {
       icon: <MessageSquare color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Chat templates",
+      label: getAppContentValue(content, 'menu.chat_templates', DEFAULT_CONTENT['menu.chat_templates']),
       onPress: () => router.push("/(professional)/profile/chat-templates"),
     },
     {
       icon: <Megaphone color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Promote yourself",
+      label: getAppContentValue(content, 'menu.promote_yourself', DEFAULT_CONTENT['menu.promote_yourself']),
       onPress: () => router.push("/(professional)/profile/promote-yourself"),
     },
     {
       icon: <CreditCard color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Payments",
+      label: getAppContentValue(content, 'menu.payments', DEFAULT_CONTENT['menu.payments']),
       onPress: () => router.push("/(professional)/profile/payments"),
     },
     {
       icon: <Bell color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Notifications",
+      label: getAppContentValue(content, 'menu.notifications', DEFAULT_CONTENT['menu.notifications']),
       onPress: () => router.push("/(professional)/profile/notifications"),
     },
     {
       icon: <HelpCircle color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Support",
+      label: getAppContentValue(content, 'menu.support', DEFAULT_CONTENT['menu.support']),
       onPress: () => router.push("/(professional)/profile/support"),
     },
     {
       icon: <Shield color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Account security",
+      label: getAppContentValue(content, 'menu.account_security', DEFAULT_CONTENT['menu.account_security']),
       onPress: () => router.push("/(professional)/profile/account-security"),
     },
     {
       icon: <Info color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "About",
+      label: getAppContentValue(content, 'menu.about', DEFAULT_CONTENT['menu.about']),
       onPress: () => router.push("/profile/about"),
     },
     {
       icon: <Lock color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Password",
+      label: getAppContentValue(content, 'menu.password', DEFAULT_CONTENT['menu.password']),
       onPress: () => router.push("/profile/change-password"),
     },
     {
       icon: <Globe color="#B29D88" size={24} strokeWidth={1.5} />,
-      label: "Go 100Handy",
+      label: getAppContentValue(content, 'menu.switch_to_client', DEFAULT_CONTENT['menu.switch_to_client']),
       isDisabled: isSwitchingToClient,
       onPress: handleSwitchToClient,
     },
     {
       icon: <LogOut color="#C1856A" size={24} strokeWidth={1.5} />,
-      label: "Log out",
+      label: getAppContentValue(content, 'menu.logout', DEFAULT_CONTENT['menu.logout']),
       isLogout: true,
       onPress: handleSignOut,
     },
@@ -222,7 +267,7 @@ export default function ProfessionalProfileScreen() {
         <View className="flex-row items-center justify-center">
           <View style={{ width: 40 }} />
           <Text className="flex-1 text-center font-worksans-bold text-2xl text-theme-font">
-            Profile
+            {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
           </Text>
           <Pressable
             onPress={() => router.push("/(professional)/notifications")}
@@ -281,7 +326,7 @@ export default function ProfessionalProfileScreen() {
             <Text className="font-worksans-bold text-xl text-theme-font">
               {profile?.first_name && profile?.last_name
                 ? `${profile.first_name} ${profile.last_name}`
-                : profile?.first_name || "Professional"}
+                : profile?.first_name || getAppContentValue(content, 'misc.fallback_name', DEFAULT_CONTENT['misc.fallback_name'])}
             </Text>
             {profile?.email && (
               <Text className="font-worksans text-sm text-gray-600">
@@ -296,7 +341,9 @@ export default function ProfessionalProfileScreen() {
           >
             <Camera size={18} color="#B29D88" />
             <Text className="font-worksans-semibold text-sm text-brand-taupe">
-              {profile?.avatar_url ? "Change Photo" : "Add Photo"}
+              {profile?.avatar_url
+                ? getAppContentValue(content, 'photo.change', DEFAULT_CONTENT['photo.change'])
+                : getAppContentValue(content, 'photo.add', DEFAULT_CONTENT['photo.add'])}
             </Text>
           </Pressable>
         </View>

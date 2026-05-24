@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSaveWorkArea, type Coordinate } from '@shared/query';
 import { View, StyleSheet, Dimensions, PanResponder, Text, Pressable, ActivityIndicator } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import MapView, { Polygon, LatLng, Region } from 'react-native-maps'; import { router } from 'expo-router'; import { ArrowLeft, Hand, Minus, Plus, X } from 'lucide-react-native'; import { Button, ButtonText } from '@/components/ui/button'; import { useWorkArea } from '@shared/query';
 import { useToast } from '@/components/ui/toast';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -13,6 +14,19 @@ const LONDON_REGION: Region = {
   latitudeDelta: LATITUDE_DELTA,
   longitudeDelta: LONGITUDE_DELTA,
 };
+
+const DEFAULT_CONTENT = {
+  'loading.text': 'Loading...',
+  'review.title': 'Reviewing work area',
+  'actions.drawing': 'Draw on map',
+  'actions.draw': 'Draw area',
+  'actions.clear': 'Clear',
+  'actions.save': 'Save work area',
+  'toasts.saved_title': 'Saved',
+  'toasts.saved_body': 'Work area updated',
+  'toasts.save_failed_title': 'Save failed',
+  'toasts.retry_body': 'Please try again',
+} as const;
 
 function getRegionForCoordinates(coordinates: LatLng[]): Region {
   const latitudes = coordinates.map((coord) => coord.latitude);
@@ -32,6 +46,7 @@ function getRegionForCoordinates(coordinates: LatLng[]): Region {
 
 export default function SetWorkAreaScreen() {
   const toast = useToast();
+  const content = useAppContent('professional_set_work_area', DEFAULT_CONTENT);
   const [region, setRegion] = useState<Region>(LONDON_REGION);
 
   // Drawing state
@@ -116,14 +131,19 @@ export default function SetWorkAreaScreen() {
         { coordinates },
         {
           onSuccess: () => {
-            toast.success('Saved', 'Work area updated');
+            toast.success(
+              getAppContentValue(content, 'toasts.saved_title', DEFAULT_CONTENT['toasts.saved_title']),
+              getAppContentValue(content, 'toasts.saved_body', DEFAULT_CONTENT['toasts.saved_body']),
+            );
             router.push('/(professional)/(tabs)/dashboard');
           },
           onError: (error) => {
             console.error('Failed to save work area:', error);
             toast.error(
-              'Save failed',
-              error instanceof Error ? error.message : 'Please try again'
+              getAppContentValue(content, 'toasts.save_failed_title', DEFAULT_CONTENT['toasts.save_failed_title']),
+              error instanceof Error
+                ? error.message
+                : getAppContentValue(content, 'toasts.retry_body', DEFAULT_CONTENT['toasts.retry_body'])
             );
           },
         }
@@ -169,7 +189,9 @@ export default function SetWorkAreaScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#047857" />
-          <Text className="text-brand-dark-alt text-lg mt-4">Loading...</Text>
+          <Text className="text-brand-dark-alt text-lg mt-4">
+            {getAppContentValue(content, 'loading.text', DEFAULT_CONTENT['loading.text'])}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -189,7 +211,9 @@ export default function SetWorkAreaScreen() {
           )}
 
           {isReviewing && (
-            <Text className="text-brand-dark-alt text-lg font-worksans-medium">Reviewing work area</Text>
+            <Text className="text-brand-dark-alt text-lg font-worksans-medium">
+              {getAppContentValue(content, 'review.title', DEFAULT_CONTENT['review.title'])}
+            </Text>
           )}
 
           <View className="w-10" />
@@ -274,7 +298,9 @@ export default function SetWorkAreaScreen() {
           <View className="flex-row justify-end mb-4">
             {isDrawingMode ? (
               <View className="bg-white rounded-full shadow-lg px-6 py-3 flex-row items-center gap-2">
-                <Text className="text-brand-dark-alt font-worksans-medium">Draw on map</Text>
+                <Text className="text-brand-dark-alt font-worksans-medium">
+                  {getAppContentValue(content, 'actions.drawing', DEFAULT_CONTENT['actions.drawing'])}
+                </Text>
               </View>
             ) : (
               <Pressable
@@ -282,7 +308,9 @@ export default function SetWorkAreaScreen() {
                 className="bg-white rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2"
               >
                 <Hand size={20} color="#047857" />
-                <Text className="text-emerald-700 font-worksans-bold text-base">Draw area</Text>
+                <Text className="text-emerald-700 font-worksans-bold text-base">
+                  {getAppContentValue(content, 'actions.draw', DEFAULT_CONTENT['actions.draw'])}
+                </Text>
               </Pressable>
             )}
           </View>
@@ -296,7 +324,9 @@ export default function SetWorkAreaScreen() {
               className="bg-white rounded-xl shadow-lg px-4 py-3 flex-row items-center gap-2"
             >
               <X size={20} color="#047857" />
-              <Text className="text-emerald-700 font-worksans-bold text-base">Clear</Text>
+              <Text className="text-emerald-700 font-worksans-bold text-base">
+                {getAppContentValue(content, 'actions.clear', DEFAULT_CONTENT['actions.clear'])}
+              </Text>
             </Pressable>
           </View>
         )}
@@ -311,7 +341,7 @@ export default function SetWorkAreaScreen() {
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <ButtonText className="text-white text-lg font-worksans-bold">
-              Save work area
+              {getAppContentValue(content, 'actions.save', DEFAULT_CONTENT['actions.save'])}
             </ButtonText>
           )}
         </Button>
