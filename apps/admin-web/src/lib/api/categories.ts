@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/lib/database.types'
 
@@ -183,6 +184,7 @@ export function useCreateCategory() {
 
   return useMutation({
     mutationFn: async (input: CreateCategoryInput) => {
+      await requireAdminPermission('tasks.manage')
       const insertData: CategoryInsert = {
         name: input.name,
         description: input.description || null,
@@ -223,6 +225,7 @@ export function useUpdateCategory() {
 
   return useMutation({
     mutationFn: async (input: UpdateCategoryInput) => {
+      await requireAdminPermission('tasks.manage')
       const updateData: CategoryUpdate = {}
 
       if (input.name !== undefined) updateData.name = input.name

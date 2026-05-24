@@ -3,9 +3,16 @@ import { ScrollView, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Megaphone } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Announcements',
+  'empty.title': 'No new announcements',
+} as const;
 
 export default function AnnouncementsScreen() {
   const router = useRouter();
+  const content = useAppContent('professional_announcements', DEFAULT_CONTENT);
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -24,7 +31,7 @@ export default function AnnouncementsScreen() {
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-brand-dark-alt">
-          Announcements
+          {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
         </Text>
         <View className="w-7" />
       </View>
@@ -36,7 +43,7 @@ export default function AnnouncementsScreen() {
             <Megaphone color="white" size={36} strokeWidth={1.5} />
           </View>
           <Text className="font-worksans-semibold text-[16px] text-brand-dark-alt">
-            No new announcements
+            {getAppContentValue(content, 'empty.title', DEFAULT_CONTENT['empty.title'])}
           </Text>
         </View>
       </ScrollView>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { LogoIcon, MailIcon, HelpIcon } from "@/components/icons";
+import { usePublicSiteSetting } from "@/lib/public-site-settings";
 
 interface SidebarLink {
   name: string;
@@ -16,13 +17,14 @@ interface HelpArticleLayoutProps {
   breadcrumb: string;
   sidebarLinks: SidebarLink[];
   children: React.ReactNode;
+  relatedLinks?: Array<{ label: string; href: string }>;
 }
 
-function Sidebar({ links }: { links: SidebarLink[] }) {
+function Sidebar({ links, title }: { links: SidebarLink[]; title: string }) {
   return (
     <aside className="w-full lg:w-[280px] lg:border-r border-gray-200 p-8 lg:pt-12 bg-gray-100 lg:bg-transparent">
       <h2 className="text-[18px] font-semibold text-brand-dark-alt mb-4">
-        Sections
+        {title}
       </h2>
       <nav className="flex flex-col space-y-2">
         {links.map((link) => (
@@ -55,12 +57,26 @@ export function HelpArticleLayout({
   breadcrumb,
   sidebarLinks,
   children,
+  relatedLinks,
 }: HelpArticleLayoutProps) {
+  const ui = usePublicSiteSetting("help.ui", {
+    sectionsTitle: "Sections",
+    helpfulPrompt: "Was this article helpful?",
+    helpfulYes: "Yes",
+    helpfulNo: "No",
+    moreQuestionsPrefix: "Have more questions?",
+    moreQuestionsCta: "Submit a request",
+    contactCardTitle: "Can&apos;t find what you need?",
+    contactCardBody: "Contact us and we&apos;ll get back to you as soon as we can.",
+    servicesCardTitle: "Ready to book a task?",
+    servicesCardBody: "Head over to our website to see our available categories!",
+  });
+
   return (
     <div className="bg-white min-h-screen">
       <Header />
       <div className="flex flex-col lg:flex-row max-w-screen-xl mx-auto">
-        <Sidebar links={sidebarLinks} />
+        <Sidebar links={sidebarLinks} title={ui.sectionsTitle} />
         <main className="flex-1 max-w-full lg:max-w-[800px] px-6 md:px-12 py-12">
           {/* Breadcrumbs */}
           <p className="text-sm text-gray-500 mb-6">{breadcrumb}</p>
@@ -78,26 +94,42 @@ export function HelpArticleLayout({
           {/* Feedback Section */}
           <div className="text-center my-12 border-t border-b border-gray-200 py-8">
             <p className="text-[16px] font-medium text-brand-dark-alt mb-4">
-              Was this article helpful?
+              {ui.helpfulPrompt}
             </p>
             <div className="flex justify-center space-x-4">
               <button className="px-6 py-2 border border-gray-300 rounded-[4px] text-brand-dark-alt text-base font-medium hover:bg-gray-100 hover:border-brand-terracotta transition-colors">
-                Yes
+                {ui.helpfulYes}
               </button>
               <button className="px-6 py-2 border border-gray-300 rounded-[4px] text-brand-dark-alt text-base font-medium hover:bg-gray-100 hover:border-brand-terracotta transition-colors">
-                No
+                {ui.helpfulNo}
               </button>
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              Have more questions?{" "}
+              {ui.moreQuestionsPrefix}{" "}
               <Link
                 href="/contact"
                 className="text-brand-terracotta hover:underline"
               >
-                Submit a request
+                {ui.moreQuestionsCta}
               </Link>
             </p>
           </div>
+
+          {/* CTA Cards */}
+          {relatedLinks && relatedLinks.length > 0 ? (
+            <div className="mb-12">
+              <h3 className="mb-4 text-[20px] font-bold text-brand-dark-alt">Related articles</h3>
+              <ul className="space-y-4">
+                {relatedLinks.map((link) => (
+                  <li key={`${link.href}-${link.label}`}>
+                    <Link href={link.href} className="text-[15px] font-medium text-brand-terracotta hover:underline">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           {/* CTA Cards */}
           <div className="grid md:grid-cols-2 gap-8">
@@ -106,10 +138,10 @@ export function HelpArticleLayout({
                 <MailIcon />
               </div>
               <h3 className="text-[20px] font-bold text-brand-dark-alt">
-                Can&apos;t find what you need?
+                {ui.contactCardTitle}
               </h3>
               <p className="text-base text-brand-dark-alt mt-2">
-                Contact us and we&apos;ll get back to you as soon as we can.
+                {ui.contactCardBody}
               </p>
             </Link>
             <Link href="/services" className="border border-gray-200 rounded-lg p-8 text-center flex flex-col items-center justify-center min-h-[180px] hover:shadow-lg transition-shadow">
@@ -117,10 +149,10 @@ export function HelpArticleLayout({
                 <LogoIcon />
               </div>
               <h3 className="text-[20px] font-bold text-brand-dark-alt">
-                Ready to book a task?
+                {ui.servicesCardTitle}
               </h3>
               <p className="text-base text-brand-dark-alt mt-2">
-                Head over to our website to see our available categories!
+                {ui.servicesCardBody}
               </p>
             </Link>
           </div>

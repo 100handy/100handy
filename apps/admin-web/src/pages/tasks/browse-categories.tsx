@@ -1,12 +1,15 @@
 import { useState, useMemo } from 'react'
-import { Search, Plus, Edit, Trash2, Loader2 } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Loader2, ArrowUp, ArrowDown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
-import { useCategories } from '@/lib/api/categories'
+import { useAuth } from '@/contexts/AuthContext'
+import { useCategories, useUpdateCategory } from '@/lib/api/categories'
 
 const ITEMS_PER_PAGE = 10
 
 export default function BrowseCategoriesPage() {
+  const { hasPermission } = useAuth()
+  const canManageTasks = hasPermission('tasks.manage')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -30,6 +33,7 @@ export default function BrowseCategoriesPage() {
     limit: ITEMS_PER_PAGE,
     offset: (currentPage - 1) * ITEMS_PER_PAGE,
   })
+  const updateCategory = useUpdateCategory()
 
   // Get top categories by task count for trending
   const trendingCategories = useMemo(() => {
@@ -38,6 +42,30 @@ export default function BrowseCategoriesPage() {
   }, [categories])
 
   const trendingColors = ['blue', 'green', 'yellow', 'purple'] as const
+
+  const moveCategory = async (categoryId: string, direction: 'up' | 'down') => {
+    if (!canManageTasks) return
+    if (!categories) return
+    const sorted = [...categories].sort((a, b) => a.display_order - b.display_order)
+    const index = sorted.findIndex((item) => item.id === categoryId)
+    if (index === -1) return
+    const swapIndex = direction === 'up' ? index - 1 : index + 1
+    if (swapIndex < 0 || swapIndex >= sorted.length) return
+
+    const current = sorted[index]
+    const target = sorted[swapIndex]
+
+    await Promise.all([
+      updateCategory.mutateAsync({
+        categoryId: current.id,
+        display_order: target.display_order,
+      }),
+      updateCategory.mutateAsync({
+        categoryId: target.id,
+        display_order: current.display_order,
+      }),
+    ])
+  }
 
   const levelLabels = {
     0: 'Main',
@@ -57,18 +85,23 @@ export default function BrowseCategoriesPage() {
 
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-7xl mx-auto">
+          {!canManageTasks && (
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+              Your admin role can view categories, but it cannot change visibility, order, or catalog data.
+            </div>
+          )}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Link
                 to="/tasks/categories/edit"
-                className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                className={`bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-600 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
               >
                 <Edit className="w-5 h-5" />
                 Edit Categories
               </Link>
               <Link
                 to="/tasks/categories/delete"
-                className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-red-200 dark:hover:bg-red-900/50"
+                className={`bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-red-200 dark:hover:bg-red-900/50 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
               >
                 <Trash2 className="w-5 h-5" />
                 Delete Categories
@@ -76,7 +109,7 @@ export default function BrowseCategoriesPage() {
             </div>
             <Link
               to="/tasks/categories/edit"
-              className="bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary/90"
+              className={`bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary/90 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
             >
               <Plus className="w-5 h-5" />
               Add Category
@@ -207,29 +240,64 @@ export default function BrowseCategoriesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                            category.active
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                          }`}
-                        >
-                          {category.active ? 'Live' : 'Hidden'}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                              category.active
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                            }`}
+                          >
+                            {category.active ? 'Live' : 'Hidden'}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={updateCategory.isPending || !canManageTasks}
+                            onClick={() =>
+                              updateCategory.mutate({
+                                categoryId: category.id,
+                                active: !category.active,
+                              })
+                            }
+                            className={`rounded-full px-3 py-1 text-xs font-medium ${
+                              category.active
+                                ? 'bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300'
+                                : 'bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300'
+                            } disabled:opacity-50`}
+                          >
+                            {category.active ? 'Turn off' : 'Turn on'}
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {category.tasks_count}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          type="button"
+                          disabled={!canManageTasks}
+                          onClick={() => moveCategory(category.id, 'up')}
+                          className="text-gray-600 hover:text-gray-900 mr-2 disabled:opacity-50"
+                        >
+                          <ArrowUp className="w-4 h-4 inline" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!canManageTasks}
+                          onClick={() => moveCategory(category.id, 'down')}
+                          className="text-gray-600 hover:text-gray-900 mr-4 disabled:opacity-50"
+                        >
+                          <ArrowDown className="w-4 h-4 inline" />
+                        </button>
                         <Link
                           to="/tasks/categories/edit"
-                          className="text-primary hover:text-primary/80 mr-4"
+                          className={`text-primary hover:text-primary/80 mr-4 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
                         >
                           Edit
                         </Link>
                         <Link
                           to="/tasks/categories/delete"
-                          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-500"
+                          className={`text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-500 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
                         >
                           Delete
                         </Link>

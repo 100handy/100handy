@@ -29,6 +29,14 @@ export interface Database {
         Row: {
           user_id: string
           role: UserRole
+          admin_role:
+            | 'super_admin'
+            | 'content_admin'
+            | 'ops_admin'
+            | 'support_admin'
+            | 'finance_admin'
+            | 'seo_admin'
+            | null
           first_name: string | null
           last_name: string | null
           phone: string | null
@@ -45,6 +53,14 @@ export interface Database {
         Insert: {
           user_id: string
           role?: UserRole
+          admin_role?:
+            | 'super_admin'
+            | 'content_admin'
+            | 'ops_admin'
+            | 'support_admin'
+            | 'finance_admin'
+            | 'seo_admin'
+            | null
           first_name?: string | null
           last_name?: string | null
           phone?: string | null
@@ -61,6 +77,14 @@ export interface Database {
         Update: {
           user_id?: string
           role?: UserRole
+          admin_role?:
+            | 'super_admin'
+            | 'content_admin'
+            | 'ops_admin'
+            | 'support_admin'
+            | 'finance_admin'
+            | 'seo_admin'
+            | null
           first_name?: string | null
           last_name?: string | null
           phone?: string | null

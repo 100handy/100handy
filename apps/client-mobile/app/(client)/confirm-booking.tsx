@@ -8,10 +8,29 @@ import { FrequencySelector } from '@/components/booking';
 import { getUnsupportedNativeFeatureMessage, initStripePaymentSheet, presentStripePaymentSheet, supportsStripeNative } from '@/lib/native-feature-support';
 import { PullDownDismiss } from '@/components/ui/pull-down-dismiss';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 export default function ConfirmBookingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const content = useAppContent('client_confirm_booking', {
+    'header.title': 'Review and confirm',
+    'sections.tasker': 'Your 100Handy Pro',
+    'sections.details': 'Task Details',
+    'sections.repeat': 'Repeat service',
+    'sections.payment': 'Payment',
+    'sections.hourly_rate': 'Hourly Rate',
+    'repeat.enabled_body': 'Turn this on to view repeat booking options.',
+    'repeat.disabled_body': 'Recurring booking is not available for this service.',
+    'payment.fallback_method': 'Apple Pay or card',
+    'pricing.savings_template': "You're saving {discount}% with your recurring booking!",
+    'pricing.hold_notice': "You may see a temporary hold on your payment method of £{amount}. Don't worry -- you're only billed when your task is complete!",
+    'pricing.fee_notice': "Pricing is inclusive of a £7.46/hr Trust and Support fee, as well as VAT, which is billed on 100Handy's fees.",
+    'pricing.billing_notice': 'You will not be billed until the task is complete and can cancel at any time. Tasks cancelled less than 24 hours before the start time may be billed a cancellation fee of one hour. Tasks have a one-hour minimum.',
+    'pricing.assurance': "You won't be billed until your task is complete.",
+    'actions.confirm': 'Confirm and chat',
+    'loading.text': 'Loading...',
+  });
 
   // Task details from previous screens
   const taskerId = params.taskerId as string;
@@ -511,7 +530,9 @@ export default function ConfirmBookingScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-col flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#C1856A" />
-          <Text className="text-sm text-gray-600 mt-3">Loading...</Text>
+          <Text className="text-sm text-gray-600 mt-3">
+            {getAppContentValue(content, 'loading.text', 'Loading...')}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -526,7 +547,7 @@ export default function ConfirmBookingScreen() {
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
           <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
-            Review and confirm
+            {getAppContentValue(content, 'header.title', 'Review and confirm')}
           </Text>
         </View>
       </View>
@@ -537,7 +558,7 @@ export default function ConfirmBookingScreen() {
           {/* Tasker Info */}
           <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
             <Text className="text-base font-semibold text-brand-dark-alt mb-4">
-              Your 100Handy Pro
+              {getAppContentValue(content, 'sections.tasker', 'Your 100Handy Pro')}
             </Text>
             <View className="flex-row items-center gap-3">
               <Image
@@ -567,7 +588,7 @@ export default function ConfirmBookingScreen() {
           <View className="flex-col bg-white rounded-lg border border-gray-300 p-5">
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-base font-semibold text-brand-dark-alt">
-                Task Details
+                {getAppContentValue(content, 'sections.details', 'Task Details')}
               </Text>
               <Pressable onPress={() => router.push({
                 pathname: '/(client)/task-form',
@@ -679,12 +700,12 @@ export default function ConfirmBookingScreen() {
             <View className="flex-row items-center justify-between gap-4">
               <View className="flex-1">
                 <Text className="text-base font-semibold text-[#30352D] mb-1">
-                  Repeat service
+                  {getAppContentValue(content, 'sections.repeat', 'Repeat service')}
                 </Text>
                 <Text className="text-sm text-gray-600">
                   {supportsRecurringFrequency
-                    ? 'Turn this on to view repeat booking options.'
-                    : 'Recurring booking is not available for this service.'}
+                    ? getAppContentValue(content, 'repeat.enabled_body', 'Turn this on to view repeat booking options.')
+                    : getAppContentValue(content, 'repeat.disabled_body', 'Recurring booking is not available for this service.')}
                 </Text>
               </View>
               <Switch
@@ -715,7 +736,7 @@ export default function ConfirmBookingScreen() {
             className="flex-row items-center justify-between py-4 border-b border-gray-200"
           >
             <Text className="text-lg font-semibold text-brand-dark-alt">
-              Payment
+              {getAppContentValue(content, 'sections.payment', 'Payment')}
             </Text>
             <View className="flex-row items-center gap-2">
               {loadingPayment ? (
@@ -731,7 +752,7 @@ export default function ConfirmBookingScreen() {
               ) : (
                 <>
                   <Text className="text-base text-brand-terracotta">
-                    Apple Pay or card
+                    {getAppContentValue(content, 'payment.fallback_method', 'Apple Pay or card')}
                   </Text>
                   <ChevronRight size={20} color="#C1856A" />
                 </>
@@ -742,7 +763,7 @@ export default function ConfirmBookingScreen() {
           {/* Hourly Rate */}
           <View className="flex-row items-center justify-between py-4">
             <Text className="text-lg font-semibold text-brand-dark-alt">
-              Hourly Rate
+              {getAppContentValue(content, 'sections.hourly_rate', 'Hourly Rate')}
             </Text>
             <View className="flex-row items-center gap-2">
               {discountPercent > 0 && (
@@ -763,7 +784,7 @@ export default function ConfirmBookingScreen() {
               style={{ backgroundColor: '#E8F5E1' }}
             >
               <Text className="flex-1 text-sm font-medium" style={{ color: '#2E7D32' }}>
-                You&apos;re saving {discountPercent}% with your recurring booking!
+                {getAppContentValue(content, 'pricing.savings_template', "You're saving {discount}% with your recurring booking!").replace('{discount}', String(discountPercent))}
               </Text>
             </View>
           )}
@@ -771,17 +792,15 @@ export default function ConfirmBookingScreen() {
           {/* Payment Hold Notice */}
           <View className="flex-col py-6">
             <Text className="text-sm text-gray-600 leading-5 mb-4">
-                You may see a temporary hold on your payment method of £{authorizationAmount.toFixed(2)}.
-                Don&apos;t worry -- you&apos;re only billed when your task is complete!
+              {getAppContentValue(content, 'pricing.hold_notice', "You may see a temporary hold on your payment method of £{amount}. Don't worry -- you're only billed when your task is complete!").replace('{amount}', authorizationAmount.toFixed(2))}
             </Text>
 
             <Text className="text-sm text-gray-600 leading-5 mb-4">
-              Pricing is inclusive of a{' '}
-              <Text className="text-brand-terracotta">£7.46/hr Trust and Support fee</Text>, as well as VAT, which is billed on 100Handy&apos;s fees.
+              {getAppContentValue(content, 'pricing.fee_notice', "Pricing is inclusive of a £7.46/hr Trust and Support fee, as well as VAT, which is billed on 100Handy's fees.")}
             </Text>
 
             <Text className="text-sm text-gray-600 leading-5">
-              You will not be billed until the task is complete and can cancel at any time. Tasks cancelled less than 24 hours before the start time may be billed a cancellation fee of one hour. Tasks have a one-hour minimum.
+              {getAppContentValue(content, 'pricing.billing_notice', 'You will not be billed until the task is complete and can cancel at any time. Tasks cancelled less than 24 hours before the start time may be billed a cancellation fee of one hour. Tasks have a one-hour minimum.')}
             </Text>
           </View>
 
@@ -791,7 +810,7 @@ export default function ConfirmBookingScreen() {
           >
             <CreditCard size={20} color="#C1856A" className="mr-3" />
             <Text className="flex-1 text-sm text-brand-terracotta">
-              You won&apos;t be billed until your task is complete.
+              {getAppContentValue(content, 'pricing.assurance', "You won't be billed until your task is complete.")}
             </Text>
           </View>
           </View>
@@ -809,7 +828,7 @@ export default function ConfirmBookingScreen() {
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text className="text-base font-semibold text-white">
-                Confirm and chat
+                {getAppContentValue(content, 'actions.confirm', 'Confirm and chat')}
               </Text>
             )}
           </Pressable>

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Database, UserRole } from '@/lib/database.types'
 
@@ -191,6 +192,7 @@ export function useCreateUser() {
 
   return useMutation({
     mutationFn: async (input: CreateUserInput) => {
+      await requireAdminPermission('users.manage')
       // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: input.email,
@@ -227,6 +229,7 @@ export function useCreateUser() {
         const { error: insertError } = await supabase.from('profiles').insert({
           user_id: authData.user.id,
           role: input.role || 'customer',
+          admin_role: input.role === 'admin' ? 'super_admin' : null,
           first_name: input.firstName,
           last_name: input.lastName,
           phone: input.phone,
@@ -234,6 +237,14 @@ export function useCreateUser() {
         })
 
         if (insertError) throw insertError
+      } else if (input.role === 'admin') {
+        const { error: adminRoleError } = await supabase
+          .from('profiles')
+          .update({ admin_role: 'super_admin' })
+          .eq('user_id', authData.user.id)
+          .is('admin_role', null)
+
+        if (adminRoleError) throw adminRoleError
       }
 
       return authData.user
@@ -253,6 +264,7 @@ export function useUpdateUser() {
 
   return useMutation({
     mutationFn: async (input: UpdateUserInput) => {
+      await requireAdminPermission('users.manage')
       const updateData: ProfileUpdate = {}
 
       if (input.firstName !== undefined) updateData.first_name = input.firstName
@@ -260,6 +272,7 @@ export function useUpdateUser() {
       if (input.phone !== undefined) updateData.phone = input.phone
       if (input.postcode !== undefined) updateData.postcode = input.postcode
       if (input.role !== undefined) updateData.role = input.role
+      if (input.role === 'admin') updateData.admin_role = 'super_admin'
       if (input.avatar_url !== undefined) updateData.avatar_url = input.avatar_url
 
       const { data, error } = await supabase
@@ -289,6 +302,7 @@ export function useDeleteUser() {
 
   return useMutation({
     mutationFn: async (userId: string) => {
+      await requireAdminPermission('users.manage')
       // Delete auth user (cascade will handle profile via ON DELETE CASCADE)
       const { error } = await supabase.auth.admin.deleteUser(userId)
 
@@ -311,6 +325,7 @@ export function useDeleteUsers() {
 
   return useMutation({
     mutationFn: async (userIds: string[]) => {
+      await requireAdminPermission('users.manage')
       // Delete users one by one (Supabase doesn't support batch delete)
       const results = await Promise.allSettled(
         userIds.map((userId) => supabase.auth.admin.deleteUser(userId))

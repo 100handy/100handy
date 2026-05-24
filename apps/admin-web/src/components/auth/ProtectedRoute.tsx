@@ -1,9 +1,10 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "@/contexts/AuthContext";
+import type { AdminPermission } from "@/lib/admin-permissions";
 
-export function ProtectedRoute() {
-  const { user, session, isAdmin, loading, roleResolved } = useAuth();
+export function ProtectedRoute({ permissions }: { permissions?: AdminPermission[] }) {
+  const { user, session, isAdmin, loading, roleResolved, hasPermission } = useAuth();
   const location = useLocation();
 
   if (loading || (!!session && !!user && !roleResolved)) {
@@ -35,6 +36,16 @@ export function ProtectedRoute() {
         replace
         to="/login"
         state={{ from: location.pathname, reason: "unauthorized" }}
+      />
+    );
+  }
+
+  if (permissions && permissions.length > 0 && !permissions.some((permission) => hasPermission(permission))) {
+    return (
+      <Navigate
+        replace
+        to="/dashboard"
+        state={{ from: location.pathname, reason: "forbidden" }}
       />
     );
   }

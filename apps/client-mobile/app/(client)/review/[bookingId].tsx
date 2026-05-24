@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCreateCustomerReview, useHasReviewedBooking } from '@shared/query';
 import { ScrollView, View, Text, Pressable, TextInput, ActivityIndicator, Alert, } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useLocalSearchParams, useRouter } from 'expo-router'; import { ArrowLeft, Star, X } from 'lucide-react-native'; import { toast } from 'sonner-native'; import { useBookingById } from '@shared/query';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 export default function ClientReviewScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
@@ -9,6 +10,30 @@ export default function ClientReviewScreen() {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const content = useAppContent('client_review', {
+    'header.title': 'Leave a Review',
+    'errors.cannot_review_title': 'Cannot Review',
+    'errors.cannot_review_body': 'Reviews can only be submitted for completed bookings.',
+    'errors.missing_booking': 'Booking not found',
+    'status.already_title': 'Already reviewed',
+    'status.already_body': "You've already left a review for this booking.",
+    'rating.prompt': 'How was your experience?',
+    'rating.tap': 'Tap to rate',
+    'rating.poor': 'Poor',
+    'rating.fair': 'Fair',
+    'rating.good': 'Good',
+    'rating.very_good': 'Very Good',
+    'rating.excellent': 'Excellent',
+    'review.title': 'Write a review (optional)',
+    'review.placeholder': 'Share your experience with this pro...',
+    'review.footer': "Your review will be visible on the pro's profile",
+    'actions.skip': 'Maybe later',
+    'actions.submit': 'Submit Review',
+    'toasts.missing_rating': 'Please select a rating',
+    'toasts.success': 'Review submitted!',
+    'toasts.failed': 'Failed to submit review',
+    'toasts.generic_error': 'Something went wrong',
+  });
 
   const { data: booking, isLoading: loadingBooking } = useBookingById(bookingId || null);
   const { data: hasReviewed, isLoading: loadingReview } = useHasReviewedBooking(
@@ -21,8 +46,8 @@ export default function ClientReviewScreen() {
   useEffect(() => {
     if (booking && booking.status !== 'completed') {
       Alert.alert(
-        'Cannot Review',
-        'Reviews can only be submitted for completed bookings.',
+        getAppContentValue(content, 'errors.cannot_review_title', 'Cannot Review'),
+        getAppContentValue(content, 'errors.cannot_review_body', 'Reviews can only be submitted for completed bookings.'),
         [{ text: 'OK', onPress: () => goBackOrReplace(router, '/(client)/(tabs)/tasks') }]
       );
     }
@@ -30,7 +55,7 @@ export default function ClientReviewScreen() {
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      toast.error('Please select a rating');
+      toast.error(getAppContentValue(content, 'toasts.missing_rating', 'Please select a rating'));
       return;
     }
 
@@ -45,13 +70,13 @@ export default function ClientReviewScreen() {
       });
 
       if (review) {
-        toast.success('Review submitted!');
+        toast.success(getAppContentValue(content, 'toasts.success', 'Review submitted!'));
         goBackOrReplace(router, '/(client)/(tabs)/tasks');
       } else {
-        toast.error('Failed to submit review');
+        toast.error(getAppContentValue(content, 'toasts.failed', 'Failed to submit review'));
       }
     } catch (error) {
-      toast.error('Something went wrong');
+      toast.error(getAppContentValue(content, 'toasts.generic_error', 'Something went wrong'));
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +104,7 @@ export default function ClientReviewScreen() {
         </View>
         <View className="flex-1 items-center justify-center px-8">
           <Text className="font-worksans-bold text-[18px] text-[#30352D]">
-            Booking not found
+            {getAppContentValue(content, 'errors.missing_booking', 'Booking not found')}
           </Text>
         </View>
       </SafeAreaView>
@@ -97,10 +122,10 @@ export default function ClientReviewScreen() {
         <View className="flex-1 items-center justify-center px-8">
           <Star color="#B29D88" size={48} fill="#B29D88" />
           <Text className="font-worksans-bold text-[18px] text-[#30352D] mt-4">
-            Already reviewed
+            {getAppContentValue(content, 'status.already_title', 'Already reviewed')}
           </Text>
           <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-2 text-center">
-            You've already left a review for this booking.
+            {getAppContentValue(content, 'status.already_body', "You've already left a review for this booking.")}
           </Text>
         </View>
       </SafeAreaView>
@@ -115,7 +140,7 @@ export default function ClientReviewScreen() {
           <ArrowLeft color="#30352D" size={24} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-[#30352D]">
-          Leave a Review
+          {getAppContentValue(content, 'header.title', 'Leave a Review')}
         </Text>
         <Pressable onPress={handleSkip} className="p-2 -mr-2">
           <X color="#6B6B6B" size={24} />
@@ -142,7 +167,7 @@ export default function ClientReviewScreen() {
         {/* Rating */}
         <View className="bg-white mx-4 mt-3 p-4 rounded-2xl">
           <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-4 text-center">
-            How was your experience?
+            {getAppContentValue(content, 'rating.prompt', 'How was your experience?')}
           </Text>
           <View className="flex-row justify-center gap-3">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -157,24 +182,24 @@ export default function ClientReviewScreen() {
             ))}
           </View>
           <Text className="font-worksans text-[13px] text-[#6B6B6B] mt-3 text-center">
-            {rating === 0 && 'Tap to rate'}
-            {rating === 1 && 'Poor'}
-            {rating === 2 && 'Fair'}
-            {rating === 3 && 'Good'}
-            {rating === 4 && 'Very Good'}
-            {rating === 5 && 'Excellent'}
+            {rating === 0 && getAppContentValue(content, 'rating.tap', 'Tap to rate')}
+            {rating === 1 && getAppContentValue(content, 'rating.poor', 'Poor')}
+            {rating === 2 && getAppContentValue(content, 'rating.fair', 'Fair')}
+            {rating === 3 && getAppContentValue(content, 'rating.good', 'Good')}
+            {rating === 4 && getAppContentValue(content, 'rating.very_good', 'Very Good')}
+            {rating === 5 && getAppContentValue(content, 'rating.excellent', 'Excellent')}
           </Text>
         </View>
 
         {/* Comment */}
         <View className="bg-white mx-4 mt-3 p-4 rounded-2xl">
           <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-3">
-            Write a review (optional)
+            {getAppContentValue(content, 'review.title', 'Write a review (optional)')}
           </Text>
           <TextInput
             value={comment}
             onChangeText={setComment}
-            placeholder="Share your experience with this pro..."
+            placeholder={getAppContentValue(content, 'review.placeholder', 'Share your experience with this pro...')}
             placeholderTextColor="#9CA3AF"
             multiline
             numberOfLines={4}
@@ -182,14 +207,14 @@ export default function ClientReviewScreen() {
             className="bg-[#F5F5F5] p-4 rounded-xl font-worksans text-[14px] text-[#30352D] min-h-[120px]"
           />
           <Text className="font-worksans text-[12px] text-[#6B6B6B] mt-2">
-            Your review will be visible on the pro's profile
+            {getAppContentValue(content, 'review.footer', "Your review will be visible on the pro's profile")}
           </Text>
         </View>
 
         {/* Skip prompt */}
         <Pressable onPress={handleSkip} className="py-4">
           <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center underline">
-            Maybe later
+            {getAppContentValue(content, 'actions.skip', 'Maybe later')}
           </Text>
         </Pressable>
       </ScrollView>
@@ -211,7 +236,7 @@ export default function ClientReviewScreen() {
                 rating > 0 ? 'text-white' : 'text-[#9CA3AF]'
               }`}
             >
-              Submit Review
+              {getAppContentValue(content, 'actions.submit', 'Submit Review')}
             </Text>
           )}
         </Pressable>

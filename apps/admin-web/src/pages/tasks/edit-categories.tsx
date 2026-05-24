@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Plus, Edit, Trash2, Loader2, X, Save } from 'lucide-react'
+import { ExternalLink, Plus, Edit, Trash2, Loader2, X, Save } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
+import { FieldErrorText } from '@/components/editor/FieldErrorText'
+import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
+import { isValidSlug, isValidUrl } from '@/lib/editor-validation'
 import {
   useCategories,
   useCreateCategory,
@@ -66,6 +71,8 @@ function getCategoryDepthLabel(category: CategoryWithStats) {
 }
 
 export default function EditCategoriesPage() {
+  const { hasPermission } = useAuth()
+  const canManageTasks = hasPermission('tasks.manage')
   const { data: categories, isLoading, error } = useCategories()
   const { data: mediaAssets = [] } = useMediaAssets()
   const createCategory = useCreateCategory()
@@ -124,7 +131,7 @@ export default function EditCategoriesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name.trim()) return
+    if (!canSaveCategory) return
 
     try {
       const payload = {
@@ -167,6 +174,7 @@ export default function EditCategoriesPage() {
   }
 
   const handleDelete = async (id: string) => {
+    if (!canManageTasks) return
     if (!confirm('Are you sure you want to delete this category?')) return
 
     try {
@@ -180,6 +188,46 @@ export default function EditCategoriesPage() {
   }
 
   const isSaving = createCategory.isPending || updateCategory.isPending
+  const isEditing = Boolean(editingId || isCreating)
+  const baselineForm = useMemo(() => {
+    if (!editingId) return emptyForm
+    const category = categories?.find((item) => item.id === editingId)
+    if (!category) return emptyForm
+    return {
+      name: category.name,
+      description: category.description || '',
+      parent_id: category.parent_id || '',
+      display_order: String(category.display_order ?? 0),
+      route_slug: category.route_slug || '',
+      marketing_title: category.marketing_title || '',
+      marketing_description: category.marketing_description || '',
+      icon_url: category.icon_url || '',
+      active: category.active,
+      supports_recurring: category.supports_recurring,
+      long_description: category.long_description || '',
+      hero_image_url: category.hero_image_url || '',
+      content_image_url: category.content_image_url || '',
+      benefits: Array.isArray(category.benefits_json) ? (category.benefits_json as TitleDescriptionItem[]) : [],
+      tasks: Array.isArray(category.tasks_json) ? (category.tasks_json as TitleDescriptionItem[]) : [],
+      faqs: Array.isArray(category.faqs_json) ? (category.faqs_json as FaqItem[]) : [],
+    }
+  }, [categories, editingId])
+  const isDirty = isEditing && JSON.stringify(formData) !== JSON.stringify(isCreating ? emptyForm : baselineForm)
+  useUnsavedChangesWarning(isDirty)
+
+  const validationErrors = useMemo(() => {
+    const errors: string[] = []
+    if (!formData.name.trim()) errors.push('Category name is required.')
+    if (formData.route_slug.trim() && !isValidSlug(formData.route_slug.trim())) {
+      errors.push('Route slug must use lowercase letters, numbers, and hyphens only.')
+    }
+    if (formData.icon_url.trim() && !isValidUrl(formData.icon_url)) errors.push('Icon URL must be a valid absolute URL.')
+    if (formData.hero_image_url.trim() && !isValidUrl(formData.hero_image_url)) errors.push('Hero image URL must be a valid absolute URL.')
+    if (formData.content_image_url.trim() && !isValidUrl(formData.content_image_url)) errors.push('Content image URL must be a valid absolute URL.')
+    if (editingId && formData.parent_id === editingId) errors.push('A category cannot be its own parent.')
+    return errors
+  }, [formData, editingId])
+  const canSaveCategory = canManageTasks && validationErrors.length === 0
   const imageOptions = useMemo(
     () =>
       mediaAssets
@@ -196,12 +244,19 @@ export default function EditCategoriesPage() {
       <Header title="Edit Categories" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-7xl mx-auto">
+          <UnsavedChangesBanner show={isDirty} />
+          {!canManageTasks && (
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+              Your admin role can view category setup, but it cannot change the service catalog.
+            </div>
+          )}
           <div className="flex items-center justify-between mb-6">
             <Link to="/tasks/categories" className="text-primary hover:underline text-sm">
               ← Back to Browse Categories
             </Link>
             <button
               onClick={handleCreate}
+              disabled={!canManageTasks}
               className="bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary/90"
             >
               <Plus className="w-5 h-5" />
@@ -283,13 +338,14 @@ export default function EditCategoriesPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleEdit(category)}
+                                disabled={!canManageTasks}
                                 className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
                               >
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDelete(category.id)}
-                                disabled={deleteCategory.isPending}
+                                disabled={deleteCategory.isPending || !canManageTasks}
                                 className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -326,6 +382,11 @@ export default function EditCategoriesPage() {
                     </p>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-5">
+                      {validationErrors.length > 0 && (
+                        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+                          {validationErrors.map((error) => <div key={error}>{error}</div>)}
+                        </div>
+                      )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -335,6 +396,7 @@ export default function EditCategoriesPage() {
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            disabled={!canManageTasks}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                             required
                           />
@@ -380,6 +442,7 @@ export default function EditCategoriesPage() {
                             placeholder="cleaning"
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                           />
+                          <FieldErrorText error={formData.route_slug.trim() && !isValidSlug(formData.route_slug.trim()) ? 'Use lowercase letters, numbers, and hyphens only.' : null} />
                         </div>
 
                         <div>
@@ -446,15 +509,16 @@ export default function EditCategoriesPage() {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Icon URL
                         </label>
-                        <input
-                          type="text"
-                          value={formData.icon_url}
+                          <input
+                            type="text"
+                            value={formData.icon_url}
                           onChange={(e) =>
                             setFormData({ ...formData, icon_url: e.target.value })
                           }
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          <FieldErrorText error={formData.icon_url.trim() && !isValidUrl(formData.icon_url) ? 'Enter a valid absolute URL.' : null} />
+                        </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -469,6 +533,7 @@ export default function EditCategoriesPage() {
                             }
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                           />
+                          <FieldErrorText error={formData.hero_image_url.trim() && !isValidUrl(formData.hero_image_url) ? 'Enter a valid absolute URL.' : null} />
                           <select
                             value=""
                             onChange={(e) => {
@@ -498,6 +563,7 @@ export default function EditCategoriesPage() {
                             }
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                           />
+                          <FieldErrorText error={formData.content_image_url.trim() && !isValidUrl(formData.content_image_url) ? 'Enter a valid absolute URL.' : null} />
                           <select
                             value=""
                             onChange={(e) => {
@@ -585,6 +651,32 @@ export default function EditCategoriesPage() {
                           />
                         </label>
                       </div>
+
+                      {formData.route_slug.trim() && (
+                        <div className="space-y-3">
+                          <div className="flex justify-end">
+                            <a
+                              href={`${import.meta.env.VITE_SITE_URL || ''}/services/${formData.route_slug.trim()}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              Preview Category Page
+                            </a>
+                          </div>
+                          <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                            <div className="border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
+                              Preview
+                            </div>
+                            <iframe
+                              title="Category preview"
+                              src={`${import.meta.env.VITE_SITE_URL || ''}/services/${formData.route_slug.trim()}`}
+                              className="h-[520px] w-full bg-white"
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       {(createCategory.error || updateCategory.error) && (
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-red-700 dark:text-red-400 text-sm">

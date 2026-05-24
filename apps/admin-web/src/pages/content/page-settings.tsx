@@ -1,11 +1,29 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Save } from 'lucide-react'
+import { Check, Loader2, Rocket, Save } from 'lucide-react'
 import Header from '@/components/header'
-import { useSaveSiteSetting, useSiteSettings } from '@/lib/api/content-platform'
+import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
+import { isValidUrl, safeParseJson } from '@/lib/editor-validation'
+import {
+  useLatestSiteSettingsDraft,
+  usePublishSiteSettingsDraft,
+  useRestoreSiteSettingsRevision,
+  useSaveSiteSettingsDraft,
+  useSiteSettings,
+  useSiteSettingsRevisions,
+} from '@/lib/api/content-platform'
 
 export default function PageSettingsPage() {
-  const { data: settings = [], isLoading } = useSiteSettings(['seo.defaults', 'seo.organization'])
-  const saveSetting = useSaveSiteSetting()
+  const SETTINGS_KEY = 'global_page_settings'
+  const { hasPermission } = useAuth()
+  const canManageSettings = hasPermission('content.manage') && hasPermission('seo.manage')
+  const { data: settings = [], isLoading } = useSiteSettings(['seo.defaults', 'seo.organization', 'help.ui', 'help.search_index', 'booking.web_copy'])
+  const saveDraft = useSaveSiteSettingsDraft()
+  const publishDraft = usePublishSiteSettingsDraft()
+  const restoreRevision = useRestoreSiteSettingsRevision()
+  const { data: latestDraft } = useLatestSiteSettingsDraft(SETTINGS_KEY)
+  const { data: revisions = [] } = useSiteSettingsRevisions(SETTINGS_KEY)
 
   const [defaultMetaDescription, setDefaultMetaDescription] = useState('')
   const [defaultOgImageUrl, setDefaultOgImageUrl] = useState('')
@@ -13,10 +31,18 @@ export default function PageSettingsPage() {
   const [robotsIndex, setRobotsIndex] = useState(true)
   const [robotsFollow, setRobotsFollow] = useState(true)
   const [organizationJson, setOrganizationJson] = useState('{}')
+  const [helpUiJson, setHelpUiJson] = useState('{}')
+  const [helpSearchJson, setHelpSearchJson] = useState('{}')
+  const [bookingCopyJson, setBookingCopyJson] = useState('{}')
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
 
   useEffect(() => {
-    const seoDefaults = settings.find((setting) => setting.setting_key === 'seo.defaults')?.value_json ?? {}
-    const organization = settings.find((setting) => setting.setting_key === 'seo.organization')?.value_json ?? {}
+    const draftSettings = (latestDraft?.settings_json ?? {}) as Record<string, any>
+    const seoDefaults = draftSettings['seo.defaults'] ?? settings.find((setting) => setting.setting_key === 'seo.defaults')?.value_json ?? {}
+    const organization = draftSettings['seo.organization'] ?? settings.find((setting) => setting.setting_key === 'seo.organization')?.value_json ?? {}
+    const helpUi = draftSettings['help.ui'] ?? settings.find((setting) => setting.setting_key === 'help.ui')?.value_json ?? {}
+    const helpSearch = draftSettings['help.search_index'] ?? settings.find((setting) => setting.setting_key === 'help.search_index')?.value_json ?? {}
+    const bookingCopy = draftSettings['booking.web_copy'] ?? settings.find((setting) => setting.setting_key === 'booking.web_copy')?.value_json ?? {}
 
     setDefaultMetaDescription(typeof seoDefaults.defaultMetaDescription === 'string' ? seoDefaults.defaultMetaDescription : '')
     setDefaultOgImageUrl(typeof seoDefaults.defaultOgImageUrl === 'string' ? seoDefaults.defaultOgImageUrl : '')
@@ -24,28 +50,63 @@ export default function PageSettingsPage() {
     setRobotsIndex(typeof seoDefaults.robotsIndex === 'boolean' ? seoDefaults.robotsIndex : true)
     setRobotsFollow(typeof seoDefaults.robotsFollow === 'boolean' ? seoDefaults.robotsFollow : true)
     setOrganizationJson(JSON.stringify(organization, null, 2))
-  }, [settings])
+    setHelpUiJson(JSON.stringify(helpUi, null, 2))
+    setHelpSearchJson(JSON.stringify(helpSearch, null, 2))
+    setBookingCopyJson(JSON.stringify(bookingCopy, null, 2))
+  }, [settings, latestDraft])
 
-  const isSaving = saveSetting.isPending
+  const organizationResult = safeParseJson<Record<string, unknown>>(organizationJson, 'Organization schema')
+  const helpUiResult = safeParseJson<Record<string, unknown>>(helpUiJson, 'Help UI')
+  const helpSearchResult = safeParseJson<Record<string, unknown>>(helpSearchJson, 'Help search index')
+  const bookingCopyResult = safeParseJson<Record<string, unknown>>(bookingCopyJson, 'Booking web copy')
+
+  const validationErrors = [
+    organizationResult.error,
+    helpUiResult.error,
+    helpSearchResult.error,
+    bookingCopyResult.error,
+    defaultOgImageUrl.trim() && !isValidUrl(defaultOgImageUrl) ? 'Default OG image URL must be a valid absolute URL.' : null,
+    canonicalBaseUrl.trim() && !isValidUrl(canonicalBaseUrl) ? 'Canonical base URL must be a valid absolute URL.' : null,
+  ].filter((value): value is string => Boolean(value))
+
+  const currentSettings = {
+    'seo.defaults': {
+      defaultMetaDescription,
+      defaultOgImageUrl,
+      canonicalBaseUrl,
+      robotsIndex,
+      robotsFollow,
+    },
+    'seo.organization': organizationResult.value ?? {},
+    'help.ui': helpUiResult.value ?? {},
+    'help.search_index': helpSearchResult.value ?? {},
+    'booking.web_copy': bookingCopyResult.value ?? {},
+  }
+
+  const isDirty = JSON.stringify(currentSettings) !== JSON.stringify((latestDraft?.settings_json ?? {}) as Record<string, unknown>)
+  useUnsavedChangesWarning(isDirty)
+
+  const isSaving = saveDraft.isPending || publishDraft.isPending
+  const canSaveDraft = canManageSettings && validationErrors.length === 0
+  const canPublish = canManageSettings && validationErrors.length === 0 && !!latestDraft
 
   const saveAll = async () => {
-    await saveSetting.mutateAsync({
-      setting_group: 'seo',
-      setting_key: 'seo.defaults',
-      value_json: {
-        defaultMetaDescription,
-        defaultOgImageUrl,
-        canonicalBaseUrl,
-        robotsIndex,
-        robotsFollow,
-      },
+    if (!canSaveDraft) return
+    setActionFeedback(null)
+    await saveDraft.mutateAsync({
+      settingsKey: SETTINGS_KEY,
+      settings: currentSettings,
     })
+    setActionFeedback('Draft saved')
+    setTimeout(() => setActionFeedback(null), 3000)
+  }
 
-    await saveSetting.mutateAsync({
-      setting_group: 'seo',
-      setting_key: 'seo.organization',
-      value_json: JSON.parse(organizationJson),
-    })
+  const publishAll = async () => {
+    if (!canPublish) return
+    setActionFeedback(null)
+    await publishDraft.mutateAsync(SETTINGS_KEY)
+    setActionFeedback('Published')
+    setTimeout(() => setActionFeedback(null), 3000)
   }
 
   return (
@@ -53,14 +114,45 @@ export default function PageSettingsPage() {
       <Header title="Page Settings" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex justify-end">
+          <UnsavedChangesBanner show={isDirty} />
+          {!canManageSettings && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+              Your admin role can view these settings, but it cannot change live SEO and global content settings.
+            </div>
+          )}
+          {validationErrors.length > 0 && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+              {validationErrors.map((error) => <div key={error}>{error}</div>)}
+            </div>
+          )}
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                These settings now stage as drafts before they update live help, booking, and SEO defaults.
+              </p>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
+              </div>
+            </div>
+            {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
+          </div>
+
+          <div className="flex justify-end gap-3">
             <button
               onClick={saveAll}
-              disabled={isSaving}
+              disabled={isSaving || !canSaveDraft}
               className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50"
             >
-              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Save Settings
+              {saveDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+              {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+            </button>
+            <button
+              onClick={publishAll}
+              disabled={isSaving || !canPublish}
+              className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-500 flex items-center gap-2 disabled:opacity-50"
+            >
+              {publishDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
+              {actionFeedback === 'Published' ? 'Published' : 'Publish'}
             </button>
           </div>
 
@@ -94,8 +186,78 @@ export default function PageSettingsPage() {
               className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg font-mono text-xs"
             />
           </div>
+
+          <JsonPanel
+            title="Help UI"
+            description="Labels used across help layout surfaces."
+            value={helpUiJson}
+            onChange={setHelpUiJson}
+          />
+
+          <JsonPanel
+            title="Help Search Index"
+            description="Search entries and popular searches for help pages."
+            value={helpSearchJson}
+            onChange={setHelpSearchJson}
+          />
+
+          <JsonPanel
+            title="Booking Web Copy"
+            description="Shared copy used by booking confirmation components on the website."
+            value={bookingCopyJson}
+            onChange={setBookingCopyJson}
+          />
+
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Revision History</h3>
+            <div className="space-y-3">
+              {revisions.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No revisions yet.</p>
+              ) : revisions.map((revision) => (
+                <div key={revision.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">v{revision.version_number} · {revision.revision_state}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(revision.updated_at).toLocaleString()}</p>
+                  </div>
+                  {revision.revision_state === 'published' && (
+                    <button
+                      onClick={() => restoreRevision.mutate({ settingsKey: SETTINGS_KEY, revisionId: revision.id })}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Restore to Draft
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function JsonPanel({
+  title,
+  description,
+  value,
+  onChange,
+}: {
+  title: string
+  description: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={14}
+        className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg font-mono text-xs"
+      />
     </div>
   )
 }

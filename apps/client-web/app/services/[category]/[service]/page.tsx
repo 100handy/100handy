@@ -24,6 +24,7 @@ const HANDYMAN_SERVICE = {
   longDescription:
     "From assembly and furniture setup to painting, light installation, plumbing, wall mounting, gardening, electrical work, home renovation, general repairs, and carpentry - our skilled Pros handle it all. Whatever the job, big or small, we connect you with trusted handymen who arrive prepared with the right tools and expertise to get it done right.",
   heroImage: "/images/services/home-repairs/hero.jpeg",
+  contentImage: "/images/services/home-repairs/content.jpeg",
   benefits: [
     { title: "Trusted & Vetted Pros", description: "Every Pro is background-checked, reviewed, and rated." },
     { title: "Wide Range of Services", description: "Assembly, mounting, repairs, painting, and more." },

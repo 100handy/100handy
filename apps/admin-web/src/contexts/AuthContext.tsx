@@ -12,6 +12,11 @@ import type { User, Session, AuthError } from "@supabase/supabase-js";
 import type { UserRole } from "@/lib/database.types";
 import { queryClient } from "@/lib/queryClient";
 import { supabase } from "@/lib/supabase";
+import {
+  adminRoleHasPermission,
+  type AdminPermission,
+  type AdminRole,
+} from "@/lib/admin-permissions";
 
 import {
   deriveBootstrapAuthState,
@@ -21,6 +26,14 @@ import {
 interface Profile {
   user_id: string;
   role: UserRole;
+  admin_role:
+    | "super_admin"
+    | "content_admin"
+    | "ops_admin"
+    | "support_admin"
+    | "finance_admin"
+    | "seo_admin"
+    | null;
   first_name: string | null;
   last_name: string | null;
   phone: string | null;
@@ -34,6 +47,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   isAdmin: boolean;
+  hasPermission: (permission: AdminPermission) => boolean;
   loading: boolean;
   roleResolved: boolean;
   signIn: (
@@ -94,7 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const queryPromise = supabase
         .from("profiles")
-        .select("user_id, role, first_name, last_name, phone, avatar_url, account_status, status_reason")
+        .select("user_id, role, admin_role, first_name, last_name, phone, avatar_url, account_status, status_reason")
         .eq("user_id", userId)
         .single();
 
@@ -319,6 +333,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     session,
     profile,
     isAdmin,
+    hasPermission: (permission) => adminRoleHasPermission(profile?.admin_role, permission),
     loading,
     roleResolved,
     signIn,

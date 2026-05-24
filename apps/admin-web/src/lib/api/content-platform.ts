@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { requireAdminPermission, requireAdminPermissions } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
 export type SeoSurfaceType = 'page' | 'blog_post'
@@ -68,6 +69,25 @@ export interface EmailTemplateInput {
   active: boolean
 }
 
+export interface EmailDeliveryJobRecord {
+  id: string
+  template_id: string | null
+  template_key: string
+  title: string
+  recipient_group: string
+  subject: string
+  preview_text: string | null
+  body: string
+  delivery_status: 'queued' | 'processing' | 'sent' | 'failed'
+  recipient_count: number
+  sent_count: number
+  failed_count: number
+  error_message: string | null
+  triggered_by: string | null
+  triggered_at: string
+  completed_at: string | null
+}
+
 export interface AnnouncementInput {
   id?: string
   audience: 'all' | 'client' | 'professional' | 'web'
@@ -111,6 +131,122 @@ export interface AppContentInput {
   status: 'draft' | 'published' | 'archived'
 }
 
+export interface HelpArticleInput {
+  id?: string
+  article_key: string
+  slug: string
+  title: string
+  breadcrumb: string
+  summary: string
+  sidebar_links_json: Array<Record<string, unknown>>
+  body_html: string
+  related_links_json: Array<Record<string, unknown>>
+  status: 'draft' | 'published' | 'archived'
+}
+
+export type RevisionState = 'draft' | 'published'
+
+export interface BlogPostRevisionRecord {
+  id: string
+  slug: string
+  version_number: number
+  revision_state: RevisionState
+  post_json: Record<string, unknown>
+  seo_json: Record<string, unknown>
+  created_at: string
+  updated_at: string
+  created_by: string | null
+  published_at: string | null
+  published_by: string | null
+}
+
+export interface HelpArticleRevisionRecord {
+  id: string
+  article_key: string
+  version_number: number
+  revision_state: RevisionState
+  article_json: Record<string, unknown>
+  created_at: string
+  updated_at: string
+  created_by: string | null
+  published_at: string | null
+  published_by: string | null
+}
+
+export interface AppContentScreenRevisionRecord {
+  id: string
+  platform: AppContentInput['platform']
+  screen_key: string
+  version_number: number
+  revision_state: RevisionState
+  content_json: Record<string, string>
+  created_at: string
+  updated_at: string
+  created_by: string | null
+  published_at: string | null
+  published_by: string | null
+}
+
+export interface NavigationConfigRevisionRecord {
+  id: string
+  config_key: string
+  version_number: number
+  revision_state: RevisionState
+  items_json: NavigationItemInput[]
+  settings_json: Record<string, unknown>
+  created_at: string
+  updated_at: string
+  created_by: string | null
+  published_at: string | null
+  published_by: string | null
+}
+
+export interface SiteSettingsRevisionRecord {
+  id: string
+  settings_key: string
+  version_number: number
+  revision_state: RevisionState
+  settings_json: Record<string, unknown>
+  created_at: string
+  updated_at: string
+  created_by: string | null
+  published_at: string | null
+  published_by: string | null
+}
+
+export interface AnnouncementRevisionRecord {
+  id: string
+  announcement_key: string
+  announcement_id: string | null
+  version_number: number
+  revision_state: RevisionState
+  announcement_json: Record<string, unknown>
+  created_at: string
+  updated_at: string
+  created_by: string | null
+  published_at: string | null
+  published_by: string | null
+}
+
+async function getNextRevisionVersion(
+  table:
+    | 'blog_post_revisions'
+    | 'help_article_revisions'
+    | 'app_content_screen_revisions'
+    | 'navigation_config_revisions'
+    | 'site_settings_revisions'
+    | 'announcement_revisions',
+  filters: Record<string, string>
+) {
+  let query = supabase.from(table).select('version_number')
+  for (const [key, value] of Object.entries(filters)) {
+    query = query.eq(key, value)
+  }
+  const { data, error } = await query.order('version_number', { ascending: false }).limit(1).maybeSingle()
+  if (error) throw error
+  return (data?.version_number ?? 0) + 1
+}
+
 export function useBlogPosts() {
   return useQuery({
     queryKey: ['admin', 'blog-posts'],
@@ -130,8 +266,7 @@ export function useSaveBlogPost() {
 
   return useMutation({
     mutationFn: async (input: BlogPostInput) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermission('content.manage')
 
       const row = {
         ...input,
@@ -159,11 +294,259 @@ export function useDeleteBlogPost() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
+      await requireAdminPermission('content.manage')
       const { error } = await supabase.from('blog_posts').delete().eq('id', id)
       if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'blog-posts'] })
+    },
+  })
+}
+
+export function useLatestBlogPostDraft(slug: string) {
+  return useQuery({
+    queryKey: ['admin', 'blog-post-revisions', slug, 'latest-draft'],
+    queryFn: async (): Promise<BlogPostRevisionRecord | null> => {
+      const { data, error } = await supabase
+        .from('blog_post_revisions')
+        .select('*')
+        .eq('slug', slug)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!slug,
+  })
+}
+
+export function useBlogPostRevisions(slug: string) {
+  return useQuery({
+    queryKey: ['admin', 'blog-post-revisions', slug],
+    queryFn: async (): Promise<BlogPostRevisionRecord[]> => {
+      const { data, error } = await supabase
+        .from('blog_post_revisions')
+        .select('*')
+        .eq('slug', slug)
+        .order('version_number', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!slug,
+  })
+}
+
+export function useSaveBlogPostDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      post,
+      seo,
+    }: {
+      post: BlogPostInput
+      seo: {
+        meta_title: string
+        meta_description: string
+        og_title: string
+        og_description: string
+        og_image_url: string
+        twitter_title: string
+        twitter_description: string
+        twitter_image_url: string
+        canonical_url: string
+        robots_index: boolean
+        robots_follow: boolean
+      }
+    }) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const slug = post.slug.trim()
+      const { data: existingDraft, error: draftError } = await supabase
+        .from('blog_post_revisions')
+        .select('id')
+        .eq('slug', slug)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+
+      if (existingDraft?.id) {
+        const { error } = await supabase
+          .from('blog_post_revisions')
+          .update({
+            post_json: post,
+            seo_json: seo,
+          })
+          .eq('id', existingDraft.id)
+        if (error) throw error
+        return existingDraft.id
+      }
+
+      const versionNumber = await getNextRevisionVersion('blog_post_revisions', { slug })
+      const { data, error } = await supabase
+        .from('blog_post_revisions')
+        .insert({
+          slug,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          post_json: post,
+          seo_json: seo,
+          created_by: user.id,
+        })
+        .select('id')
+        .single()
+      if (error) throw error
+      return data.id
+    },
+    onSuccess: (_, { post }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'blog-post-revisions', post.slug] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'blog-post-revisions', post.slug, 'latest-draft'] })
+    },
+  })
+}
+
+export function usePublishBlogPostDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (slug: string) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: draft, error: draftError } = await supabase
+        .from('blog_post_revisions')
+        .select('*')
+        .eq('slug', slug)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+      if (!draft) throw new Error('No draft exists for this blog post')
+
+      const post = draft.post_json as BlogPostInput
+      const seo = draft.seo_json as {
+        meta_title: string
+        meta_description: string
+        og_title: string
+        og_description: string
+        og_image_url: string
+        twitter_title: string
+        twitter_description: string
+        twitter_image_url: string
+        canonical_url: string
+        robots_index: boolean
+        robots_follow: boolean
+      }
+
+      const row = {
+        ...post,
+        excerpt: post.excerpt || null,
+        cover_image_url: post.cover_image_url || null,
+        category: post.category || null,
+        author_name: post.author_name || null,
+        published_at: post.published_at || null,
+        status: post.status === 'archived' ? 'archived' : 'published',
+        updated_by: user.id,
+      }
+      const { error: postError } = await supabase
+        .from('blog_posts')
+        .upsert(row, { onConflict: 'slug' })
+      if (postError) throw postError
+
+      const seoRow = {
+        surface_type: 'blog_post' as const,
+        surface_key: slug,
+        meta_title: seo.meta_title || null,
+        meta_description: seo.meta_description || null,
+        og_title: seo.og_title || null,
+        og_description: seo.og_description || null,
+        og_image_url: seo.og_image_url || null,
+        twitter_title: seo.twitter_title || null,
+        twitter_description: seo.twitter_description || null,
+        twitter_image_url: seo.twitter_image_url || null,
+        canonical_url: seo.canonical_url || null,
+        robots_index: seo.robots_index,
+        robots_follow: seo.robots_follow,
+        updated_by: user.id,
+      }
+      const { error: seoError } = await supabase
+        .from('seo_metadata')
+        .upsert(seoRow, { onConflict: 'surface_type,surface_key' })
+      if (seoError) throw seoError
+
+      const { error: publishError } = await supabase
+        .from('blog_post_revisions')
+        .update({
+          revision_state: 'published',
+          published_at: new Date().toISOString(),
+          published_by: user.id,
+        })
+        .eq('id', draft.id)
+      if (publishError) throw publishError
+    },
+    onSuccess: (_, slug) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'blog-posts'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'seo', 'blog_post', slug] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'blog-post-revisions', slug] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'blog-post-revisions', slug, 'latest-draft'] })
+    },
+  })
+}
+
+export function useRestoreBlogPostRevision() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ slug, revisionId }: { slug: string; revisionId: string }) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: revision, error } = await supabase
+        .from('blog_post_revisions')
+        .select('*')
+        .eq('id', revisionId)
+        .single()
+      if (error) throw error
+
+      const { data: existingDraft, error: existingDraftError } = await supabase
+        .from('blog_post_revisions')
+        .select('id')
+        .eq('slug', slug)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (existingDraftError) throw existingDraftError
+
+      if (existingDraft?.id) {
+        const { error: updateError } = await supabase
+          .from('blog_post_revisions')
+          .update({
+            post_json: revision.post_json,
+            seo_json: revision.seo_json,
+          })
+          .eq('id', existingDraft.id)
+        if (updateError) throw updateError
+        return
+      }
+
+      const versionNumber = await getNextRevisionVersion('blog_post_revisions', { slug })
+      const { error: insertError } = await supabase
+        .from('blog_post_revisions')
+        .insert({
+          slug,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          post_json: revision.post_json,
+          seo_json: revision.seo_json,
+          created_by: user.id,
+        })
+      if (insertError) throw insertError
+    },
+    onSuccess: (_, { slug }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'blog-post-revisions', slug] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'blog-post-revisions', slug, 'latest-draft'] })
     },
   })
 }
@@ -188,8 +571,7 @@ export function useSaveNavigationItem() {
 
   return useMutation({
     mutationFn: async (input: NavigationItemInput) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermission('content.manage')
 
       const { error } = await supabase
         .from('navigation_items')
@@ -206,11 +588,226 @@ export function useDeleteNavigationItem() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
+      await requireAdminPermission('content.manage')
       const { error } = await supabase.from('navigation_items').delete().eq('id', id)
       if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'navigation-items'] })
+    },
+  })
+}
+
+export function useLatestNavigationConfigDraft(configKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'navigation-config-revisions', configKey, 'latest-draft'],
+    queryFn: async (): Promise<NavigationConfigRevisionRecord | null> => {
+      const { data, error } = await supabase
+        .from('navigation_config_revisions')
+        .select('*')
+        .eq('config_key', configKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!configKey,
+  })
+}
+
+export function useNavigationConfigRevisions(configKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'navigation-config-revisions', configKey],
+    queryFn: async (): Promise<NavigationConfigRevisionRecord[]> => {
+      const { data, error } = await supabase
+        .from('navigation_config_revisions')
+        .select('*')
+        .eq('config_key', configKey)
+        .order('version_number', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!configKey,
+  })
+}
+
+export function useSaveNavigationConfigDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      configKey,
+      items,
+      settings,
+    }: {
+      configKey: string
+      items: NavigationItemInput[]
+      settings: Record<string, unknown>
+    }) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: existingDraft, error: draftError } = await supabase
+        .from('navigation_config_revisions')
+        .select('id')
+        .eq('config_key', configKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+
+      if (existingDraft?.id) {
+        const { error } = await supabase
+          .from('navigation_config_revisions')
+          .update({
+            items_json: items,
+            settings_json: settings,
+          })
+          .eq('id', existingDraft.id)
+        if (error) throw error
+        return existingDraft.id
+      }
+
+      const versionNumber = await getNextRevisionVersion('navigation_config_revisions', { config_key: configKey })
+      const { data, error } = await supabase
+        .from('navigation_config_revisions')
+        .insert({
+          config_key: configKey,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          items_json: items,
+          settings_json: settings,
+          created_by: user.id,
+        })
+        .select('id')
+        .single()
+      if (error) throw error
+      return data.id
+    },
+    onSuccess: (_, { configKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'navigation-config-revisions', configKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'navigation-config-revisions', configKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function usePublishNavigationConfigDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (configKey: string) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: draft, error: draftError } = await supabase
+        .from('navigation_config_revisions')
+        .select('*')
+        .eq('config_key', configKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+      if (!draft) throw new Error('No navigation draft exists')
+
+      const items = (draft.items_json as NavigationItemInput[]) ?? []
+      const settings = (draft.settings_json as Record<string, unknown>) ?? {}
+
+      const { error: deleteItemsError } = await supabase
+        .from('navigation_items')
+        .delete()
+        .in('location', ['header', 'footer', 'support', 'account'])
+      if (deleteItemsError) throw deleteItemsError
+
+      if (items.length > 0) {
+        const { error: itemsError } = await supabase
+          .from('navigation_items')
+          .upsert(items.map((item) => ({ ...item, updated_by: user.id })), { onConflict: 'nav_key,location,audience' })
+        if (itemsError) throw itemsError
+      }
+
+      for (const [settingKey, valueJson] of Object.entries(settings)) {
+        const settingGroup = settingKey.split('.')[0] ?? 'shared'
+        const { error } = await supabase
+          .from('site_settings')
+          .upsert({
+            setting_group: settingGroup,
+            setting_key: settingKey,
+            value_json: valueJson as Record<string, unknown>,
+            updated_by: user.id,
+          }, { onConflict: 'setting_key' })
+        if (error) throw error
+      }
+
+      const { error: publishError } = await supabase
+        .from('navigation_config_revisions')
+        .update({
+          revision_state: 'published',
+          published_at: new Date().toISOString(),
+          published_by: user.id,
+        })
+        .eq('id', draft.id)
+      if (publishError) throw publishError
+    },
+    onSuccess: (_, configKey) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'navigation-items'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'navigation-config-revisions', configKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'navigation-config-revisions', configKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function useRestoreNavigationConfigRevision() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ configKey, revisionId }: { configKey: string; revisionId: string }) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: revision, error } = await supabase
+        .from('navigation_config_revisions')
+        .select('*')
+        .eq('id', revisionId)
+        .single()
+      if (error) throw error
+
+      const { data: existingDraft, error: existingDraftError } = await supabase
+        .from('navigation_config_revisions')
+        .select('id')
+        .eq('config_key', configKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (existingDraftError) throw existingDraftError
+
+      if (existingDraft?.id) {
+        const { error: updateError } = await supabase
+          .from('navigation_config_revisions')
+          .update({
+            items_json: revision.items_json,
+            settings_json: revision.settings_json,
+          })
+          .eq('id', existingDraft.id)
+        if (updateError) throw updateError
+        return
+      }
+
+      const versionNumber = await getNextRevisionVersion('navigation_config_revisions', { config_key: configKey })
+      const { error: insertError } = await supabase
+        .from('navigation_config_revisions')
+        .insert({
+          config_key: configKey,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          items_json: revision.items_json,
+          settings_json: revision.settings_json,
+          created_by: user.id,
+        })
+      if (insertError) throw insertError
+    },
+    onSuccess: (_, { configKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'navigation-config-revisions', configKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'navigation-config-revisions', configKey, 'latest-draft'] })
     },
   })
 }
@@ -234,8 +831,7 @@ export function useSaveSiteSetting() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: SiteSettingInput) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermissions(['content.manage', 'seo.manage'])
 
       const { error } = await supabase
         .from('site_settings')
@@ -244,6 +840,194 @@ export function useSaveSiteSetting() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings'] })
+    },
+  })
+}
+
+export function useLatestSiteSettingsDraft(settingsKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'site-settings-revisions', settingsKey, 'latest-draft'],
+    queryFn: async (): Promise<SiteSettingsRevisionRecord | null> => {
+      const { data, error } = await supabase
+        .from('site_settings_revisions')
+        .select('*')
+        .eq('settings_key', settingsKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!settingsKey,
+  })
+}
+
+export function useSiteSettingsRevisions(settingsKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'site-settings-revisions', settingsKey],
+    queryFn: async (): Promise<SiteSettingsRevisionRecord[]> => {
+      const { data, error } = await supabase
+        .from('site_settings_revisions')
+        .select('*')
+        .eq('settings_key', settingsKey)
+        .order('version_number', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!settingsKey,
+  })
+}
+
+export function useSaveSiteSettingsDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      settingsKey,
+      settings,
+    }: {
+      settingsKey: string
+      settings: Record<string, unknown>
+    }) => {
+      const { user } = await requireAdminPermissions(['content.manage', 'seo.manage'])
+
+      const { data: existingDraft, error: draftError } = await supabase
+        .from('site_settings_revisions')
+        .select('id')
+        .eq('settings_key', settingsKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+
+      if (existingDraft?.id) {
+        const { error } = await supabase
+          .from('site_settings_revisions')
+          .update({ settings_json: settings })
+          .eq('id', existingDraft.id)
+        if (error) throw error
+        return existingDraft.id
+      }
+
+      const versionNumber = await getNextRevisionVersion('site_settings_revisions', { settings_key: settingsKey })
+      const { data, error } = await supabase
+        .from('site_settings_revisions')
+        .insert({
+          settings_key: settingsKey,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          settings_json: settings,
+          created_by: user.id,
+        })
+        .select('id')
+        .single()
+      if (error) throw error
+      return data.id
+    },
+    onSuccess: (_, { settingsKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings-revisions', settingsKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings-revisions', settingsKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function usePublishSiteSettingsDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (settingsKey: string) => {
+      const { user } = await requireAdminPermissions(['content.manage', 'seo.manage'])
+
+      const { data: draft, error: draftError } = await supabase
+        .from('site_settings_revisions')
+        .select('*')
+        .eq('settings_key', settingsKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+      if (!draft) throw new Error('No site settings draft exists')
+
+      const settings = (draft.settings_json as Record<string, unknown>) ?? {}
+      for (const [settingKey, valueJson] of Object.entries(settings)) {
+        const settingGroup = settingKey.split('.')[0] ?? 'shared'
+        const { error } = await supabase
+          .from('site_settings')
+          .upsert({
+            setting_group: settingGroup,
+            setting_key: settingKey,
+            value_json: valueJson as Record<string, unknown>,
+            updated_by: user.id,
+          }, { onConflict: 'setting_key' })
+        if (error) throw error
+      }
+
+      const { error: publishError } = await supabase
+        .from('site_settings_revisions')
+        .update({
+          revision_state: 'published',
+          published_at: new Date().toISOString(),
+          published_by: user.id,
+        })
+        .eq('id', draft.id)
+      if (publishError) throw publishError
+    },
+    onSuccess: (_, settingsKey) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings-revisions', settingsKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings-revisions', settingsKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function useRestoreSiteSettingsRevision() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ settingsKey, revisionId }: { settingsKey: string; revisionId: string }) => {
+      const { user } = await requireAdminPermissions(['content.manage', 'seo.manage'])
+
+      const { data: revision, error } = await supabase
+        .from('site_settings_revisions')
+        .select('*')
+        .eq('id', revisionId)
+        .single()
+      if (error) throw error
+
+      const { data: existingDraft, error: existingDraftError } = await supabase
+        .from('site_settings_revisions')
+        .select('id')
+        .eq('settings_key', settingsKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (existingDraftError) throw existingDraftError
+
+      if (existingDraft?.id) {
+        const { error: updateError } = await supabase
+          .from('site_settings_revisions')
+          .update({ settings_json: revision.settings_json })
+          .eq('id', existingDraft.id)
+        if (updateError) throw updateError
+        return
+      }
+
+      const versionNumber = await getNextRevisionVersion('site_settings_revisions', { settings_key: settingsKey })
+      const { error: insertError } = await supabase
+        .from('site_settings_revisions')
+        .insert({
+          settings_key: settingsKey,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          settings_json: revision.settings_json,
+          created_by: user.id,
+        })
+      if (insertError) throw insertError
+    },
+    onSuccess: (_, { settingsKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings-revisions', settingsKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'site-settings-revisions', settingsKey, 'latest-draft'] })
     },
   })
 }
@@ -281,8 +1065,7 @@ export function useSaveFaqItem() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: FaqItemInput) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermission('content.manage')
 
       const row = {
         ...input,
@@ -304,6 +1087,7 @@ export function useDeleteFaqItem() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
+      await requireAdminPermission('content.manage')
       const { error } = await supabase.from('faq_items').delete().eq('id', id)
       if (error) throw error
     },
@@ -317,8 +1101,7 @@ export function useSaveMediaAsset() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: MediaAssetInput) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermission('content.manage')
 
       const row = {
         ...input,
@@ -342,6 +1125,7 @@ export function useDeleteMediaAsset() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
+      await requireAdminPermission('content.manage')
       const { error } = await supabase.from('media_assets').delete().eq('id', id)
       if (error) throw error
     },
@@ -392,8 +1176,7 @@ export function useSaveSurfaceSeo() {
         robots_follow: boolean
       }
     }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermission('seo.manage')
 
       const row = {
         surface_type: surfaceType,
@@ -442,10 +1225,7 @@ export function useSaveEmailTemplate() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: EmailTemplateInput) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermission('notifications.manage')
 
       const row = {
         ...input,
@@ -468,11 +1248,70 @@ export function useDeleteEmailTemplate() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
+      await requireAdminPermission('notifications.manage')
       const { error } = await supabase.from('email_templates').delete().eq('id', id)
       if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'email-templates'] })
+    },
+  })
+}
+
+export function useEmailDeliveryJobs() {
+  return useQuery({
+    queryKey: ['admin', 'email-delivery-jobs'],
+    queryFn: async (): Promise<EmailDeliveryJobRecord[]> => {
+      const { data, error } = await supabase
+        .from('email_delivery_jobs')
+        .select('*')
+        .order('triggered_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+}
+
+export function useSendEmailCampaign() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      templateId?: string
+      templateKey: string
+      title: string
+      recipientGroup: string
+      subject: string
+      previewText: string
+      body: string
+    }) => {
+      const { user } = await requireAdminPermission('notifications.manage')
+
+      const { data: job, error: jobError } = await supabase
+        .from('email_delivery_jobs')
+        .insert({
+          template_id: input.templateId ?? null,
+          template_key: input.templateKey,
+          title: input.title,
+          recipient_group: input.recipientGroup,
+          subject: input.subject,
+          preview_text: input.previewText || null,
+          body: input.body,
+          delivery_status: 'queued',
+          triggered_by: user.id,
+        })
+        .select('*')
+        .single()
+      if (jobError) throw jobError
+
+      const { error: invokeError } = await supabase.functions.invoke('send-admin-email-campaign', {
+        body: { delivery_job_id: job.id },
+      })
+      if (invokeError) throw invokeError
+
+      return job
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'email-delivery-jobs'] })
     },
   })
 }
@@ -531,10 +1370,7 @@ export function useSaveAnnouncement() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: AnnouncementInput) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermission('notifications.manage')
 
       const row = {
         ...input,
@@ -561,11 +1397,218 @@ export function useDeleteAnnouncement() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
+      await requireAdminPermission('notifications.manage')
       const { error } = await supabase.from('announcements').delete().eq('id', id)
       if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
+    },
+  })
+}
+
+export function useLatestAnnouncementDraft(announcementKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'announcement-revisions', announcementKey, 'latest-draft'],
+    queryFn: async (): Promise<AnnouncementRevisionRecord | null> => {
+      const { data, error } = await supabase
+        .from('announcement_revisions')
+        .select('*')
+        .eq('announcement_key', announcementKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!announcementKey,
+  })
+}
+
+export function useAnnouncementRevisions(announcementKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'announcement-revisions', announcementKey],
+    queryFn: async (): Promise<AnnouncementRevisionRecord[]> => {
+      const { data, error } = await supabase
+        .from('announcement_revisions')
+        .select('*')
+        .eq('announcement_key', announcementKey)
+        .order('version_number', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!announcementKey,
+  })
+}
+
+export function useSaveAnnouncementDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      announcementKey,
+      announcementId,
+      announcement,
+    }: {
+      announcementKey: string
+      announcementId?: string | null
+      announcement: AnnouncementInput
+    }) => {
+      const { user } = await requireAdminPermission('notifications.manage')
+
+      const { data: existingDraft, error: draftError } = await supabase
+        .from('announcement_revisions')
+        .select('id')
+        .eq('announcement_key', announcementKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+
+      if (existingDraft?.id) {
+        const { error } = await supabase
+          .from('announcement_revisions')
+          .update({
+            announcement_id: announcementId ?? null,
+            announcement_json: announcement,
+          })
+          .eq('id', existingDraft.id)
+        if (error) throw error
+        return existingDraft.id
+      }
+
+      const versionNumber = await getNextRevisionVersion('announcement_revisions', { announcement_key: announcementKey })
+      const { data, error } = await supabase
+        .from('announcement_revisions')
+        .insert({
+          announcement_key: announcementKey,
+          announcement_id: announcementId ?? null,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          announcement_json: announcement,
+          created_by: user.id,
+        })
+        .select('id')
+        .single()
+      if (error) throw error
+      return data.id
+    },
+    onSuccess: (_, { announcementKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function usePublishAnnouncementDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (announcementKey: string) => {
+      const { user } = await requireAdminPermission('notifications.manage')
+
+      const { data: draft, error: draftError } = await supabase
+        .from('announcement_revisions')
+        .select('*')
+        .eq('announcement_key', announcementKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+      if (!draft) throw new Error('No announcement draft exists')
+
+      const announcement = draft.announcement_json as AnnouncementInput
+      const row = {
+        id: draft.announcement_id ?? announcement.id ?? undefined,
+        audience: announcement.audience,
+        placement: announcement.placement,
+        title: announcement.title,
+        body: announcement.body,
+        cta_label: announcement.cta_label || null,
+        cta_href: announcement.cta_href || null,
+        starts_at: announcement.starts_at || null,
+        ends_at: announcement.ends_at || null,
+        active: announcement.active,
+        updated_by: user.id,
+      }
+
+      const { data, error: upsertError } = await supabase
+        .from('announcements')
+        .upsert(row, { onConflict: 'id' })
+        .select('id')
+        .single()
+      if (upsertError) throw upsertError
+
+      const { error: publishError } = await supabase
+        .from('announcement_revisions')
+        .update({
+          announcement_id: data.id,
+          revision_state: 'published',
+          published_at: new Date().toISOString(),
+          published_by: user.id,
+        })
+        .eq('id', draft.id)
+      if (publishError) throw publishError
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notifications-summary'] })
+    },
+  })
+}
+
+export function useRestoreAnnouncementRevision() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ announcementKey, revisionId }: { announcementKey: string; revisionId: string }) => {
+      const { user } = await requireAdminPermission('notifications.manage')
+
+      const { data: revision, error } = await supabase
+        .from('announcement_revisions')
+        .select('*')
+        .eq('id', revisionId)
+        .single()
+      if (error) throw error
+
+      const { data: existingDraft, error: existingDraftError } = await supabase
+        .from('announcement_revisions')
+        .select('id')
+        .eq('announcement_key', announcementKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (existingDraftError) throw existingDraftError
+
+      if (existingDraft?.id) {
+        const { error: updateError } = await supabase
+          .from('announcement_revisions')
+          .update({
+            announcement_id: revision.announcement_id,
+            announcement_json: revision.announcement_json,
+          })
+          .eq('id', existingDraft.id)
+        if (updateError) throw updateError
+        return
+      }
+
+      const versionNumber = await getNextRevisionVersion('announcement_revisions', { announcement_key: announcementKey })
+      const { error: insertError } = await supabase
+        .from('announcement_revisions')
+        .insert({
+          announcement_key: announcementKey,
+          announcement_id: revision.announcement_id,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          announcement_json: revision.announcement_json,
+          created_by: user.id,
+        })
+      if (insertError) throw insertError
+    },
+    onSuccess: (_, { announcementKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey, 'latest-draft'] })
     },
   })
 }
@@ -596,10 +1639,7 @@ export function useSaveAppContentEntry() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: AppContentInput) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      const { user } = await requireAdminPermission('content.manage')
 
       const row = {
         ...input,
@@ -616,6 +1656,486 @@ export function useSaveAppContentEntry() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'app-content'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'app-content', input.platform] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'app-content', input.platform, input.screen_key] })
+    },
+  })
+}
+
+export function useLatestAppContentScreenDraft(platform: AppContentInput['platform'], screenKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey, 'latest-draft'],
+    queryFn: async (): Promise<AppContentScreenRevisionRecord | null> => {
+      const { data, error } = await supabase
+        .from('app_content_screen_revisions')
+        .select('*')
+        .eq('platform', platform)
+        .eq('screen_key', screenKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!platform && !!screenKey,
+  })
+}
+
+export function useAppContentScreenRevisions(platform: AppContentInput['platform'], screenKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey],
+    queryFn: async (): Promise<AppContentScreenRevisionRecord[]> => {
+      const { data, error } = await supabase
+        .from('app_content_screen_revisions')
+        .select('*')
+        .eq('platform', platform)
+        .eq('screen_key', screenKey)
+        .order('version_number', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!platform && !!screenKey,
+  })
+}
+
+export function useSaveAppContentScreenDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      platform,
+      screenKey,
+      content,
+    }: {
+      platform: AppContentInput['platform']
+      screenKey: string
+      content: Record<string, string>
+    }) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: existingDraft, error: draftError } = await supabase
+        .from('app_content_screen_revisions')
+        .select('id')
+        .eq('platform', platform)
+        .eq('screen_key', screenKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+
+      if (existingDraft?.id) {
+        const { error } = await supabase
+          .from('app_content_screen_revisions')
+          .update({ content_json: content })
+          .eq('id', existingDraft.id)
+        if (error) throw error
+        return existingDraft.id
+      }
+
+      const versionNumber = await getNextRevisionVersion('app_content_screen_revisions', { platform, screen_key: screenKey })
+      const { data, error } = await supabase
+        .from('app_content_screen_revisions')
+        .insert({
+          platform,
+          screen_key: screenKey,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          content_json: content,
+          created_by: user.id,
+        })
+        .select('id')
+        .single()
+      if (error) throw error
+      return data.id
+    },
+    onSuccess: (_, { platform, screenKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function usePublishAppContentScreenDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      platform,
+      screenKey,
+    }: {
+      platform: AppContentInput['platform']
+      screenKey: string
+    }) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: draft, error: draftError } = await supabase
+        .from('app_content_screen_revisions')
+        .select('*')
+        .eq('platform', platform)
+        .eq('screen_key', screenKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+      if (!draft) throw new Error('No draft exists for this app content screen')
+
+      const content = draft.content_json as Record<string, string>
+      const { data: existingRows, error: existingError } = await supabase
+        .from('app_content')
+        .select('section_key, field_key')
+        .eq('platform', platform)
+        .eq('screen_key', screenKey)
+      if (existingError) throw existingError
+
+      const existingKeys = new Set((existingRows ?? []).map((row) => `${row.section_key}.${row.field_key}`))
+      const nextKeys = new Set(Object.keys(content))
+
+      const rows = Object.entries(content).map(([key, value]) => {
+        const [section_key, field_key] = key.split('.')
+        return {
+          platform,
+          screen_key: screenKey,
+          section_key,
+          field_key,
+          value,
+          status: 'published' as const,
+          updated_by: user.id,
+        }
+      })
+
+      if (rows.length > 0) {
+        const { error } = await supabase
+          .from('app_content')
+          .upsert(rows, { onConflict: 'platform,screen_key,section_key,field_key' })
+        if (error) throw error
+      }
+
+      for (const compositeKey of existingKeys) {
+        if (nextKeys.has(compositeKey)) continue
+        const [section_key, field_key] = compositeKey.split('.')
+        const { error } = await supabase
+          .from('app_content')
+          .delete()
+          .eq('platform', platform)
+          .eq('screen_key', screenKey)
+          .eq('section_key', section_key)
+          .eq('field_key', field_key)
+        if (error) throw error
+      }
+
+      const { error: publishError } = await supabase
+        .from('app_content_screen_revisions')
+        .update({
+          revision_state: 'published',
+          published_at: new Date().toISOString(),
+          published_by: user.id,
+        })
+        .eq('id', draft.id)
+      if (publishError) throw publishError
+    },
+    onSuccess: (_, { platform, screenKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content', platform] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content', platform, screenKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function useRestoreAppContentScreenRevision() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      platform,
+      screenKey,
+      revisionId,
+    }: {
+      platform: AppContentInput['platform']
+      screenKey: string
+      revisionId: string
+    }) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: revision, error } = await supabase
+        .from('app_content_screen_revisions')
+        .select('*')
+        .eq('id', revisionId)
+        .single()
+      if (error) throw error
+
+      const { data: existingDraft, error: existingDraftError } = await supabase
+        .from('app_content_screen_revisions')
+        .select('id')
+        .eq('platform', platform)
+        .eq('screen_key', screenKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (existingDraftError) throw existingDraftError
+
+      if (existingDraft?.id) {
+        const { error: updateError } = await supabase
+          .from('app_content_screen_revisions')
+          .update({ content_json: revision.content_json })
+          .eq('id', existingDraft.id)
+        if (updateError) throw updateError
+        return
+      }
+
+      const versionNumber = await getNextRevisionVersion('app_content_screen_revisions', { platform, screen_key: screenKey })
+      const { error: insertError } = await supabase
+        .from('app_content_screen_revisions')
+        .insert({
+          platform,
+          screen_key: screenKey,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          content_json: revision.content_json,
+          created_by: user.id,
+        })
+      if (insertError) throw insertError
+    },
+    onSuccess: (_, { platform, screenKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function useHelpArticles() {
+  return useQuery({
+    queryKey: ['admin', 'help-articles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('help_articles')
+        .select('*')
+        .order('updated_at', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+}
+
+export function useSaveHelpArticle() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: HelpArticleInput) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const row = {
+        ...input,
+        summary: input.summary || null,
+        updated_by: user.id,
+      }
+
+      const { error } = await supabase
+        .from('help_articles')
+        .upsert(row, { onConflict: 'article_key' })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-articles'] })
+    },
+  })
+}
+
+export function useDeleteHelpArticle() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await requireAdminPermission('content.manage')
+      const { error } = await supabase.from('help_articles').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-articles'] })
+    },
+  })
+}
+
+export function useLatestHelpArticleDraft(articleKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'help-article-revisions', articleKey, 'latest-draft'],
+    queryFn: async (): Promise<HelpArticleRevisionRecord | null> => {
+      const { data, error } = await supabase
+        .from('help_article_revisions')
+        .select('*')
+        .eq('article_key', articleKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    enabled: !!articleKey,
+  })
+}
+
+export function useHelpArticleRevisions(articleKey: string) {
+  return useQuery({
+    queryKey: ['admin', 'help-article-revisions', articleKey],
+    queryFn: async (): Promise<HelpArticleRevisionRecord[]> => {
+      const { data, error } = await supabase
+        .from('help_article_revisions')
+        .select('*')
+        .eq('article_key', articleKey)
+        .order('version_number', { ascending: false })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!articleKey,
+  })
+}
+
+export function useSaveHelpArticleDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: HelpArticleInput) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const articleKey = input.article_key.trim()
+      const payload = {
+        ...input,
+        summary: input.summary || null,
+      }
+
+      const { data: existingDraft, error: draftError } = await supabase
+        .from('help_article_revisions')
+        .select('id')
+        .eq('article_key', articleKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+
+      if (existingDraft?.id) {
+        const { error } = await supabase
+          .from('help_article_revisions')
+          .update({ article_json: payload })
+          .eq('id', existingDraft.id)
+        if (error) throw error
+        return existingDraft.id
+      }
+
+      const versionNumber = await getNextRevisionVersion('help_article_revisions', { article_key: articleKey })
+      const { data, error } = await supabase
+        .from('help_article_revisions')
+        .insert({
+          article_key: articleKey,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          article_json: payload,
+          created_by: user.id,
+        })
+        .select('id')
+        .single()
+      if (error) throw error
+      return data.id
+    },
+    onSuccess: (_, input) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-article-revisions', input.article_key] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-article-revisions', input.article_key, 'latest-draft'] })
+    },
+  })
+}
+
+export function usePublishHelpArticleDraft() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (articleKey: string) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: draft, error: draftError } = await supabase
+        .from('help_article_revisions')
+        .select('*')
+        .eq('article_key', articleKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (draftError) throw draftError
+      if (!draft) throw new Error('No draft exists for this help article')
+
+      const article = draft.article_json as HelpArticleInput
+      const row = {
+        ...article,
+        summary: article.summary || null,
+        status: article.status === 'archived' ? 'archived' : 'published',
+        updated_by: user.id,
+      }
+      const { error: articleError } = await supabase
+        .from('help_articles')
+        .upsert(row, { onConflict: 'article_key' })
+      if (articleError) throw articleError
+
+      const { error: publishError } = await supabase
+        .from('help_article_revisions')
+        .update({
+          revision_state: 'published',
+          published_at: new Date().toISOString(),
+          published_by: user.id,
+        })
+        .eq('id', draft.id)
+      if (publishError) throw publishError
+    },
+    onSuccess: (_, articleKey) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-articles'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-article-revisions', articleKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-article-revisions', articleKey, 'latest-draft'] })
+    },
+  })
+}
+
+export function useRestoreHelpArticleRevision() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ articleKey, revisionId }: { articleKey: string; revisionId: string }) => {
+      const { user } = await requireAdminPermission('content.manage')
+
+      const { data: revision, error } = await supabase
+        .from('help_article_revisions')
+        .select('*')
+        .eq('id', revisionId)
+        .single()
+      if (error) throw error
+
+      const { data: existingDraft, error: existingDraftError } = await supabase
+        .from('help_article_revisions')
+        .select('id')
+        .eq('article_key', articleKey)
+        .eq('revision_state', 'draft')
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (existingDraftError) throw existingDraftError
+
+      if (existingDraft?.id) {
+        const { error: updateError } = await supabase
+          .from('help_article_revisions')
+          .update({ article_json: revision.article_json })
+          .eq('id', existingDraft.id)
+        if (updateError) throw updateError
+        return
+      }
+
+      const versionNumber = await getNextRevisionVersion('help_article_revisions', { article_key: articleKey })
+      const { error: insertError } = await supabase
+        .from('help_article_revisions')
+        .insert({
+          article_key: articleKey,
+          version_number: versionNumber,
+          revision_state: 'draft',
+          article_json: revision.article_json,
+          created_by: user.id,
+        })
+      if (insertError) throw insertError
+    },
+    onSuccess: (_, { articleKey }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-article-revisions', articleKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'help-article-revisions', articleKey, 'latest-draft'] })
     },
   })
 }
@@ -655,6 +2175,7 @@ export function useSaveCategoryFormField() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: CategoryFormFieldInput) => {
+      await requireAdminPermission('tasks.manage')
       const row = {
         ...input,
         description: input.description || null,
@@ -684,6 +2205,7 @@ export function useDeleteCategoryFormField() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, categoryId }: { id: string; categoryId: string }) => {
+      await requireAdminPermission('tasks.manage')
       const { error } = await supabase.from('category_form_fields').delete().eq('id', id)
       if (error) throw error
       return categoryId

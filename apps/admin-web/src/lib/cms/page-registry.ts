@@ -165,6 +165,98 @@ export const pageRegistry: Record<string, PageDefinition> = {
       },
     },
   },
+  '100-handy-star': {
+    label: '100 Handy Star',
+    slug: '/100-handy-star',
+    sections: {
+      hero: {
+        label: 'Hero Section',
+        fields: {
+          badge: { type: 'text', label: 'Badge Text', placeholder: '100 Handy Star' },
+          title: { type: 'text', label: 'Page Title', placeholder: 'The 100 Handy Star' },
+          subtitle: { type: 'text', label: 'Subtitle', placeholder: 'Our top-rated 100 Handy Pros, ready when you are.' },
+          description: { type: 'rich_text', label: 'Description', placeholder: 'The 100 Handy Star badge highlights 100 Handy Pros who consistently deliver outstanding workmanship, clear communication, and a smooth customer experience - task after task.' },
+        },
+      },
+      benefits: {
+        label: 'Benefits Section',
+        fields: {
+          title: { type: 'text', label: 'Section Title', placeholder: 'Why Customers Choose a 100 Handy Star' },
+          benefit_1_title: { type: 'text', label: 'Benefit 1 Title', placeholder: 'Consistently high ratings' },
+          benefit_1_description: { type: 'rich_text', label: 'Benefit 1 Description', placeholder: 'Customers regularly leave glowing reviews for 100 Handy Stars - because they go above and beyond to ensure the job is completed to the highest standard, showcasing their expertise.' },
+          benefit_2_title: { type: 'text', label: 'Benefit 2 Title', placeholder: 'Reliable and responsive' },
+          benefit_2_description: { type: 'rich_text', label: 'Benefit 2 Description', placeholder: "On-time arrivals, quick replies, and updates you can count on - so you're never left guessing." },
+          benefit_3_title: { type: 'text', label: 'Benefit 3 Title', placeholder: 'Experienced and active' },
+          benefit_3_description: { type: 'rich_text', label: 'Benefit 3 Description', placeholder: '100 Handy Stars complete a high number of tasks and bring real, hands-on experience to every booking.' },
+        },
+      },
+      trust: {
+        label: 'Trust Statement',
+        fields: {
+          statement: { type: 'rich_text', label: 'Trust Statement', placeholder: "They're also trusted and dependable, with a strong record of following 100 Handy's Marketplace Guidelines." },
+        },
+      },
+      hire: {
+        label: 'How to Hire Section',
+        fields: {
+          title: { type: 'text', label: 'Section Title', placeholder: 'How Do I Hire a 100 Handy Star?' },
+          description: { type: 'rich_text', label: 'Description', placeholder: "It's simple. When you search for a service, look for the Star badge on a 100 Handy Pro's profile or in your search results. Then compare reviews, rates, and availability to book the right match." },
+          cta: { type: 'text', label: 'CTA Button Text', placeholder: 'Find your Star today' },
+        },
+      },
+    },
+  },
+  'cookie-settings': {
+    label: 'Cookie Settings',
+    slug: '/cookie-settings',
+    sections: {
+      hero: {
+        label: 'Hero Section',
+        fields: {
+          title: { type: 'text', label: 'Page Title', placeholder: 'Cookie Settings' },
+        },
+      },
+      content: {
+        label: 'Main Content',
+        fields: {
+          paragraph_1: { type: 'rich_text', label: 'Paragraph 1', placeholder: "Content coming soon. We're preparing our cookie management interface." },
+          paragraph_2: { type: 'rich_text', label: 'Paragraph 2', placeholder: 'If you have any questions about our cookie policy in the meantime, please contact us at privacy@100handy.com' },
+        },
+      },
+    },
+  },
+  help: {
+    label: 'Help Centre',
+    slug: '/help',
+    sections: {
+      hero: {
+        label: 'Hero Section',
+        fields: {
+          title: { type: 'text', label: 'Page Title', placeholder: 'How can we help?' },
+          subtitle: { type: 'rich_text', label: 'Subtitle', placeholder: 'Are you a 100 Handy Pro? Sign in to view additional resources.' },
+        },
+      },
+      categories: {
+        label: 'Category Labels',
+        fields: {
+          client_title: { type: 'text', label: 'Client Label', placeholder: 'Client' },
+          pro_title: { type: 'text', label: '100 Handy Pro Label', placeholder: '100 Handy Pro' },
+          registration_title: { type: 'text', label: 'Registration Label', placeholder: 'Registration' },
+          account_title: { type: 'text', label: 'Account Label', placeholder: 'Account' },
+          policy_title: { type: 'text', label: 'Policy Label', placeholder: 'Policy Center' },
+        },
+      },
+      ctas: {
+        label: 'CTA Cards',
+        fields: {
+          contact_title: { type: 'text', label: 'Contact CTA Title', placeholder: "Can't find what you need? →" },
+          contact_description: { type: 'rich_text', label: 'Contact CTA Description', placeholder: "Contact us and we'll get back to you as soon as we can." },
+          services_title: { type: 'text', label: 'Services CTA Title', placeholder: 'Ready to book a task? →' },
+          services_description: { type: 'rich_text', label: 'Services CTA Description', placeholder: 'Head over to our website to see our available categories!' },
+        },
+      },
+    },
+  },
   legal: {
     label: 'Legal',
     slug: '/legal',

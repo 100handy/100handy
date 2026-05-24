@@ -4,16 +4,37 @@ import { ScrollView, RefreshControl, Image as RNImage, View, Text, Pressable } f
 import { Loader } from '@/components/ui/loader';
 import { getPastTaskersFromBookings, handymenProfilesToTaskers, type Tasker } from '@/lib/taskers';
 import { useRouter } from 'expo-router';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Pros',
+  'tabs.favourite': 'Favourite Pros',
+  'tabs.past': 'Past Pros',
+  'auth.title': 'Please sign in',
+  'auth.body': 'You need to be signed in to view your pros.',
+  'auth.cta': 'Sign In',
+  'loading.text': 'Loading pros...',
+  'error.title': 'Error loading pros',
+  'error.body': 'Something went wrong. Please try again.',
+  'error.retry': 'Retry',
+  'empty_favourite.title': 'No Favourite Pros',
+  'empty_favourite.body': 'Browse and book pros to add them\nto your favourites.',
+  'empty_past.title': 'No Past Pros',
+  'empty_past.body': 'Your previously booked pros\nwill appear here.',
+} as const;
 
 interface EmptyStateProps {
   activeTab: 'favourite' | 'past';
+  content: Record<string, string>;
 }
 
-function TaskersEmptyState({ activeTab }: EmptyStateProps) {
-  const title = activeTab === 'favourite' ? "No Favourite Pros" : "No Past Pros";
-  const description = activeTab === 'favourite' 
-    ? "Browse and book pros to add them\nto your favourites."
-    : "Your previously booked pros\nwill appear here.";
+function TaskersEmptyState({ activeTab, content }: EmptyStateProps) {
+  const title = activeTab === 'favourite'
+    ? getAppContentValue(content, 'empty_favourite.title', DEFAULT_CONTENT['empty_favourite.title'])
+    : getAppContentValue(content, 'empty_past.title', DEFAULT_CONTENT['empty_past.title']);
+  const description = activeTab === 'favourite'
+    ? getAppContentValue(content, 'empty_favourite.body', DEFAULT_CONTENT['empty_favourite.body'])
+    : getAppContentValue(content, 'empty_past.body', DEFAULT_CONTENT['empty_past.body']);
 
   return (
     <View className="flex-col items-center justify-center py-12 px-8">
@@ -55,6 +76,7 @@ function TaskersEmptyState({ activeTab }: EmptyStateProps) {
 const TaskersScreen = () => {
   const [activeTab, setActiveTab] = useState<'favourite' | 'past'>('favourite');
   const router = useRouter();
+  const content = useAppContent('client_taskers', DEFAULT_CONTENT);
 
   // Get user from auth store
   const { user } = useAuthStore();
@@ -99,7 +121,9 @@ const TaskersScreen = () => {
       <View className="flex-col flex-1">
         {/* Header */}
         <View className="items-center py-4 border-b border-gray-200">
-          <Text className="text-lg font-bold text-[#30352d]">Pros</Text>
+          <Text className="text-lg font-bold text-[#30352d]">
+            {getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
+          </Text>
         </View>
 
         {/* Tabs */}
@@ -116,7 +140,7 @@ const TaskersScreen = () => {
               className="text-sm font-bold"
               style={{ color: '#333a31' }}
             >
-              Favourite Pros
+              {getAppContentValue(content, 'tabs.favourite', DEFAULT_CONTENT['tabs.favourite'])}
             </Text>
           </Pressable>
           <Pressable
@@ -131,7 +155,7 @@ const TaskersScreen = () => {
               className="text-sm font-bold"
               style={{ color: '#333a31' }}
             >
-              Past Pros
+              {getAppContentValue(content, 'tabs.past', DEFAULT_CONTENT['tabs.past'])}
             </Text>
           </Pressable>
         </View>
@@ -148,37 +172,41 @@ const TaskersScreen = () => {
             <View className="flex-1 flex-col items-center justify-center px-8">
               <Users size={64} color="#C1856A" />
               <Text className="text-lg font-medium text-brand-dark mt-4 mb-2">
-                Please sign in
+                {getAppContentValue(content, 'auth.title', DEFAULT_CONTENT['auth.title'])}
               </Text>
               <Text className="text-sm text-[#666666] text-center mb-6">
-                You need to be signed in to view your pros.
+                {getAppContentValue(content, 'auth.body', DEFAULT_CONTENT['auth.body'])}
               </Text>
               <Pressable
                 onPress={() => router.push('/(auth)/(client)/sign-in')}
                 className="px-8 py-3 rounded-full bg-clay-orange"
               >
-                <Text className="text-white font-medium">Sign In</Text>
+                <Text className="text-white font-medium">
+                  {getAppContentValue(content, 'auth.cta', DEFAULT_CONTENT['auth.cta'])}
+                </Text>
               </Pressable>
             </View>
           ) : isLoading ? (
-            <Loader text="Loading pros..." />
+            <Loader text={getAppContentValue(content, 'loading.text', DEFAULT_CONTENT['loading.text'])} />
           ) : isError ? (
             <View className="flex-col items-center justify-center py-12 px-8">
               <Text className="text-lg font-medium text-[#333a31] mb-2">
-                Error loading pros
+                {getAppContentValue(content, 'error.title', DEFAULT_CONTENT['error.title'])}
               </Text>
               <Text className="text-sm text-[#666] text-center mb-4">
-                Something went wrong. Please try again.
+                {getAppContentValue(content, 'error.body', DEFAULT_CONTENT['error.body'])}
               </Text>
               <Pressable
                 onPress={onRefresh}
                 className="bg-[#c1856a] px-6 py-3 rounded-full"
               >
-                <Text className="text-white font-semibold">Retry</Text>
+                <Text className="text-white font-semibold">
+                  {getAppContentValue(content, 'error.retry', DEFAULT_CONTENT['error.retry'])}
+                </Text>
               </Pressable>
             </View>
           ) : taskers.length === 0 ? (
-            <TaskersEmptyState activeTab={activeTab} />
+            <TaskersEmptyState activeTab={activeTab} content={content} />
           ) : (
             <View className="flex-col px-6 pt-4">
               {taskers.map((tasker) => (

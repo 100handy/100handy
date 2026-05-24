@@ -4,6 +4,14 @@ import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable,
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { getCategoryIcon } from '@/lib/category-icons';
 import { getAppCategoryImageMap, getAppCategoryImageUri, type AppCategoryImageMap } from '@/lib/category-images';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'hero.title': 'What task do you need done?',
+  'search.placeholder': 'Try: painting, moving, repairs',
+  'location.fallback_line_1': 'Set your location',
+  'location.fallback_line_2': '',
+} as const;
 
 // Subcategory card component for horizontal scroll
 interface SubcategoryCardProps {
@@ -127,6 +135,7 @@ export function ServicesHomeScreen() {
   const [showBookingSheet, setShowBookingSheet] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState({ id: '', name: '' });
   const [categoryImages, setCategoryImages] = useState<AppCategoryImageMap>({});
+  const content = useAppContent('client_home', DEFAULT_CONTENT);
 
   useEffect(() => {
     getAppCategoryImageMap().then(setCategoryImages);
@@ -136,8 +145,8 @@ export function ServicesHomeScreen() {
   const getLocationDisplay = () => {
     if (!location || !location.streetAddress) {
       return {
-        line1: 'Set your location',
-        line2: ''
+        line1: getAppContentValue(content, 'location.fallback_line_1', DEFAULT_CONTENT['location.fallback_line_1']),
+        line2: getAppContentValue(content, 'location.fallback_line_2', DEFAULT_CONTENT['location.fallback_line_2'])
       };
     }
 
@@ -210,7 +219,7 @@ export function ServicesHomeScreen() {
           {/* Search Section with Dark Background */}
           <View className="px-5 pt-5 pb-5 flex-col" style={{ backgroundColor: '#30352D' }}>
             <Text className="text-xl font-bold text-white mb-4">
-              What task do you need done?
+              {getAppContentValue(content, 'hero.title', DEFAULT_CONTENT['hero.title'])}
             </Text>
 
             {/* Search Input - Navigate to Search Screen */}
@@ -226,7 +235,7 @@ export function ServicesHomeScreen() {
               >
                 <Search size={18} color="#8b9199" />
                 <Text style={{ color: '#8b9199', fontSize: 15 }}>
-                  Try: painting, moving, repairs
+                  {getAppContentValue(content, 'search.placeholder', DEFAULT_CONTENT['search.placeholder'])}
                 </Text>
               </View>
             </TouchableOpacity>

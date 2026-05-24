@@ -6,8 +6,8 @@ export default function AccountsOverviewPage() {
   const { data: summary, isLoading } = useAccountsSummary()
   const cards = [
     {
-      title: 'Security Options',
-      description: 'Review account security policies, password controls, and administrative safeguards.',
+      title: 'Admin Access & Security',
+      description: 'Manage admin permission scopes, lifecycle access, and operational safeguards.',
       href: '/accounts/security',
       icon: Shield,
     },

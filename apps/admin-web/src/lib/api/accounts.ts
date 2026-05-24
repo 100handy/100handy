@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
 /**
@@ -37,6 +38,13 @@ export interface AccountsSummary {
 }
 
 export type AccountLifecycleStatus = 'active' | 'paused' | 'deleted'
+export type AdminRole =
+  | 'super_admin'
+  | 'content_admin'
+  | 'ops_admin'
+  | 'support_admin'
+  | 'finance_admin'
+  | 'seo_admin'
 
 export interface AccountStatusUser {
   user_id: string
@@ -49,6 +57,17 @@ export interface AccountStatusUser {
   status_reason: string | null
   status_updated_at: string
   deleted_at: string | null
+  created_at: string
+}
+
+export interface AdminAccessUser {
+  user_id: string
+  first_name: string | null
+  last_name: string | null
+  email?: string
+  account_status: AccountLifecycleStatus
+  admin_role: AdminRole | null
+  status_reason: string | null
   created_at: string
 }
 
@@ -156,7 +175,7 @@ export function useAccountsSummary() {
     queryFn: async (): Promise<AccountsSummary> => {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, role')
+        .select('user_id, role, account_status')
 
       if (profilesError) throw profilesError
 
@@ -221,6 +240,39 @@ export function useAccountStatusUsers(status: AccountLifecycleStatus) {
   })
 }
 
+export function useAdminAccessUsers() {
+  return useQuery({
+    queryKey: ['accounts', 'admin-access-users'],
+    queryFn: async (): Promise<AdminAccessUser[]> => {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name, account_status, admin_role, status_reason, created_at')
+        .eq('role', 'admin')
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+
+      const emailMap = new Map<string, string>()
+      for (const profile of profiles ?? []) {
+        try {
+          const { data: authData } = await supabase.auth.admin.getUserById(profile.user_id)
+          if (authData?.user?.email) {
+            emailMap.set(profile.user_id, authData.user.email)
+          }
+        } catch {
+          // optional
+        }
+      }
+
+      return (profiles ?? []).map((profile) => ({
+        ...profile,
+        email: emailMap.get(profile.user_id),
+      }))
+    },
+    staleTime: 30 * 1000,
+  })
+}
+
 export function useUpdateAccountLifecycleStatus() {
   const queryClient = useQueryClient()
 
@@ -234,6 +286,7 @@ export function useUpdateAccountLifecycleStatus() {
       status: AccountLifecycleStatus
       reason?: string | null
     }) => {
+      await requireAdminPermission('accounts.manage')
       const payload = {
         account_status: status,
         status_reason: reason || null,
@@ -257,7 +310,41 @@ export function useUpdateAccountLifecycleStatus() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts', 'summary'] })
       queryClient.invalidateQueries({ queryKey: ['accounts', 'status-users'] })
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'admin-access-users'] })
       queryClient.invalidateQueries({ queryKey: ['users'] })
+    },
+  })
+}
+
+export function useUpdateAdminRole() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      adminRole,
+    }: {
+      userId: string
+      adminRole: AdminRole
+    }) => {
+      await requireAdminPermission('accounts.manage')
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          admin_role: adminRole,
+          status_updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .select('user_id, first_name, last_name, account_status, admin_role, status_reason, created_at')
+        .single()
+
+      if (error) throw error
+
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'admin-access-users'] })
     },
   })
 }

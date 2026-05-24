@@ -1,10 +1,17 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { DynamicFormRenderer } from '@/components/booking'; import type { FormResponse } from '@shared/supabase';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 export default function TaskFormScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const content = useAppContent('client_task_form', {
+    'header.title': 'Task Form',
+    'error.invalid_title': 'Invalid category',
+    'error.invalid_body': 'The task category could not be determined. Please go back and try again.',
+    'error.back_cta': 'Go Back',
+  });
 
   // Task details from params
   const taskerId = params.taskerId as string;
@@ -22,22 +29,24 @@ export default function TaskFormScreen() {
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
           <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
-            Task Form
+            {getAppContentValue(content, 'header.title', 'Task Form')}
           </Text>
         </View>
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
-            Invalid category
+            {getAppContentValue(content, 'error.invalid_title', 'Invalid category')}
           </Text>
           <Text className="text-sm text-gray-600 text-center mb-6">
-            The task category could not be determined. Please go back and try again.
+            {getAppContentValue(content, 'error.invalid_body', 'The task category could not be determined. Please go back and try again.')}
           </Text>
           <Pressable
             onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')}
             className="px-8 py-3 rounded-full"
             style={{ backgroundColor: '#C1856A' }}
           >
-            <Text className="text-white font-medium">Go Back</Text>
+            <Text className="text-white font-medium">
+              {getAppContentValue(content, 'error.back_cta', 'Go Back')}
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>

@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ExternalLink, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
+import { FieldErrorText } from '@/components/editor/FieldErrorText'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   useDeleteEmailTemplate,
+  useEmailDeliveryJobs,
   useEmailTemplates,
+  useSendEmailCampaign,
   useSaveEmailTemplate,
 } from '@/lib/api/content-platform'
 
@@ -30,9 +34,13 @@ const emptyCampaignDraft = {
 }
 
 export default function EmailNotifications() {
+  const { hasPermission } = useAuth()
+  const canManageNotifications = hasPermission('notifications.manage')
   const { data: templates = [], isLoading } = useEmailTemplates()
+  const { data: deliveryJobs = [] } = useEmailDeliveryJobs()
   const saveTemplate = useSaveEmailTemplate()
   const deleteTemplate = useDeleteEmailTemplate()
+  const sendCampaign = useSendEmailCampaign()
 
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -72,11 +80,32 @@ export default function EmailNotifications() {
   const templateRows = filtered.filter((item) => item.template_kind === 'template')
   const draftRows = filtered.filter((item) => item.template_kind === 'campaign_draft')
 
+  const templateErrors = {
+    template_key: !form.template_key.trim() ? 'Template key is required.' : null,
+    title: !form.title.trim() ? 'Title is required.' : null,
+    subject: !form.subject.trim() ? 'Subject is required.' : null,
+    body: !form.body.trim() ? 'Body is required.' : null,
+  }
+  const draftErrors = {
+    template_key: !draftForm.template_key.trim() ? 'Draft key is required.' : null,
+    title: !draftForm.title.trim() ? 'Draft title is required.' : null,
+    subject: !draftForm.subject.trim() ? 'Subject is required.' : null,
+    body: !draftForm.body.trim() ? 'Message is required.' : null,
+  }
+  const canSaveTemplate = canManageNotifications && !templateErrors.template_key && !templateErrors.title && !templateErrors.subject && !templateErrors.body
+  const canSaveDraft = canManageNotifications && !draftErrors.template_key && !draftErrors.title && !draftErrors.subject && !draftErrors.body
+  const canSendDraft = canSaveDraft
+
   return (
     <div className="flex-1 flex flex-col">
       <Header title="Email Notifications" />
 
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        {!canManageNotifications && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            Your admin role can view email templates and delivery history, but it cannot change or send them.
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -89,6 +118,7 @@ export default function EmailNotifications() {
             />
           </div>
           <button
+            disabled={!canManageNotifications}
             onClick={() => {
               setSelectedId(null)
               setForm(emptyTemplate)
@@ -155,12 +185,34 @@ export default function EmailNotifications() {
         </section>
 
         <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <div className="mb-4 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delivery Jobs</h3>
+            <div className="mt-3 space-y-2">
+              {deliveryJobs.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No delivery jobs yet.</p>
+              ) : deliveryJobs.slice(0, 5).map((job) => (
+                <div key={job.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700">
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{job.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {job.recipient_group} · {job.delivery_status} · {job.sent_count}/{job.recipient_count} sent
+                    </p>
+                  </div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {format(new Date(job.triggered_at), 'MMM d, yyyy HH:mm')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
             {selectedId ? 'Edit Email Template' : 'Create Email Template'}
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field label="Template Key" value={form.template_key} onChange={(value) => setForm((prev) => ({ ...prev, template_key: value }))} />
+            <FieldErrorText error={templateErrors.template_key} />
             <Field label="Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
+            <FieldErrorText error={templateErrors.title} />
             <SelectField
               label="Recipient Group"
               value={form.recipient_group}
@@ -170,12 +222,14 @@ export default function EmailNotifications() {
             <ToggleField label="Active" checked={form.active} onChange={(checked) => setForm((prev) => ({ ...prev, active: checked }))} />
             <div className="md:col-span-2">
               <Field label="Subject" value={form.subject} onChange={(value) => setForm((prev) => ({ ...prev, subject: value }))} />
+              <FieldErrorText error={templateErrors.subject} />
             </div>
             <div className="md:col-span-2">
               <Field label="Preview Text" value={form.preview_text} onChange={(value) => setForm((prev) => ({ ...prev, preview_text: value }))} />
             </div>
             <div className="md:col-span-2">
               <TextAreaField label="Body" value={form.body} onChange={(value) => setForm((prev) => ({ ...prev, body: value }))} rows={10} />
+              <FieldErrorText error={templateErrors.body} />
             </div>
           </div>
 
@@ -194,7 +248,7 @@ export default function EmailNotifications() {
                   active: form.active,
                 })
               }
-              disabled={saveTemplate.isPending}
+              disabled={saveTemplate.isPending || !canSaveTemplate}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {saveTemplate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -246,7 +300,9 @@ export default function EmailNotifications() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field label="Draft Key" value={draftForm.template_key} onChange={(value) => setDraftForm((prev) => ({ ...prev, template_key: value }))} />
+            <FieldErrorText error={draftErrors.template_key} />
             <Field label="Draft Title" value={draftForm.title} onChange={(value) => setDraftForm((prev) => ({ ...prev, title: value }))} />
+            <FieldErrorText error={draftErrors.title} />
             <SelectField
               label="Recipient Group"
               value={draftForm.recipient_group}
@@ -254,15 +310,34 @@ export default function EmailNotifications() {
               options={['all', 'client', 'professional']}
             />
             <Field label="Subject" value={draftForm.subject} onChange={(value) => setDraftForm((prev) => ({ ...prev, subject: value }))} />
+            <FieldErrorText error={draftErrors.subject} />
             <div className="md:col-span-2">
               <Field label="Preview Text" value={draftForm.preview_text} onChange={(value) => setDraftForm((prev) => ({ ...prev, preview_text: value }))} />
             </div>
             <div className="md:col-span-2">
               <TextAreaField label="Message" value={draftForm.body} onChange={(value) => setDraftForm((prev) => ({ ...prev, body: value }))} rows={8} />
+              <FieldErrorText error={draftErrors.body} />
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              onClick={() =>
+                sendCampaign.mutate({
+                  templateKey: draftForm.template_key,
+                  title: draftForm.title,
+                  recipientGroup: draftForm.recipient_group,
+                  subject: draftForm.subject,
+                  previewText: draftForm.preview_text,
+                  body: draftForm.body,
+                })
+              }
+              disabled={sendCampaign.isPending || !canSendDraft}
+              className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-900/60 dark:text-emerald-300 dark:hover:bg-emerald-950/20"
+            >
+              {sendCampaign.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send Draft
+            </button>
             <button
               onClick={() =>
                 saveTemplate.mutate({
@@ -276,13 +351,41 @@ export default function EmailNotifications() {
                   active: false,
                 })
               }
-              disabled={saveTemplate.isPending}
+              disabled={saveTemplate.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {saveTemplate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save Draft
             </button>
           </div>
+
+          {draftForm.body && (
+            <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Preview</span>
+                <a
+                  href="mailto:"
+                  className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Preview Layout
+                </a>
+              </div>
+              <div className="bg-white p-6 text-sm">
+                <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">Subject</div>
+                <div className="mb-4 font-semibold text-gray-900">{draftForm.subject || 'No subject'}</div>
+                {draftForm.preview_text && (
+                  <>
+                    <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">Preview text</div>
+                    <div className="mb-4 text-gray-600">{draftForm.preview_text}</div>
+                  </>
+                )}
+                <div className="rounded-lg border border-gray-200 p-4 whitespace-pre-wrap text-gray-800">
+                  {draftForm.body || 'No message body'}
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       </main>
     </div>

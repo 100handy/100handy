@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { Check, Loader2, Plus, Rocket, Save, Search, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
+import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
+import { isValidHref } from '@/lib/editor-validation'
 import {
+  useAnnouncementRevisions,
   useAnnouncements,
   useDeleteAnnouncement,
-  useSaveAnnouncement,
+  useLatestAnnouncementDraft,
+  usePublishAnnouncementDraft,
+  useRestoreAnnouncementRevision,
+  useSaveAnnouncementDraft,
 } from '@/lib/api/content-platform'
 
 const emptyAnnouncement = {
@@ -21,50 +29,132 @@ const emptyAnnouncement = {
 }
 
 export default function AnnouncementsPage() {
+  const { hasPermission } = useAuth()
+  const canManageNotifications = hasPermission('notifications.manage')
   const { data: announcements = [], isLoading } = useAnnouncements()
-  const saveAnnouncement = useSaveAnnouncement()
+  const saveDraft = useSaveAnnouncementDraft()
+  const publishDraft = usePublishAnnouncementDraft()
+  const restoreRevision = useRestoreAnnouncementRevision()
   const deleteAnnouncement = useDeleteAnnouncement()
 
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [draftKey, setDraftKey] = useState<string>(`draft-${crypto.randomUUID()}`)
   const [form, setForm] = useState(emptyAnnouncement)
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
 
   const selected = announcements.find((item) => item.id === selectedId) ?? null
+  const effectiveAnnouncementKey = selected?.id ?? draftKey
+  const { data: latestDraft } = useLatestAnnouncementDraft(effectiveAnnouncementKey)
+  const { data: revisions = [] } = useAnnouncementRevisions(effectiveAnnouncementKey)
 
   useEffect(() => {
-    if (!selected) {
+    const draftAnnouncement = latestDraft?.announcement_json as Record<string, unknown> | undefined
+    if (!selected && !latestDraft) {
       setForm(emptyAnnouncement)
       return
     }
 
     setForm({
-      audience: selected.audience,
-      placement: selected.placement,
-      title: selected.title,
-      body: selected.body,
-      cta_label: selected.cta_label ?? '',
-      cta_href: selected.cta_href ?? '',
-      starts_at: selected.starts_at ? selected.starts_at.slice(0, 16) : '',
-      ends_at: selected.ends_at ? selected.ends_at.slice(0, 16) : '',
-      active: selected.active,
+      audience: (draftAnnouncement?.audience as typeof emptyAnnouncement.audience | undefined) ?? selected?.audience ?? 'all',
+      placement: (draftAnnouncement?.placement as typeof emptyAnnouncement.placement | undefined) ?? selected?.placement ?? 'dashboard',
+      title: (draftAnnouncement?.title as string | undefined) ?? selected?.title ?? '',
+      body: (draftAnnouncement?.body as string | undefined) ?? selected?.body ?? '',
+      cta_label: (draftAnnouncement?.cta_label as string | undefined) ?? selected?.cta_label ?? '',
+      cta_href: (draftAnnouncement?.cta_href as string | undefined) ?? selected?.cta_href ?? '',
+      starts_at: typeof draftAnnouncement?.starts_at === 'string'
+        ? draftAnnouncement.starts_at.slice(0, 16)
+        : selected?.starts_at ? selected.starts_at.slice(0, 16) : '',
+      ends_at: typeof draftAnnouncement?.ends_at === 'string'
+        ? draftAnnouncement.ends_at.slice(0, 16)
+        : selected?.ends_at ? selected.ends_at.slice(0, 16) : '',
+      active: (draftAnnouncement?.active as boolean | undefined) ?? selected?.active ?? true,
     })
-  }, [selected])
+  }, [selected, latestDraft])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return announcements
     return announcements.filter((item) =>
       [item.title, item.body, item.audience, item.placement].some((value) =>
-        value.toLowerCase().includes(q)
-      )
+        value.toLowerCase().includes(q),
+      ),
     )
   }, [announcements, search])
+
+  const isDirty = useMemo(() => {
+    if (!latestDraft) return false
+    return JSON.stringify(form) !== JSON.stringify({
+      audience: latestDraft.announcement_json?.audience ?? 'all',
+      placement: latestDraft.announcement_json?.placement ?? 'dashboard',
+      title: latestDraft.announcement_json?.title ?? '',
+      body: latestDraft.announcement_json?.body ?? '',
+      cta_label: latestDraft.announcement_json?.cta_label ?? '',
+      cta_href: latestDraft.announcement_json?.cta_href ?? '',
+      starts_at: typeof latestDraft.announcement_json?.starts_at === 'string' ? String(latestDraft.announcement_json.starts_at).slice(0, 16) : '',
+      ends_at: typeof latestDraft.announcement_json?.ends_at === 'string' ? String(latestDraft.announcement_json.ends_at).slice(0, 16) : '',
+      active: latestDraft.announcement_json?.active ?? true,
+    })
+  }, [form, latestDraft])
+
+  useUnsavedChangesWarning(isDirty)
+
+  const validationErrors = useMemo(() => {
+    const errors: string[] = []
+    if (!form.title.trim()) errors.push('Title is required.')
+    if (!form.body.trim()) errors.push('Body is required.')
+    if (form.cta_label.trim() && !form.cta_href.trim()) errors.push('CTA href is required when a CTA label is set.')
+    if (form.cta_href.trim() && !isValidHref(form.cta_href)) errors.push('CTA href must start with "/" or "http(s)://".')
+    if (form.starts_at && form.ends_at && new Date(form.starts_at) > new Date(form.ends_at)) {
+      errors.push('End date must be after the start date.')
+    }
+    return errors
+  }, [form])
+
+  const canSaveDraft = canManageNotifications && validationErrors.length === 0
+  const canPublish = canManageNotifications && validationErrors.length === 0 && !!latestDraft
+
+  const persistDraft = async () => {
+    if (!canSaveDraft) return
+    setActionFeedback(null)
+    await saveDraft.mutateAsync({
+      announcementKey: effectiveAnnouncementKey,
+      announcementId: selected?.id,
+      announcement: {
+        id: selected?.id,
+        audience: form.audience,
+        placement: form.placement,
+        title: form.title,
+        body: form.body,
+        cta_label: form.cta_label,
+        cta_href: form.cta_href,
+        starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
+        ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+        active: form.active,
+      },
+    })
+    setActionFeedback('Draft saved')
+    setTimeout(() => setActionFeedback(null), 3000)
+  }
+
+  const publish = async () => {
+    if (!canPublish) return
+    setActionFeedback(null)
+    await publishDraft.mutateAsync(effectiveAnnouncementKey)
+    setActionFeedback('Published')
+    setTimeout(() => setActionFeedback(null), 3000)
+  }
 
   return (
     <div className="flex-1 flex flex-col">
       <Header title="Announcements & Notifications" />
 
       <main className="flex-1 p-6 space-y-6 overflow-y-auto">
+        {!canManageNotifications && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            Your admin role can view announcements, but it cannot change or publish them.
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -76,8 +166,10 @@ export default function AnnouncementsPage() {
             />
           </div>
           <button
+            disabled={!canManageNotifications}
             onClick={() => {
               setSelectedId(null)
+              setDraftKey(`draft-${crypto.randomUUID()}`)
               setForm(emptyAnnouncement)
             }}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
@@ -136,6 +228,24 @@ export default function AnnouncementsPage() {
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <UnsavedChangesBanner show={isDirty} />
+          {validationErrors.length > 0 && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+              {validationErrors.map((error) => <div key={error}>{error}</div>)}
+            </div>
+          )}
+          <div className="mb-4 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Announcement edits now stage as drafts before they reach live placements.
+              </p>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
+              </div>
+            </div>
+            {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
+          </div>
+
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
             {selectedId ? 'Edit Announcement' : 'Create Announcement'}
           </h3>
@@ -153,11 +263,7 @@ export default function AnnouncementsPage() {
               onChange={(value) => setForm((prev) => ({ ...prev, placement: value as typeof prev.placement }))}
               options={['dashboard', 'banner', 'modal', 'support']}
             />
-            <ToggleField
-              label="Active"
-              checked={form.active}
-              onChange={(checked) => setForm((prev) => ({ ...prev, active: checked }))}
-            />
+            <ToggleField label="Active" checked={form.active} onChange={(checked) => setForm((prev) => ({ ...prev, active: checked }))} />
             <div className="md:col-span-2">
               <TextAreaField label="Body" value={form.body} onChange={(value) => setForm((prev) => ({ ...prev, body: value }))} rows={5} />
             </div>
@@ -167,28 +273,45 @@ export default function AnnouncementsPage() {
             <DateTimeField label="Ends At" value={form.ends_at} onChange={(value) => setForm((prev) => ({ ...prev, ends_at: value }))} />
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex justify-end gap-3">
             <button
-              onClick={() =>
-                saveAnnouncement.mutate({
-                  id: selected?.id,
-                  audience: form.audience,
-                  placement: form.placement,
-                  title: form.title,
-                  body: form.body,
-                  cta_label: form.cta_label,
-                  cta_href: form.cta_href,
-                  starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
-                  ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
-                  active: form.active,
-                })
-              }
-              disabled={saveAnnouncement.isPending}
+              onClick={persistDraft}
+              disabled={saveDraft.isPending || publishDraft.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              {saveAnnouncement.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Save Announcement
+              {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
             </button>
+            <button
+              onClick={publish}
+              disabled={publishDraft.isPending || saveDraft.isPending || !canPublish}
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+            >
+              {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+              {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+            </button>
+          </div>
+
+          <div className="mt-6 space-y-3">
+            <h4 className="font-semibold text-gray-900 dark:text-white">Revision History</h4>
+            {revisions.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No revisions yet.</p>
+            ) : revisions.map((revision) => (
+              <div key={revision.id} className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">v{revision.version_number} · {revision.revision_state}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(revision.updated_at).toLocaleString()}</p>
+                </div>
+                {revision.revision_state === 'published' && (
+                  <button
+                    onClick={() => restoreRevision.mutate({ announcementKey: effectiveAnnouncementKey, revisionId: revision.id })}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    Restore to Draft
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </main>

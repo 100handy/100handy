@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/lib/database.types'
 
@@ -439,6 +440,7 @@ export function useSaveAdminAvailabilitySlot() {
 
   return useMutation({
     mutationFn: async (input: Omit<AdminAvailabilitySlot, 'created_at' | 'updated_at'>) => {
+      await requireAdminPermission('handys.manage')
       const row = {
         ...input,
         ends_on: input.ends_on || null,
@@ -470,6 +472,7 @@ export function useDeleteAdminAvailabilitySlot() {
 
   return useMutation({
     mutationFn: async ({ id, userId }: { id: string; userId: string }) => {
+      await requireAdminPermission('handys.manage')
       const { error } = await supabase
         .from('professional_availability')
         .delete()

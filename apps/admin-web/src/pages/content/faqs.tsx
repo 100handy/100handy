@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Edit, Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Edit, Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
+import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
 import { useDeleteFaqItem, useFaqItems, useSaveFaqItem } from '@/lib/api/content-platform'
 
 const emptyFaq = {
@@ -12,6 +15,8 @@ const emptyFaq = {
 }
 
 export default function FAQsPage() {
+  const { hasPermission } = useAuth()
+  const canManageContent = hasPermission('content.manage')
   const { data: faqItems = [], isLoading } = useFaqItems()
   const saveFaq = useSaveFaqItem()
   const deleteFaq = useDeleteFaqItem()
@@ -47,11 +52,74 @@ export default function FAQsPage() {
     )
   }, [faqItems, search])
 
+  const isDirty = useMemo(() => {
+    if (!selected) {
+      return JSON.stringify(form) !== JSON.stringify(emptyFaq)
+    }
+
+    return JSON.stringify(form) !== JSON.stringify({
+      faq_group: selected.faq_group,
+      question: selected.question,
+      answer: selected.answer,
+      sort_order: selected.sort_order,
+      visible: selected.visible,
+    })
+  }, [form, selected])
+
+  useUnsavedChangesWarning(isDirty)
+
+  const validationErrors = useMemo(() => {
+    const errors: string[] = []
+    if (!form.faq_group.trim()) errors.push('Category is required.')
+    if (!form.question.trim()) errors.push('Question is required.')
+    if (!form.answer.trim()) errors.push('Answer is required.')
+    return errors
+  }, [form.faq_group, form.question, form.answer])
+
+  const canSaveFaq = canManageContent && validationErrors.length === 0
+
+  const moveFaq = async (faqId: string, direction: 'up' | 'down') => {
+    if (!canManageContent) return
+    const sorted = [...filtered].sort((a, b) => a.sort_order - b.sort_order)
+    const index = sorted.findIndex((item) => item.id === faqId)
+    if (index === -1) return
+    const swapIndex = direction === 'up' ? index - 1 : index + 1
+    if (swapIndex < 0 || swapIndex >= sorted.length) return
+
+    const current = sorted[index]
+    const target = sorted[swapIndex]
+
+    await Promise.all([
+      saveFaq.mutateAsync({
+        id: current.id,
+        faq_group: current.faq_group,
+        question: current.question,
+        answer: current.answer,
+        sort_order: target.sort_order,
+        visible: current.visible,
+      }),
+      saveFaq.mutateAsync({
+        id: target.id,
+        faq_group: target.faq_group,
+        question: target.question,
+        answer: target.answer,
+        sort_order: current.sort_order,
+        visible: target.visible,
+      }),
+    ])
+  }
+
   return (
     <div className="flex-1 flex flex-col">
       <Header title="FAQs Management" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-6xl mx-auto space-y-8">
+          <UnsavedChangesBanner show={isDirty} />
+          {!canManageContent && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+              Your admin role can view FAQs, but it cannot change them.
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="relative w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -68,6 +136,7 @@ export default function FAQsPage() {
                 setSelectedId(null)
                 setForm(emptyFaq)
               }}
+              disabled={!canManageContent}
               className="bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary/90"
             >
               <Plus className="w-4 h-4" />
@@ -106,10 +175,24 @@ export default function FAQsPage() {
                     <td className="px-6 py-4">{faq.sort_order}</td>
                     <td className="px-6 py-4">{faq.visible ? 'Yes' : 'No'}</td>
                     <td className="px-6 py-4 text-right">
-                      <button onClick={() => setSelectedId(faq.id)} className="font-medium text-primary hover:underline mr-4">
+                      <button
+                        onClick={() => moveFaq(faq.id, 'up')}
+                        disabled={!canManageContent}
+                        className="font-medium text-gray-600 hover:underline mr-2"
+                      >
+                        <ArrowUp className="w-4 h-4 inline" />
+                      </button>
+                      <button
+                        onClick={() => moveFaq(faq.id, 'down')}
+                        disabled={!canManageContent}
+                        className="font-medium text-gray-600 hover:underline mr-4"
+                      >
+                        <ArrowDown className="w-4 h-4 inline" />
+                      </button>
+                      <button onClick={() => setSelectedId(faq.id)} disabled={!canManageContent} className="font-medium text-primary hover:underline mr-4 disabled:opacity-50">
                         <Edit className="w-4 h-4 inline" />
                       </button>
-                      <button onClick={() => deleteFaq.mutate(faq.id)} className="font-medium text-red-600 dark:text-red-500 hover:underline">
+                      <button onClick={() => deleteFaq.mutate(faq.id)} disabled={!canManageContent} className="font-medium text-red-600 dark:text-red-500 hover:underline disabled:opacity-50">
                         <Trash2 className="w-4 h-4 inline" />
                       </button>
                     </td>
@@ -120,6 +203,11 @@ export default function FAQsPage() {
           </div>
 
           <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+            {validationErrors.length > 0 && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+                {validationErrors.map((error) => <div key={error}>{error}</div>)}
+              </div>
+            )}
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">
               {selectedId ? 'Edit FAQ' : 'Create FAQ'}
             </h3>
@@ -174,7 +262,7 @@ export default function FAQsPage() {
                   sort_order: form.sort_order,
                   visible: form.visible,
                 })}
-                disabled={saveFaq.isPending}
+                disabled={saveFaq.isPending || !canSaveFaq}
                 className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50"
               >
                 {saveFaq.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

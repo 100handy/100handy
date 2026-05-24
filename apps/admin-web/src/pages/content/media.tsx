@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Film, Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ExternalLink, Film, Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
+import { FieldErrorText } from '@/components/editor/FieldErrorText'
+import { useAuth } from '@/contexts/AuthContext'
+import { isValidUrl } from '@/lib/editor-validation'
 import {
   useDeleteMediaAsset,
   useMediaAssets,
@@ -127,6 +130,8 @@ const defaultAppOnboarding: AppOnboardingState = {
 const defaultAppCategories: AppCategoryState = Object.fromEntries(appCategoryImageKeys.map((key) => [key, '']))
 
 export default function MediaPage() {
+  const { hasPermission } = useAuth()
+  const canManageContent = hasPermission('content.manage')
   const { data: media = [], isLoading } = useMediaAssets()
   const { data: settings = [] } = useSiteSettings([
     'brand.logos',
@@ -230,12 +235,26 @@ export default function MediaPage() {
     () => filtered.filter((item): item is MediaAssetRecord => item.asset_type === 'image'),
     [filtered]
   )
+  const assetErrors = {
+    asset_key: !assetForm.asset_key.trim() ? 'Asset key is required.' : null,
+    url: !assetForm.url.trim()
+      ? 'Asset URL is required.'
+      : !isValidUrl(assetForm.url.trim())
+        ? 'Asset URL must be a valid absolute URL.'
+        : null,
+  }
+  const canSaveAsset = canManageContent && !assetErrors.asset_key && !assetErrors.url
 
   return (
     <div className="flex-1 flex flex-col">
       <Header title="Media Library" />
       <div className="flex-1 overflow-y-auto bg-background-light p-8 dark:bg-background-dark">
         <div className="mx-auto max-w-7xl space-y-8">
+          {!canManageContent && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+              Your admin role can view media and image mappings, but it cannot change them.
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="relative w-72">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -249,6 +268,7 @@ export default function MediaPage() {
             </div>
             <button
               className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90"
+              disabled={!canManageContent}
               onClick={() => {
                 setSelectedId(null)
                 setAssetForm(emptyAsset)
@@ -291,7 +311,9 @@ export default function MediaPage() {
           <Panel title={selectedId ? 'Edit Media Asset' : 'Create Media Asset'}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="Asset Key" value={assetForm.asset_key} onChange={(value) => setAssetForm((prev) => ({ ...prev, asset_key: value }))} />
+              <FieldErrorText error={assetErrors.asset_key} />
               <Field label="URL" value={assetForm.url} onChange={(value) => setAssetForm((prev) => ({ ...prev, url: value }))} />
+              <FieldErrorText error={assetErrors.url} />
               <Field label="Title" value={assetForm.title} onChange={(value) => setAssetForm((prev) => ({ ...prev, title: value }))} />
               <Field label="Alt Text" value={assetForm.alt_text} onChange={(value) => setAssetForm((prev) => ({ ...prev, alt_text: value }))} />
               <Field label="Tags (comma separated)" value={assetForm.tags} onChange={(value) => setAssetForm((prev) => ({ ...prev, tags: value }))} />
@@ -310,6 +332,17 @@ export default function MediaPage() {
               <ToggleField label="Active" checked={assetForm.active} onChange={(checked) => setAssetForm((prev) => ({ ...prev, active: checked }))} />
             </div>
             <div className="flex justify-end pt-4">
+              {assetForm.url && isValidUrl(assetForm.url) && (
+                <a
+                  href={assetForm.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mr-3 inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Preview Asset
+                </a>
+              )}
               <button
                 onClick={() =>
                   saveMedia.mutate({
@@ -324,7 +357,7 @@ export default function MediaPage() {
                     active: assetForm.active,
                   })
                 }
-                disabled={saveMedia.isPending}
+                disabled={saveMedia.isPending || !canSaveAsset}
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
               >
                 {saveMedia.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -342,6 +375,7 @@ export default function MediaPage() {
             </div>
             <SaveButton
               isPending={saveSetting.isPending}
+              disabled={!canManageContent}
               onClick={() =>
                 saveSetting.mutate({
                   setting_group: 'brand',
@@ -382,6 +416,7 @@ export default function MediaPage() {
             </div>
             <SaveButton
               isPending={saveSetting.isPending}
+              disabled={!canManageContent}
               onClick={() =>
                 saveSetting.mutate({
                   setting_group: 'services',
@@ -399,6 +434,7 @@ export default function MediaPage() {
             </div>
             <SaveButton
               isPending={saveSetting.isPending}
+              disabled={!canManageContent}
               onClick={() =>
                 saveSetting.mutate({
                   setting_group: 'app_images',
@@ -416,6 +452,7 @@ export default function MediaPage() {
             </div>
             <SaveButton
               isPending={saveSetting.isPending}
+              disabled={!canManageContent}
               onClick={() =>
                 saveSetting.mutate({
                   setting_group: 'app_images',
@@ -433,6 +470,7 @@ export default function MediaPage() {
             </div>
             <SaveButton
               isPending={saveSetting.isPending}
+              disabled={!canManageContent}
               onClick={() =>
                 saveSetting.mutate({
                   setting_group: 'app_images',
@@ -455,6 +493,7 @@ export default function MediaPage() {
             </p>
             <SaveButton
               isPending={saveSetting.isPending}
+              disabled={!canManageContent}
               onClick={() =>
                 saveSetting.mutate({
                   setting_group: 'app_images',
@@ -580,10 +619,10 @@ function AssetPreview({ src }: { src: string }) {
   )
 }
 
-function SaveButton({ isPending, onClick }: { isPending: boolean; onClick: () => void }) {
+function SaveButton({ isPending, disabled = false, onClick }: { isPending: boolean; disabled?: boolean; onClick: () => void }) {
   return (
     <div className="flex justify-end">
-      <button onClick={onClick} disabled={isPending} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90 disabled:opacity-50">
+      <button onClick={onClick} disabled={isPending || disabled} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90 disabled:opacity-50">
         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
         Save Settings
       </button>

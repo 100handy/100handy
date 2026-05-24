@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 interface PaymentItem {
   title: string;
@@ -12,6 +13,10 @@ interface PaymentItem {
 
 export default function PaymentsScreen() {
   const router = useRouter();
+  const content = useAppContent('professional_payments', {
+    'header.title': 'Payments',
+    'menu.direct_deposit': 'Direct deposit',
+  });
 
   const handleDirectDeposit = () => {
     router.push('/(professional)/profile/direct-deposit');
@@ -19,7 +24,7 @@ export default function PaymentsScreen() {
 
   const paymentItems: PaymentItem[] = [
     {
-      title: 'Direct deposit',
+      title: getAppContentValue(content, 'menu.direct_deposit', 'Direct deposit'),
       onPress: handleDirectDeposit,
     },
   ];
@@ -32,7 +37,7 @@ export default function PaymentsScreen() {
           <ChevronLeft color="#30352D" size={28} strokeWidth={2} />
         </Pressable>
         <Text className="font-worksans-bold text-xl text-theme-font">
-          Payments
+          {getAppContentValue(content, 'header.title', 'Payments')}
         </Text>
         <View className="w-10" />
       </View>

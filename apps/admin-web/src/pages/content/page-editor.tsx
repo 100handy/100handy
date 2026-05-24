@@ -1,26 +1,46 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ChevronDown, Save, ExternalLink, Upload, Loader2, Check } from 'lucide-react'
+import { ChevronDown, Save, ExternalLink, Upload, Loader2, Check, Rocket } from 'lucide-react'
 import Header from '@/components/header'
+import { FieldErrorText } from '@/components/editor/FieldErrorText'
+import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
+import { isValidSlug, isValidUrl } from '@/lib/editor-validation'
 import { pageRegistry } from '@/lib/cms/page-registry'
-import { usePageContent, usePageRecord, usePageSeo, useSavePageContent, useSavePageSettings, uploadContentImage } from '@/lib/api/site-content'
+import {
+  useLatestPageDraft,
+  usePageContent,
+  usePageRecord,
+  usePageRevisions,
+  usePageSeo,
+  usePublishPageDraft,
+  useRestorePageRevision,
+  useSavePageDraft,
+  uploadContentImage,
+} from '@/lib/api/site-content'
 import { useMediaAssets } from '@/lib/api/content-platform'
 import type { FieldType } from '@/lib/cms/page-registry'
 
 export default function PageEditorPage() {
+  const { hasPermission } = useAuth()
+  const canManagePage = hasPermission('content.manage') && hasPermission('seo.manage')
   const { pageKey } = useParams<{ pageKey: string }>()
   const pageDef = pageKey ? pageRegistry[pageKey] : undefined
   const { data: savedContent, isLoading } = usePageContent(pageKey ?? '')
   const { data: pageRecord, isLoading: isPageLoading } = usePageRecord(pageKey ?? '')
   const { data: seoRecord, isLoading: isSeoLoading } = usePageSeo(pageKey ?? '')
+  const { data: latestDraft, isLoading: isDraftLoading } = useLatestPageDraft(pageKey ?? '')
+  const { data: revisions = [], isLoading: isRevisionsLoading } = usePageRevisions(pageKey ?? '')
   const { data: mediaAssets = [] } = useMediaAssets()
-  const saveContentMutation = useSavePageContent()
-  const saveSettingsMutation = useSavePageSettings()
+  const saveDraftMutation = useSavePageDraft()
+  const publishDraftMutation = usePublishPageDraft()
+  const restoreRevisionMutation = useRestorePageRevision()
 
   const [formValues, setFormValues] = useState<Record<string, string>>({})
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
-  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
   const [pageTitle, setPageTitle] = useState('')
   const [pageSlug, setPageSlug] = useState('')
   const [templateKey, setTemplateKey] = useState('standard')
@@ -46,33 +66,37 @@ export default function PageEditorPage() {
       for (const fieldKey of Object.keys(section.fields)) {
         const key = `${sectionKey}.${fieldKey}`
         const placeholder = section.fields[fieldKey]?.placeholder ?? ''
-        initial[key] = savedContent?.[key] ?? placeholder
+        const draftField = latestDraft?.content_json?.[key]?.value
+        initial[key] = draftField ?? savedContent?.[key] ?? placeholder
       }
     }
     setFormValues(initial)
     setExpandedSections(expanded)
-  }, [pageDef, savedContent])
+  }, [pageDef, savedContent, latestDraft])
 
   useEffect(() => {
     if (!pageDef || !pageKey) return
 
-    setPageTitle(pageRecord?.title ?? pageDef.label)
-    setPageSlug(pageRecord?.slug ?? pageDef.slug)
-    setTemplateKey(pageRecord?.template_key ?? 'standard')
-    setPageStatus(pageRecord?.status ?? 'draft')
+    const draftPage = latestDraft?.page_json as Record<string, unknown> | undefined
+    const draftSeo = latestDraft?.seo_json as Record<string, unknown> | undefined
 
-    setMetaTitle(seoRecord?.meta_title ?? '')
-    setMetaDescription(seoRecord?.meta_description ?? '')
-    setOgTitle(seoRecord?.og_title ?? '')
-    setOgDescription(seoRecord?.og_description ?? '')
-    setOgImageUrl(seoRecord?.og_image_url ?? '')
-    setTwitterTitle(seoRecord?.twitter_title ?? '')
-    setTwitterDescription(seoRecord?.twitter_description ?? '')
-    setTwitterImageUrl(seoRecord?.twitter_image_url ?? '')
-    setCanonicalUrl(seoRecord?.canonical_url ?? '')
-    setRobotsIndex(seoRecord?.robots_index ?? true)
-    setRobotsFollow(seoRecord?.robots_follow ?? true)
-  }, [pageDef, pageKey, pageRecord, seoRecord])
+    setPageTitle((draftPage?.title as string | undefined) ?? pageRecord?.title ?? pageDef.label)
+    setPageSlug((draftPage?.slug as string | undefined) ?? pageRecord?.slug ?? pageDef.slug)
+    setTemplateKey((draftPage?.template_key as string | undefined) ?? pageRecord?.template_key ?? 'standard')
+    setPageStatus((draftPage?.status as 'draft' | 'published' | 'archived' | undefined) ?? pageRecord?.status ?? 'draft')
+
+    setMetaTitle((draftSeo?.meta_title as string | undefined) ?? seoRecord?.meta_title ?? '')
+    setMetaDescription((draftSeo?.meta_description as string | undefined) ?? seoRecord?.meta_description ?? '')
+    setOgTitle((draftSeo?.og_title as string | undefined) ?? seoRecord?.og_title ?? '')
+    setOgDescription((draftSeo?.og_description as string | undefined) ?? seoRecord?.og_description ?? '')
+    setOgImageUrl((draftSeo?.og_image_url as string | undefined) ?? seoRecord?.og_image_url ?? '')
+    setTwitterTitle((draftSeo?.twitter_title as string | undefined) ?? seoRecord?.twitter_title ?? '')
+    setTwitterDescription((draftSeo?.twitter_description as string | undefined) ?? seoRecord?.twitter_description ?? '')
+    setTwitterImageUrl((draftSeo?.twitter_image_url as string | undefined) ?? seoRecord?.twitter_image_url ?? '')
+    setCanonicalUrl((draftSeo?.canonical_url as string | undefined) ?? seoRecord?.canonical_url ?? '')
+    setRobotsIndex((draftSeo?.robots_index as boolean | undefined) ?? seoRecord?.robots_index ?? true)
+    setRobotsFollow((draftSeo?.robots_follow as boolean | undefined) ?? seoRecord?.robots_follow ?? true)
+  }, [pageDef, pageKey, pageRecord, seoRecord, latestDraft])
 
   const handleFieldChange = (key: string, value: string) => {
     setFormValues((prev) => ({ ...prev, [key]: value }))
@@ -84,10 +108,8 @@ export default function PageEditorPage() {
     handleFieldChange(key, url)
   }
 
-  const handleSave = async () => {
-    if (!pageKey || !pageDef) return
-    setSaveSuccess(false)
-
+  const collectFields = () => {
+    if (!pageDef) return []
     const fields: Array<{ section_key: string; field_key: string; content_type: FieldType; value: string }> = []
     for (const [sectionKey, section] of Object.entries(pageDef.sections)) {
       for (const [fieldKey, fieldDef] of Object.entries(section.fields)) {
@@ -100,8 +122,14 @@ export default function PageEditorPage() {
         })
       }
     }
+    return fields
+  }
 
-    await saveSettingsMutation.mutateAsync({
+  const handleSaveDraft = async () => {
+    if (!pageKey || !pageDef || !canSaveDraft) return
+    setActionFeedback(null)
+
+    await saveDraftMutation.mutateAsync({
       pageKey,
       page: {
         title: pageTitle || pageDef.label,
@@ -122,16 +150,90 @@ export default function PageEditorPage() {
         robots_index: robotsIndex,
         robots_follow: robotsFollow,
       },
+      fields: collectFields(),
     })
+    setActionFeedback('Draft saved')
+    setTimeout(() => setActionFeedback(null), 3000)
+  }
 
-    await saveContentMutation.mutateAsync({ pageKey, fields })
-    setSaveSuccess(true)
-    setTimeout(() => setSaveSuccess(false), 3000)
+  const handlePublish = async () => {
+    if (!pageKey || !canPublish) return
+    setActionFeedback(null)
+    await publishDraftMutation.mutateAsync(pageKey)
+    setActionFeedback('Published')
+    setTimeout(() => setActionFeedback(null), 3000)
+  }
+
+  const handleRestoreRevision = async (revisionId: string) => {
+    if (!pageKey) return
+    setActionFeedback(null)
+    await restoreRevisionMutation.mutateAsync({ pageKey, revisionId })
+    setActionFeedback('Revision restored to draft')
+    setTimeout(() => setActionFeedback(null), 3000)
   }
 
   const toggleSection = (sectionKey: string) => {
     setExpandedSections((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] }))
   }
+
+  const baselineFormValues = Object.fromEntries(
+    Object.entries(pageDef.sections).flatMap(([sectionKey, section]) =>
+      Object.entries(section.fields).map(([fieldKey, fieldDef]) => {
+        const key = `${sectionKey}.${fieldKey}`
+        return [key, latestDraft?.content_json?.[key]?.value ?? savedContent?.[key] ?? fieldDef.placeholder ?? '']
+      }),
+    ),
+  )
+
+  const isDirty = JSON.stringify({
+    pageTitle,
+    pageSlug,
+    templateKey,
+    pageStatus,
+    metaTitle,
+    metaDescription,
+    ogTitle,
+    ogDescription,
+    ogImageUrl,
+    twitterTitle,
+    twitterDescription,
+    twitterImageUrl,
+    canonicalUrl,
+    robotsIndex,
+    robotsFollow,
+    formValues,
+  }) !== JSON.stringify({
+    pageTitle: (latestDraft?.page_json as Record<string, unknown> | undefined)?.title ?? pageRecord?.title ?? pageDef.label,
+    pageSlug: (latestDraft?.page_json as Record<string, unknown> | undefined)?.slug ?? pageRecord?.slug ?? pageDef.slug,
+    templateKey: (latestDraft?.page_json as Record<string, unknown> | undefined)?.template_key ?? pageRecord?.template_key ?? 'standard',
+    pageStatus: (latestDraft?.page_json as Record<string, unknown> | undefined)?.status ?? pageRecord?.status ?? 'draft',
+    metaTitle: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.meta_title ?? seoRecord?.meta_title ?? '',
+    metaDescription: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.meta_description ?? seoRecord?.meta_description ?? '',
+    ogTitle: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.og_title ?? seoRecord?.og_title ?? '',
+    ogDescription: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.og_description ?? seoRecord?.og_description ?? '',
+    ogImageUrl: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.og_image_url ?? seoRecord?.og_image_url ?? '',
+    twitterTitle: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.twitter_title ?? seoRecord?.twitter_title ?? '',
+    twitterDescription: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.twitter_description ?? seoRecord?.twitter_description ?? '',
+    twitterImageUrl: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.twitter_image_url ?? seoRecord?.twitter_image_url ?? '',
+    canonicalUrl: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.canonical_url ?? seoRecord?.canonical_url ?? '',
+    robotsIndex: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.robots_index ?? seoRecord?.robots_index ?? true,
+    robotsFollow: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.robots_follow ?? seoRecord?.robots_follow ?? true,
+    formValues: baselineFormValues,
+  })
+
+  useUnsavedChangesWarning(isDirty)
+
+  const validationErrors = [
+    !pageTitle.trim() ? 'Page title is required.' : null,
+    !pageSlug.trim() ? 'Slug is required.' : null,
+    pageSlug.trim() && !isValidSlug(pageSlug.trim()) ? 'Slug must use lowercase letters, numbers, and hyphens only.' : null,
+    canonicalUrl.trim() && !isValidUrl(canonicalUrl) && !canonicalUrl.startsWith('/') ? 'Canonical URL must be a site path or a valid absolute URL.' : null,
+    ogImageUrl.trim() && !isValidUrl(ogImageUrl) ? 'Open Graph image URL must be a valid absolute URL.' : null,
+    twitterImageUrl.trim() && !isValidUrl(twitterImageUrl) ? 'Twitter image URL must be a valid absolute URL.' : null,
+  ].filter((value): value is string => Boolean(value))
+
+  const canSaveDraft = canManagePage && validationErrors.length === 0
+  const canPublish = canManagePage && validationErrors.length === 0 && !!latestDraft
 
   if (!pageKey || !pageDef) {
     return (
@@ -147,7 +249,7 @@ export default function PageEditorPage() {
     )
   }
 
-  if (isLoading || isPageLoading || isSeoLoading) {
+  if (isLoading || isPageLoading || isSeoLoading || isDraftLoading || isRevisionsLoading) {
     return (
       <div className="flex-1 flex flex-col">
         <Header title={`Edit: ${pageDef.label}`} />
@@ -163,6 +265,17 @@ export default function PageEditorPage() {
       <Header title={`Edit: ${pageDef.label}`} />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-3xl mx-auto">
+          <UnsavedChangesBanner show={isDirty} />
+          {!canManagePage && (
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+              Your admin role can view this page configuration, but it cannot save drafts or publish changes.
+            </div>
+          )}
+          {validationErrors.length > 0 && (
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+              {validationErrors.map((error) => <div key={error}>{error}</div>)}
+            </div>
+          )}
           {/* Top bar */}
           <div className="flex items-center justify-between mb-6">
             <Link to="/content/pages" className="text-sm text-primary hover:underline">
@@ -179,20 +292,64 @@ export default function PageEditorPage() {
                 View Page
               </a>
               <button
-                onClick={handleSave}
-                disabled={saveContentMutation.isPending || saveSettingsMutation.isPending}
+                onClick={handleSaveDraft}
+                disabled={saveDraftMutation.isPending || publishDraftMutation.isPending || !canSaveDraft}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50"
               >
-                {saveContentMutation.isPending || saveSettingsMutation.isPending ? (
+                {saveDraftMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
-                ) : saveSuccess ? (
+                ) : actionFeedback === 'Draft saved' ? (
                   <Check className="w-4 h-4" />
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                {saveSuccess ? 'Saved!' : 'Save Changes'}
+                {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+              </button>
+              <button
+                onClick={handlePublish}
+                disabled={publishDraftMutation.isPending || saveDraftMutation.isPending || !canPublish}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {publishDraftMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : actionFeedback === 'Published' ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Rocket className="w-4 h-4" />
+                )}
+                {actionFeedback === 'Published' ? 'Published' : 'Publish'}
               </button>
             </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Workflow</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Work is saved to a draft first. Nothing changes on the live site until you publish.
+                </p>
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Live status: <span className="font-semibold text-gray-900 dark:text-white">{pageRecord?.status ?? 'draft'}</span>
+                {' · '}
+                Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
+              </div>
+            </div>
+            {actionFeedback && (
+              <p className="mt-4 text-sm font-medium text-emerald-600">{actionFeedback}</p>
+            )}
+          </div>
+
+          <div className="mb-6 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
+              Preview
+            </div>
+            <iframe
+              title="Page preview"
+              src={`${import.meta.env.VITE_SITE_URL || ''}${pageSlug || pageDef.slug}`}
+              className="h-[560px] w-full bg-white"
+            />
           </div>
 
           <div className="space-y-4 mb-6">
@@ -208,6 +365,7 @@ export default function PageEditorPage() {
                     onChange={(e) => setPageTitle(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
+                  <FieldErrorText error={!pageTitle.trim() ? 'Page title is required.' : null} />
                 </FormField>
                 <FormField label="Slug">
                   <input
@@ -216,6 +374,7 @@ export default function PageEditorPage() {
                     onChange={(e) => setPageSlug(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
+                  <FieldErrorText error={!pageSlug.trim() ? 'Slug is required.' : !isValidSlug(pageSlug.trim()) ? 'Use lowercase letters, numbers, and hyphens only.' : null} />
                 </FormField>
                 <FormField label="Template Key">
                   <input
@@ -259,6 +418,7 @@ export default function PageEditorPage() {
                     onChange={(e) => setCanonicalUrl(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
+                  <FieldErrorText error={canonicalUrl.trim() && !isValidUrl(canonicalUrl) && !canonicalUrl.startsWith('/') ? 'Use a site path or a valid absolute URL.' : null} />
                 </FormField>
                 <FormField label="Meta Description" className="md:col-span-2">
                   <textarea
@@ -283,6 +443,7 @@ export default function PageEditorPage() {
                     onChange={(e) => setOgImageUrl(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
+                  <FieldErrorText error={ogImageUrl.trim() && !isValidUrl(ogImageUrl) ? 'Enter a valid absolute URL.' : null} />
                 </FormField>
                 <FormField label="Open Graph Description" className="md:col-span-2">
                   <textarea
@@ -307,6 +468,7 @@ export default function PageEditorPage() {
                     onChange={(e) => setTwitterImageUrl(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
+                  <FieldErrorText error={twitterImageUrl.trim() && !isValidUrl(twitterImageUrl) ? 'Enter a valid absolute URL.' : null} />
                 </FormField>
                 <FormField label="Twitter Description" className="md:col-span-2">
                   <textarea
@@ -334,6 +496,50 @@ export default function PageEditorPage() {
                     Follow links
                   </label>
                 </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Revision History</h3>
+              </div>
+              <div className="px-6 py-4">
+                {revisions.length === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No revisions yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {revisions.map((revision) => (
+                      <div
+                        key={revision.id}
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3"
+                      >
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            v{revision.version_number} · {revision.revision_state}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Updated {new Date(revision.updated_at).toLocaleString('en-GB')}
+                            {revision.published_at ? ` · Published ${new Date(revision.published_at).toLocaleString('en-GB')}` : ''}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {revision.revision_state === 'published' && (
+                            <button
+                              onClick={() => handleRestoreRevision(revision.id)}
+                              disabled={restoreRevisionMutation.isPending}
+                              className="px-3 py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                            >
+                              Restore to Draft
+                            </button>
+                          )}
+                          {revision.revision_state === 'draft' && (
+                            <span className="text-xs font-medium text-amber-600">Current draft</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

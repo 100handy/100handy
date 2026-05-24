@@ -2,10 +2,18 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, Pressable, TextInput, Image } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { useHandymanProfile } from '@shared/query';
 import { PullDownDismiss } from '@/components/ui/pull-down-dismiss';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 export default function TaskDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const content = useAppContent('client_task_details', {
+    'header.title': 'Task details',
+    'notes.title': 'Anything else? (optional)',
+    'notes.subtitle': 'Start the conversation',
+    'notes.placeholder': 'For example, what supplies are needed, where to park, or timing restrictions.',
+    'actions.submit': 'Review task',
+  });
 
   // Task details from previous screens
   const taskerId = params.taskerId as string;
@@ -62,7 +70,7 @@ export default function TaskDetailsScreen() {
             <ChevronLeft size={24} color="#000000" strokeWidth={2} />
           </Pressable>
           <Text className="flex-1 text-lg font-semibold text-black">
-            Task details
+            {getAppContentValue(content, 'header.title', 'Task details')}
           </Text>
         </View>
       </View>
@@ -90,17 +98,17 @@ export default function TaskDetailsScreen() {
             {/* Anything else section */}
             <View className="flex-col mb-6">
               <Text className="text-xl font-semibold text-black mb-2">
-                Anything else? (optional)
+                {getAppContentValue(content, 'notes.title', 'Anything else? (optional)')}
               </Text>
               <Text className="text-sm text-gray-600 mb-4">
-                Start the conversation
+                {getAppContentValue(content, 'notes.subtitle', 'Start the conversation')}
               </Text>
 
               {/* Text Input */}
               <TextInput
                 value={taskDetails}
                 onChangeText={setTaskDetails}
-                placeholder="For example, what supplies are needed, where to park, or timing restrictions."
+                placeholder={getAppContentValue(content, 'notes.placeholder', 'For example, what supplies are needed, where to park, or timing restrictions.')}
                 placeholderTextColor="#9CA3AF"
                 multiline
                 textAlignVertical="top"
@@ -124,7 +132,7 @@ export default function TaskDetailsScreen() {
             style={{ backgroundColor: '#C1856A' }}
           >
             <Text className="text-base font-semibold text-white">
-              Review task
+              {getAppContentValue(content, 'actions.submit', 'Review task')}
             </Text>
           </Pressable>
         </View>

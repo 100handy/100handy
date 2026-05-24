@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePublicSiteSetting } from "@/lib/public-site-settings";
 
 interface SearchEntry {
   title: string;
@@ -119,14 +120,32 @@ const popularSearches = [
   { label: "Account", href: "/help/account" },
 ];
 
+const DEFAULT_UI = {
+  searchPlaceholder: "Search",
+  searchButtonLabel: "Search",
+  popularSearchesLabel: "Popular searches:",
+  noResultsPrefix: "No results found for",
+};
+
+const DEFAULT_SEARCH_DATA = {
+  entries: searchIndex,
+  popularSearches,
+};
+
 export function HelpSearch() {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const ui = usePublicSiteSetting("help.ui", DEFAULT_UI);
+  const searchData = usePublicSiteSetting("help.search_index", DEFAULT_SEARCH_DATA);
+  const entries = Array.isArray(searchData.entries) ? searchData.entries as SearchEntry[] : searchIndex;
+  const popularItems = Array.isArray(searchData.popularSearches)
+    ? searchData.popularSearches as Array<{ label: string; href: string }>
+    : popularSearches;
 
   const results = query.trim().length >= 2
-    ? searchIndex.filter((entry) => {
+    ? entries.filter((entry) => {
         const q = query.toLowerCase();
         return (
           entry.title.toLowerCase().includes(q) ||
@@ -166,7 +185,7 @@ export function HelpSearch() {
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
-            placeholder="Search"
+            placeholder={ui.searchPlaceholder}
             className="flex-1 pl-[56px] pr-[8px] py-[15px] text-xl font-medium text-brand-dark bg-transparent rounded-lg focus:outline-none"
           />
           <button
@@ -174,7 +193,7 @@ export function HelpSearch() {
             onClick={() => setIsOpen(true)}
             className="mr-[8px] px-[20px] py-[10px] bg-brand-dark text-white text-sm font-bold rounded-md hover:bg-brand-dark/90 transition-colors shrink-0"
           >
-            Search
+            {ui.searchButtonLabel}
           </button>
         </div>
 
@@ -201,7 +220,7 @@ export function HelpSearch() {
               </ul>
             ) : (
               <div className="px-6 py-4 text-[15px] text-gray-500">
-                No results found for &ldquo;{query}&rdquo;
+                {ui.noResultsPrefix} &ldquo;{query}&rdquo;
               </div>
             )}
           </div>
@@ -211,10 +230,10 @@ export function HelpSearch() {
       {/* Popular Searches */}
       <div className="mb-4">
         <p className="text-base font-bold text-brand-dark-alt leading-[1.221] mb-[14px]">
-          Popular searches:
+          {ui.popularSearchesLabel}
         </p>
         <div className="flex flex-wrap justify-center gap-[8px]">
-          {popularSearches.map((item) => (
+          {popularItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}

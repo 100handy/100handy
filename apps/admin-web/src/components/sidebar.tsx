@@ -15,6 +15,8 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import type { AdminPermission } from '@/lib/admin-permissions'
 import { cn } from '@/lib/utils'
 
 const groups = [
@@ -25,9 +27,10 @@ const groups = [
     basePath: '/dashboard',
     defaultExpanded: true,
     items: [
-      { label: 'Overview', path: '/dashboard' },
-      { label: 'Announcements', path: '/dashboard/announcements' },
+      { label: 'Overview', path: '/dashboard', permissions: ['dashboard.view'] as AdminPermission[] },
+      { label: 'Announcements', path: '/dashboard/announcements', permissions: ['notifications.manage'] as AdminPermission[] },
     ],
+    permissions: ['dashboard.view'] as AdminPermission[],
   },
   {
     key: 'handys',
@@ -36,11 +39,12 @@ const groups = [
     basePath: '/handys',
     defaultExpanded: true,
     items: [
-      { label: 'All Handys', path: '/handys' },
-      { label: 'Selection Process', path: '/handys/selection-process' },
-      { label: 'Availability Management', path: '/handys/availability' },
-      { label: 'Calendar & Settings', path: '/handys/calendar-settings' },
+      { label: 'All Handys', path: '/handys', permissions: ['handys.manage'] as AdminPermission[] },
+      { label: 'Selection Process', path: '/handys/selection-process', permissions: ['handys.manage'] as AdminPermission[] },
+      { label: 'Availability Management', path: '/handys/availability', permissions: ['handys.manage'] as AdminPermission[] },
+      { label: 'Calendar & Settings', path: '/handys/calendar-settings', permissions: ['handys.manage'] as AdminPermission[] },
     ],
+    permissions: ['handys.manage'] as AdminPermission[],
   },
   {
     key: 'users',
@@ -49,11 +53,12 @@ const groups = [
     basePath: '/users',
     defaultExpanded: true,
     items: [
-      { label: 'All Users', path: '/users' },
-      { label: 'Add User', path: '/users/add' },
-      { label: 'Remove Users', path: '/users/remove' },
-      { label: 'User Profiles', path: '/users/profiles' },
+      { label: 'All Users', path: '/users', permissions: ['users.manage'] as AdminPermission[] },
+      { label: 'Add User', path: '/users/add', permissions: ['users.manage'] as AdminPermission[] },
+      { label: 'Remove Users', path: '/users/remove', permissions: ['users.manage'] as AdminPermission[] },
+      { label: 'User Profiles', path: '/users/profiles', permissions: ['users.manage'] as AdminPermission[] },
     ],
+    permissions: ['users.manage'] as AdminPermission[],
   },
   {
     key: 'tasks',
@@ -62,15 +67,16 @@ const groups = [
     basePath: '/tasks',
     defaultExpanded: true,
     items: [
-      { label: 'Browse Categories', path: '/tasks/categories' },
-      { label: 'Task List', path: '/tasks/list' },
-      { label: 'Open Tasks', path: '/tasks/open' },
-      { label: 'Scheduled Tasks', path: '/tasks/scheduled' },
-      { label: 'Task Details', path: '/tasks/details' },
-      { label: 'Completed Tasks', path: '/tasks/completed' },
-      { label: 'Cancelled Tasks', path: '/tasks/cancelled' },
-      { label: 'Task Questions', path: '/tasks/questions' },
+      { label: 'Browse Categories', path: '/tasks/categories', permissions: ['tasks.manage'] as AdminPermission[] },
+      { label: 'Task List', path: '/tasks/list', permissions: ['tasks.manage'] as AdminPermission[] },
+      { label: 'Open Tasks', path: '/tasks/open', permissions: ['tasks.manage'] as AdminPermission[] },
+      { label: 'Scheduled Tasks', path: '/tasks/scheduled', permissions: ['tasks.manage'] as AdminPermission[] },
+      { label: 'Task Details', path: '/tasks/details', permissions: ['tasks.manage'] as AdminPermission[] },
+      { label: 'Completed Tasks', path: '/tasks/completed', permissions: ['tasks.manage'] as AdminPermission[] },
+      { label: 'Cancelled Tasks', path: '/tasks/cancelled', permissions: ['tasks.manage'] as AdminPermission[] },
+      { label: 'Task Questions', path: '/tasks/questions', permissions: ['tasks.manage'] as AdminPermission[] },
     ],
+    permissions: ['tasks.manage'] as AdminPermission[],
   },
   {
     key: 'content',
@@ -79,14 +85,16 @@ const groups = [
     basePath: '/content',
     defaultExpanded: true,
     items: [
-      { label: 'Pages', path: '/content/pages' },
-      { label: 'Page Settings', path: '/content/page-settings' },
-      { label: 'Blogs', path: '/content/blogs' },
-      { label: 'Media', path: '/content/media' },
-      { label: 'FAQs', path: '/content/faqs' },
-      { label: 'Navigation', path: '/content/navigation' },
-      { label: 'App Content', path: '/content/app-content' },
+      { label: 'Pages', path: '/content/pages', permissions: ['content.manage'] as AdminPermission[] },
+      { label: 'Page Settings', path: '/content/page-settings', permissions: ['content.manage', 'seo.manage'] as AdminPermission[] },
+      { label: 'Help Articles', path: '/content/help-articles', permissions: ['content.manage'] as AdminPermission[] },
+      { label: 'Blogs', path: '/content/blogs', permissions: ['content.manage'] as AdminPermission[] },
+      { label: 'Media', path: '/content/media', permissions: ['content.manage'] as AdminPermission[] },
+      { label: 'FAQs', path: '/content/faqs', permissions: ['content.manage'] as AdminPermission[] },
+      { label: 'Navigation', path: '/content/navigation', permissions: ['content.manage'] as AdminPermission[] },
+      { label: 'App Content', path: '/content/app-content', permissions: ['content.manage'] as AdminPermission[] },
     ],
+    permissions: ['content.manage', 'seo.manage'] as AdminPermission[],
   },
   {
     key: 'accounts',
@@ -95,13 +103,14 @@ const groups = [
     basePath: '/accounts',
     defaultExpanded: false,
     items: [
-      { label: 'Overview', path: '/accounts' },
-      { label: 'Security Options', path: '/accounts/security' },
-      { label: 'Verification Options', path: '/accounts/verification' },
-      { label: 'Deleted Accounts', path: '/accounts/deleted' },
-      { label: 'Paused Accounts', path: '/accounts/paused' },
-      { label: 'Location Status', path: '/accounts/location' },
+      { label: 'Overview', path: '/accounts', permissions: ['accounts.manage'] as AdminPermission[] },
+      { label: 'Security Options', path: '/accounts/security', permissions: ['accounts.manage'] as AdminPermission[] },
+      { label: 'Verification Options', path: '/accounts/verification', permissions: ['accounts.manage'] as AdminPermission[] },
+      { label: 'Deleted Accounts', path: '/accounts/deleted', permissions: ['accounts.manage'] as AdminPermission[] },
+      { label: 'Paused Accounts', path: '/accounts/paused', permissions: ['accounts.manage'] as AdminPermission[] },
+      { label: 'Location Status', path: '/accounts/location', permissions: ['accounts.manage'] as AdminPermission[] },
     ],
+    permissions: ['accounts.manage'] as AdminPermission[],
   },
   {
     key: 'notifications',
@@ -110,10 +119,11 @@ const groups = [
     basePath: '/notifications',
     defaultExpanded: false,
     items: [
-      { label: 'Overview', path: '/notifications' },
-      { label: 'Email Notifications', path: '/notifications/email' },
-      { label: 'Pop-ups', path: '/notifications/popups' },
+      { label: 'Overview', path: '/notifications', permissions: ['notifications.manage'] as AdminPermission[] },
+      { label: 'Email Notifications', path: '/notifications/email', permissions: ['notifications.manage'] as AdminPermission[] },
+      { label: 'Pop-ups', path: '/notifications/popups', permissions: ['notifications.manage'] as AdminPermission[] },
     ],
+    permissions: ['notifications.manage'] as AdminPermission[],
   },
   {
     key: 'finance',
@@ -122,13 +132,14 @@ const groups = [
     basePath: '/finance',
     defaultExpanded: false,
     items: [
-      { label: 'Earnings', path: '/finance/earnings' },
-      { label: 'Total Income', path: '/finance/income' },
-      { label: 'Rates & Adjustments', path: '/finance/rates' },
-      { label: 'Payment Methods', path: '/finance/payment-methods' },
-      { label: 'Account Balances', path: '/finance/balances' },
-      { label: 'Invoices', path: '/finance/invoices' },
+      { label: 'Earnings', path: '/finance/earnings', permissions: ['finance.view'] as AdminPermission[] },
+      { label: 'Total Income', path: '/finance/income', permissions: ['finance.view'] as AdminPermission[] },
+      { label: 'Rates & Adjustments', path: '/finance/rates', permissions: ['finance.view'] as AdminPermission[] },
+      { label: 'Payment Methods', path: '/finance/payment-methods', permissions: ['finance.view'] as AdminPermission[] },
+      { label: 'Account Balances', path: '/finance/balances', permissions: ['finance.view'] as AdminPermission[] },
+      { label: 'Invoices', path: '/finance/invoices', permissions: ['finance.view'] as AdminPermission[] },
     ],
+    permissions: ['finance.view'] as AdminPermission[],
   },
   {
     key: 'insights',
@@ -136,7 +147,8 @@ const groups = [
     icon: FileBarChart2,
     basePath: '/insights',
     defaultExpanded: false,
-    items: [{ label: 'Analytics', path: '/insights/analytics' }],
+    items: [{ label: 'Analytics', path: '/insights/analytics', permissions: ['insights.view'] as AdminPermission[] }],
+    permissions: ['insights.view'] as AdminPermission[],
   },
   {
     key: 'promotions',
@@ -144,7 +156,8 @@ const groups = [
     icon: Megaphone,
     basePath: '/promotions',
     defaultExpanded: false,
-    items: [{ label: 'Management', path: '/promotions/management' }],
+    items: [{ label: 'Management', path: '/promotions/management', permissions: ['promotions.manage'] as AdminPermission[] }],
+    permissions: ['promotions.manage'] as AdminPermission[],
   },
   {
     key: 'support',
@@ -152,12 +165,14 @@ const groups = [
     icon: LifeBuoy,
     basePath: '/support',
     defaultExpanded: false,
-    items: [{ label: 'Support Centre', path: '/support/centre' }],
+    items: [{ label: 'Support Centre', path: '/support/centre', permissions: ['support.view'] as AdminPermission[] }],
+    permissions: ['support.view'] as AdminPermission[],
   },
 ] as const
 
 export default function Sidebar() {
   const location = useLocation()
+  const { hasPermission } = useAuth()
   const [expanded, setExpanded] = useState<Record<string, boolean>>(
     Object.fromEntries(groups.map((group) => [group.key, group.defaultExpanded]))
   )
@@ -179,7 +194,13 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-2 px-4 py-6">
-        {groups.map((group) => {
+        {groups
+          .map((group) => ({
+            ...group,
+            items: group.items.filter((item) => item.permissions.some((permission) => hasPermission(permission))),
+          }))
+          .filter((group) => group.items.length > 0 && group.permissions.some((permission) => hasPermission(permission)))
+          .map((group) => {
           const isActive = location.pathname.startsWith(group.basePath)
           const isExpanded = expanded[group.key]
           const Icon = group.icon
@@ -228,13 +249,15 @@ export default function Sidebar() {
       </nav>
 
       <div className="border-t border-slate-200 px-4 py-4 dark:border-slate-800">
-        <Link
-          to="/content/page-settings"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-primary/10 hover:text-primary dark:text-slate-300 dark:hover:bg-primary/20 dark:hover:text-primary"
-        >
-          <Settings2 className="h-5 w-5" />
-          Global Settings
-        </Link>
+        {hasPermission('content.manage') || hasPermission('seo.manage') ? (
+          <Link
+            to="/content/page-settings"
+            className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-primary/10 hover:text-primary dark:text-slate-300 dark:hover:bg-primary/20 dark:hover:text-primary"
+          >
+            <Settings2 className="h-5 w-5" />
+            Global Settings
+          </Link>
+        ) : null}
       </div>
     </aside>
   )

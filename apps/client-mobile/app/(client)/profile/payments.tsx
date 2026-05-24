@@ -13,15 +13,36 @@ import {
   supportsStripeNative,
 } from '@/lib/native-feature-support';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
+
+const DEFAULT_CONTENT = {
+  'header.title': 'Payment',
+  'menu.redemptions': 'Redemptions',
+  'section.add_payment_method': 'ADD PAYMENT METHOD',
+  'menu.credit_card': 'Credit Card',
+  'menu.apple_pay': 'Apple Pay',
+  'menu.google_pay': 'Google Pay',
+  'toasts.wallet_unavailable_title': 'Unavailable in Expo Go',
+  'toasts.init_failed_title': 'Error',
+  'toasts.init_failed_body': 'Failed to initialize payment. Please try again.',
+  'toasts.success_title': 'Success',
+  'toasts.success_body': 'Payment method added successfully!',
+  'toasts.generic_error_body': 'Something went wrong. Please try again.',
+  'footer.note': 'Payment method will update for all tasks, including the ones currently open.',
+} as const;
 
 export default function PaymentsScreen() {
     const router = useRouter();
     const [isWalletLoading, setIsWalletLoading] = useState(false);
     const toast = useToast();
+    const content = useAppContent('client_payments', DEFAULT_CONTENT);
 
     const handleWalletPayment = async () => {
         if (!supportsStripeNative()) {
-            toast.info('Unavailable in Expo Go', getUnsupportedNativeFeatureMessage('Wallet payments'));
+            toast.info(
+              getAppContentValue(content, 'toasts.wallet_unavailable_title', DEFAULT_CONTENT['toasts.wallet_unavailable_title']),
+              getUnsupportedNativeFeatureMessage('Wallet payments'),
+            );
             return;
         }
 
@@ -29,7 +50,10 @@ export default function PaymentsScreen() {
         try {
             const setupIntent = await createSetupIntent();
             if (!setupIntent) {
-                toast.error('Error', 'Failed to initialize payment. Please try again.');
+                toast.error(
+                  getAppContentValue(content, 'toasts.init_failed_title', DEFAULT_CONTENT['toasts.init_failed_title']),
+                  getAppContentValue(content, 'toasts.init_failed_body', DEFAULT_CONTENT['toasts.init_failed_body']),
+                );
                 return;
             }
 
@@ -45,7 +69,10 @@ export default function PaymentsScreen() {
 
             if (initError) {
                 console.error('PaymentSheet init error:', initError);
-                toast.error('Error', initError.message);
+                toast.error(
+                  getAppContentValue(content, 'toasts.init_failed_title', DEFAULT_CONTENT['toasts.init_failed_title']),
+                  initError.message,
+                );
                 return;
             }
 
@@ -53,16 +80,25 @@ export default function PaymentsScreen() {
 
             if (presentError) {
                 if (presentError.code !== 'Canceled') {
-                    toast.error('Error', presentError.message);
+                    toast.error(
+                      getAppContentValue(content, 'toasts.init_failed_title', DEFAULT_CONTENT['toasts.init_failed_title']),
+                      presentError.message,
+                    );
                 }
                 return;
             }
 
-            toast.success('Success', 'Payment method added successfully!');
+            toast.success(
+              getAppContentValue(content, 'toasts.success_title', DEFAULT_CONTENT['toasts.success_title']),
+              getAppContentValue(content, 'toasts.success_body', DEFAULT_CONTENT['toasts.success_body']),
+            );
             router.push('/(client)/profile/payment-methods');
         } catch (error) {
             console.error('Wallet payment error:', error);
-            toast.error('Error', 'Something went wrong. Please try again.');
+            toast.error(
+              getAppContentValue(content, 'toasts.init_failed_title', DEFAULT_CONTENT['toasts.init_failed_title']),
+              getAppContentValue(content, 'toasts.generic_error_body', DEFAULT_CONTENT['toasts.generic_error_body']),
+            );
         } finally {
             setIsWalletLoading(false);
         }
@@ -72,7 +108,7 @@ export default function PaymentsScreen() {
         <SafeAreaView className="flex-1 bg-white">
             {/* Header */}
             <Header 
-                title="Payment"
+                title={getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])}
                 onBackPress={() => goBackOrReplace(router, '/(client)/(tabs)/profile')} 
                 showBellIcon={false}
                 showFilterIcon={false}
@@ -89,7 +125,7 @@ export default function PaymentsScreen() {
                     >
                         <View className="flex-row items-center justify-between px-6 py-5">
                             <Text className="font-work-sans text-xl font-bold" style={{ color: '#30352D' }}>
-                                Redemptions
+                                {getAppContentValue(content, 'menu.redemptions', DEFAULT_CONTENT['menu.redemptions'])}
                             </Text>
                             <ChevronRight size={24} color="#9ca3af" />
                         </View>
@@ -98,7 +134,7 @@ export default function PaymentsScreen() {
                     {/* Add Payment Method Section Header */}
                     <View className="px-6 py-4 bg-white border-b border-gray-200">
                         <Text className="font-work-sans text-xs font-medium tracking-wider" style={{ color: '#333A31' }}>
-                            ADD PAYMENT METHOD
+                            {getAppContentValue(content, 'section.add_payment_method', DEFAULT_CONTENT['section.add_payment_method'])}
                         </Text>
                     </View>
 
@@ -111,7 +147,7 @@ export default function PaymentsScreen() {
                     >
                         <View className="flex-row items-center justify-between px-6 py-5">
                             <Text className="font-work-sans text-xl font-bold" style={{ color: '#30352D' }}>
-                                Credit Card
+                                {getAppContentValue(content, 'menu.credit_card', DEFAULT_CONTENT['menu.credit_card'])}
                             </Text>
                             <ChevronRight size={24} color="#9ca3af" />
                         </View>
@@ -136,7 +172,7 @@ export default function PaymentsScreen() {
                                             </Text>
                                         </View>
                                         <Text className="font-work-sans text-lg font-light" style={{ color: '#30352D' }}>
-                                            Apple Pay
+                                            {getAppContentValue(content, 'menu.apple_pay', DEFAULT_CONTENT['menu.apple_pay'])}
                                         </Text>
                                     </>
                                 ) : (
@@ -151,7 +187,7 @@ export default function PaymentsScreen() {
                                             <Text className="text-[12px] font-medium text-gray-700"> Pay</Text>
                                         </View>
                                         <Text className="font-work-sans text-lg font-light" style={{ color: '#30352D' }}>
-                                            Google Pay
+                                            {getAppContentValue(content, 'menu.google_pay', DEFAULT_CONTENT['menu.google_pay'])}
                                         </Text>
                                     </>
                                 )}
@@ -167,7 +203,7 @@ export default function PaymentsScreen() {
                     {/* Footer Note */}
                     <View className="px-6 py-6">
                         <Text className="font-work-sans text-[13px] font-medium leading-5" style={{ color: '#333A31' }}>
-                            Payment method will update for all tasks, including the ones currently open.
+                            {getAppContentValue(content, 'footer.note', DEFAULT_CONTENT['footer.note'])}
                         </Text>
                     </View>
                 </View>

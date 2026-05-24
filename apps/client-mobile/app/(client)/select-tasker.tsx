@@ -4,6 +4,7 @@ import { type HandymanFilters, type Coordinate, type WorkArea, doesAvailabilityS
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker'; import { useHandymenByCategory } from '@shared/query'; import { getWorkAreaByUserId, isLocationInWorkArea, getAvailabilityByUserId } from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 const filterOptions = ['Within a week', 'Flexible', 'Price'];
 
@@ -34,6 +35,16 @@ function formatDateOnly(date: Date): string {
 export default function SelectTaskerScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const content = useAppContent('client_select_tasker', {
+    'header.title': 'Select a Tasker',
+    'sort.prefix': 'Sorted by:',
+    'sort.modal_title': 'Sort by',
+    'loading.text': 'Loading taskers...',
+    'error.title': 'Error loading taskers',
+    'error.body': 'Please try again later',
+    'empty.title': 'No pros found',
+    'empty.body': 'Try adjusting your filters or search in a different category',
+  });
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
   const serviceName = params.service as string;
@@ -258,7 +269,7 @@ export default function SelectTaskerScreen() {
             className="flex-1 text-center text-lg"
             style={{ fontWeight: '600', color: '#000000' }}
           >
-            Select a Tasker
+            {getAppContentValue(content, 'header.title', 'Select a Tasker')}
           </Text>
           
           <Pressable onPress={() => setShowSortSheet(true)}>
@@ -292,7 +303,7 @@ export default function SelectTaskerScreen() {
           className="text-xs px-3"
           style={{ color: '#9CA3AF', fontWeight: '400' }}
         >
-          Sorted by: {selectedSort}
+          {getAppContentValue(content, 'sort.prefix', 'Sorted by:')} {selectedSort}
         </Text>
         <View className="flex-col" style={{ height: 1, flex: 1, backgroundColor: '#E5E7EB' }} />
       </View>
@@ -306,24 +317,26 @@ export default function SelectTaskerScreen() {
         {isLoading ? (
           <View className="flex-col items-center justify-center py-20">
             <ActivityIndicator size="large" color="#000000" />
-            <Text className="text-sm text-gray-600 mt-3">Loading taskers...</Text>
+            <Text className="text-sm text-gray-600 mt-3">
+              {getAppContentValue(content, 'loading.text', 'Loading taskers...')}
+            </Text>
           </View>
         ) : isError ? (
           <View className="flex-col items-center justify-center py-20 px-6">
             <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
-              Error loading taskers
+              {getAppContentValue(content, 'error.title', 'Error loading taskers')}
             </Text>
             <Text className="text-sm text-gray-600 text-center">
-              Please try again later
+              {getAppContentValue(content, 'error.body', 'Please try again later')}
             </Text>
           </View>
         ) : taskers.length === 0 ? (
           <View className="flex-col items-center justify-center py-20 px-6">
             <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
-              No pros found
+              {getAppContentValue(content, 'empty.title', 'No pros found')}
             </Text>
             <Text className="text-sm text-gray-600 text-center">
-              Try adjusting your filters or search in a different category
+              {getAppContentValue(content, 'empty.body', 'Try adjusting your filters or search in a different category')}
             </Text>
           </View>
         ) : (
@@ -366,7 +379,7 @@ export default function SelectTaskerScreen() {
                 className="text-center text-xl"
                 style={{ fontWeight: '500', color: '#333A31' }}
               >
-                Sort by
+                {getAppContentValue(content, 'sort.modal_title', 'Sort by')}
               </Text>
             </View>
 

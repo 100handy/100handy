@@ -1,9 +1,20 @@
 import React from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native'; import { Image } from 'expo-image'; import { SafeAreaView } from 'react-native-safe-area-context'; import { CheckCircle2, MessageCircle, Calendar } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { useConversationByBooking } from '@shared/query';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 export default function BookingSuccessScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const content = useAppContent('client_booking_success', {
+    'hero.title': 'Booking Confirmed!',
+    'hero.body': 'Your task has been booked successfully',
+    'summary.tasker_label': 'Your 100Handy Pro',
+    'summary.service_label': 'Service',
+    'summary.scheduled_label': 'Scheduled',
+    'actions.chat_template': 'Chat with {name}',
+    'actions.view_bookings': 'View My Bookings',
+    'actions.go_home': 'Go to Home',
+  });
 
   const taskerName = params.taskerName as string;
   const taskerAvatar = params.taskerAvatar as string;
@@ -57,10 +68,10 @@ export default function BookingSuccessScreen() {
 
         {/* Success Message */}
         <Text className="text-2xl font-bold text-[#30352D] mb-2 text-center">
-          Booking Confirmed!
+          {getAppContentValue(content, 'hero.title', 'Booking Confirmed!')}
         </Text>
         <Text className="text-base text-gray-600 mb-8 text-center">
-          Your task has been booked successfully
+          {getAppContentValue(content, 'hero.body', 'Your task has been booked successfully')}
         </Text>
 
         {/* Booking Summary Card */}
@@ -74,7 +85,7 @@ export default function BookingSuccessScreen() {
             />
             <View className="flex-col flex-1">
               <Text className="text-sm text-gray-600 mb-1">
-                Your 100Handy Pro
+                {getAppContentValue(content, 'summary.tasker_label', 'Your 100Handy Pro')}
               </Text>
               <Text className="text-base font-semibold text-[#30352D]">
                 {taskerName || '100Handy Pro'}
@@ -85,7 +96,7 @@ export default function BookingSuccessScreen() {
           {/* Service */}
           <View className="flex-col mb-3">
             <Text className="text-sm text-gray-600 mb-1">
-              Service
+              {getAppContentValue(content, 'summary.service_label', 'Service')}
             </Text>
             <Text className="text-base text-[#30352D]">
               {categoryName || 'Service'}
@@ -95,7 +106,7 @@ export default function BookingSuccessScreen() {
           {/* Date & Time */}
           <View className="flex-col">
             <Text className="text-sm text-gray-600 mb-1">
-              Scheduled
+              {getAppContentValue(content, 'summary.scheduled_label', 'Scheduled')}
             </Text>
             <Text className="text-base text-[#30352D]">
               {formatDate(selectedDate)} at {selectedTime}
@@ -118,7 +129,7 @@ export default function BookingSuccessScreen() {
               <>
                 <MessageCircle size={20} color="#FFFFFF" strokeWidth={2} />
                 <Text className="text-base font-semibold text-white">
-                  Chat with {taskerName?.split(' ')[0] || '100Handy Pro'}
+                  {getAppContentValue(content, 'actions.chat_template', 'Chat with {name}').replace('{name}', taskerName?.split(' ')[0] || '100Handy Pro')}
                 </Text>
               </>
             )}
@@ -132,14 +143,14 @@ export default function BookingSuccessScreen() {
           >
             <Calendar size={20} color="#C1856A" strokeWidth={2} />
             <Text className="text-base font-semibold" style={{ color: '#C1856A' }}>
-              View My Bookings
+              {getAppContentValue(content, 'actions.view_bookings', 'View My Bookings')}
             </Text>
           </Pressable>
 
           {/* Go Home Link */}
           <Pressable onPress={handleGoHome} className="w-full py-3 items-center">
             <Text className="text-base" style={{ color: '#6B7280' }}>
-              Go to Home
+              {getAppContentValue(content, 'actions.go_home', 'Go to Home')}
             </Text>
           </Pressable>
         </View>

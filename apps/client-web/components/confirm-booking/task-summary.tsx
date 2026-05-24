@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Calendar, MapPin, Clock, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePublicSiteSetting } from "@/lib/public-site-settings";
 
 interface TaskSummaryProps {
   handymanName?: string;
@@ -63,6 +64,21 @@ export function TaskSummary({
   isSubmitting = false
 }: TaskSummaryProps) {
   const hourlyRate = hourlyRateCents / 100;
+  const copy = usePublicSiteSetting("booking.web_copy", {
+    editTask: "Edit Task",
+    taskDetailsLabel: "Your Task details",
+    hourlyRateLabel: "Hourly Rate",
+    pricingIntro: "Pricing is inclusive of a",
+    trustFee: "£10.68/hr Trust & Support fee.",
+    pricingVat: "Pricing includes VAT",
+    pricingOutro: "which is billed on the Trust & Support Fee and our Service Fee.",
+    pricingBillingBody: "You will not be billed until your task is complete. Tasks have a one-hour minimum. You can cancel or reschedule anytime.",
+    pricingCancellationBody: "If you cancel your task within 24 hours of the scheduled start time, you may be billed a one-hour cancellation fee at the Pro's hourly rate.",
+    learnMoreLabel: "Learn more",
+    learnMoreSuffix: "about our cancellation policy.",
+    confirmAndChat: "Confirm and Chat",
+    creatingBooking: "Creating booking...",
+  });
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6">
@@ -119,14 +135,14 @@ export function TaskSummary({
           className="mb-6"
           onClick={onEdit}
         >
-          Edit Task
+          {copy.editTask}
         </Button>
       )}
 
       {/* Task Details */}
       <div className="mb-6">
         <p className="mb-2 text-[14px] font-medium text-brand-dark">
-          Your Task details
+          {copy.taskDetailsLabel}
         </p>
         <div className="rounded-lg bg-gray-50 p-4">
           <p className="text-[18px] leading-relaxed text-brand-dark">
@@ -141,7 +157,7 @@ export function TaskSummary({
       {/* Hourly Rate */}
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <p className="text-[18px] font-bold text-brand-dark">Hourly Rate</p>
+          <p className="text-[18px] font-bold text-brand-dark">{copy.hourlyRateLabel}</p>
           <p className="text-[18px] font-bold text-brand-dark">£{hourlyRate.toFixed(2)} /hr</p>
         </div>
       </div>
@@ -149,23 +165,23 @@ export function TaskSummary({
       {/* Pricing Details */}
       <div className="space-y-2 text-[14px] mb-6">
         <p className="text-brand-dark">
-          <span>Pricing is inclusive of a </span>
-          <span className="font-medium text-brand-terracotta">£10.68/hr Trust & Support fee.</span>
-          <span className="font-medium text-brand-terracotta"> Pricing includes VAT </span>
-          <span>which is billed on the Trust & Support Fee and our Service Fee.</span>
+          <span>{copy.pricingIntro} </span>
+          <span className="font-medium text-brand-terracotta">{copy.trustFee}</span>
+          <span className="font-medium text-brand-terracotta"> {copy.pricingVat} </span>
+          <span>{copy.pricingOutro}</span>
         </p>
 
         <p className="text-brand-dark">
-          You will not be billed until your task is complete. Tasks have a one-hour minimum. You can cancel or reschedule anytime.
+          {copy.pricingBillingBody}
         </p>
 
         <p className="text-brand-dark">
-          If you cancel your task within 24 hours of the scheduled start time, you may be billed a one-hour cancellation fee at the Pro's hourly rate.
+          {copy.pricingCancellationBody}
         </p>
 
         <p className="text-brand-dark">
-          <a href="/help/cancellation-policy" className="font-medium text-brand-terracotta hover:underline">Learn more</a>
-          <span> about our cancellation policy.</span>
+          <a href="/help/cancellation-policy" className="font-medium text-brand-terracotta hover:underline">{copy.learnMoreLabel}</a>
+          <span> {copy.learnMoreSuffix}</span>
         </p>
       </div>
 
@@ -177,7 +193,7 @@ export function TaskSummary({
           onClick={onConfirm}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Creating booking...' : 'Confirm and Chat'}
+          {isSubmitting ? copy.creatingBooking : copy.confirmAndChat}
         </Button>
       )}
     </div>

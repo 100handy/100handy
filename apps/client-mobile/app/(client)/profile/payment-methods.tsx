@@ -12,6 +12,7 @@ import {
   PaymentMethod,
 } from '@shared/supabase/payment-methods';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 // Card brand to logo mapping (we'll use text for now, can add actual logos later)
 const CARD_BRANDS: Record<string, string> = {
@@ -21,6 +22,29 @@ const CARD_BRANDS: Record<string, string> = {
   discover: 'Discover',
 };
 
+const DEFAULT_CONTENT = {
+  'header.title': 'Payment Methods',
+  'body.description': 'Manage your payment methods for bookings and purchases',
+  'loading.text': 'Loading payment methods...',
+  'empty.title': 'No payment methods yet',
+  'empty.body': 'Add a payment method to quickly book services',
+  'badges.default': 'DEFAULT',
+  'labels.expires': 'Expires',
+  'alerts.delete_title': 'Delete Payment Method',
+  'alerts.delete_body': 'Are you sure you want to delete this payment method?',
+  'actions.cancel': 'Cancel',
+  'actions.delete': 'Delete',
+  'actions.add': 'Add Payment Method',
+  'toasts.deleted_title': 'Deleted',
+  'toasts.deleted_body': 'Payment method removed.',
+  'toasts.delete_failed_title': 'Error',
+  'toasts.delete_failed_body': 'Failed to delete payment method. Please try again.',
+  'toasts.updated_title': 'Updated',
+  'toasts.updated_body': 'Default payment method changed.',
+  'toasts.update_failed_title': 'Error',
+  'toasts.update_failed_body': 'Failed to set default payment method. Please try again.',
+} as const;
+
 export default function PaymentMethodsScreen() {
   const router = useRouter();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -29,6 +53,7 @@ export default function PaymentMethodsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
   const toast = useToast();
+  const content = useAppContent('client_payment_methods', DEFAULT_CONTENT);
 
   // Reload payment methods when screen comes into focus
   useFocusEffect(
@@ -64,23 +89,29 @@ export default function PaymentMethodsScreen() {
 
   const handleDeletePaymentMethod = (paymentMethodId: string) => {
     Alert.alert(
-      'Delete Payment Method',
-      'Are you sure you want to delete this payment method?',
+      getAppContentValue(content, 'alerts.delete_title', DEFAULT_CONTENT['alerts.delete_title']),
+      getAppContentValue(content, 'alerts.delete_body', DEFAULT_CONTENT['alerts.delete_body']),
       [
         {
-          text: 'Cancel',
+          text: getAppContentValue(content, 'actions.cancel', DEFAULT_CONTENT['actions.cancel']),
           style: 'cancel',
         },
         {
-          text: 'Delete',
+          text: getAppContentValue(content, 'actions.delete', DEFAULT_CONTENT['actions.delete']),
           style: 'destructive',
           onPress: async () => {
             const success = await deletePaymentMethod(paymentMethodId);
             if (success) {
               await loadPaymentMethods();
-              toast.success('Deleted', 'Payment method removed.');
+              toast.success(
+                getAppContentValue(content, 'toasts.deleted_title', DEFAULT_CONTENT['toasts.deleted_title']),
+                getAppContentValue(content, 'toasts.deleted_body', DEFAULT_CONTENT['toasts.deleted_body']),
+              );
             } else {
-              toast.error('Error', 'Failed to delete payment method. Please try again.');
+              toast.error(
+                getAppContentValue(content, 'toasts.delete_failed_title', DEFAULT_CONTENT['toasts.delete_failed_title']),
+                getAppContentValue(content, 'toasts.delete_failed_body', DEFAULT_CONTENT['toasts.delete_failed_body']),
+              );
             }
           },
         },
@@ -95,9 +126,15 @@ export default function PaymentMethodsScreen() {
       const success = await setDefaultPaymentMethod(paymentMethodId);
       if (success) {
         await loadPaymentMethods();
-        toast.success('Updated', 'Default payment method changed.');
+        toast.success(
+          getAppContentValue(content, 'toasts.updated_title', DEFAULT_CONTENT['toasts.updated_title']),
+          getAppContentValue(content, 'toasts.updated_body', DEFAULT_CONTENT['toasts.updated_body']),
+        );
       } else {
-        toast.error('Error', 'Failed to set default payment method. Please try again.');
+        toast.error(
+          getAppContentValue(content, 'toasts.update_failed_title', DEFAULT_CONTENT['toasts.update_failed_title']),
+          getAppContentValue(content, 'toasts.update_failed_body', DEFAULT_CONTENT['toasts.update_failed_body']),
+        );
       }
     } finally {
       setSettingDefaultId(null);
@@ -107,7 +144,7 @@ export default function PaymentMethodsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <Header title="Payment Methods" onBackPress={() => goBackOrReplace(router, '/(client)/profile/payments')} showBellIcon={false} />
+      <Header title={getAppContentValue(content, 'header.title', DEFAULT_CONTENT['header.title'])} onBackPress={() => goBackOrReplace(router, '/(client)/profile/payments')} showBellIcon={false} />
 
       {isLoading && !hasLoadedOnce ? (
         <View className="flex-1 px-5 py-6">
@@ -115,7 +152,7 @@ export default function PaymentMethodsScreen() {
             className="text-sm text-[#6B6B6B] mb-6"
             style={{ fontFamily: 'WorkSans_400Regular' }}
           >
-            Manage your payment methods for bookings and purchases
+            {getAppContentValue(content, 'body.description', DEFAULT_CONTENT['body.description'])}
           </Text>
           <View className="flex-1 items-center justify-center gap-4">
             <ActivityIndicator size="large" color="#C1856A" />
@@ -123,7 +160,7 @@ export default function PaymentMethodsScreen() {
               className="text-sm text-[#6B6B6B]"
               style={{ fontFamily: 'WorkSans_400Regular' }}
             >
-              Loading payment methods...
+              {getAppContentValue(content, 'loading.text', DEFAULT_CONTENT['loading.text'])}
             </Text>
           </View>
         </View>
@@ -146,7 +183,7 @@ export default function PaymentMethodsScreen() {
               className="text-sm text-[#6B6B6B] mb-2"
               style={{ fontFamily: 'WorkSans_400Regular' }}
             >
-              Manage your payment methods for bookings and purchases
+              {getAppContentValue(content, 'body.description', DEFAULT_CONTENT['body.description'])}
             </Text>
 
             {/* Payment Methods List */}
@@ -163,13 +200,13 @@ export default function PaymentMethodsScreen() {
                   className="text-center text-base text-[#30352D] font-semibold"
                   style={{ fontFamily: 'WorkSans_600SemiBold' }}
                 >
-                  No payment methods yet
+                  {getAppContentValue(content, 'empty.title', DEFAULT_CONTENT['empty.title'])}
                 </Text>
                 <Text
                   className="text-center text-sm text-[#6B6B6B] px-8"
                   style={{ fontFamily: 'WorkSans_400Regular' }}
                 >
-                  Add a payment method to quickly book services
+                  {getAppContentValue(content, 'empty.body', DEFAULT_CONTENT['empty.body'])}
                 </Text>
               </View>
             ) : (
@@ -203,7 +240,7 @@ export default function PaymentMethodsScreen() {
                                   className="text-[10px] font-bold text-[#166534]"
                                   style={{ fontFamily: 'WorkSans_700Bold' }}
                                 >
-                                  DEFAULT
+                                  {getAppContentValue(content, 'badges.default', DEFAULT_CONTENT['badges.default'])}
                                 </Text>
                               </View>
                             )}
@@ -218,7 +255,7 @@ export default function PaymentMethodsScreen() {
                             className="text-xs text-[#999999] mt-1"
                             style={{ fontFamily: 'WorkSans_400Regular' }}
                           >
-                            Expires {method.card.exp_month}/{method.card.exp_year}
+                            {getAppContentValue(content, 'labels.expires', DEFAULT_CONTENT['labels.expires'])} {method.card.exp_month}/{method.card.exp_year}
                           </Text>
                         </View>
 
@@ -271,7 +308,7 @@ export default function PaymentMethodsScreen() {
             className="text-white text-base font-semibold"
             style={{ fontFamily: 'WorkSans_600SemiBold' }}
           >
-            Add Payment Method
+            {getAppContentValue(content, 'actions.add', DEFAULT_CONTENT['actions.add'])}
           </Text>
         </Pressable>
       </View>

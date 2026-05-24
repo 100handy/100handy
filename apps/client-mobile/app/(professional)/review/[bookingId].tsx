@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCreateProfessionalReview, useHasReviewedBooking } from '@shared/query';
 import { ScrollView, View, Text, Pressable, TextInput, ActivityIndicator, Alert, } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useLocalSearchParams, useRouter } from 'expo-router'; import { ArrowLeft, Star, X, Lock } from 'lucide-react-native'; import { toast } from 'sonner-native'; import { useBookingById } from '@shared/query';
 import { goBackOrReplace } from '@/lib/navigation';
+import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 export default function ProfessionalReviewScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
@@ -9,6 +10,32 @@ export default function ProfessionalReviewScreen() {
   const [rating, setRating] = useState(0);
   const [privateNotes, setPrivateNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const content = useAppContent('professional_review', {
+    'header.title': 'Rate Client',
+    'errors.cannot_review_title': 'Cannot Review',
+    'errors.cannot_review_body': 'You can only review completed bookings.',
+    'errors.missing_booking': 'Booking not found',
+    'status.already_title': 'Already reviewed',
+    'status.already_body': "You've already rated this client.",
+    'privacy.title': 'Private Rating',
+    'privacy.body': 'This rating is private and only visible to you. It helps you remember your experience with this client for future bookings.',
+    'rating.prompt': 'How was this client?',
+    'rating.tap': 'Tap to rate',
+    'rating.one': 'Would not work with again',
+    'rating.two': 'Below average',
+    'rating.three': 'Average',
+    'rating.four': 'Good client',
+    'rating.five': 'Excellent client',
+    'notes.title': 'Private notes (optional)',
+    'notes.placeholder': 'Add notes about this client for your reference...',
+    'notes.footer': 'Only you can see these notes',
+    'actions.skip': 'Maybe later',
+    'actions.submit': 'Save Rating',
+    'toasts.missing_rating': 'Please select a rating',
+    'toasts.success': 'Review saved!',
+    'toasts.failed': 'Failed to save review',
+    'toasts.generic_error': 'Something went wrong',
+  });
 
   const { data: booking, isLoading: loadingBooking } = useBookingById(bookingId || null);
   const { data: hasReviewed, isLoading: loadingReview } = useHasReviewedBooking(
@@ -21,8 +48,8 @@ export default function ProfessionalReviewScreen() {
   useEffect(() => {
     if (!loadingBooking && booking && booking.status !== 'completed') {
       Alert.alert(
-        'Cannot Review',
-        'You can only review completed bookings.',
+        getAppContentValue(content, 'errors.cannot_review_title', 'Cannot Review'),
+        getAppContentValue(content, 'errors.cannot_review_body', 'You can only review completed bookings.'),
         [{ text: 'OK', onPress: () => goBackOrReplace(router, '/(professional)/(tabs)/jobs') }]
       );
     }
@@ -30,7 +57,7 @@ export default function ProfessionalReviewScreen() {
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      toast.error('Please select a rating');
+      toast.error(getAppContentValue(content, 'toasts.missing_rating', 'Please select a rating'));
       return;
     }
 
@@ -45,13 +72,13 @@ export default function ProfessionalReviewScreen() {
       });
 
       if (review) {
-        toast.success('Review saved!');
+        toast.success(getAppContentValue(content, 'toasts.success', 'Review saved!'));
         goBackOrReplace(router, '/(professional)/(tabs)/jobs');
       } else {
-        toast.error('Failed to save review');
+        toast.error(getAppContentValue(content, 'toasts.failed', 'Failed to save review'));
       }
     } catch (error) {
-      toast.error('Something went wrong');
+      toast.error(getAppContentValue(content, 'toasts.generic_error', 'Something went wrong'));
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +106,7 @@ export default function ProfessionalReviewScreen() {
         </View>
         <View className="flex-1 items-center justify-center px-8">
           <Text className="font-worksans-bold text-[18px] text-[#30352D]">
-            Booking not found
+            {getAppContentValue(content, 'errors.missing_booking', 'Booking not found')}
           </Text>
         </View>
       </SafeAreaView>
@@ -97,10 +124,10 @@ export default function ProfessionalReviewScreen() {
         <View className="flex-1 items-center justify-center px-8">
           <Star color="#B29D88" size={48} fill="#B29D88" />
           <Text className="font-worksans-bold text-[18px] text-[#30352D] mt-4">
-            Already reviewed
+            {getAppContentValue(content, 'status.already_title', 'Already reviewed')}
           </Text>
           <Text className="font-worksans text-[14px] text-[#6B6B6B] mt-2 text-center">
-            You've already rated this client.
+            {getAppContentValue(content, 'status.already_body', "You've already rated this client.")}
           </Text>
         </View>
       </SafeAreaView>
@@ -115,7 +142,7 @@ export default function ProfessionalReviewScreen() {
           <ArrowLeft color="#30352D" size={24} />
         </Pressable>
         <Text className="font-worksans-bold text-[18px] text-[#30352D]">
-          Rate Client
+          {getAppContentValue(content, 'header.title', 'Rate Client')}
         </Text>
         <Pressable onPress={handleSkip} className="p-2 -mr-2">
           <X color="#6B6B6B" size={24} />
@@ -144,11 +171,10 @@ export default function ProfessionalReviewScreen() {
           <Lock color="#2E7D32" size={18} strokeWidth={1.5} />
           <View className="flex-1 ml-3">
             <Text className="font-worksans-medium text-[14px] text-[#2E7D32]">
-              Private Rating
+              {getAppContentValue(content, 'privacy.title', 'Private Rating')}
             </Text>
             <Text className="font-worksans text-[12px] text-[#2E7D32] mt-1">
-              This rating is private and only visible to you. It helps you remember
-              your experience with this client for future bookings.
+              {getAppContentValue(content, 'privacy.body', 'This rating is private and only visible to you. It helps you remember your experience with this client for future bookings.')}
             </Text>
           </View>
         </View>
@@ -156,7 +182,7 @@ export default function ProfessionalReviewScreen() {
         {/* Rating */}
         <View className="bg-white mx-4 mt-3 p-4 rounded-2xl">
           <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-4 text-center">
-            How was this client?
+            {getAppContentValue(content, 'rating.prompt', 'How was this client?')}
           </Text>
           <View className="flex-row justify-center gap-3">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -171,24 +197,24 @@ export default function ProfessionalReviewScreen() {
             ))}
           </View>
           <Text className="font-worksans text-[13px] text-[#6B6B6B] mt-3 text-center">
-            {rating === 0 && 'Tap to rate'}
-            {rating === 1 && 'Would not work with again'}
-            {rating === 2 && 'Below average'}
-            {rating === 3 && 'Average'}
-            {rating === 4 && 'Good client'}
-            {rating === 5 && 'Excellent client'}
+            {rating === 0 && getAppContentValue(content, 'rating.tap', 'Tap to rate')}
+            {rating === 1 && getAppContentValue(content, 'rating.one', 'Would not work with again')}
+            {rating === 2 && getAppContentValue(content, 'rating.two', 'Below average')}
+            {rating === 3 && getAppContentValue(content, 'rating.three', 'Average')}
+            {rating === 4 && getAppContentValue(content, 'rating.four', 'Good client')}
+            {rating === 5 && getAppContentValue(content, 'rating.five', 'Excellent client')}
           </Text>
         </View>
 
         {/* Private Notes */}
         <View className="bg-white mx-4 mt-3 p-4 rounded-2xl">
           <Text className="font-worksans-bold text-[16px] text-[#30352D] mb-3">
-            Private notes (optional)
+            {getAppContentValue(content, 'notes.title', 'Private notes (optional)')}
           </Text>
           <TextInput
             value={privateNotes}
             onChangeText={setPrivateNotes}
-            placeholder="Add notes about this client for your reference..."
+            placeholder={getAppContentValue(content, 'notes.placeholder', 'Add notes about this client for your reference...')}
             placeholderTextColor="#9CA3AF"
             multiline
             numberOfLines={4}
@@ -196,14 +222,14 @@ export default function ProfessionalReviewScreen() {
             className="bg-[#F5F5F5] p-4 rounded-xl font-worksans text-[14px] text-[#30352D] min-h-[120px]"
           />
           <Text className="font-worksans text-[12px] text-[#6B6B6B] mt-2">
-            Only you can see these notes
+            {getAppContentValue(content, 'notes.footer', 'Only you can see these notes')}
           </Text>
         </View>
 
         {/* Skip prompt */}
         <Pressable onPress={handleSkip} className="py-4">
           <Text className="font-worksans text-[14px] text-[#6B6B6B] text-center underline">
-            Maybe later
+            {getAppContentValue(content, 'actions.skip', 'Maybe later')}
           </Text>
         </Pressable>
       </ScrollView>
@@ -225,7 +251,7 @@ export default function ProfessionalReviewScreen() {
                 rating > 0 ? 'text-white' : 'text-[#9CA3AF]'
               }`}
             >
-              Save Rating
+              {getAppContentValue(content, 'actions.submit', 'Save Rating')}
             </Text>
           )}
         </Pressable>

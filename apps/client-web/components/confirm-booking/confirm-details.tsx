@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { StripeCardElement } from "../payment/stripe-card-element";
+import { usePublicSiteSetting } from "@/lib/public-site-settings";
 
 interface ConfirmDetailsProps {
   clientSecret?: string;
@@ -18,20 +19,30 @@ export function ConfirmDetails({
   isSubmitting,
   authorizedPaymentId,
 }: ConfirmDetailsProps) {
+  const copy = usePublicSiteSetting("booking.web_copy", {
+    confirmDetailsTitle: "Confirm details",
+    paymentMethodTitle: "Payment method",
+    paymentHoldNotice: "You may see a temporary hold on your payment method in the amount of your 100 Handy Pro's hourly rate. Don't worry - you're only billed when your task is complete!",
+    paymentAuthorizedBody: "Payment authorized successfully. Your card has been held.",
+    completeBooking: "Complete Booking",
+    processing: "Processing...",
+    preparingPayment: "Preparing payment...",
+  });
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-8">
       <h2 className="mb-6 text-[30px] font-bold text-brand-dark">
-        Confirm details
+        {copy.confirmDetailsTitle}
       </h2>
 
       {/* Payment Method Section */}
       <div className="mb-8">
         <h3 className="mb-4 text-[24px] font-bold text-brand-dark">
-          Payment method
+          {copy.paymentMethodTitle}
         </h3>
 
         <p className="mb-4 text-[16px] text-brand-dark">
-          You may see a temporary hold on your payment method in the amount of your 100 Handy Pro's hourly rate. Don't worry - you're only billed when your task is complete!
+          {copy.paymentHoldNotice}
         </p>
 
         {/* Payment already authorized - show retry booking button */}
@@ -41,7 +52,7 @@ export function ConfirmDetails({
               <svg className="h-5 w-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <p className="text-green-800 text-sm">Payment authorized successfully. Your card has been held.</p>
+              <p className="text-green-800 text-sm">{copy.paymentAuthorizedBody}</p>
             </div>
             <Button
               variant="terracotta"
@@ -50,7 +61,7 @@ export function ConfirmDetails({
               onClick={() => onPaymentSuccess(authorizedPaymentId)}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Processing...' : 'Complete Booking'}
+              {isSubmitting ? copy.processing : copy.completeBooking}
             </Button>
           </div>
         ) : clientSecret ? (
@@ -63,7 +74,7 @@ export function ConfirmDetails({
         ) : (
           <div className="py-8 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-terracotta"></div>
-            <p className="mt-2 text-gray-600">Preparing payment...</p>
+            <p className="mt-2 text-gray-600">{copy.preparingPayment}</p>
           </div>
         )}
       </div>
