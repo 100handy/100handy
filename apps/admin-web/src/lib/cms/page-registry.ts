@@ -378,6 +378,113 @@ export const pageRegistry: Record<string, PageDefinition> = {
       },
     },
   },
+  'for-business': {
+    label: 'For Business',
+    slug: '/for-business',
+    sections: {
+      hero: {
+        label: 'Hero Section',
+        fields: {
+          title: { type: 'text', label: 'Page Title', placeholder: 'Boost sales — without adding operational load' },
+          subtitle: { type: 'rich_text', label: 'Subtitle', placeholder: '100 Handy partners with retailers and service-led brands to provide trusted assembly, mounting, and installation.' },
+          image: { type: 'image_url', label: 'Hero Image', placeholder: '/images/hero/partnerheroimage.png' },
+        },
+      },
+      benefits: {
+        label: 'Benefits Section',
+        fields: {
+          item_1_title: { type: 'text', label: 'Benefit 1 Title', placeholder: 'Build Customer Loyalty' },
+          item_1_description: { type: 'rich_text', label: 'Benefit 1 Description', placeholder: 'Offer a convenient, reliable solution for assembly and installation — so your customers feel supported from delivery to done.' },
+          item_2_title: { type: 'text', label: 'Benefit 2 Title', placeholder: 'Increase Sales & Reduce Returns' },
+          item_2_description: { type: 'rich_text', label: 'Benefit 2 Description', placeholder: "When customers know help is available, they're more likely to buy — and less likely to return items because setup felt overwhelming." },
+          item_3_title: { type: 'text', label: 'Benefit 3 Title', placeholder: 'Seamless Integration' },
+          item_3_description: { type: 'rich_text', label: 'Benefit 3 Description', placeholder: 'We can support scheduling and service workflows to make booking and payment feel effortless for your customers and your team.' },
+        },
+      },
+      form: {
+        label: 'Partnership Form Copy',
+        fields: {
+          title: { type: 'text', label: 'Form Title', placeholder: 'Want to Learn More About Partnering With 100 Handy?' },
+          intro: { type: 'rich_text', label: 'Form Intro', placeholder: "Tell us a bit about your business and what you're looking to enable. We'll follow up with relevant details, example workflows, and a case study — then explore the best partnership model for you." },
+          success_title: { type: 'text', label: 'Success Title', placeholder: 'Thank You for Your Interest!' },
+          success_message: { type: 'rich_text', label: 'Success Message', placeholder: "We've received your inquiry and will be in touch within 2 business days to discuss partnership opportunities." },
+          footer_link_text: { type: 'text', label: 'Footer Link Text', placeholder: 'Looking to sign up as a 100 Handy Pro?' },
+          footer_link_cta: { type: 'text', label: 'Footer Link CTA', placeholder: 'Submit your application here' },
+        },
+      },
+    },
+  },
+  'become-100-handy-pro': {
+    label: 'Become 100 Handy Pro',
+    slug: '/become-100-handy-pro',
+    sections: {
+      hero: {
+        label: 'Hero Section',
+        fields: {
+          title: { type: 'text', label: 'Page Title', placeholder: 'Earn Money Your Way' },
+          subtitle: { type: 'rich_text', label: 'Subtitle', placeholder: 'Turn your skills into a flexible income. Choose the work you like, set your availability, and get paid for jobs completed.' },
+          categories_list: { type: 'rich_text', label: 'Category Chips', placeholder: 'Cleaning Jobs\nElectrical Help Jobs\nFurniture Assembly Jobs\nIKEA Assembly Jobs\nIndoor Painting Jobs\nLight Carpentry Jobs\nMinor Home Repairs Jobs\nPlumbing Help Jobs\nTrash & Furniture Removal Jobs\nGardening Jobs' },
+        },
+      },
+      benefits: {
+        label: 'Benefits Section',
+        fields: {
+          intro: { type: 'rich_text', label: 'Section Intro', placeholder: 'Find local jobs that fit your skills and schedule. With 100 Handy, you have the freedom and support to be your own boss.' },
+          item_1_title: { type: 'text', label: 'Benefit 1 Title', placeholder: 'Be your own boss' },
+          item_1_description: { type: 'rich_text', label: 'Benefit 1 Description', placeholder: 'Work how, when, and where you want. Offer services in 50+ categories and set a flexible schedule and work area. You are in control of your time.' },
+          item_2_title: { type: 'text', label: 'Benefit 2 Title', placeholder: 'Set your own rates' },
+          item_2_description: { type: 'rich_text', label: 'Benefit 2 Description', placeholder: 'You know what your skills are worth. You set your hourly rate, and you keep 100% of your tips. We handle the invoicing so you get paid directly and securely.' },
+          item_3_title: { type: 'text', label: 'Benefit 3 Title', placeholder: 'Grow your business' },
+          item_3_description: { type: 'rich_text', label: 'Benefit 3 Description', placeholder: "We connect you with clients in your area and give you the tools to market yourself. Say goodbye to advertising costs - focus on what you do best, and we'll bring the work to you." },
+        },
+      },
+      overview: {
+        label: 'What is 100 Handy',
+        fields: {
+          title: { type: 'text', label: 'Section Title', placeholder: 'What is 100 Handy?' },
+          image: { type: 'image_url', label: 'Overview Image', placeholder: '/images/become-tasker/what-is-100handy.jpeg' },
+          paragraph_1: { type: 'rich_text', label: 'Paragraph 1', placeholder: '100 Handy connects customers who need help with skilled local Pros - like you. From home repairs and mounting to cleaning and moving help, we make it simple for people to book services they can trust.' },
+          paragraph_2: { type: 'rich_text', label: 'Paragraph 2', placeholder: 'You bring the skills. We help you get discovered, manage bookings, and get paid securely - so you can focus on doing great work.' },
+        },
+      },
+      getting_started: {
+        label: 'Getting Started',
+        fields: {
+          title: { type: 'text', label: 'Section Title', placeholder: 'Getting Started is Simple' },
+          image: { type: 'image_url', label: 'Section Image', placeholder: '/images/become-tasker/what-is-100handy.jpeg' },
+          step_1_title: { type: 'text', label: 'Step 1 Title', placeholder: 'Sign up' },
+          step_1_description: { type: 'rich_text', label: 'Step 1 Description', placeholder: 'Create your account in minutes with your email or social login.' },
+          step_2_title: { type: 'text', label: 'Step 2 Title', placeholder: 'Build your profile' },
+          step_2_description: { type: 'rich_text', label: 'Step 2 Description', placeholder: 'Add your skills, experience, service areas, and a friendly intro. A strong profile helps you win more bookings.' },
+          step_3_title: { type: 'text', label: 'Step 3 Title', placeholder: 'Verify your eligibility to task' },
+          step_3_description: { type: 'rich_text', label: 'Step 3 Description', placeholder: 'Complete identity checks and any requirements needed for your location and categories.' },
+          step_4_title: { type: 'text', label: 'Step 4 Title', placeholder: 'Set your schedule and work area' },
+          step_4_description: { type: 'rich_text', label: 'Step 4 Description', placeholder: 'Choose your availability and where you want to work - near home, across the city, or both.' },
+          step_5_title: { type: 'text', label: 'Step 5 Title', placeholder: 'Start getting jobs' },
+          step_5_description: { type: 'rich_text', label: 'Step 5 Description', placeholder: 'Receive requests, accept the work that fits, show up prepared, and get paid when the job is done.' },
+        },
+      },
+      faqs: {
+        label: 'FAQs',
+        fields: {
+          title: { type: 'text', label: 'Section Title', placeholder: 'Frequently Asked Questions' },
+          faq_1_question: { type: 'text', label: 'FAQ 1 Question', placeholder: 'What do I need to become a Handy?' },
+          faq_1_answer: { type: 'rich_text', label: 'FAQ 1 Answer', placeholder: "You'll need relevant skills for your chosen categories, a completed profile, and to pass verification requirements for your location." },
+          faq_2_question: { type: 'text', label: 'FAQ 2 Question', placeholder: 'How do I get paid?' },
+          faq_2_answer: { type: 'rich_text', label: 'FAQ 2 Answer', placeholder: 'Payments are handled securely through the platform after the job is completed, so you do not need to chase invoices.' },
+          faq_3_question: { type: 'text', label: 'FAQ 3 Question', placeholder: 'How long does it take to get approved?' },
+          faq_3_answer: { type: 'rich_text', label: 'FAQ 3 Answer', placeholder: 'Timelines vary by location and verification steps, but many pros can complete setup quickly once documents are submitted.' },
+          faq_4_question: { type: 'text', label: 'FAQ 4 Question', placeholder: 'Can I choose my own hours?' },
+          faq_4_answer: { type: 'rich_text', label: 'FAQ 4 Answer', placeholder: 'Yes. Set your schedule, update it anytime, and only accept jobs that work for you.' },
+          faq_5_question: { type: 'text', label: 'FAQ 5 Question', placeholder: 'Do I need my own tools?' },
+          faq_5_answer: { type: 'rich_text', label: 'FAQ 5 Answer', placeholder: 'For most categories, yes. Customers book you for your expertise - having the right tools helps you complete work efficiently and earn better reviews.' },
+          faq_6_question: { type: 'text', label: 'FAQ 6 Question', placeholder: 'How do I get more jobs?' },
+          faq_6_answer: { type: 'rich_text', label: 'FAQ 6 Answer', placeholder: 'A great profile, fast responses, fair pricing, and strong reviews help you rank higher and get booked more often.' },
+          cta_title: { type: 'text', label: 'Bottom CTA Title', placeholder: 'Ready to create an extra source of income?' },
+        },
+      },
+    },
+  },
 }
 
 /** Get all page keys */

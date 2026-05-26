@@ -32,11 +32,19 @@ export default function ContentPagesPage() {
   const canManageContent = hasPermission('content.manage') || hasPermission('seo.manage')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<(typeof statusFilters)[number]['value']>('all')
+  const [areaFilter, setAreaFilter] = useState<string>('all')
+
+  const areaOptions = useMemo(
+    () => ['all', ...Array.from(new Set(webPageInventory.map((page) => page.area))).sort()],
+    []
+  )
 
   const filteredPages = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
     return webPageInventory.filter((page) => {
       const matchesStatus = statusFilter === 'all' ? true : page.status === statusFilter
+      const matchesArea = areaFilter === 'all' ? true : page.area === areaFilter
+      if (!matchesArea) return false
       if (!matchesStatus) return false
       if (!query) return true
       return [page.title, page.route, page.area, page.source, page.notes ?? '']
@@ -44,7 +52,7 @@ export default function ContentPagesPage() {
         .toLowerCase()
         .includes(query)
     })
-  }, [searchQuery, statusFilter])
+  }, [searchQuery, statusFilter, areaFilter])
 
   const counts = useMemo(
     () => ({
@@ -86,6 +94,17 @@ export default function ContentPagesPage() {
                     className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-gray-900"
                   />
                 </div>
+                <select
+                  value={areaFilter}
+                  onChange={(e) => setAreaFilter(e.target.value)}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-gray-900"
+                >
+                  {areaOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option === 'all' ? 'All areas' : option}
+                    </option>
+                  ))}
+                </select>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as (typeof statusFilters)[number]['value'])}
