@@ -1,31 +1,36 @@
 "use client";
 
-const resources = [
-  { title: "Download Logos", href: "mailto:press@100handy.com" },
-  { title: "Download B-Roll", href: "mailto:press@100handy.com" },
-  { title: "Download Fact Sheet", href: "mailto:press@100handy.com" },
-  { title: "Download 100 Handy Pro Images", href: "mailto:press@100handy.com" },
-  { title: "Download Product Images", href: "mailto:press@100handy.com" },
-  { title: "Download Client Images", href: "mailto:press@100handy.com" },
-];
+interface MediaResourceItem {
+  title: string;
+  href: string;
+}
 
-export function MediaResources(): React.JSX.Element {
+interface MediaResourcesProps {
+  title: string;
+  introOne: string;
+  introTwo: string;
+  resources: MediaResourceItem[];
+}
+
+export function MediaResources({
+  title,
+  introOne,
+  introTwo,
+  resources,
+}: MediaResourcesProps): React.JSX.Element {
   return (
     <section className="bg-white py-20">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-6 text-center text-[32px] font-bold text-brand-dark-alt">
-          Media Resources
+          {title}
         </h2>
 
         <div className="mx-auto mb-12 max-w-3xl text-center">
           <p className="mb-2 text-[20px] text-brand-dark-alt">
-            A collection of brand assets for your use.
+            {introOne}
           </p>
           <p className="text-[20px] text-brand-dark-alt">
-            All logo and media usage must follow the 100 Handy brand guidelines. For specific media requests, please contact{" "}
-            <a href="mailto:press@100handy.com" className="text-brand-terracotta underline hover:text-brand-terracotta/85">
-              press@100handy.com
-            </a>
+            {introTwo}
           </p>
         </div>
 
@@ -46,4 +51,3 @@ export function MediaResources(): React.JSX.Element {
     </section>
   );
 }
-

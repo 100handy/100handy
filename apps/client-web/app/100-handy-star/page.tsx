@@ -129,7 +129,7 @@ export default async function EliteTaskersPage() {
                   <div className="relative h-[500px] w-[280px] rounded-[40px] border-4 border-gray-800 bg-gray-900 p-2">
                     <div className="h-full w-full rounded-[32px] bg-white p-4">
                       <div className="mb-4 text-center text-[12px] font-medium text-gray-500">
-                        100 HANDY
+                        {c("hire.mockup_brand", "100 HANDY")}
                       </div>
                       <div className="space-y-3">
                         {[1, 2, 3].map((i) => (
@@ -153,7 +153,7 @@ export default async function EliteTaskersPage() {
                                   />
                                 ))}
                                 <span className="ml-1 text-[10px] text-gray-500">
-                                  5.0
+                                  {c("hire.mockup_rating", "5.0")}
                                 </span>
                               </div>
                             </div>

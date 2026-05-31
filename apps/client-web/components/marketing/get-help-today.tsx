@@ -15,16 +15,26 @@ const services = [
   { name: "Home Repairs", href: "/services/home-repairs/home-repairs" },
 ];
 
-export function GetHelpToday() {
+interface GetHelpTodayProps {
+  title?: string;
+  services?: Array<{ name: string; href: string }>;
+  ctaText?: string;
+}
+
+export function GetHelpToday({
+  title = "Get Help Today",
+  services: serviceItems = services,
+  ctaText = "See All Services",
+}: GetHelpTodayProps) {
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-12 text-center text-[34px] font-bold text-brand-dark-alt">
-          Get Help Today
+          {title}
         </h2>
 
         <div className="flex flex-wrap items-center justify-center gap-3">
-          {services.map((service, index) => (
+          {serviceItems.map((service, index) => (
             <Link
               key={index}
               href={service.href}
@@ -40,7 +50,7 @@ export function GetHelpToday() {
             href="/services"
             className="text-[16px] font-bold text-brand-terracotta underline decoration-brand-terracotta underline-offset-4 transition-colors hover:text-brand-terracotta/80"
           >
-            See All Services
+            {ctaText}
           </Link>
         </div>
       </div>

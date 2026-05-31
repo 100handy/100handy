@@ -3,34 +3,32 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-const pressReleases = [
-  {
-    date: "September 16, 2025",
-    title: "100Handy for Businesses Powers Retail Growth with On-Demand Assembly and Installation",
-    link: "#",
-  },
-  {
-    date: "August 5, 2025",
-    title: "100Handy Expands Nationwide, Bringing Trusted Home Services Across the UK and Europe",
-    link: "#",
-  },
-  {
-    date: "June 18, 2025",
-    title: "100Handy Reinvents the Customer Experience with Integrated Solutions for Partners",
-    link: "#",
-  },
-];
+interface PressReleaseItem {
+  date: string;
+  title: string;
+  link: string;
+}
 
-export function PressReleases(): React.JSX.Element {
+interface PressReleasesProps {
+  title: string;
+  ctaText: string;
+  releases: PressReleaseItem[];
+}
+
+export function PressReleases({
+  title,
+  ctaText,
+  releases,
+}: PressReleasesProps): React.JSX.Element {
   return (
     <section className="bg-white py-20">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-16 text-center text-[32px] font-bold text-brand-dark-alt">
-          Press Release Highlights
+          {title}
         </h2>
 
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-          {pressReleases.map((release, index) => (
+          {releases.map((release, index) => (
             <div
               key={index}
               className="rounded-2xl bg-gray-50 p-8 transition-shadow hover:shadow-lg"
@@ -53,11 +51,10 @@ export function PressReleases(): React.JSX.Element {
 
         <div className="mt-12 text-center">
           <Button variant="terracotta" size="md" className="font-bold">
-            Explore
+            {ctaText}
           </Button>
         </div>
       </div>
     </section>
   );
 }
-

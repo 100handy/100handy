@@ -1,10 +1,10 @@
-"use client";
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 
 // --- Helpers --- //
 const toSlug = (name: string) =>
@@ -127,12 +127,12 @@ const londonAreas = [
 
 // --- Components --- //
 
-const HeroSection = () => {
+const HeroSection = ({ title, subtitle, image }: { title: string; subtitle: string; image: string }) => {
   return (
     <section className="relative bg-brand-dark">
       <div className="absolute inset-0 overflow-hidden">
         <Image
-          src="/images/hero/heroimage2.jpeg"
+          src={image}
           alt="Services by City"
           fill
           priority
@@ -143,10 +143,10 @@ const HeroSection = () => {
       <div className="relative flex min-h-[470px] items-center justify-center">
         <div className="relative z-10 bg-white rounded-2xl px-12 py-10 text-center max-w-2xl mx-8 shadow-xl">
           <h1 className="text-[48px] md:text-[56px] font-bold text-brand-dark-alt mb-4 leading-tight">
-            Services by City
+            {title}
           </h1>
           <p className="text-[22px] md:text-[26px] text-brand-dark-alt font-medium">
-            Find trusted 100 Handy Pros in your area
+            {subtitle}
           </p>
         </div>
       </div>
@@ -154,12 +154,12 @@ const HeroSection = () => {
   );
 };
 
-const CitiesSection = () => {
+const CitiesSection = ({ londonTitle, ukTitle }: { londonTitle: string; ukTitle: string }) => {
   return (
     <section className="bg-white py-20">
       <div className="max-w-[1920px] mx-auto px-8">
         <h2 className="text-[44px] font-bold text-brand-dark-alt mb-16">
-          Find us in these cities
+          {londonTitle}
         </h2>
 
         <div className="grid grid-cols-3 gap-x-16 gap-y-12">
@@ -184,7 +184,7 @@ const CitiesSection = () => {
 
         {/* UK Cities */}
         <h2 className="text-[44px] font-bold text-brand-dark-alt mt-20 mb-16">
-          UK Cities
+          {ukTitle}
         </h2>
 
         <div className="grid grid-cols-3 gap-x-16 gap-y-4">
@@ -203,21 +203,21 @@ const CitiesSection = () => {
   );
 };
 
-const HowItWorksSection = () => {
-  const steps = [
+const HowItWorksSection = ({ title, steps }: { title: string; steps: string[] }) => {
+  const items = [
     {
       number: 1,
-      title: "Choose a 100 Handy Pro by price, skills, and reviews.",
+      title: steps[0],
       bgColor: "bg-brand-terracotta"
     },
     {
       number: 2,
-      title: "Schedule your 100 Handy Pro as early as today.",
+      title: steps[1],
       bgColor: "bg-brand-sage"
     },
     {
       number: 3,
-      title: "Chat, pay, tip, and review all in one place.",
+      title: steps[2],
       bgColor: "bg-brand-sage"
     }
   ];
@@ -226,11 +226,11 @@ const HowItWorksSection = () => {
     <section className="bg-[#F5F3F1] py-20">
       <div className="max-w-[1920px] mx-auto px-8">
         <h2 className="text-[33px] font-bold text-brand-dark-alt text-center mb-16">
-          How it works
+          {title}
         </h2>
 
         <div className="grid grid-cols-3 gap-12 max-w-5xl mx-auto">
-          {steps.map((step) => (
+          {items.map((step) => (
             <div key={step.number} className="flex items-start gap-4">
               <div className={`${step.bgColor} w-[51px] h-[51px] rounded-full flex items-center justify-center flex-shrink-0`}>
                 <span className="text-white text-[33px] font-bold">{step.number}</span>
@@ -256,13 +256,36 @@ const HelpButton = () => {
 
 // --- Main Page Component --- //
 
-export default function ServicesByCityPage() {
+export async function generateMetadata() {
+  return getPageSeoMetadata("services-by-city", {
+    title: "Services by City | 100 Handy",
+    description: "Find trusted 100 Handy Pros in your area and explore services by city.",
+  });
+}
+
+export default async function ServicesByCityPage() {
+  const c = await getPageContent("services-by-city");
+
   return (
     <div className="bg-white min-h-screen">
       <Header />
-      <HeroSection />
-      <CitiesSection />
-      <HowItWorksSection />
+      <HeroSection
+        title={c("hero.title", "Services by City")}
+        subtitle={c("hero.subtitle", "Find trusted 100 Handy Pros in your area")}
+        image={c("hero.background_image", "/images/hero/heroimage2.jpeg")}
+      />
+      <CitiesSection
+        londonTitle={c("areas.london_title", "Find us in these cities")}
+        ukTitle={c("areas.uk_title", "UK Cities")}
+      />
+      <HowItWorksSection
+        title={c("how_it_works.title", "How it works")}
+        steps={[
+          c("how_it_works.step_1", "Choose a 100 Handy Pro by price, skills, and reviews."),
+          c("how_it_works.step_2", "Schedule your 100 Handy Pro as early as today."),
+          c("how_it_works.step_3", "Chat, pay, tip, and review all in one place."),
+        ]}
+      />
       <Footer />
       <HelpButton />
     </div>

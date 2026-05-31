@@ -13,9 +13,11 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, type SignInFormData } from "@shared/schemas/auth";
+import { useClientPageContent } from "@/lib/client-page-content";
 
 function SignInForm() {
   const [loading, setLoading] = useState(false);
+  const c = useClientPageContent("sign-in");
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get("redirect");
@@ -84,12 +86,14 @@ function SignInForm() {
     );
   };
 
+  const bgImage = c("hero.background_image", "/images/signup-bg.jpg");
+
   return (
     <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/images/signup-bg.jpg"
+          src={bgImage}
           alt="Background"
           fill
           className="object-cover"
@@ -117,12 +121,12 @@ function SignInForm() {
                 htmlFor="email"
                 className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
               >
-                Email Address
+                {c("hero.email_label", "Email Address")}
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Email Address"
+                placeholder={c("hero.email_placeholder", "Email Address")}
                 {...register("email")}
                 className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
               />
@@ -139,12 +143,12 @@ function SignInForm() {
                 htmlFor="password"
                 className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
               >
-                Password
+                {c("hero.password_label", "Password")}
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Password"
+                placeholder={c("hero.password_placeholder", "Password")}
                 {...register("password")}
                 className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
               />
@@ -161,7 +165,7 @@ function SignInForm() {
                 href="/forgot-password"
                 className="text-[15px] text-brand-terracotta hover:underline"
               >
-                Forgot password?
+                {c("hero.forgot_password_text", "Forgot password?")}
               </Link>
             </div>
 
@@ -180,7 +184,7 @@ function SignInForm() {
                 {loading ? (
                   <Loader2 size={20} className="animate-spin" />
                 ) : (
-                  "Log in"
+                  c("hero.submit_text", "Log in")
                 )}
               </Button>
             </div>
@@ -192,7 +196,7 @@ function SignInForm() {
               <span className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-gray-400">Or continue with</span>
+              <span className="bg-white px-3 text-gray-400">{c("hero.oauth_divider_text", "Or continue with")}</span>
             </div>
           </div>
 
@@ -205,7 +209,7 @@ function SignInForm() {
               className="h-11 border-gray-200 hover:bg-gray-50"
             >
               <img src="/images/google-logo.svg" alt="" className="mr-2 h-4 w-4" />
-              Google
+              {c("hero.google_text", "Google")}
             </Button>
             <Button
               variant="outline"
@@ -214,19 +218,19 @@ function SignInForm() {
               className="h-11 border-gray-200 hover:bg-gray-50"
             >
               <img src="/images/apple-logo.svg" alt="" className="mr-2 h-4 w-4" />
-              Apple
+              {c("hero.apple_text", "Apple")}
             </Button>
           </div>
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <p className="text-[14px] text-brand-dark-alt">
-              Don&apos;t have an account?{" "}
+              {c("hero.signup_prompt", "Don't have an account?")}{" "}
               <Link
                 href="/sign-up"
                 className="text-brand-terracotta font-semibold hover:underline"
               >
-                Sign Up
+                {c("hero.signup_link_text", "Sign Up")}
               </Link>
             </p>
           </div>
@@ -234,7 +238,7 @@ function SignInForm() {
           {/* Terms Text */}
           <div className="mt-4 text-center">
             <p className="text-[13px] text-brand-dark-alt leading-relaxed">
-              I agree to the{" "}
+              {c("hero.terms_text", "I agree to the")}{" "}
               <Link href="/terms" className="text-brand-terracotta hover:underline">
                 Terms of Service
               </Link>{" "}

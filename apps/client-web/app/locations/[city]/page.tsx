@@ -12,6 +12,7 @@ import { LeakFixingIcon } from "@/components/icons/categories/LeakFixingIcon";
 import { LightInstallationIcon } from "@/components/icons/categories/LightInstallationIcon";
 import { DeepCleanIcon } from "@/components/icons/categories/DeepCleanIcon";
 import { GardeningIcon } from "@/components/icons/categories/GardeningIcon";
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 
 // City data mapping
 const cityData: Record<string, { name: string; taskerCount: number; reviewCount: string }> = {
@@ -126,9 +127,24 @@ interface CityPageProps {
   params: Promise<{ city: string }>;
 }
 
+function fillTemplate(template: string, values: Record<string, string>) {
+  return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? "");
+}
+
+export async function generateMetadata({ params }: CityPageProps) {
+  const { city } = await params;
+  const cityInfo = cityData[city];
+  const cityName = cityInfo?.name ?? "City";
+  return getPageSeoMetadata("locations-city", {
+    title: `Services in ${cityName} | 100 Handy`,
+    description: `Browse trusted 100 Handy Pros and popular services in ${cityName}.`,
+  });
+}
+
 export default async function CityPage({ params }: CityPageProps) {
   const { city } = await params;
   const cityInfo = cityData[city];
+  const c = await getPageContent("locations-city");
 
   if (!cityInfo) {
     notFound();
@@ -155,10 +171,15 @@ export default async function CityPage({ params }: CityPageProps) {
       <section className="bg-brand-dark py-16">
         <div className="max-w-[1920px] mx-auto px-8">
           <h1 className="text-white font-bold text-[44px] leading-tight mb-6">
-            Services in {cityInfo.name}
+            {fillTemplate(c("hero.title", "Services in {city}"), {
+              city: cityInfo.name,
+            })}
           </h1>
           <p className="text-white text-[24px] mb-6 leading-relaxed max-w-2xl">
-            Browse {cityInfo.taskerCount.toLocaleString()}+ trusted 100 Handy Pros ready to help with your home projects in {cityInfo.name}.
+            {fillTemplate(c("hero.description", "Browse {tasker_count}+ trusted 100 Handy Pros ready to help with your home projects in {city}."), {
+              city: cityInfo.name,
+              tasker_count: cityInfo.taskerCount.toLocaleString(),
+            })}
           </p>
           <div className="flex items-center gap-2">
             <div className="flex">
@@ -168,7 +189,7 @@ export default async function CityPage({ params }: CityPageProps) {
                 </svg>
               ))}
             </div>
-            <span className="text-white text-[20px] font-semibold">{cityInfo.reviewCount} Reviews</span>
+            <span className="text-white text-[20px] font-semibold">{fillTemplate(c("hero.reviews_template", "{review_count} Reviews"), { review_count: cityInfo.reviewCount })}</span>
           </div>
         </div>
       </section>
@@ -177,7 +198,9 @@ export default async function CityPage({ params }: CityPageProps) {
       <section className="bg-white py-20">
         <div className="max-w-[1920px] mx-auto px-8">
           <h2 className="text-brand-dark-alt font-bold text-[37px] mb-12">
-            Popular Services in {cityInfo.name}
+            {fillTemplate(c("hero.services_title", "Popular Services in {city}"), {
+              city: cityInfo.name,
+            })}
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -196,7 +219,10 @@ export default async function CityPage({ params }: CityPageProps) {
                     {service.name}
                   </h3>
                   <p className="text-gray-600 text-[16px] mt-2">
-                    Find {service.name.toLowerCase()} help in {cityInfo.name}
+                    {fillTemplate(c("hero.card_description", "Find {service} help in {city}"), {
+                      city: cityInfo.name,
+                      service: service.name.toLowerCase(),
+                    })}
                   </p>
                 </Link>
               );

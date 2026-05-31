@@ -13,9 +13,11 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@shared/schemas/auth";
+import { useClientPageContent } from "@/lib/client-page-content";
 
 export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
+  const c = useClientPageContent("forgot-password");
   const router = useRouter();
 
   const {
@@ -55,12 +57,14 @@ export default function ForgotPassword() {
     }
   };
 
+  const bgImage = c("hero.background_image", "/images/signup-bg.jpg");
+
   return (
     <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/images/signup-bg.jpg"
+          src={bgImage}
           alt="Background"
           fill
           className="object-cover"
@@ -80,7 +84,7 @@ export default function ForgotPassword() {
               className="flex items-center gap-2 text-brand-dark-alt hover:text-brand-dark-alt/80 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
-              <span className="text-[15px] font-medium">Back to Sign In</span>
+              <span className="text-[15px] font-medium">{c("hero.back_text", "Back to Sign In")}</span>
             </button>
           </div>
 
@@ -92,10 +96,10 @@ export default function ForgotPassword() {
           {/* Title & Description */}
               <div className="text-center mb-8">
                 <h2 className="text-[24px] font-semibold text-brand-dark-alt mb-3">
-                  Forgot your password?
+                  {c("hero.title", "Forgot your password?")}
                 </h2>
                 <p className="text-[15px] text-brand-dark-alt/80 leading-relaxed">
-                  Enter your email address and we'll send you a verification code to reset your password.
+                  {c("hero.description", "Enter your email address and we'll send you a verification code to reset your password.")}
                 </p>
               </div>
 
@@ -107,12 +111,12 @@ export default function ForgotPassword() {
                     htmlFor="email"
                     className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                   >
-                    Email Address
+                    {c("hero.email_label", "Email Address")}
                   </label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder={c("hero.email_placeholder", "Enter your email address")}
                     {...register("email")}
                     className="w-full h-12 border border-gray-300 rounded-md px-4 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
                   />
@@ -138,7 +142,7 @@ export default function ForgotPassword() {
                     {loading ? (
                       <Loader2 size={20} className="animate-spin" />
                     ) : (
-                      "Send Verification Code"
+                      c("hero.submit_text", "Send Verification Code")
                     )}
                   </Button>
                 </div>
@@ -147,12 +151,12 @@ export default function ForgotPassword() {
           {/* Sign In Link */}
           <div className="mt-6 text-center">
             <p className="text-[14px] text-brand-dark-alt">
-              Remember your password?{" "}
+              {c("hero.sign_in_prompt", "Remember your password?")}{" "}
               <Link
                 href="/sign-in"
                 className="text-brand-terracotta font-semibold hover:underline"
               >
-                Sign In
+                {c("hero.sign_in_link_text", "Sign In")}
               </Link>
             </p>
           </div>
@@ -160,7 +164,7 @@ export default function ForgotPassword() {
           {/* Terms Text */}
           <div className="mt-8 text-center">
             <p className="text-[13px] text-brand-dark-alt/70 leading-relaxed">
-              Need help?{" "}
+              {c("hero.help_text", "Need help?")}{" "}
               <Link href="/help" className="text-brand-terracotta hover:underline">
                 Contact Support
               </Link>

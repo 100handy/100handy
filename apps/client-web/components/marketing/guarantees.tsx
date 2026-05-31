@@ -39,16 +39,30 @@ const guarantees = [
   },
 ];
 
-export function Guarantees() {
+interface GuaranteeItem {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}
+
+interface GuaranteesProps {
+  title?: React.ReactNode;
+  guarantees?: GuaranteeItem[];
+}
+
+export function Guarantees({
+  title = <>Peace of Mind, <span className="text-brand-terracotta">Always</span></>,
+  guarantees: guaranteeItems = guarantees,
+}: GuaranteesProps) {
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-4 text-center text-[34px] font-bold text-brand-dark-alt">
-          Peace of Mind, <span className="text-brand-terracotta">Always</span>
+          {title}
         </h2>
 
         <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {guarantees.map((guarantee) => (
+          {guaranteeItems.map((guarantee) => (
             <div key={guarantee.title}>
               <div className="mb-4 flex items-center justify-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">

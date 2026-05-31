@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { FAQSection } from "@/components/location-service/faq-section";
 import { getCategoryIcon } from "@/components/icons/category-icons";
 import { getBookingCategoryForCityService } from "@/lib/booking-categories";
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 
 // Service data mapping
 const serviceData: Record<string, { name: string; description: string; category: string }> = {
@@ -472,6 +473,10 @@ interface LocationServicePageProps {
   }>;
 }
 
+function fillTemplate(template: string, values: Record<string, string>) {
+  return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? "");
+}
+
 // Sample taskers data
 const generateTaskers = (serviceName: string, count: number = 6): Array<{
   name: string;
@@ -512,6 +517,7 @@ export default async function LocationServicePage({ params }: LocationServicePag
   }
 
   const taskers = generateTaskers(serviceInfo.name);
+  const c = await getPageContent("locations-city-service");
 
   return (
     <LocationServiceContent
@@ -520,8 +526,20 @@ export default async function LocationServicePage({ params }: LocationServicePag
       citySlug={city}
       serviceSlug={service}
       taskers={taskers}
+      c={c}
     />
   );
+}
+
+export async function generateMetadata({ params }: LocationServicePageProps) {
+  const { city, service } = await params;
+  const cityInfo = cityData[city];
+  const serviceInfo = serviceData[service];
+
+  return getPageSeoMetadata("locations-city-service", {
+    title: `${serviceInfo?.name ?? "Service"} in ${cityInfo?.name ?? "your area"} | 100 Handy`,
+    description: serviceInfo?.description ?? "Find trusted 100 Handy Pros in your area.",
+  });
 }
 
 interface LocationServiceContentProps {
@@ -538,7 +556,9 @@ interface LocationServiceContentProps {
   }>;
 }
 
-function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers }: LocationServiceContentProps) {
+function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers, c }: LocationServiceContentProps & {
+  c: (key: string, fallback: string) => string;
+}) {
   const bookingCategory = getBookingCategoryForCityService(serviceSlug) ?? service.name;
   return (
     <div className="bg-white min-h-screen">
@@ -565,8 +585,12 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
               <h1 className="text-white font-bold text-[44px] leading-tight mb-6">
-                {service.name} Services in<br />
-                {city.name}
+                <span dangerouslySetInnerHTML={{
+                  __html: fillTemplate(c("hero.title", "{service} Services in<br />{city}"), {
+                    city: city.name,
+                    service: service.name,
+                  }),
+                }} />
               </h1>
 
               <p className="text-white text-[24px] mb-6 leading-relaxed">
@@ -581,7 +605,7 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
                     </svg>
                   ))}
                 </div>
-                <span className="text-white text-[24px] font-semibold">{city.reviewCount} Reviews</span>
+                <span className="text-white text-[24px] font-semibold">{fillTemplate(c("hero.reviews_template", "{review_count} Reviews"), { review_count: city.reviewCount })}</span>
               </div>
 
               <div className="space-y-4 mb-8">
@@ -589,18 +613,18 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
                   <svg className="w-5 h-5 text-white mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-white text-[24px]">Browse {city.taskerCount.toLocaleString()}+ 100 Handy Pros with a variety of skills.</p>
+                  <p className="text-white text-[24px]">{fillTemplate(c("hero.bullet_1", "Browse {tasker_count}+ 100 Handy Pros with a variety of skills."), { tasker_count: city.taskerCount.toLocaleString() })}</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-white mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-white text-[24px]">All 100 Handy Pros bring their own tools and equipment.</p>
+                  <p className="text-white text-[24px]">{c("hero.bullet_2", "All 100 Handy Pros bring their own tools and equipment.")}</p>
                 </div>
               </div>
 
               <Button variant="terracotta" size="lg" asChild>
-                <Link href={`/task-form?category=${encodeURIComponent(bookingCategory)}&step=1`}>Book Now</Link>
+                <Link href={`/task-form?category=${encodeURIComponent(bookingCategory)}&step=1`}>{c("hero.cta_text", "Book Now")}</Link>
               </Button>
             </div>
 
@@ -622,7 +646,11 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers 
       <section className="bg-white py-20">
         <div className="max-w-[1920px] mx-auto px-8">
           <h2 className="text-brand-dark-alt font-bold text-[37px] mb-12">
-            {city.taskerCount.toLocaleString()} featured {service.name} 100 Handy Pros in {city.name}
+            {fillTemplate(c("hero.featured_title", "{tasker_count} featured {service} 100 Handy Pros in {city}"), {
+              city: city.name,
+              service: service.name,
+              tasker_count: city.taskerCount.toLocaleString(),
+            })}
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

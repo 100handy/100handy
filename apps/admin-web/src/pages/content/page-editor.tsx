@@ -23,6 +23,16 @@ import {
 import { useMediaAssets } from '@/lib/api/content-platform'
 import type { FieldType } from '@/lib/cms/page-registry'
 
+function isMediaField(fieldKey: string, fieldDef: { type: FieldType }) {
+  const normalized = fieldKey.toLowerCase()
+  return (
+    fieldDef.type === 'image_url' ||
+    normalized.includes('image') ||
+    normalized.includes('icon') ||
+    normalized.includes('logo')
+  )
+}
+
 export default function PageEditorPage() {
   const { hasPermission } = useAuth()
   const canManagePage = hasPermission('content.manage') && hasPermission('seo.manage')
@@ -566,45 +576,75 @@ export default function PageEditorPage() {
                 </button>
 
                 {expandedSections[sectionKey] && (
-                  <div className="px-6 pb-6 space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                    {Object.entries(section.fields).map(([fieldKey, fieldDef]) => {
-                      const compositeKey = `${sectionKey}.${fieldKey}`
-                      const value = formValues[compositeKey] ?? ''
+                  <div className="px-6 pb-6 space-y-6 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    {(() => {
+                      const fieldEntries = Object.entries(section.fields)
+                      const mediaFields = fieldEntries.filter(([fieldKey, fieldDef]) => isMediaField(fieldKey, fieldDef))
+                      const contentFields = fieldEntries.filter(([fieldKey, fieldDef]) => !isMediaField(fieldKey, fieldDef))
+
+                      const renderField = ([fieldKey, fieldDef]: [string, (typeof section.fields)[string]]) => {
+                        const compositeKey = `${sectionKey}.${fieldKey}`
+                        const value = formValues[compositeKey] ?? ''
+
+                        return (
+                          <div key={compositeKey}>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              {fieldDef.label}
+                            </label>
+
+                            {fieldDef.type === 'image_url' ? (
+                              <ImageField
+                                value={value}
+                                onChange={(v) => handleFieldChange(compositeKey, v)}
+                                onUpload={(file) => handleImageUpload(compositeKey, file)}
+                                placeholder={fieldDef.placeholder}
+                                mediaAssets={mediaAssets}
+                              />
+                            ) : fieldDef.type === 'rich_text' ? (
+                              <textarea
+                                value={value}
+                                onChange={(e) => handleFieldChange(compositeKey, e.target.value)}
+                                placeholder={fieldDef.placeholder}
+                                rows={4}
+                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-y"
+                              />
+                            ) : (
+                              <input
+                                type="text"
+                                value={value}
+                                onChange={(e) => handleFieldChange(compositeKey, e.target.value)}
+                                placeholder={fieldDef.placeholder}
+                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                              />
+                            )}
+                          </div>
+                        )
+                      }
 
                       return (
-                        <div key={compositeKey}>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            {fieldDef.label}
-                          </label>
-
-                          {fieldDef.type === 'image_url' ? (
-                            <ImageField
-                              value={value}
-                              onChange={(v) => handleFieldChange(compositeKey, v)}
-                              onUpload={(file) => handleImageUpload(compositeKey, file)}
-                              placeholder={fieldDef.placeholder}
-                              mediaAssets={mediaAssets}
-                            />
-                          ) : fieldDef.type === 'rich_text' ? (
-                            <textarea
-                              value={value}
-                              onChange={(e) => handleFieldChange(compositeKey, e.target.value)}
-                              placeholder={fieldDef.placeholder}
-                              rows={4}
-                              className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-y"
-                            />
-                          ) : (
-                            <input
-                              type="text"
-                              value={value}
-                              onChange={(e) => handleFieldChange(compositeKey, e.target.value)}
-                              placeholder={fieldDef.placeholder}
-                              className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                            />
+                        <>
+                          {mediaFields.length > 0 && (
+                            <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-gray-900/40">
+                              <div className="mb-4">
+                                <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Images & Icons</h4>
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                  Visual assets for this section. Use the preview, upload, or media library picker.
+                                </p>
+                              </div>
+                              <div className="space-y-4">
+                                {mediaFields.map(renderField)}
+                              </div>
+                            </div>
                           )}
-                        </div>
+
+                          {contentFields.length > 0 && (
+                            <div className="space-y-4">
+                              {contentFields.map(renderField)}
+                            </div>
+                          )}
+                        </>
                       )
-                    })}
+                    })()}
                   </div>
                 )}
               </div>

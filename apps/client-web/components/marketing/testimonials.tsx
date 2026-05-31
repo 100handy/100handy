@@ -35,6 +35,24 @@ const testimonials = [
   },
 ];
 
+interface TestimonialItem {
+  name: string;
+  rating: number;
+  text: string;
+}
+
+interface TestimonialsProps {
+  title?: string;
+  testimonials?: TestimonialItem[];
+  badgeOneLabel?: string;
+  badgeTwoLabel?: string;
+  badgeTwoTitle?: string;
+  badgeTwoSubtitle?: string;
+  badgeThreeLabel?: string;
+  badgeThreeTitle?: string;
+  badgeThreeSubtitle?: string;
+}
+
 function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex gap-1">
@@ -48,16 +66,26 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export function Testimonials() {
+export function Testimonials({
+  title = "See What Happy Customers are Saying About 100 Handy",
+  testimonials: testimonialItems = testimonials,
+  badgeOneLabel = "Excellent",
+  badgeTwoLabel = "Trustpilot",
+  badgeTwoTitle = "My company worked amazingly",
+  badgeTwoSubtitle = "from here and",
+  badgeThreeLabel = "Great",
+  badgeThreeTitle = "Someone really trusts us",
+  badgeThreeSubtitle = "impressions 7 hours ago",
+}: TestimonialsProps) {
   return (
     <section className="bg-white py-16">
       <div className="mx-auto max-w-[1920px] px-8">
         <h2 className="mb-12 text-center text-[31px] font-medium text-brand-dark-alt">
-          See What Happy Customers are Saying About 100 Handy
+          {title}
         </h2>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((testimonial, index) => (
+          {testimonialItems.map((testimonial, index) => (
             <div key={index} className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
               <div className="mb-4">
                 <p className="text-[21px] font-medium text-brand-dark-alt">
@@ -80,7 +108,7 @@ export function Testimonials() {
           <div className="flex items-center gap-3 rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-100">
             <div className="flex items-center gap-2">
               <div className="rounded bg-[#00B67A] px-3 py-1.5">
-                <span className="text-sm font-bold text-white">Excellent</span>
+                <span className="text-sm font-bold text-white">{badgeOneLabel}</span>
               </div>
               <div className="flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -94,11 +122,11 @@ export function Testimonials() {
           <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-100">
             <div className="flex items-center gap-2">
               <div className="rounded bg-[#00B67A] px-3 py-1.5">
-                <span className="text-sm font-bold text-white">Trustpilot</span>
+                <span className="text-sm font-bold text-white">{badgeTwoLabel}</span>
               </div>
               <div className="text-sm text-gray-600">
-                <div className="font-medium">My company worked amazingly</div>
-                <div className="text-xs text-gray-500">from here and</div>
+                <div className="font-medium">{badgeTwoTitle}</div>
+                <div className="text-xs text-gray-500">{badgeTwoSubtitle}</div>
               </div>
             </div>
           </div>
@@ -107,11 +135,11 @@ export function Testimonials() {
           <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-100">
             <div className="flex items-center gap-2">
               <div className="rounded bg-[#73CF11] px-3 py-1.5">
-                <span className="text-sm font-bold text-white">Great</span>
+                <span className="text-sm font-bold text-white">{badgeThreeLabel}</span>
               </div>
               <div className="text-sm text-gray-600">
-                <div className="font-medium">Someone really trusts us</div>
-                <div className="text-xs text-gray-500">impressions 7 hours ago</div>
+                <div className="font-medium">{badgeThreeTitle}</div>
+                <div className="text-xs text-gray-500">{badgeThreeSubtitle}</div>
               </div>
             </div>
           </div>

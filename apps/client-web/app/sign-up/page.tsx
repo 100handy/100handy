@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpFormData } from "@shared/schemas/auth";
+import { useClientPageContent } from "@/lib/client-page-content";
 
 const countryCodes = [
   { code: "+44", name: "UK", flag: "🇬🇧" },
@@ -97,6 +98,7 @@ function SignUpForm() {
   const [countryCode, setCountryCode] = useState("+44");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const c = useClientPageContent("sign-up");
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -177,12 +179,14 @@ function SignUpForm() {
     );
   };
 
+  const bgImage = c("hero.background_image", "/images/signup-bg.jpg");
+
   return (
     <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/images/signup-bg.jpg"
+          src={bgImage}
           alt="Background"
           fill
           className="object-cover"
@@ -211,7 +215,7 @@ function SignUpForm() {
                 className="h-11 border-gray-200 hover:bg-gray-50"
               >
                 <img src="/images/google-logo.svg" alt="" className="mr-2 h-4 w-4" />
-                Google
+                {c("hero.google_text", "Google")}
               </Button>
               <Button
                 variant="outline"
@@ -220,7 +224,7 @@ function SignUpForm() {
                 className="h-11 border-gray-200 hover:bg-gray-50"
               >
                 <img src="/images/apple-logo.svg" alt="" className="mr-2 h-4 w-4" />
-                Apple
+                {c("hero.apple_text", "Apple")}
               </Button>
             </div>
 
@@ -230,7 +234,7 @@ function SignUpForm() {
                 <span className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-gray-400">Or sign up with email</span>
+                <span className="bg-white px-3 text-gray-400">{c("hero.oauth_divider_text", "Or sign up with email")}</span>
               </div>
             </div>
 
@@ -388,8 +392,7 @@ function SignUpForm() {
 
               {/* Help Text */}
               <p className="text-[12px] font-medium text-brand-dark-alt leading-relaxed">
-                Your phone and postcode help us match and <br />
-                connect you with the right 100 Handy Pros.
+                {c("hero.phone_help_text", "Your phone and postcode help us match and connect you with the right 100 Handy Pros.")}
               </p>
 
               {/* Terms Checkbox */}
@@ -406,7 +409,7 @@ function SignUpForm() {
                   htmlFor="terms"
                   className="text-[15px] font-light text-brand-dark-alt leading-relaxed cursor-pointer select-none"
                 >
-                  I agree to the{" "}
+                  {c("hero.terms_text", "I agree to the")}{" "}
                   <Link
                     href="/terms"
                     className="underline hover:text-black"
@@ -434,7 +437,7 @@ function SignUpForm() {
                   htmlFor="marketing-optout"
                   className="text-[15px] font-light text-brand-dark-alt leading-relaxed cursor-pointer select-none"
                 >
-                  I do not want to receive promotional emails and notifications from 100Handy
+                  {c("hero.marketing_opt_out_text", "I do not want to receive promotional emails and notifications from 100Handy")}
                 </label>
               </div>
 
@@ -453,7 +456,7 @@ function SignUpForm() {
                   {loading ? (
                     <Loader2 size={20} className="animate-spin" />
                   ) : (
-                    "Create account"
+                    c("hero.submit_text", "Create account")
                   )}
                 </Button>
               </div>
@@ -462,12 +465,12 @@ function SignUpForm() {
           {/* Sign In Link */}
           <div className="mt-3 text-center pb-2">
             <p className="text-sm text-gray-600">
-              Already have an account?{" "}
+              {c("hero.sign_in_prompt", "Already have an account?")}{" "}
               <Link
                 href={`/sign-in?redirect=${encodeURIComponent(safeRedirect)}`}
                 className="text-brand-dark-alt font-semibold hover:underline"
               >
-                Sign In
+                {c("hero.sign_in_link_text", "Sign In")}
               </Link>
             </p>
           </div>

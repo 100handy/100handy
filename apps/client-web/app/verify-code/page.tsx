@@ -9,10 +9,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { useClientPageContent } from "@/lib/client-page-content";
 
 function VerifyCodeForm() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const c = useClientPageContent("verify-code");
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
@@ -27,6 +29,7 @@ function VerifyCodeForm() {
   // Determine if we're verifying email or phone
   const isEmailVerification = !!email;
   const verificationTarget = email || phoneNumber;
+  const bgImage = c("hero.background_image", "/images/signup-bg.jpg");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,7 +129,7 @@ function VerifyCodeForm() {
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/images/signup-bg.jpg"
+          src={bgImage}
           alt="Background"
           fill
           className="object-cover"
@@ -149,8 +152,8 @@ function VerifyCodeForm() {
             </button>
             <h1 className="text-[24px] font-semibold text-brand-dark-alt">
               {isPasswordReset
-                ? "Reset your password"
-                : "Verify your authentication code"}
+                ? c("hero.reset_title", "Reset your password")
+                : c("hero.title", "Verify your authentication code")}
             </h1>
           </div>
 
@@ -158,10 +161,10 @@ function VerifyCodeForm() {
           <div className="text-center mb-8">
             <p className="text-[15px] text-brand-dark-alt leading-relaxed">
               {isPasswordReset
-                ? "Enter the 6-digit code sent to your email to reset your password"
+                ? c("hero.reset_description", "Enter the 6-digit code sent to your email to reset your password")
                 : isEmailVerification
-                ? "Enter the 6-digit code sent to your email"
-                : "Enter the 6-digit code sent to your phone number"}
+                ? c("hero.email_description", "Enter the 6-digit code sent to your email")
+                : c("hero.phone_description", "Enter the 6-digit code sent to your phone number")}
             </p>
             <p className="text-[15px] font-semibold text-brand-dark-alt mt-1">
               {verificationTarget}
@@ -175,7 +178,7 @@ function VerifyCodeForm() {
               <Input
                 id="code"
                 type="text"
-                placeholder="Enter Code"
+                placeholder={c("hero.code_placeholder", "Enter Code")}
                 required
                 maxLength={6}
                 value={code}
@@ -195,7 +198,7 @@ function VerifyCodeForm() {
                 onClick={handleResendCode}
                 className="text-[15px] text-brand-terracotta hover:underline"
               >
-                Resend code
+                {c("hero.resend_text", "Resend code")}
               </button>
             </div>
 
@@ -214,7 +217,7 @@ function VerifyCodeForm() {
                 {loading ? (
                   <Loader2 size={20} className="animate-spin" />
                 ) : (
-                  "Verify"
+                  c("hero.submit_text", "Verify")
                 )}
               </Button>
             </div>

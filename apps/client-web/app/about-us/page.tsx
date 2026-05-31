@@ -36,7 +36,7 @@ export default async function AboutUsPage() {
         <section className="relative h-[470px] bg-[#3D4539]">
           <div className="absolute inset-0 overflow-hidden">
             <Image
-              src="/images/about/about-us.png"
+              src={c('hero.image', '/images/about/about-us.png')}
               alt="Two professionals using a spirit level to hang a shelf"
               fill
               priority

@@ -18,7 +18,19 @@ const FALLBACK_SUBCATEGORIES = [
   "Light installation",
 ];
 
-export function Hero() {
+interface HeroProps {
+  title?: string;
+  subtitle?: string;
+  searchPlaceholder?: string;
+  emptySearchLabel?: string;
+}
+
+export function Hero({
+  title = "Book trusted help for your home — fast.",
+  subtitle = "Assembly, repairs, cleaning, moving, and more—handled by vetted pros, scheduled when it suits you, and paid securely in one place.",
+  searchPlaceholder = "What do you need help with?",
+  emptySearchLabel = "browse all services",
+}: HeroProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -116,12 +128,12 @@ export function Hero() {
         <div className="mx-auto max-w-2xl text-center">
           {/* Hero Title */}
           <h1 className="text-[59px] font-bold leading-tight text-brand-dark-alt">
-            Book trusted help for your home — fast.
+            {title}
           </h1>
 
           {/* Subheadline */}
           <p className="mt-6 text-[20px] leading-relaxed text-brand-dark-alt/80">
-            Assembly, repairs, cleaning, moving, and more—handled by vetted pros, scheduled when it suits you, and paid securely in one place.
+            {subtitle}
           </p>
 
           {/* Search Bar with Suggestions */}
@@ -129,7 +141,7 @@ export function Hero() {
             <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
-                placeholder="What do you need help with?"
+                placeholder={searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -175,7 +187,7 @@ export function Hero() {
                         onClick={() => router.push("/all-services")}
                         className="font-medium text-brand-terracotta hover:underline"
                       >
-                        browse all services
+                        {emptySearchLabel}
                       </button>
                     </div>
                   )}

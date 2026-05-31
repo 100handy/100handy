@@ -3,15 +3,18 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
+import { useClientPageContent } from "@/lib/client-page-content";
 
 export default function WelcomePage() {
+  const c = useClientPageContent("welcome");
+
   return (
     <div className="relative w-full min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/assets/welcome.png')",
+          backgroundImage: `url('${c("hero.background_image", "/assets/welcome.png")}')`,
         }}
       >
         {/* Overlay for better contrast */}
@@ -27,7 +30,7 @@ export default function WelcomePage() {
 
         {/* Welcome Text */}
         <p className="text-center text-brand-dark font-semibold text-lg sm:text-xl mb-8">
-          Welcome to 100 Handy
+          {c("hero.welcome_text", "Welcome to 100 Handy")}
         </p>
 
         {/* Sign Up Button */}
@@ -35,7 +38,7 @@ export default function WelcomePage() {
           asChild
           className="w-full bg-brand-terracotta hover:bg-brand-coral text-white font-bold text-lg py-6 rounded-full mb-4"
         >
-          <Link href="/sign-up">Sign up</Link>
+          <Link href="/sign-up">{c("hero.sign_up_text", "Sign up")}</Link>
         </Button>
 
         {/* Log In Button */}
@@ -44,25 +47,25 @@ export default function WelcomePage() {
           variant="outline"
           className="w-full border-2 border-brand-terracotta text-brand-terracotta hover:bg-brand-terracotta hover:text-white font-bold text-lg py-6 rounded-full mb-6"
         >
-          <Link href="/sign-in">Log in</Link>
+          <Link href="/sign-in">{c("hero.log_in_text", "Log in")}</Link>
         </Button>
 
         {/* Terms and Privacy */}
         <div className="text-center text-sm text-brand-dark space-y-1">
           <p>
-            By signing up, you agree to the{" "}
+            {c("hero.terms_prefix", "By signing up, you agree to the")}{" "}
             <Link href="/terms" className="text-brand-terracotta hover:underline">
               Terms of Service
             </Link>
           </p>
           <p>
-            and have reviewed the{" "}
+            {c("hero.privacy_prefix", "and have reviewed the")}{" "}
             <Link href="/terms" className="text-brand-terracotta hover:underline">
               Privacy Policy.
             </Link>
           </p>
           <p>
-            Manage{" "}
+            {c("hero.cookie_prefix", "Manage")}{" "}
             <Link href="/cookie-settings" className="text-brand-terracotta hover:underline">
               privacy settings
             </Link>

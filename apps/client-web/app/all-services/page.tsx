@@ -1,43 +1,19 @@
-"use client";
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
 import { HelpIcon } from "@/components/icons";
-
-// --- Services Data with Links --- //
-const services = [
-  { name: "Appliance Repair Near Me", href: "/services/home-repairs/home-repairs" },
-  { name: "Blind Repairs Near Me", href: "/services/home-repairs/home-repairs" },
-  { name: "Cabinet Installation Help Near Me", href: "/services/furniture-assembly/furniture-assembly" },
-  { name: "Carpet Cleaning Near Me", href: "/services/cleaning/sparkle-clean" },
-  { name: "Ceiling Fan Installation Help Near Me", href: "/services/electrical/electricians" },
-  { name: "Drywall Repair & Patching Near Me", href: "/services/home-repairs/home-repairs" },
-  { name: "Furniture Assembly Near Me", href: "/services/furniture-assembly/furniture-assembly" },
-  { name: "Furniture Removal Help Near Me", href: "/services/packing-moving/moving" },
-  { name: "Gutter Cleaning Near Me", href: "/services/outdoor/great-outdoors" },
-  { name: "Handyman Near Me", href: "/services/handyman/general" },
-  { name: "Hedge Trimming Near Me", href: "/services/outdoor/great-outdoors" },
-  { name: "Moving Help Near Me", href: "/services/packing-moving/moving" },
-  { name: "House Cleaning Near Me", href: "/services/cleaning/sparkle-clean" },
-  { name: "Air Conditioner Installation Near Me", href: "/services/electrical/electricians" },
-  { name: "Junk Removal Near Me", href: "/services/packing-moving/moving" },
-  { name: "Lawn Mowing & Trimming Near Me", href: "/services/outdoor/great-outdoors" },
-  { name: "Painting Help Near Me", href: "/services/home-repairs/home-repairs" },
-  { name: "Pressure Washing Near Me", href: "/services/outdoor/great-outdoors" },
-  { name: "TV Mounting Near Me", href: "/services/tv-wall-mounting/tv-mounting" },
-  { name: "Wallpapering Near Me", href: "/services/home-repairs/home-repairs" },
-];
+import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 
 // --- Components --- //
 
-const AllServicesHero = () => {
+const AllServicesHero = ({ title, subtitle, image }: { title: string; subtitle: string; image: string }) => {
   return (
     <section className="relative h-[400px] md:h-[500px] bg-gray-900">
       <div className="absolute inset-0">
         <Image
-          src="/images/services/hero.jpeg"
+          src={image}
           alt="All Services"
           fill
           className="object-cover opacity-40"
@@ -48,10 +24,10 @@ const AllServicesHero = () => {
       <div className="relative h-full flex items-center justify-center">
         <div className="bg-white rounded-2xl px-12 py-10 text-center max-w-2xl mx-auto shadow-xl">
           <h1 className="text-[48px] md:text-[56px] font-bold text-brand-dark-alt mb-4 leading-tight">
-            Find the Best Home Services Pros Nearby
+            {title}
           </h1>
           <p className="text-[22px] md:text-[26px] text-brand-dark-alt font-medium">
-            Hire a trusted 100 Handy Pro today.
+            {subtitle}
           </p>
         </div>
       </div>
@@ -59,7 +35,7 @@ const AllServicesHero = () => {
   );
 };
 
-const ServicesSection = () => {
+const ServicesSection = ({ services }: { services: Array<{ name: string; href: string }> }) => {
   return (
     <section className="bg-white py-20">
       <div className="max-w-[1920px] mx-auto px-8">
@@ -91,12 +67,32 @@ const HelpButton = () => {
 
 // --- Main Page Component --- //
 
-export default function AllServicesPage() {
+export async function generateMetadata() {
+  return getPageSeoMetadata("all-services", {
+    title: "All Services | 100 Handy",
+    description: "Browse home services and book a trusted 100 Handy Pro.",
+  });
+}
+
+export default async function AllServicesPage() {
+  const c = await getPageContent("all-services");
+  const services = Array.from({ length: 20 }, (_, index) => {
+    const n = index + 1;
+    return {
+      name: c(`services.item_${n}_name`, ""),
+      href: c(`services.item_${n}_link`, "/"),
+    };
+  }).filter((item) => item.name.trim());
+
   return (
     <div className="bg-white min-h-screen">
       <Header />
-      <AllServicesHero />
-      <ServicesSection />
+      <AllServicesHero
+        title={c("hero.title", "Find the Best Home Services Pros Nearby")}
+        subtitle={c("hero.subtitle", "Hire a trusted 100 Handy Pro today.")}
+        image={c("hero.background_image", "/images/services/hero.jpeg")}
+      />
+      <ServicesSection services={services} />
       <Footer />
       <HelpButton />
     </div>

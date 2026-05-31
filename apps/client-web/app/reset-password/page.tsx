@@ -13,12 +13,14 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema, type ResetPasswordFormData } from "@shared/schemas/auth";
+import { useClientPageContent } from "@/lib/client-page-content";
 
 function ResetPasswordForm() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const c = useClientPageContent("reset-password");
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -57,12 +59,14 @@ function ResetPasswordForm() {
     }
   };
 
+  const bgImage = c("hero.background_image", "/images/signup-bg.jpg");
+
   return (
     <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/images/signup-bg.jpg"
+          src={bgImage}
           alt="Background"
           fill
           className="object-cover"
@@ -85,10 +89,10 @@ function ResetPasswordForm() {
               {/* Title & Description */}
               <div className="text-center mb-8">
                 <h2 className="text-[24px] font-semibold text-brand-dark-alt mb-3">
-                  Reset your password
+                  {c("hero.title", "Reset your password")}
                 </h2>
                 <p className="text-[15px] text-brand-dark-alt/80 leading-relaxed">
-                  Enter your new password below.
+                  {c("hero.description", "Enter your new password below.")}
                 </p>
               </div>
 
@@ -100,13 +104,13 @@ function ResetPasswordForm() {
                     htmlFor="new-password"
                     className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                   >
-                    New Password
+                    {c("hero.password_label", "New Password")}
                   </label>
                   <div className="relative">
                     <Input
                       id="new-password"
                       type={showNewPassword ? "text" : "password"}
-                      placeholder="Enter new password"
+                      placeholder={c("hero.password_placeholder", "Enter new password")}
                       {...register("password")}
                       className="w-full h-12 border border-gray-300 rounded-md px-4 pr-12 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
                     />
@@ -135,13 +139,13 @@ function ResetPasswordForm() {
                     htmlFor="confirm-password"
                     className="block text-[15px] font-medium text-brand-dark-alt mb-1.5"
                   >
-                    Confirm Password
+                    {c("hero.confirm_password_label", "Confirm Password")}
                   </label>
                   <div className="relative">
                     <Input
                       id="confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm new password"
+                      placeholder={c("hero.confirm_password_placeholder", "Confirm new password")}
                       {...register("confirmPassword")}
                       className="w-full h-12 border border-gray-300 rounded-md px-4 pr-12 focus-visible:ring-0 focus-visible:border-brand-dark-alt shadow-none placeholder:text-gray-400"
                     />
@@ -167,7 +171,7 @@ function ResetPasswordForm() {
                 {/* Password Requirements */}
                 <div className="bg-gray-50 rounded-md p-4">
                   <p className="text-[13px] text-brand-dark-alt/70 leading-relaxed">
-                    Password must be at least 8 characters long and contain uppercase, lowercase, and numbers
+                    {c("hero.password_requirements", "Password must be at least 8 characters long and contain uppercase, lowercase, and numbers")}
                   </p>
                 </div>
 
@@ -182,7 +186,7 @@ function ResetPasswordForm() {
                     {loading ? (
                       <Loader2 size={20} className="animate-spin" />
                     ) : (
-                      "Reset Password"
+                      c("hero.submit_text", "Reset Password")
                     )}
                   </Button>
                 </div>
@@ -191,12 +195,12 @@ function ResetPasswordForm() {
               {/* Sign In Link */}
               <div className="mt-6 text-center">
                 <p className="text-[14px] text-brand-dark-alt">
-                  Remember your password?{" "}
+                  {c("hero.sign_in_prompt", "Remember your password?")}{" "}
                   <Link
                     href="/sign-in"
                     className="text-brand-terracotta font-semibold hover:underline"
                   >
-                    Sign In
+                    {c("hero.sign_in_link_text", "Sign In")}
                   </Link>
                 </p>
               </div>
@@ -225,12 +229,10 @@ function ResetPasswordForm() {
                 </div>
 
                 <h2 className="text-[24px] font-semibold text-brand-dark-alt mb-3">
-                  Password reset successful!
+                  {c("hero.success_title", "Password reset successful!")}
                 </h2>
                 <p className="text-[15px] text-brand-dark-alt/80 leading-relaxed mb-8">
-                  Your password has been successfully reset.
-                  <br />
-                  You can now sign in with your new password.
+                  {c("hero.success_description", "Your password has been successfully reset. You can now sign in with your new password.")}
                 </p>
 
                 {/* Action Button */}
@@ -239,7 +241,7 @@ function ResetPasswordForm() {
                   size="full"
                   onClick={() => router.push("/sign-in")}
                 >
-                  Go to Sign In
+                  {c("hero.success_cta_text", "Go to Sign In")}
                 </Button>
               </div>
             </>
@@ -248,7 +250,7 @@ function ResetPasswordForm() {
           {/* Terms Text */}
           <div className="mt-8 text-center">
             <p className="text-[13px] text-brand-dark-alt/70 leading-relaxed">
-              Need help?{" "}
+              {c("hero.help_text", "Need help?")}{" "}
               <Link href="/help" className="text-brand-terracotta hover:underline">
                 Contact Support
               </Link>

@@ -17,6 +17,22 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CareersPage() {
   const c = await getPageContent('careers')
+  const values = [1, 2, 3, 4, 5].map((index) => ({
+    title: c(`values.item_${index}_title`, [
+      "Dare to Innovate",
+      "Win as One Team",
+      "Own the Outcome",
+      "Simplicity is Speed",
+      "Champion the User",
+    ][index - 1]!),
+    description: c(`values.item_${index}_description`, [
+      `We don't settle for "good enough." We approach every problem with fresh eyes and fearless curiosity. We aren't afraid to break things if it means building something better. Failure is just data gathering for the next big win.`,
+      "We check our egos at the door. We work passionately under one roof (physical or digital), elevating our peers and inspiring trust. We are kind, candid, and assume good intent. When one of us wins, we all win.",
+      "We are all responsible for the success of 100 Handy. We don't pass the buck. We take smart risks, make decisions faster, and deliver results that make a lasting impact on our business and the planet.",
+      "Complex problems require simple solutions. We value momentum over perfection. We strive to strip away the noise and focus on what truly matters to get our mission to more people, faster.",
+      "Our community is the heartbeat of our company. We build solutions that start with the customer's needs. We are a force for good and we make every decision with Clients and Pros in mind.",
+    ][index - 1]!),
+  }))
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -66,7 +82,12 @@ export default async function CareersPage() {
         </section>
 
         {/* Values Section - Carousel */}
-        <ValuesCarousel />
+        <ValuesCarousel
+          title={c('values.title', 'We live by our values.')}
+          subtitle={c('values.subtitle', 'Our culture is our operating system. It guides how we hire, how we build, and how we treat each other.')}
+          ctaText={c('values.cta_text', 'See Open Roles')}
+          values={values}
+        />
 
         {/* Culture Section */}
         <section className="bg-white py-20">

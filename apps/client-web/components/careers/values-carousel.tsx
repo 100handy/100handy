@@ -4,35 +4,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const values = [
-  {
-    title: "Dare to Innovate",
-    description:
-      "We don't settle for \"good enough.\" We approach every problem with fresh eyes and fearless curiosity. We aren't afraid to break things if it means building something better. Failure is just data gathering for the next big win.",
-  },
-  {
-    title: "Win as One Team",
-    description:
-      "We check our egos at the door. We work passionately under one roof (physical or digital), elevating our peers and inspiring trust. We are kind, candid, and assume good intent. When one of us wins, we all win.",
-  },
-  {
-    title: "Own the Outcome",
-    description:
-      "We are all responsible for the success of 100 Handy. We don't pass the buck. We take smart risks, make decisions faster, and deliver results that make a lasting impact on our business and the planet.",
-  },
-  {
-    title: "Simplicity is Speed",
-    description:
-      "Complex problems require simple solutions. We value momentum over perfection. We strive to strip away the noise and focus on what truly matters to get our mission to more people, faster.",
-  },
-  {
-    title: "Champion the User",
-    description:
-      "Our community is the heartbeat of our company. We build solutions that start with the customer's needs. We are a force for good and we make every decision with Clients and Pros in mind.",
-  },
-];
-
-export function ValuesCarousel(): React.JSX.Element {
+export function ValuesCarousel({
+  title,
+  subtitle,
+  ctaText,
+  values,
+}: {
+  title: string
+  subtitle: string
+  ctaText: string
+  values: Array<{ title: string; description: string }>
+}): React.JSX.Element {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -76,11 +58,10 @@ export function ValuesCarousel(): React.JSX.Element {
         <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
             <h2 className="text-[36px] font-bold text-brand-dark-alt">
-              We live by our values.
+              {title}
             </h2>
             <p className="mt-4 text-[18px] italic text-brand-dark-alt/80">
-              Our culture is our operating system. It guides how we hire, how we
-              build, and how we treat each other.
+              {subtitle}
             </p>
           </div>
 
@@ -149,7 +130,7 @@ export function ValuesCarousel(): React.JSX.Element {
 
           <div className="mt-12 text-center">
             <Button variant="terracotta" size="lg" asChild>
-              <a href="#open-roles">See Open Roles</a>
+              <a href="#open-roles">{ctaText}</a>
             </Button>
           </div>
         </div>
