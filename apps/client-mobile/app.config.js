@@ -21,7 +21,7 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: "com.oxdpr.handy",
-      buildNumber: "17",
+      buildNumber: "19",
       usesAppleSignIn: true,
       associatedDomains: ["applinks:100handy.com", "applinks:www.100handy.com"],
       infoPlist: {
@@ -37,7 +37,7 @@ module.exports = {
       },
     },
     android: {
-      versionCode: 7,
+      versionCode: 8,
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",

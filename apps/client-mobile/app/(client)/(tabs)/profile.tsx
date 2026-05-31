@@ -27,7 +27,6 @@ import { useProfile, useUnreadNotificationCount } from '@shared/query';
 import { queryClient } from '@shared/query/queryClient';
 import { useRouter } from 'expo-router';
 import { useToast } from '@/components/ui/toast';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSecureNavigation } from '@/hooks/useSecureNavigation';
 import ReferralShareModal from '@/components/modals/ReferralShareModal';
@@ -45,10 +44,6 @@ const DEFAULT_CONTENT = {
   'actions.logging_out': 'Error',
   'actions.logging_out_body': 'Failed to sign out. Please try again.',
   'actions.logout': 'Log out',
-  'privacy.title': 'Privacy Notice',
-  'privacy.body': 'By selecting "Accept All", you agree to the app storing information to enhance device navigation, analyze usage, and assist in our marketing efforts',
-  'privacy.accept_cta': 'Accept All Cookies',
-  'privacy.settings_cta': 'Cookies Settings',
   'verify.title': 'Verify Identity',
   'verify.body': 'Enter your password to access this section.',
   'verify.password_placeholder': 'Password',
@@ -91,7 +86,6 @@ export default function ProfileScreen() {
   const [verifyPassword, setVerifyPassword] = useState('');
   const toast = useToast();
   const { data: unreadCount } = useUnreadNotificationCount(user?.id || '', 'customer');
-  const [showPrivacyNotice, setShowPrivacyNotice] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [isSwitchingToProfessional, setIsSwitchingToProfessional] = useState(false);
@@ -193,25 +187,7 @@ export default function ProfileScreen() {
   };
 
   const handleMenuItemPress = (item: typeof menuItems[0]) => {
-    if (item.title === 'Privacy settings') {
-      setShowPrivacyNotice(true);
-    } else {
-      navigateWithSecurityCheck(item.route, item.requiresSecurity);
-    }
-  };
-
-  const handleAcceptCookies = async () => {
-    setShowPrivacyNotice(false);
-    try {
-      await AsyncStorage.setItem('cookie_preferences', JSON.stringify({ accepted: true, timestamp: Date.now() }));
-    } catch (error) {
-      console.error('Error saving cookie preferences:', error);
-    }
-  };
-
-  const handleCookiesSettings = () => {
-    setShowPrivacyNotice(false);
-    router.push('/(client)/profile/privacy-settings');
+    navigateWithSecurityCheck(item.route, item.requiresSecurity);
   };
 
   // Show sign-in prompt for unauthenticated users (after auth loading completes)
@@ -387,48 +363,6 @@ export default function ProfileScreen() {
           </ScrollView>
         </View>
       </SafeAreaView>
-
-      {/* Privacy Notice Modal */}
-      <Modal isOpen={showPrivacyNotice} onClose={() => setShowPrivacyNotice(false)}>
-        <ModalBackdrop />
-        <ModalContent className="bg-white" style={{ minHeight: '40%' }}>
-          {/* Drag Indicator */}
-          <View className="w-full items-center pt-2 pb-1">
-            <View className="w-12 h-1 rounded-full bg-gray-400" />
-          </View>
-
-          <ModalBody>
-            <View className="flex-col w-full px-6 py-4 items-center">
-              {/* Title */}
-              <Text className="text-[#333A31] text-xl font-medium mb-4">
-                {getAppContentValue(content, 'privacy.title', DEFAULT_CONTENT['privacy.title'])}
-              </Text>
-
-              {/* Description */}
-              <Text className="text-[#333A31] text-xs text-center leading-5 mb-6">
-                {getAppContentValue(content, 'privacy.body', DEFAULT_CONTENT['privacy.body'])}
-              </Text>
-
-              {/* Accept All Cookies Button */}
-              <Pressable
-                className="w-full bg-[#A0B194] rounded-lg py-4 mb-4 items-center justify-center"
-                onPress={handleAcceptCookies}
-              >
-                <Text className="text-white text-base font-bold">
-                  {getAppContentValue(content, 'privacy.accept_cta', DEFAULT_CONTENT['privacy.accept_cta'])}
-                </Text>
-              </Pressable>
-
-              {/* Cookies Settings Link */}
-              <Pressable onPress={handleCookiesSettings}>
-                <Text className="text-[#A0B194] text-base font-bold underline">
-                  {getAppContentValue(content, 'privacy.settings_cta', DEFAULT_CONTENT['privacy.settings_cta'])}
-                </Text>
-              </Pressable>
-            </View>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
 
       <ReferralShareModal isOpen={showReferralModal} onClose={() => setShowReferralModal(false)} />
 

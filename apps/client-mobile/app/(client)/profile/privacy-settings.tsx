@@ -1,6 +1,9 @@
 import React from 'react';
-import { useUpdatePrivacySettings } from '@shared/query';
-import { SafeAreaView } from 'react-native-safe-area-context'; import { ScrollView, View, Text, Pressable, Switch, ActivityIndicator } from 'react-native'; import { useRouter } from 'expo-router'; import Header from '@/components/Header'; import { usePrivacySettings } from '@shared/query';
+import { ActivityIndicator, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { usePrivacySettings, useUpdatePrivacySettings } from '@shared/query';
+import Header from '@/components/Header';
 import { useToast } from '@/components/ui/toast';
 import { goBackOrReplace } from '@/lib/navigation';
 import { getAppContentValue, useAppContent } from '@/lib/app-content';
@@ -40,7 +43,7 @@ export default function PrivacySettingsScreen() {
   const content = useAppContent('client_privacy_settings', {
     'header.title': 'Privacy Settings',
     'hero.title': 'Privacy Settings',
-    'hero.body': 'Manage how your information is shared and used',
+    'hero.body': 'Manage how your information is shared and used in the app',
     'loading.text': 'Loading settings...',
     'error.title': 'Failed to load privacy settings',
     'error.retry': 'Retry',
@@ -54,8 +57,8 @@ export default function PrivacySettingsScreen() {
     'toggle_profile.body': 'Let taskers see your profile and review history',
     'toggle_activity.title': 'Activity Status',
     'toggle_activity.body': "Show when you're active on the platform",
-    'toggle_data.title': 'Data Collection',
-    'toggle_data.body': 'Allow us to collect analytics to improve your experience',
+    'toggle_data.title': 'Optional Diagnostics',
+    'toggle_data.body': 'Allow app diagnostics that help us improve reliability and performance',
     'footer.policy_notice': 'We respect your privacy. Your data is protected and will never be sold to third parties. For more information, read our Privacy Policy.',
   });
 
@@ -118,7 +121,7 @@ export default function PrivacySettingsScreen() {
             <View className="flex-col px-6 py-4">
               <Text className="text-2xl font-bold text-[#333333] mb-2">{getAppContentValue(content, 'hero.title', 'Privacy Settings')}</Text>
               <Text className="text-sm text-[#666666] mb-6">
-                {getAppContentValue(content, 'hero.body', 'Manage how your information is shared and used')}
+                {getAppContentValue(content, 'hero.body', 'Manage how your information is shared and used in the app')}
               </Text>
 
               <PrivacyToggle
@@ -143,8 +146,8 @@ export default function PrivacySettingsScreen() {
               />
 
               <PrivacyToggle
-                title={getAppContentValue(content, 'toggle_data.title', 'Data Collection')}
-                description={getAppContentValue(content, 'toggle_data.body', 'Allow us to collect analytics to improve your experience')}
+                title={getAppContentValue(content, 'toggle_data.title', 'Optional Diagnostics')}
+                description={getAppContentValue(content, 'toggle_data.body', 'Allow app diagnostics that help us improve reliability and performance')}
                 isEnabled={dataCollection}
                 onToggle={(value) => handleToggle('privacy_data_collection', value)}
               />

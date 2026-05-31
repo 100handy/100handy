@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, RefreshControl, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Loader } from '@/components/ui/loader'; import { ClipboardList, Trash2 } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import { Swipeable } from 'react-native-gesture-handler'; import { TaskCard, Tab, EmptyState } from '@/components/tasks'; import { useUserBookings } from '@shared/supabase/query'; import { useAuthStore } from '@shared/store';
+import { ScrollView, RefreshControl, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { Loader } from '@/components/ui/loader'; import { ClipboardList, Trash2 } from 'lucide-react-native'; import { useRouter } from 'expo-router'; import Swipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable'; import { TaskCard, Tab, EmptyState } from '@/components/tasks'; import { useUserBookings } from '@shared/supabase/query'; import { useAuthStore } from '@shared/store';
 import { bookingToTaskCardProps } from '@/lib/bookings';
 import { CancelBookingModal } from '@/components/booking/CancelBookingModal';
 import { getAppContentValue, useAppContent } from '@/lib/app-content';
@@ -35,9 +35,9 @@ function SwipeableTaskRow({
   onPress: () => void;
   onDelete: () => void;
   isCancelled: boolean;
-  onSwipeableOpen: (swipeable: Swipeable | null) => void;
+  onSwipeableOpen: (swipeable: SwipeableMethods | null) => void;
 }) {
-  const swipeableRef = React.useRef<Swipeable | null>(null);
+  const swipeableRef = React.useRef<SwipeableMethods | null>(null);
   const taskCardProps = bookingToTaskCardProps(booking);
   const isCancellable = activeTab === 'upcoming' && (booking.status === 'pending' || booking.status === 'accepted');
 
@@ -91,7 +91,7 @@ export default function TasksScreen() {
   } | null>(null);
   const router = useRouter();
   const content = useAppContent('client_tasks', DEFAULT_CONTENT);
-  const openSwipeableRef = React.useRef<Swipeable | null>(null);
+  const openSwipeableRef = React.useRef<SwipeableMethods | null>(null);
   
   // Get user from auth store
   const { user } = useAuthStore();
@@ -142,7 +142,7 @@ export default function TasksScreen() {
     });
   };
 
-  const handleSwipeableOpen = (swipeable: Swipeable | null) => {
+  const handleSwipeableOpen = (swipeable: SwipeableMethods | null) => {
     if (openSwipeableRef.current && openSwipeableRef.current !== swipeable) {
       openSwipeableRef.current.close();
     }

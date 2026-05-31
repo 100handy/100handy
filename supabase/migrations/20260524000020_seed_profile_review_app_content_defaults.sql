@@ -74,7 +74,7 @@ with payload as (
     $$[
       {"section_key":"header","field_key":"title","value":"Privacy Settings"},
       {"section_key":"hero","field_key":"title","value":"Privacy Settings"},
-      {"section_key":"hero","field_key":"body","value":"Manage how your information is shared and used"},
+      {"section_key":"hero","field_key":"body","value":"Manage how your information is shared and used in the app"},
       {"section_key":"loading","field_key":"text","value":"Loading settings..."},
       {"section_key":"error","field_key":"title","value":"Failed to load privacy settings"},
       {"section_key":"error","field_key":"retry","value":"Retry"},
@@ -88,8 +88,8 @@ with payload as (
       {"section_key":"toggle_profile","field_key":"body","value":"Let taskers see your profile and review history"},
       {"section_key":"toggle_activity","field_key":"title","value":"Activity Status"},
       {"section_key":"toggle_activity","field_key":"body","value":"Show when you're active on the platform"},
-      {"section_key":"toggle_data","field_key":"title","value":"Data Collection"},
-      {"section_key":"toggle_data","field_key":"body","value":"Allow us to collect analytics to improve your experience"},
+      {"section_key":"toggle_data","field_key":"title","value":"Optional Diagnostics"},
+      {"section_key":"toggle_data","field_key":"body","value":"Allow app diagnostics that help us improve reliability and performance"},
       {"section_key":"footer","field_key":"policy_notice","value":"We respect your privacy. Your data is protected and will never be sold to third parties. For more information, read our Privacy Policy."}
     ]$$::jsonb
 
