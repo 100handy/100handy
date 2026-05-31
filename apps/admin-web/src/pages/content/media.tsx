@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ExternalLink, Film, Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ExternalLink, Film, Loader2, Plus, Save, Search } from 'lucide-react'
 import Header from '@/components/header'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { useAuth } from '@/contexts/AuthContext'

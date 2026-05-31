@@ -86,6 +86,8 @@ export interface EmailDeliveryJobRecord {
   triggered_by: string | null
   triggered_at: string
   completed_at: string | null
+  scheduled_for: string | null
+  audience_filters: Record<string, unknown> | null
 }
 
 export interface PushNotificationCampaignInput {
@@ -117,6 +119,8 @@ export interface PushDeliveryJobRecord {
   triggered_by: string | null
   triggered_at: string
   completed_at: string | null
+  scheduled_for: string | null
+  audience_filters: Record<string, unknown> | null
 }
 
 export interface NotificationAudienceFilters {

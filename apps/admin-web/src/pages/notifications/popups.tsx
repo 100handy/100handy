@@ -16,9 +16,11 @@ import {
   useSaveAnnouncementDraft,
 } from '@/lib/api/content-platform'
 
+type PopupPlacement = 'modal' | 'banner'
+
 const emptyPopup = {
   audience: 'all' as const,
-  placement: 'modal' as const,
+  placement: 'modal' as PopupPlacement,
   title: '',
   body: '',
   cta_label: '',

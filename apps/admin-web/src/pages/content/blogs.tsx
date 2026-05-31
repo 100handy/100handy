@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { Check, ExternalLink, Loader2, Plus, Rocket, Save, Search, Trash2 } from 'lucide-react'
+import { Check, ExternalLink, Loader2, Plus, Rocket, Save, Search } from 'lucide-react'
 import Header from '@/components/header'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
@@ -81,7 +81,7 @@ export default function BlogsPage() {
       author_name: (draftPost?.author_name as string | undefined) ?? selectedPost?.author_name ?? '',
       status: (draftPost?.status as BlogStatus | undefined) ?? selectedPost?.status ?? 'draft',
       published_at: (draftPost?.published_at as string | undefined)
-        ? (draftPost.published_at as string).slice(0, 10)
+        ? String(draftPost?.published_at).slice(0, 10)
         : selectedPost?.published_at
           ? selectedPost.published_at.slice(0, 10)
           : '',
@@ -126,7 +126,7 @@ export default function BlogsPage() {
       category: (draftPost?.category as string | undefined) ?? selectedPost?.category ?? '',
       author_name: (draftPost?.author_name as string | undefined) ?? selectedPost?.author_name ?? '',
       status: (draftPost?.status as BlogStatus | undefined) ?? selectedPost?.status ?? 'draft',
-      published_at: (draftPost?.published_at as string | undefined) ? String(draftPost.published_at).slice(0, 10) : selectedPost?.published_at ? selectedPost.published_at.slice(0, 10) : '',
+      published_at: (draftPost?.published_at as string | undefined) ? String(draftPost?.published_at).slice(0, 10) : selectedPost?.published_at ? selectedPost.published_at.slice(0, 10) : '',
     }) || JSON.stringify(seoForm) !== JSON.stringify({
       meta_title: (draftSeo?.meta_title as string | undefined) ?? seo?.meta_title ?? '',
       meta_description: (draftSeo?.meta_description as string | undefined) ?? seo?.meta_description ?? '',

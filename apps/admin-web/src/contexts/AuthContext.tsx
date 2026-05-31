@@ -15,7 +15,6 @@ import { supabase } from "@/lib/supabase";
 import {
   adminRoleHasPermission,
   type AdminPermission,
-  type AdminRole,
 } from "@/lib/admin-permissions";
 
 import {

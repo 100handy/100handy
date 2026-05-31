@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowDown, ArrowUp, Check, Loader2, Plus, Rocket, Save, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, Loader2, Plus, Rocket, Save } from 'lucide-react'
 import Header from '@/components/header'
 import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'

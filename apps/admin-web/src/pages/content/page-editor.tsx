@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ChevronDown, Save, ExternalLink, Upload, Loader2, Check, Rocket } from 'lucide-react'
@@ -176,14 +176,14 @@ export default function PageEditorPage() {
     setExpandedSections((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] }))
   }
 
-  const baselineFormValues = Object.fromEntries(
+  const baselineFormValues = pageDef ? Object.fromEntries(
     Object.entries(pageDef.sections).flatMap(([sectionKey, section]) =>
       Object.entries(section.fields).map(([fieldKey, fieldDef]) => {
         const key = `${sectionKey}.${fieldKey}`
         return [key, latestDraft?.content_json?.[key]?.value ?? savedContent?.[key] ?? fieldDef.placeholder ?? '']
       }),
     ),
-  )
+  ) : {}
 
   const isDirty = JSON.stringify({
     pageTitle,
@@ -203,8 +203,8 @@ export default function PageEditorPage() {
     robotsFollow,
     formValues,
   }) !== JSON.stringify({
-    pageTitle: (latestDraft?.page_json as Record<string, unknown> | undefined)?.title ?? pageRecord?.title ?? pageDef.label,
-    pageSlug: (latestDraft?.page_json as Record<string, unknown> | undefined)?.slug ?? pageRecord?.slug ?? pageDef.slug,
+    pageTitle: (latestDraft?.page_json as Record<string, unknown> | undefined)?.title ?? pageRecord?.title ?? pageDef?.label ?? '',
+    pageSlug: (latestDraft?.page_json as Record<string, unknown> | undefined)?.slug ?? pageRecord?.slug ?? pageDef?.slug ?? '',
     templateKey: (latestDraft?.page_json as Record<string, unknown> | undefined)?.template_key ?? pageRecord?.template_key ?? 'standard',
     pageStatus: (latestDraft?.page_json as Record<string, unknown> | undefined)?.status ?? pageRecord?.status ?? 'draft',
     metaTitle: (latestDraft?.seo_json as Record<string, unknown> | undefined)?.meta_title ?? seoRecord?.meta_title ?? '',

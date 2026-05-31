@@ -111,13 +111,13 @@ export default function EditCategoriesPage() {
       hero_image_url: category.hero_image_url || '',
       content_image_url: category.content_image_url || '',
       benefits: Array.isArray(category.benefits_json)
-        ? (category.benefits_json as TitleDescriptionItem[])
+        ? (category.benefits_json as unknown as TitleDescriptionItem[])
         : [],
       tasks: Array.isArray(category.tasks_json)
-        ? (category.tasks_json as TitleDescriptionItem[])
+        ? (category.tasks_json as unknown as TitleDescriptionItem[])
         : [],
       faqs: Array.isArray(category.faqs_json)
-        ? (category.faqs_json as FaqItem[])
+        ? (category.faqs_json as unknown as FaqItem[])
         : [],
     })
     setIsCreating(false)
@@ -207,9 +207,9 @@ export default function EditCategoriesPage() {
       long_description: category.long_description || '',
       hero_image_url: category.hero_image_url || '',
       content_image_url: category.content_image_url || '',
-      benefits: Array.isArray(category.benefits_json) ? (category.benefits_json as TitleDescriptionItem[]) : [],
-      tasks: Array.isArray(category.tasks_json) ? (category.tasks_json as TitleDescriptionItem[]) : [],
-      faqs: Array.isArray(category.faqs_json) ? (category.faqs_json as FaqItem[]) : [],
+      benefits: Array.isArray(category.benefits_json) ? (category.benefits_json as unknown as TitleDescriptionItem[]) : [],
+      tasks: Array.isArray(category.tasks_json) ? (category.tasks_json as unknown as TitleDescriptionItem[]) : [],
+      faqs: Array.isArray(category.faqs_json) ? (category.faqs_json as unknown as FaqItem[]) : [],
     }
   }, [categories, editingId])
   const isDirty = isEditing && JSON.stringify(formData) !== JSON.stringify(isCreating ? emptyForm : baselineForm)
