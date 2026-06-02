@@ -62,7 +62,7 @@ export default function SelectTaskerScreen() {
   // Get client location from store
   const location = useLocationStore((state) => state.location);
   const coveragePostcode = location?.postalCode || '';
-  const { data: serviceAreaCoverage, isLoading: serviceAreaCoverageLoading } = useServiceAreaCoverage(coveragePostcode);
+  const { data: serviceAreaCoverage, isLoading: serviceAreaCoverageLoading } = useServiceAreaCoverage(coveragePostcode, categoryId);
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showSortSheet, setShowSortSheet] = useState(false);

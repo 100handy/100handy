@@ -3,15 +3,15 @@ import { getServiceAreaCoverage, type ServiceAreaCoverageResult } from '../../su
 
 export const serviceAreaCoverageKeys = {
   all: ['service-area-coverage'] as const,
-  detail: (postcode: string) => [...serviceAreaCoverageKeys.all, postcode] as const,
+  detail: (postcode: string, categoryId?: string | null) => [...serviceAreaCoverageKeys.all, postcode, categoryId || null] as const,
 };
 
-export function useServiceAreaCoverage(postcode?: string | null) {
+export function useServiceAreaCoverage(postcode?: string | null, categoryId?: string | null) {
   const normalized = (postcode || '').trim();
 
   return useQuery<ServiceAreaCoverageResult>({
-    queryKey: serviceAreaCoverageKeys.detail(normalized),
-    queryFn: () => getServiceAreaCoverage(normalized),
+    queryKey: serviceAreaCoverageKeys.detail(normalized, categoryId),
+    queryFn: () => getServiceAreaCoverage(normalized, categoryId),
     enabled: normalized.length > 0,
     staleTime: 60 * 1000,
   });

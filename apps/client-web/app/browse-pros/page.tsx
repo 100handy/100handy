@@ -213,7 +213,7 @@ function BrowseProsContent() {
     googlePlaceData?.address_components?.find((c) => c.types.includes("postal_code"))?.long_name ||
     location?.postalCode ||
     "";
-  const { data: serviceAreaCoverage } = useServiceAreaCoverage(currentPostcode);
+  const { data: serviceAreaCoverage } = useServiceAreaCoverage(currentPostcode, categoryId);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -408,7 +408,7 @@ function BrowseProsContent() {
         c.types.includes("postal_code")
       )?.long_name || location?.postalCode || "";
     if (postcode) {
-      const coverage = await getServiceAreaCoverage(postcode);
+      const coverage = await getServiceAreaCoverage(postcode, categoryId);
       if (!coverage.available) {
         setError(coverage.message);
         return;

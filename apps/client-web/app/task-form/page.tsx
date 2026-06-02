@@ -75,7 +75,7 @@ function TaskFormContent() {
   const [googlePlaceData, setGooglePlaceData] = useState<any>(null);
   const [formResponses, setFormResponses] = useState<FormResponse>({});
   const currentPostcode = googlePlaceData?.address_components?.find((c: any) => c.types.includes('postal_code'))?.long_name || '';
-  const { data: serviceAreaCoverage } = useServiceAreaCoverage(currentPostcode);
+  const { data: serviceAreaCoverage } = useServiceAreaCoverage(currentPostcode, category?.id);
 
   // Flow state
   const [locationConfirmed, setLocationConfirmed] = useState(false);
@@ -368,7 +368,7 @@ function TaskFormContent() {
       const postcode =
         googlePlaceData?.address_components?.find((c: any) => c.types.includes('postal_code'))?.long_name || '';
       if (postcode) {
-        const coverage = await getServiceAreaCoverage(postcode);
+        const coverage = await getServiceAreaCoverage(postcode, category?.id);
         if (!coverage.available) {
           setError(coverage.message);
           return;

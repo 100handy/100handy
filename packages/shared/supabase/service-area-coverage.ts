@@ -6,7 +6,8 @@ export interface ServiceAreaCoverageResult {
   matchedAreaId: string | null;
   matchedPrefix: string | null;
   matchedCity: string | null;
-  reason: 'missing_postcode' | 'no_enabled_service_area' | 'disabled_location_chain' | 'covered';
+  eligibleProviderCount: number;
+  reason: 'missing_postcode' | 'no_enabled_service_area' | 'disabled_location_chain' | 'no_eligible_providers' | 'covered';
   message: string;
 }
 
@@ -21,6 +22,11 @@ interface LocationAreaCoverageRow {
   id: string;
   parent_id: string | null;
   name: string;
+}
+
+interface ProviderServiceAreaRow {
+  service_area_id: string;
+  provider_id: string;
 }
 
 function normalizePostcode(value: string) {
@@ -48,7 +54,10 @@ function locationChainIsEnabled(
   return true;
 }
 
-export async function getServiceAreaCoverage(postcode?: string | null): Promise<ServiceAreaCoverageResult> {
+export async function getServiceAreaCoverage(
+  postcode?: string | null,
+  categoryId?: string | null,
+): Promise<ServiceAreaCoverageResult> {
   const normalizedPostcode = normalizePostcode(postcode || '');
 
   if (!normalizedPostcode) {
@@ -58,6 +67,7 @@ export async function getServiceAreaCoverage(postcode?: string | null): Promise<
       matchedAreaId: null,
       matchedPrefix: null,
       matchedCity: null,
+      eligibleProviderCount: 0,
       reason: 'missing_postcode',
       message: 'Enter a valid postcode to check availability.',
     };
@@ -93,6 +103,7 @@ export async function getServiceAreaCoverage(postcode?: string | null): Promise<
       matchedAreaId: null,
       matchedPrefix: null,
       matchedCity: null,
+      eligibleProviderCount: 0,
       reason: 'no_enabled_service_area',
       message: 'We do not currently have any 100Handy Pros available in this area.',
     };
@@ -104,15 +115,62 @@ export async function getServiceAreaCoverage(postcode?: string | null): Promise<
 
   for (const area of matchingAreas) {
     if (locationChainIsEnabled(area.location_area_id, locationMap)) {
-      return {
-        available: true,
-        postcode: normalizedPostcode,
-        matchedAreaId: area.id,
-        matchedPrefix: area.postcode_prefix,
-        matchedCity: area.city,
-        reason: 'covered',
-        message: '',
-      };
+      const { data: assignments, error: assignmentsError } = await supabase
+        .from('provider_service_areas')
+        .select('service_area_id, provider_id')
+        .eq('service_area_id', area.id);
+
+      if (assignmentsError) {
+        throw new Error(assignmentsError.message);
+      }
+
+      const providerIds = Array.from(
+        new Set(((assignments ?? []) as ProviderServiceAreaRow[]).map((row) => row.provider_id)),
+      );
+
+      if (providerIds.length === 0) {
+        continue;
+      }
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .in('user_id', providerIds)
+        .eq('role', 'handy')
+        .eq('account_status', 'active');
+
+      if (profilesError) {
+        throw new Error(profilesError.message);
+      }
+
+      let eligibleProviderIds = new Set((profiles ?? []).map((profile) => profile.user_id));
+
+      if (categoryId && eligibleProviderIds.size > 0) {
+        const { data: handyCategories, error: handyCategoriesError } = await supabase
+          .from('handy_categories')
+          .select('handy_id')
+          .eq('category_id', categoryId)
+          .in('handy_id', Array.from(eligibleProviderIds));
+
+        if (handyCategoriesError) {
+          throw new Error(handyCategoriesError.message);
+        }
+
+        eligibleProviderIds = new Set((handyCategories ?? []).map((row) => row.handy_id));
+      }
+
+      if (eligibleProviderIds.size > 0) {
+        return {
+          available: true,
+          postcode: normalizedPostcode,
+          matchedAreaId: area.id,
+          matchedPrefix: area.postcode_prefix,
+          matchedCity: area.city,
+          eligibleProviderCount: eligibleProviderIds.size,
+          reason: 'covered',
+          message: '',
+        };
+      }
     }
   }
 
@@ -123,7 +181,10 @@ export async function getServiceAreaCoverage(postcode?: string | null): Promise<
     matchedAreaId: bestMatch.id,
     matchedPrefix: bestMatch.postcode_prefix,
     matchedCity: bestMatch.city,
-    reason: 'disabled_location_chain',
+    eligibleProviderCount: 0,
+    reason: locationChainIsEnabled(bestMatch.location_area_id, locationMap)
+      ? 'no_eligible_providers'
+      : 'disabled_location_chain',
     message: 'We do not currently have any 100Handy Pros available in this area.',
   };
 }
