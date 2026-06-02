@@ -270,6 +270,22 @@ export interface CreateBookingInput {
 
 export async function createBooking(input: CreateBookingInput): Promise<Booking> {
   try {
+    const { data: category, error: categoryError } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('id', input.category_id)
+      .eq('active', true)
+      .maybeSingle();
+
+    if (categoryError) {
+      console.error('Error validating booking category:', categoryError);
+      throw new Error(`Failed to validate booking category: ${categoryError.message}`);
+    }
+
+    if (!category) {
+      throw new Error('This service category is currently unavailable.');
+    }
+
     // First, check for existing address with same details for this user
     const apartment = input.address_apartment || null;
     let query = supabase

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocationStore } from '@shared/store';
-import { type HandymanFilters, type Coordinate, type WorkArea, doesAvailabilitySlotApplyToDate, type AvailabilitySlot, useServiceAreaCoverage } from '@shared/query';
+import { type HandymanFilters, type Coordinate, type WorkArea, doesAvailabilitySlotApplyToDate, type AvailabilitySlot, useCategoryById, useServiceAreaCoverage } from '@shared/query';
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker'; import { useHandymenByCategory } from '@shared/query'; import { getWorkAreaByUserId, isLocationInWorkArea, getAvailabilityByUserId, logServiceAreaCoverageAttempt } from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 import { goBackOrReplace } from '@/lib/navigation';
@@ -49,6 +49,7 @@ export default function SelectTaskerScreen() {
   });
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
+  const { data: selectedCategory, isLoading: categoryLoading } = useCategoryById(categoryId);
   const serviceName = params.service as string;
 
   // Form responses from dynamic form in LocationSelectionSheet
@@ -62,7 +63,9 @@ export default function SelectTaskerScreen() {
   // Get client location from store
   const location = useLocationStore((state) => state.location);
   const coveragePostcode = location?.postalCode || '';
-  const { data: serviceAreaCoverage, isLoading: serviceAreaCoverageLoading } = useServiceAreaCoverage(coveragePostcode, categoryId);
+  const resolvedCategoryId = selectedCategory?.id || '';
+  const resolvedCategoryName = selectedCategory?.name || categoryName;
+  const { data: serviceAreaCoverage, isLoading: serviceAreaCoverageLoading } = useServiceAreaCoverage(coveragePostcode, resolvedCategoryId);
   const loggedCoverageKeyRef = useRef<string | null>(null);
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -76,6 +79,31 @@ export default function SelectTaskerScreen() {
   // State for availability caching
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, AvailabilitySlot[]>>({});
 
+  if (categoryId && !categoryLoading && !selectedCategory) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+          <View className="flex-row items-center">
+            <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="mr-4">
+              <ChevronLeft size={24} color="#000000" strokeWidth={2} />
+            </Pressable>
+            <Text className="flex-1 text-lg font-semibold text-black">
+              {getAppContentValue(content, 'header.title', 'Select a Tasker')}
+            </Text>
+          </View>
+        </View>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+            Service unavailable
+          </Text>
+          <Text className="text-sm text-gray-600 text-center">
+            This service category is currently turned off. Please choose another service.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   useEffect(() => {
     if (serviceAreaCoverageLoading || !serviceAreaCoverage || !coveragePostcode) return;
 
@@ -85,12 +113,12 @@ export default function SelectTaskerScreen() {
 
     void logServiceAreaCoverageAttempt({
       postcode: coveragePostcode,
-      categoryId: categoryId || null,
+      categoryId: resolvedCategoryId || null,
       channel: 'mobile',
       route: '/select-tasker',
       result: serviceAreaCoverage,
     });
-  }, [serviceAreaCoverage, serviceAreaCoverageLoading, coveragePostcode, categoryId]);
+  }, [serviceAreaCoverage, serviceAreaCoverageLoading, coveragePostcode, resolvedCategoryId]);
 
   // Map sort option to API filter
   const sortByMap: Record<SortOption, HandymanFilters['sortBy']> = {
@@ -103,7 +131,7 @@ export default function SelectTaskerScreen() {
   };
 
   // Fetch handymen data
-  const { data: handymen, isLoading, isError } = useHandymenByCategory(categoryId, {
+  const { data: handymen, isLoading, isError } = useHandymenByCategory(resolvedCategoryId, {
     sortBy: sortByMap[selectedSort],
   });
 
@@ -248,8 +276,8 @@ export default function SelectTaskerScreen() {
       pathname: '/(client)/tasker-profile',
       params: {
         taskerId,
-        categoryId,
-        categoryName,
+        categoryId: resolvedCategoryId,
+        categoryName: resolvedCategoryName,
         // Pass formResponses (new) or legacy params
         ...(formResponses ? { formResponses } : {}),
         ...(taskSize ? { taskSize } : {}),
@@ -264,8 +292,8 @@ export default function SelectTaskerScreen() {
       pathname: '/(client)/tasker-profile',
       params: {
         taskerId,
-        categoryId,
-        categoryName,
+        categoryId: resolvedCategoryId,
+        categoryName: resolvedCategoryName,
         // Pass formResponses (new) or legacy params
         ...(formResponses ? { formResponses } : {}),
         ...(taskSize ? { taskSize } : {}),

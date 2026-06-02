@@ -40,9 +40,34 @@ export default function ConfirmBookingScreen() {
   const selectedTime = params.selectedTime as string;
   const selectedFrequencyParam =
     typeof params.selectedFrequency === 'string' ? params.selectedFrequency : 'once';
-  const { data: selectedCategory } = useCategoryById(categoryId);
+  const { data: selectedCategory, isLoading: categoryLoading } = useCategoryById(categoryId);
   const supportsRecurringFrequency =
     selectedCategory?.supports_recurring ?? categoryName.toLowerCase().includes('clean');
+
+  if (categoryId && !categoryLoading && !selectedCategory) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+          <View className="flex-row items-center">
+            <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="mr-4">
+              <ChevronLeft size={24} color="#000000" strokeWidth={2} />
+            </Pressable>
+            <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
+              {getAppContentValue(content, 'header.title', 'Review and confirm')}
+            </Text>
+          </View>
+        </View>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+            Service unavailable
+          </Text>
+          <Text className="text-sm text-gray-600 text-center">
+            This service category is currently turned off. Please choose another service.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Parse form responses
   const formResponses: FormResponse = useMemo(() => {
@@ -64,7 +89,7 @@ export default function ConfirmBookingScreen() {
   const { setPendingBooking, clearPendingBooking, getPendingBooking } = usePendingBookingStore();
 
   // Fetch tasker profile with skill-specific pricing
-  const { data: profile, isLoading: profileLoading } = useHandymanProfile(taskerId, categoryId);
+  const { data: profile, isLoading: profileLoading } = useHandymanProfile(taskerId, selectedCategory?.id);
 
   // Create booking mutation
   const createBookingMutation = useCreateBooking();

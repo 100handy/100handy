@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCategoryById } from '@shared/query';
 import { View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { ChevronLeft } from 'lucide-react-native'; import { DynamicFormRenderer } from '@/components/booking'; import type { FormResponse } from '@shared/supabase';
 import { goBackOrReplace } from '@/lib/navigation';
 import { getAppContentValue, useAppContent } from '@/lib/app-content';
@@ -17,11 +18,12 @@ export default function TaskFormScreen() {
   const taskerId = params.taskerId as string;
   const categoryId = typeof params.categoryId === 'string' ? params.categoryId : '';
   const categoryName = typeof params.categoryName === 'string' ? params.categoryName : '';
+  const { data: selectedCategory, isLoading: categoryLoading } = useCategoryById(categoryId);
   const selectedDate = params.selectedDate as string;
   const selectedTime = params.selectedTime as string;
 
-  // Validate categoryId - show error if invalid
-  if (!categoryId || categoryId === 'undefined') {
+  // Validate categoryId / active category - show error if invalid or disabled
+  if (!categoryId || categoryId === 'undefined' || (!categoryLoading && !selectedCategory)) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-row items-center px-5 pt-4 pb-4 border-b border-gray-200">
@@ -69,8 +71,8 @@ export default function TaskFormScreen() {
       pathname: '/(client)/confirm-booking',
       params: {
         taskerId,
-        categoryId,
-        categoryName,
+        categoryId: selectedCategory?.id || categoryId,
+        categoryName: selectedCategory?.name || categoryName,
         selectedDate,
         selectedTime,
         formResponses: JSON.stringify(formResponses),
@@ -84,8 +86,8 @@ export default function TaskFormScreen() {
 
   return (
     <DynamicFormRenderer
-      categoryId={categoryId}
-      categoryName={categoryName}
+      categoryId={selectedCategory?.id || categoryId}
+      categoryName={selectedCategory?.name || categoryName}
       initialValues={existingResponses}
       onSubmit={handleSubmit}
       onCancel={handleCancel}

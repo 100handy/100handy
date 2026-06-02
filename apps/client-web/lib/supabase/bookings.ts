@@ -76,6 +76,22 @@ export const MINIMUM_BOOKING_HOURS = 2;
 export async function createBooking(bookingData: CreateBookingData): Promise<Booking | null> {
   const supabase = createClient();
 
+  const { data: category, error: categoryError } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('id', bookingData.category_id)
+    .eq('active', true)
+    .maybeSingle();
+
+  if (categoryError) {
+    console.error('Error validating booking category:', categoryError);
+    throw categoryError;
+  }
+
+  if (!category) {
+    throw new Error('This service category is currently unavailable.');
+  }
+
   const { data, error } = await supabase
     .from('bookings')
     .insert({

@@ -69,7 +69,7 @@ function BrowseProsContent() {
   const categoryNameFromUrl = searchParams.get("categoryName") || "Handyman";
   const categoryIdFromUrl = searchParams.get("categoryId");
 
-  const { data: categoriesData } = useCategoriesByNames(
+  const { data: categoriesData, isLoading: categoryLoading } = useCategoriesByNames(
     useMemo(() => [categoryNameFromUrl], [categoryNameFromUrl])
   );
   const category = useMemo(() => {
@@ -77,7 +77,7 @@ function BrowseProsContent() {
     return categoriesData[0] as { id: string; name: string };
   }, [categoriesData]);
 
-  const categoryId = categoryIdFromUrl || category?.id || "";
+  const categoryId = category?.id || "";
   const categoryName = category?.name || categoryNameFromUrl;
 
   const [selectedSort, setSelectedSort] = useState<SortOption>("recommended");
@@ -214,6 +214,33 @@ function BrowseProsContent() {
     location?.postalCode ||
     "";
   const { data: serviceAreaCoverage } = useServiceAreaCoverage(currentPostcode, categoryId);
+
+  const hasCategoryQuery = Boolean(categoryNameFromUrl?.trim());
+
+  if (!categoryLoading && hasCategoryQuery && !category) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="max-w-md text-center">
+            <h1 className="text-2xl font-bold text-brand-dark-alt">Service unavailable</h1>
+            <p className="mt-3 text-gray-600">
+              This service category is currently turned off. Please choose another service.
+            </p>
+            <div className="mt-6">
+              <Link
+                href="/services"
+                className="inline-flex items-center justify-center rounded-full bg-brand-terracotta px-6 py-3 text-sm font-semibold text-white"
+              >
+                Browse services
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   useEffect(() => {
     const checkAuth = async () => {

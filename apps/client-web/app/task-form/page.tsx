@@ -230,6 +230,32 @@ function TaskFormContent() {
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
   const [paymentAuthorized, setPaymentAuthorized] = useState(false);
 
+  const hasCategoryQuery = Boolean(categoryFromUrl?.trim());
+
+  if (!categoryLoading && hasCategoryQuery && !category) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="max-w-md text-center">
+            <h1 className="text-2xl font-bold text-brand-dark-alt">Service unavailable</h1>
+            <p className="mt-3 text-gray-600">
+              This service category is currently turned off. Please choose another service.
+            </p>
+            <div className="mt-6">
+              <Link
+                href="/services"
+                className="inline-flex items-center justify-center rounded-full bg-brand-terracotta px-6 py-3 text-sm font-semibold text-white"
+              >
+                Browse services
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
 
   // Restore state from sessionStorage when step >= 2 (on page refresh)
   useEffect(() => {

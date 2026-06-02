@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, Pressable, TextInput, Image } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { useHandymanProfile } from '@shared/query';
+import { ScrollView, View, Text, Pressable, TextInput, Image } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { useCategoryById, useHandymanProfile } from '@shared/query';
 import { PullDownDismiss } from '@/components/ui/pull-down-dismiss';
 import { goBackOrReplace } from '@/lib/navigation';
 import { getAppContentValue, useAppContent } from '@/lib/app-content';
@@ -19,6 +19,7 @@ export default function TaskDetailsScreen() {
   const taskerId = params.taskerId as string;
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
+  const { data: selectedCategory, isLoading: categoryLoading } = useCategoryById(categoryId);
   const formResponses = params.formResponses as string | undefined;
   // Legacy params for backwards compatibility
   const taskSize = params.taskSize as string | undefined;
@@ -30,6 +31,29 @@ export default function TaskDetailsScreen() {
 
   // Fetch tasker profile for display
   const { data: profile } = useHandymanProfile(taskerId);
+
+  if (!categoryId || (!categoryLoading && !selectedCategory)) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-row items-center px-5 pt-4 pb-4 border-b border-gray-200">
+          <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="mr-4">
+            <ChevronLeft size={24} color="#000000" strokeWidth={2} />
+          </Pressable>
+          <Text className="flex-1 text-lg font-semibold text-black">
+            {getAppContentValue(content, 'header.title', 'Task details')}
+          </Text>
+        </View>
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+            Service unavailable
+          </Text>
+          <Text className="text-sm text-gray-600 text-center">
+            This service category is currently turned off. Please go back and choose another service.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const handleReviewTask = () => {
     // Merge additional_details into formResponses if present

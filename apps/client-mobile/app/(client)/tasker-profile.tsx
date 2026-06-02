@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHandymanReviews, type HandymanReview } from '@shared/query';
+import { useCategoryById, useHandymanReviews, type HandymanReview } from '@shared/query';
 import { ScrollView, Image, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, Star, SlidersHorizontal } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import {   RatingFilter, RatingFilterSheet, ScheduleSelectionSheet, } from '@/components/tasker'; import { useHandymanProfile } from '@shared/query';
 import { goBackOrReplace } from '@/lib/navigation';
 
@@ -10,6 +10,7 @@ export default function TaskerProfileScreen() {
 
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
+  const { data: selectedCategory, isLoading: categoryLoading } = useCategoryById(categoryId);
   const formResponses = params.formResponses as string | undefined;
   const taskSize = params.taskSize as string | undefined;
   const vehicleRequirement = params.vehicleRequirement as string | undefined;
@@ -20,7 +21,7 @@ export default function TaskerProfileScreen() {
 
   // Fetch tasker profile and reviews
   // Pass categoryId to get skill-specific pricing
-  const { data: profile, isLoading: profileLoading, isError: profileError } = useHandymanProfile(taskerId, categoryId);
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useHandymanProfile(taskerId, selectedCategory?.id);
   const { data: apiReviews, isLoading: reviewsLoading } = useHandymanReviews(taskerId, 10);
 
   // Use API reviews only - no mock data fallback
@@ -38,8 +39,8 @@ export default function TaskerProfileScreen() {
       pathname: '/(client)/task-details',
       params: {
         taskerId,
-        categoryId,
-        categoryName,
+        categoryId: selectedCategory?.id || categoryId,
+        categoryName: selectedCategory?.name || categoryName,
         selectedDate: date,
         selectedTime: time,
         ...(formResponses ? { formResponses } : {}),
@@ -94,6 +95,31 @@ export default function TaskerProfileScreen() {
           </Text>
           <Text className="text-sm text-gray-600 text-center">
             This pro&apos;s profile could not be loaded
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (categoryId && !categoryLoading && !selectedCategory) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-col px-5 pt-4 pb-4 bg-white border-b border-gray-200">
+          <View className="flex-row items-center">
+            <Pressable onPress={() => goBackOrReplace(router, '/(client)/(tabs)/home')} className="mr-4">
+              <ChevronLeft size={24} color="#000000" strokeWidth={2} />
+            </Pressable>
+            <Text className="flex-1 text-center text-lg font-semibold text-black mr-10">
+              Pro Profile
+            </Text>
+          </View>
+        </View>
+        <View className="flex-col flex-1 items-center justify-center px-6">
+          <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+            Service unavailable
+          </Text>
+          <Text className="text-sm text-gray-600 text-center">
+            This service category is currently turned off. Please choose another service.
           </Text>
         </View>
       </SafeAreaView>
