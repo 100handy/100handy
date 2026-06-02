@@ -25,6 +25,7 @@ export interface CategoryFilters {
   search?: string
   limit?: number
   offset?: number
+  level?: number
 }
 
 export interface CreateCategoryInput {
@@ -95,6 +96,10 @@ export function useCategories(filters: CategoryFilters = {}) {
         query = query.or(
           `name.ilike.${searchTerm},description.ilike.${searchTerm},marketing_title.ilike.${searchTerm},marketing_description.ilike.${searchTerm},route_slug.ilike.${searchTerm}`
         )
+      }
+
+      if (filters.level !== undefined) {
+        query = query.eq('level', filters.level)
       }
 
       // Apply pagination
@@ -267,6 +272,38 @@ export function useUpdateCategory() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['categories', data.id] })
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+    },
+  })
+}
+
+export function useBulkUpdateCategories() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      categoryIds,
+      updates,
+    }: {
+      categoryIds: string[]
+      updates: Pick<CategoryUpdate, 'active'>
+    }) => {
+      await requireAdminPermission('tasks.manage')
+
+      if (categoryIds.length === 0) {
+        throw new Error('Select at least one category')
+      }
+
+      const { error } = await supabase
+        .from('categories')
+        .update(updates)
+        .in('id', categoryIds)
+
+      if (error) throw error
+
+      return { categoryIds, updates }
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
     },
   })

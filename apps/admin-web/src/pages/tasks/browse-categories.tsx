@@ -3,7 +3,7 @@ import { Search, Plus, Edit, Trash2, Loader2, ArrowUp, ArrowDown, Image as Image
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { useAuth } from '@/contexts/AuthContext'
-import { useCategories, useUpdateCategory } from '@/lib/api/categories'
+import { useBulkUpdateCategories, useCategories, useUpdateCategory } from '@/lib/api/categories'
 
 const ITEMS_PER_PAGE = 10
 
@@ -12,6 +12,8 @@ export default function BrowseCategoriesPage() {
   const canManageTasks = hasPermission('tasks.manage')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
+  const [levelFilter, setLevelFilter] = useState<'all' | 'main' | 'sub'>('all')
 
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -32,8 +34,10 @@ export default function BrowseCategoriesPage() {
     search: debouncedSearch || undefined,
     limit: ITEMS_PER_PAGE,
     offset: (currentPage - 1) * ITEMS_PER_PAGE,
+    level: levelFilter === 'all' ? undefined : levelFilter === 'main' ? 0 : 1,
   })
   const updateCategory = useUpdateCategory()
+  const bulkUpdateCategories = useBulkUpdateCategories()
 
   // Get top categories by task count for trending
   const trendingCategories = useMemo(() => {
@@ -42,6 +46,11 @@ export default function BrowseCategoriesPage() {
   }, [categories])
 
   const trendingColors = ['blue', 'green', 'yellow', 'purple'] as const
+  const selectedCategories = useMemo(
+    () => (categories || []).filter((category) => selectedCategoryIds.includes(category.id)),
+    [categories, selectedCategoryIds],
+  )
+  const allVisibleSelected = categories?.length ? categories.every((category) => selectedCategoryIds.includes(category.id)) : false
 
   const moveCategory = async (categoryId: string, direction: 'up' | 'down') => {
     if (!canManageTasks) return
@@ -77,6 +86,32 @@ export default function BrowseCategoriesPage() {
     green: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
     yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
     purple: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
+  }
+
+  const toggleSelectedCategory = (categoryId: string, checked: boolean) => {
+    setSelectedCategoryIds((prev) =>
+      checked ? [...new Set([...prev, categoryId])] : prev.filter((id) => id !== categoryId),
+    )
+  }
+
+  const toggleSelectAllVisible = (checked: boolean) => {
+    if (!categories) return
+    setSelectedCategoryIds((prev) => {
+      if (checked) {
+        return [...new Set([...prev, ...categories.map((category) => category.id)])]
+      }
+      const visibleIds = new Set(categories.map((category) => category.id))
+      return prev.filter((id) => !visibleIds.has(id))
+    })
+  }
+
+  const handleBulkToggle = async (active: boolean) => {
+    if (!canManageTasks || selectedCategoryIds.length === 0) return
+    await bulkUpdateCategories.mutateAsync({
+      categoryIds: selectedCategoryIds,
+      updates: { active },
+    })
+    setSelectedCategoryIds([])
   }
 
   return (
@@ -118,15 +153,29 @@ export default function BrowseCategoriesPage() {
 
           <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+              <div className="flex gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search categories..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <select
+                  value={levelFilter}
+                  onChange={(e) => {
+                    setLevelFilter(e.target.value as 'all' | 'main' | 'sub')
+                    setCurrentPage(1)
+                  }}
+                  className="min-w-[160px] rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
+                >
+                  <option value="all">All levels</option>
+                  <option value="main">Main categories</option>
+                  <option value="sub">Subcategories</option>
+                </select>
               </div>
             </div>
             <div className="lg:col-span-1">
@@ -149,6 +198,64 @@ export default function BrowseCategoriesPage() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-800/50">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Bulk visibility</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Turn selected categories on or off across web and app.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={(e) => toggleSelectAllVisible(e.target.checked)}
+                    disabled={!categories?.length}
+                  />
+                  Select visible
+                </label>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {selectedCategoryIds.length} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleBulkToggle(true)}
+                  disabled={!canManageTasks || selectedCategoryIds.length === 0 || bulkUpdateCategories.isPending}
+                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  Turn on selected
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBulkToggle(false)}
+                  disabled={!canManageTasks || selectedCategoryIds.length === 0 || bulkUpdateCategories.isPending}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  Turn off selected
+                </button>
+              </div>
+            </div>
+            {selectedCategories.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedCategories.slice(0, 12).map((category) => (
+                  <span
+                    key={category.id}
+                    className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+                  >
+                    {category.name}
+                  </span>
+                ))}
+                {selectedCategories.length > 12 && (
+                  <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-300">
+                    +{selectedCategories.length - 12} more
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Loading state */}
@@ -184,6 +291,9 @@ export default function BrowseCategoriesPage() {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-900/50">
                   <tr>
+                    <th className="px-6 py-3">
+                      <span className="sr-only">Select</span>
+                    </th>
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -222,6 +332,14 @@ export default function BrowseCategoriesPage() {
                 <tbody className="bg-white dark:bg-gray-800/50 divide-y divide-gray-200 dark:divide-gray-800">
                   {categories.map((category) => (
                     <tr key={category.id}>
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategoryIds.includes(category.id)}
+                          onChange={(e) => toggleSelectedCategory(category.id, e.target.checked)}
+                          disabled={!canManageTasks}
+                        />
+                      </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex flex-col gap-1">
                           <span>{category.name}</span>
