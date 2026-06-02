@@ -35,6 +35,11 @@ export default function ServiceAreasPage() {
   const [bulkImportParentId, setBulkImportParentId] = useState<string>('')
   const [bulkImportAreaType, setBulkImportAreaType] = useState<LocationAreaNode['areaType']>('postcode_district')
   const [bulkImportText, setBulkImportText] = useState('')
+  const [locationSearch, setLocationSearch] = useState('')
+  const [locationTypeFilter, setLocationTypeFilter] = useState<'all' | LocationAreaNode['areaType']>('all')
+  const [locationStatusFilter, setLocationStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all')
+  const [serviceAreaSearch, setServiceAreaSearch] = useState('')
+  const [serviceAreaStatusFilter, setServiceAreaStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all')
 
   const { data: areas = [], isLoading, error } = useServiceAreas()
   const { data: locationAreas = [], isLoading: locationAreasLoading, error: locationAreasError } = useLocationAreas()
@@ -67,6 +72,23 @@ export default function ServiceAreasPage() {
     [locationAreas],
   )
   const locationTree = useMemo(() => buildLocationTree(locationAreas), [locationAreas])
+  const filteredLocationTree = useMemo(
+    () => filterLocationTree(locationTree, locationSearch, locationTypeFilter, locationStatusFilter),
+    [locationTree, locationSearch, locationTypeFilter, locationStatusFilter],
+  )
+  const filteredServiceAreas = useMemo(() => {
+    const query = serviceAreaSearch.trim().toLowerCase()
+    return areas.filter((area) => {
+      const matchesSearch =
+        !query ||
+        area.city.toLowerCase().includes(query) ||
+        area.postcodePrefix.toLowerCase().includes(query)
+      const matchesStatus =
+        serviceAreaStatusFilter === 'all' ||
+        (serviceAreaStatusFilter === 'enabled' ? area.enabled : !area.enabled)
+      return matchesSearch && matchesStatus
+    })
+  }, [areas, serviceAreaSearch, serviceAreaStatusFilter])
 
   function startCreate() {
     setSelectedAreaId(null)
@@ -264,13 +286,54 @@ export default function ServiceAreasPage() {
               </div>
             )}
 
+            <div className="mb-4 grid gap-3 md:grid-cols-3">
+              <input
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                placeholder="Search area or slug"
+                className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+              />
+              <div className="relative">
+                <select
+                  value={locationTypeFilter}
+                  onChange={(e) => setLocationTypeFilter(e.target.value as 'all' | LocationAreaNode['areaType'])}
+                  className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <option value="all">All area types</option>
+                  <option value="country">Country</option>
+                  <option value="nation">Nation</option>
+                  <option value="region">Region</option>
+                  <option value="city">City</option>
+                  <option value="postcode_area">Postcode area</option>
+                  <option value="postcode_district">Postcode district</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              </div>
+              <div className="relative">
+                <select
+                  value={locationStatusFilter}
+                  onChange={(e) => setLocationStatusFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
+                  className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="enabled">Enabled only</option>
+                  <option value="disabled">Disabled only</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              </div>
+            </div>
+
             <div className="space-y-2">
               {locationAreasLoading ? (
                 <div className="py-10 text-center">
                   <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
                 </div>
+              ) : filteredLocationTree.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                  No UK areas match the current filters.
+                </div>
               ) : (
-                locationTree.map((node) => (
+                filteredLocationTree.map((node) => (
                   <LocationAreaTreeRow
                     key={node.id}
                     node={node}
@@ -451,6 +514,27 @@ export default function ServiceAreasPage() {
               </div>
             )}
 
+            <div className="mb-4 grid gap-3 md:grid-cols-2">
+              <input
+                value={serviceAreaSearch}
+                onChange={(e) => setServiceAreaSearch(e.target.value)}
+                placeholder="Search city or postcode prefix"
+                className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+              />
+              <div className="relative">
+                <select
+                  value={serviceAreaStatusFilter}
+                  onChange={(e) => setServiceAreaStatusFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
+                  className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="enabled">Enabled only</option>
+                  <option value="disabled">Disabled only</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
@@ -475,8 +559,14 @@ export default function ServiceAreasPage() {
                         No service areas configured yet.
                       </td>
                     </tr>
+                  ) : filteredServiceAreas.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                        No service areas match the current filters.
+                      </td>
+                    </tr>
                   ) : (
-                    areas.map((area) => (
+                    filteredServiceAreas.map((area) => (
                       <tr key={area.id} className="border-t border-slate-200 dark:border-slate-800">
                         <td className="px-5 py-4 font-medium text-slate-900 dark:text-white">{area.city}</td>
                         <td className="px-5 py-4">{area.postcodePrefix}</td>
@@ -771,6 +861,46 @@ function buildLocationTree(areas: LocationAreaNode[]): LocationAreaTreeItem[] {
   }
   sortItems(roots)
   return roots
+}
+
+function filterLocationTree(
+  nodes: LocationAreaTreeItem[],
+  search: string,
+  areaType: 'all' | LocationAreaNode['areaType'],
+  status: 'all' | 'enabled' | 'disabled',
+): LocationAreaTreeItem[] {
+  const query = search.trim().toLowerCase()
+
+  const matchesNode = (node: LocationAreaTreeItem) => {
+    const matchesSearch =
+      !query ||
+      node.name.toLowerCase().includes(query) ||
+      node.slug.toLowerCase().includes(query)
+    const matchesType = areaType === 'all' || node.areaType === areaType
+    const matchesStatus =
+      status === 'all' ||
+      (status === 'enabled' ? node.enabled : !node.enabled)
+    return matchesSearch && matchesType && matchesStatus
+  }
+
+  const visit = (node: LocationAreaTreeItem): LocationAreaTreeItem | null => {
+    const filteredChildren = node.children
+      .map((child) => visit(child))
+      .filter(Boolean) as LocationAreaTreeItem[]
+
+    if (matchesNode(node) || filteredChildren.length > 0) {
+      return {
+        ...node,
+        children: filteredChildren,
+      }
+    }
+
+    return null
+  }
+
+  return nodes
+    .map((node) => visit(node))
+    .filter(Boolean) as LocationAreaTreeItem[]
 }
 
 function getNextAreaType(areaType: LocationAreaNode['areaType']): LocationAreaNode['areaType'] {
