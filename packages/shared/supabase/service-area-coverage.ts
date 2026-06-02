@@ -11,6 +11,14 @@ export interface ServiceAreaCoverageResult {
   message: string;
 }
 
+export interface ServiceAreaCoverageAttemptLogInput {
+  postcode?: string | null;
+  categoryId?: string | null;
+  channel: 'web' | 'mobile';
+  route: string;
+  result: ServiceAreaCoverageResult;
+}
+
 interface ServiceAreaCoverageRow {
   id: string;
   city: string;
@@ -31,6 +39,12 @@ interface ProviderServiceAreaRow {
 
 function normalizePostcode(value: string) {
   return value.replace(/\s+/g, '').toUpperCase();
+}
+
+function getPostcodeOutward(value: string) {
+  const normalized = normalizePostcode(value);
+  if (!normalized) return '';
+  return normalized.length > 3 ? normalized.slice(0, -3) : normalized;
 }
 
 function locationChainIsEnabled(
@@ -187,4 +201,27 @@ export async function getServiceAreaCoverage(
       : 'disabled_location_chain',
     message: 'We do not currently have any 100Handy Pros available in this area.',
   };
+}
+
+export async function logServiceAreaCoverageAttempt(input: ServiceAreaCoverageAttemptLogInput) {
+  const normalizedPostcode = normalizePostcode(input.postcode || input.result.postcode || '');
+  if (!normalizedPostcode) return;
+
+  const { error } = await supabase.from('service_area_demand_logs').insert({
+    postcode_normalized: normalizedPostcode,
+    postcode_outward: getPostcodeOutward(normalizedPostcode),
+    category_id: input.categoryId ?? null,
+    channel: input.channel,
+    route: input.route,
+    available: input.result.available,
+    reason: input.result.reason,
+    matched_area_id: input.result.matchedAreaId,
+    matched_prefix: input.result.matchedPrefix,
+    matched_city: input.result.matchedCity,
+    eligible_provider_count: input.result.eligibleProviderCount,
+  });
+
+  if (error) {
+    console.error('Failed to log service area coverage attempt', error);
+  }
 }

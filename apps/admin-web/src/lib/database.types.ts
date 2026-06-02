@@ -637,6 +637,53 @@ export interface Database {
           created_at?: string
         }
       }
+      service_area_demand_logs: {
+        Row: {
+          id: string
+          postcode_normalized: string
+          postcode_outward: string
+          category_id: string | null
+          channel: 'web' | 'mobile'
+          route: string | null
+          available: boolean
+          reason: string
+          matched_area_id: string | null
+          matched_prefix: string | null
+          matched_city: string | null
+          eligible_provider_count: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          postcode_normalized: string
+          postcode_outward: string
+          category_id?: string | null
+          channel: 'web' | 'mobile'
+          route?: string | null
+          available: boolean
+          reason: string
+          matched_area_id?: string | null
+          matched_prefix?: string | null
+          matched_city?: string | null
+          eligible_provider_count?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          postcode_normalized?: string
+          postcode_outward?: string
+          category_id?: string | null
+          channel?: 'web' | 'mobile'
+          route?: string | null
+          available?: boolean
+          reason?: string
+          matched_area_id?: string | null
+          matched_prefix?: string | null
+          matched_city?: string | null
+          eligible_provider_count?: number
+          created_at?: string
+        }
+      }
       addresses: {
         Row: {
           id: string

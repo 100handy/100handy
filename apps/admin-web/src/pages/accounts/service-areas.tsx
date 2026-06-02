@@ -4,6 +4,7 @@ import Header from '@/components/header'
 import {
   useAssignProviderToServiceArea,
   useBulkImportLocationAreas,
+  useCoverageDemandInsights,
   useLocationCoverageSummary,
   useLocationAreas,
   useLocationMapData,
@@ -12,6 +13,7 @@ import {
   useSaveLocationArea,
   useSaveServiceArea,
   useServiceAreaAssignments,
+  useServiceAreaHealthWarnings,
   useServiceAreaOverlapCheck,
   useServiceAreas,
   useToggleLocationArea,
@@ -45,6 +47,8 @@ export default function ServiceAreasPage() {
   const { data: locationAreas = [], isLoading: locationAreasLoading, error: locationAreasError } = useLocationAreas()
   const { data: coverageSummary = [] } = useLocationCoverageSummary()
   const { data: locationMapData = [] } = useLocationMapData()
+  const { data: healthWarnings = [] } = useServiceAreaHealthWarnings()
+  const { data: coverageDemand } = useCoverageDemandInsights()
   const { data: assignments = [], isLoading: assignmentsLoading } = useServiceAreaAssignments(selectedAreaId)
   const { data: candidates = [] } = useProviderCandidates(selectedAreaId)
   const { data: overlapWarnings = [] } = useServiceAreaOverlapCheck(postcodePrefix, selectedAreaId)
@@ -261,6 +265,111 @@ export default function ServiceAreasPage() {
                   </div>
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Operational warnings</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Areas that look enabled in admin but cannot actually serve bookings, or disabled areas still carrying assigned providers.</p>
+            </div>
+
+            {healthWarnings.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-emerald-300 bg-emerald-50 px-4 py-6 text-sm text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300">
+                No location coverage warnings right now.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {healthWarnings.map((warning) => (
+                  <button
+                    key={`${warning.type}-${warning.serviceAreaId}`}
+                    type="button"
+                    onClick={() => editArea(warning.serviceAreaId)}
+                    className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-left dark:border-amber-900/60 dark:bg-amber-950/20"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-medium text-amber-900 dark:text-amber-200">
+                          {warning.city} ({warning.postcodePrefix})
+                        </div>
+                        <div className="mt-1 text-sm text-amber-800 dark:text-amber-300">
+                          {warning.type === 'enabled_without_active_providers'
+                            ? `Enabled area with no active assigned providers. ${warning.assignedProviders} total assignment${warning.assignedProviders === 1 ? '' : 's'}, ${warning.activeAssignedProviders} active.`
+                            : `Disabled area still has ${warning.assignedProviders} assigned provider${warning.assignedProviders === 1 ? '' : 's'}.`}
+                        </div>
+                      </div>
+                      <span className="rounded-full bg-white/80 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-slate-950/50 dark:text-amber-300">
+                        Review
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Coverage demand</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Last 30 days of booking and provider-browse availability checks.</p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4">
+              <CoverageStat label="Attempts" value={String(coverageDemand?.summary.attempts ?? 0)} />
+              <CoverageStat label="Unavailable" value={String(coverageDemand?.summary.unavailableAttempts ?? 0)} />
+              <CoverageStat label="Available" value={String(coverageDemand?.summary.availableAttempts ?? 0)} />
+              <CoverageStat
+                label="Last attempt"
+                value={coverageDemand?.summary.lastAttemptAt ? new Date(coverageDemand.summary.lastAttemptAt).toLocaleDateString('en-GB') : 'None'}
+              />
+            </div>
+
+            <div className="mt-6 grid gap-6 xl:grid-cols-2">
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Top unavailable areas</h4>
+                <div className="mt-3 space-y-3">
+                  {(coverageDemand?.topUnavailableAreas ?? []).length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                      No failed availability checks logged yet.
+                    </div>
+                  ) : (
+                    coverageDemand!.topUnavailableAreas.map((row) => (
+                      <div key={row.outward} className="rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-800">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="font-medium text-slate-900 dark:text-white">{row.outward}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{new Date(row.lastAttemptAt).toLocaleString('en-GB')}</div>
+                        </div>
+                        <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                          {row.unavailableAttempts} unavailable of {row.attempts} attempt{row.attempts === 1 ? '' : 's'}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Route breakdown</h4>
+                <div className="mt-3 space-y-3">
+                  {(coverageDemand?.routeBreakdown ?? []).length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                      No route demand logged yet.
+                    </div>
+                  ) : (
+                    coverageDemand!.routeBreakdown.map((row) => (
+                      <div key={row.route} className="rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-800">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="font-medium text-slate-900 dark:text-white">{row.route}</div>
+                          <div className="text-sm text-slate-600 dark:text-slate-300">{row.attempts} attempts</div>
+                        </div>
+                        <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                          {row.unavailableAttempts} unavailable result{row.unavailableAttempts === 1 ? '' : 's'}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -541,6 +650,7 @@ export default function ServiceAreasPage() {
                   <tr>
                     <th className="px-5 py-3">City</th>
                     <th className="px-5 py-3">Postcode</th>
+                    <th className="px-5 py-3">Linked area</th>
                     <th className="px-5 py-3">Status</th>
                     <th className="px-5 py-3">Providers</th>
                     <th className="px-5 py-3 text-right">Action</th>
@@ -549,19 +659,19 @@ export default function ServiceAreasPage() {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={5} className="px-5 py-12 text-center">
+                      <td colSpan={6} className="px-5 py-12 text-center">
                         <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
                       </td>
                     </tr>
                   ) : areas.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                      <td colSpan={6} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         No service areas configured yet.
                       </td>
                     </tr>
                   ) : filteredServiceAreas.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                      <td colSpan={6} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         No service areas match the current filters.
                       </td>
                     </tr>
@@ -570,8 +680,29 @@ export default function ServiceAreasPage() {
                       <tr key={area.id} className="border-t border-slate-200 dark:border-slate-800">
                         <td className="px-5 py-4 font-medium text-slate-900 dark:text-white">{area.city}</td>
                         <td className="px-5 py-4">{area.postcodePrefix}</td>
+                        <td className="px-5 py-4">
+                          {area.locationAreaName ? (
+                            <div>
+                              <div className="font-medium text-slate-900 dark:text-white">{area.locationAreaName}</div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400">
+                                {area.locationAreaEnabled === false ? 'Linked UK area is off' : 'Linked UK area is on'}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-slate-500 dark:text-slate-400">Not linked</span>
+                          )}
+                        </td>
                         <td className="px-5 py-4">{area.enabled ? 'Enabled' : 'Disabled'}</td>
-                        <td className="px-5 py-4">{area.assignedProviders}</td>
+                        <td className="px-5 py-4">
+                          <div className="font-medium text-slate-900 dark:text-white">{area.activeAssignedProviders} active</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{area.assignedProviders} assigned total</div>
+                          {area.enabled && area.activeAssignedProviders === 0 ? (
+                            <div className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">No active provider coverage</div>
+                          ) : null}
+                          {!area.enabled && area.assignedProviders > 0 ? (
+                            <div className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">Assignments remain on disabled area</div>
+                          ) : null}
+                        </td>
                         <td className="px-5 py-4 text-right">
                           <button
                             type="button"

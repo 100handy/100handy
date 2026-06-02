@@ -22,7 +22,7 @@ import { createPaymentIntent, cancelPaymentIntent } from "@/lib/stripe/payment";
 import { createClient } from "@/lib/supabase";
 import type { FormResponse } from "@shared/supabase";
 import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store';
-import { getServiceAreaCoverage } from '@shared/supabase';
+import { getServiceAreaCoverage, logServiceAreaCoverageAttempt } from '@shared/supabase';
 import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, useServiceAreaCoverage, type Category, type HandymanProfile, type AvailabilitySlot } from '@shared/query';
 
 // Sort options type
@@ -369,6 +369,13 @@ function TaskFormContent() {
         googlePlaceData?.address_components?.find((c: any) => c.types.includes('postal_code'))?.long_name || '';
       if (postcode) {
         const coverage = await getServiceAreaCoverage(postcode, category?.id);
+        await logServiceAreaCoverageAttempt({
+          postcode,
+          categoryId: category?.id || null,
+          channel: 'web',
+          route: '/task-form',
+          result: coverage,
+        });
         if (!coverage.available) {
           setError(coverage.message);
           return;

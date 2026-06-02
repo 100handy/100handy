@@ -17,7 +17,7 @@ import { useAuthContext } from "@/components/providers/auth-provider";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
 import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store'; import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, type HandymanProfile } from '@shared/query';
-import { getServiceAreaCoverage } from '@shared/supabase';
+import { getServiceAreaCoverage, logServiceAreaCoverageAttempt } from '@shared/supabase';
 import { useServiceAreaCoverage } from '@shared/query';
 import { createClient } from "@/lib/supabase";
 import { createAddress } from "@/lib/supabase/addresses";
@@ -409,6 +409,13 @@ function BrowseProsContent() {
       )?.long_name || location?.postalCode || "";
     if (postcode) {
       const coverage = await getServiceAreaCoverage(postcode, categoryId);
+      await logServiceAreaCoverageAttempt({
+        postcode,
+        categoryId: categoryId || null,
+        channel: 'web',
+        route: '/browse-pros',
+        result: coverage,
+      });
       if (!coverage.available) {
         setError(coverage.message);
         return;

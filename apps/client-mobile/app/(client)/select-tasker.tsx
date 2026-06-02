@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocationStore } from '@shared/store';
 import { type HandymanFilters, type Coordinate, type WorkArea, doesAvailabilitySlotApplyToDate, type AvailabilitySlot, useServiceAreaCoverage } from '@shared/query';
-import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker'; import { useHandymenByCategory } from '@shared/query'; import { getWorkAreaByUserId, isLocationInWorkArea, getAvailabilityByUserId } from '@shared/supabase';
+import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker'; import { useHandymenByCategory } from '@shared/query'; import { getWorkAreaByUserId, isLocationInWorkArea, getAvailabilityByUserId, logServiceAreaCoverageAttempt } from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 import { goBackOrReplace } from '@/lib/navigation';
 import { getAppContentValue, useAppContent } from '@/lib/app-content';
@@ -63,6 +63,7 @@ export default function SelectTaskerScreen() {
   const location = useLocationStore((state) => state.location);
   const coveragePostcode = location?.postalCode || '';
   const { data: serviceAreaCoverage, isLoading: serviceAreaCoverageLoading } = useServiceAreaCoverage(coveragePostcode, categoryId);
+  const loggedCoverageKeyRef = useRef<string | null>(null);
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showSortSheet, setShowSortSheet] = useState(false);
@@ -74,6 +75,22 @@ export default function SelectTaskerScreen() {
 
   // State for availability caching
   const [availabilityCache, setAvailabilityCache] = useState<Record<string, AvailabilitySlot[]>>({});
+
+  useEffect(() => {
+    if (serviceAreaCoverageLoading || !serviceAreaCoverage || !coveragePostcode) return;
+
+    const logKey = `${coveragePostcode}:${categoryId || 'none'}:${serviceAreaCoverage.reason}`;
+    if (loggedCoverageKeyRef.current === logKey) return;
+    loggedCoverageKeyRef.current = logKey;
+
+    void logServiceAreaCoverageAttempt({
+      postcode: coveragePostcode,
+      categoryId: categoryId || null,
+      channel: 'mobile',
+      route: '/select-tasker',
+      result: serviceAreaCoverage,
+    });
+  }, [serviceAreaCoverage, serviceAreaCoverageLoading, coveragePostcode, categoryId]);
 
   // Map sort option to API filter
   const sortByMap: Record<SortOption, HandymanFilters['sortBy']> = {

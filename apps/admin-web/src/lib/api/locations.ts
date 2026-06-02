@@ -8,9 +8,12 @@ export interface ServiceAreaItem {
   city: string
   postcodePrefix: string
   locationAreaId: string | null
+  locationAreaName: string | null
+  locationAreaEnabled: boolean | null
   enabled: boolean
   notes: string | null
   assignedProviders: number
+  activeAssignedProviders: number
 }
 
 export interface LocationAreaNode {
@@ -60,6 +63,41 @@ export interface CoverageNationSummary {
   linkedServiceAreas: number
 }
 
+export interface ServiceAreaHealthWarning {
+  type: 'enabled_without_active_providers' | 'disabled_with_assigned_providers'
+  serviceAreaId: string
+  city: string
+  postcodePrefix: string
+  assignedProviders: number
+  activeAssignedProviders: number
+}
+
+export interface CoverageDemandSummary {
+  attempts: number
+  unavailableAttempts: number
+  availableAttempts: number
+  lastAttemptAt: string | null
+}
+
+export interface CoverageDemandArea {
+  outward: string
+  attempts: number
+  unavailableAttempts: number
+  lastAttemptAt: string
+}
+
+export interface CoverageDemandRoute {
+  route: string
+  attempts: number
+  unavailableAttempts: number
+}
+
+export interface CoverageDemandInsight {
+  summary: CoverageDemandSummary
+  topUnavailableAreas: CoverageDemandArea[]
+  routeBreakdown: CoverageDemandRoute[]
+}
+
 async function loadLocationAreaRows() {
   const { data, error } = await supabase
     .from('location_areas')
@@ -93,29 +131,143 @@ export function useServiceAreas() {
 
       const areaIds = (areas ?? []).map((area) => area.id)
       const counts = new Map<string, number>()
+      const activeCounts = new Map<string, number>()
 
       if (areaIds.length > 0) {
         const { data: assignments, error: assignmentsError } = await supabase
           .from('provider_service_areas')
-          .select('service_area_id')
+          .select('service_area_id, provider_id')
           .in('service_area_id', areaIds)
 
         if (assignmentsError) throw assignmentsError
 
+        const providerIds = Array.from(new Set((assignments ?? []).map((assignment) => assignment.provider_id)))
+        const { data: profiles, error: profilesError } = providerIds.length > 0
+          ? await supabase
+            .from('profiles')
+            .select('user_id')
+            .in('user_id', providerIds)
+            .eq('role', 'handy')
+            .eq('account_status', 'active')
+          : { data: [], error: null as Error | null }
+
+        if (profilesError) throw profilesError
+
+        const activeProfileIds = new Set((profiles ?? []).map((profile) => profile.user_id))
+
         for (const assignment of assignments ?? []) {
           counts.set(assignment.service_area_id, (counts.get(assignment.service_area_id) || 0) + 1)
+          if (activeProfileIds.has(assignment.provider_id)) {
+            activeCounts.set(assignment.service_area_id, (activeCounts.get(assignment.service_area_id) || 0) + 1)
+          }
         }
       }
+
+      const locationAreaIds = Array.from(
+        new Set((areas ?? []).map((area) => area.location_area_id).filter(Boolean) as string[]),
+      )
+      const { data: locationAreas, error: locationAreasError } = locationAreaIds.length > 0
+        ? await supabase
+          .from('location_areas')
+          .select('id, name, enabled')
+          .in('id', locationAreaIds)
+        : { data: [], error: null as Error | null }
+
+      if (locationAreasError) throw locationAreasError
+
+      const locationAreaMap = new Map((locationAreas ?? []).map((area) => [area.id, area]))
 
       return (areas ?? []).map((area) => ({
         id: area.id,
         city: area.city,
         postcodePrefix: area.postcode_prefix,
         locationAreaId: area.location_area_id,
+        locationAreaName: area.location_area_id ? (locationAreaMap.get(area.location_area_id)?.name ?? null) : null,
+        locationAreaEnabled: area.location_area_id ? (locationAreaMap.get(area.location_area_id)?.enabled ?? null) : null,
         enabled: area.enabled,
         notes: area.notes,
         assignedProviders: counts.get(area.id) || 0,
+        activeAssignedProviders: activeCounts.get(area.id) || 0,
       }))
+    },
+    staleTime: 30 * 1000,
+  })
+}
+
+export function useServiceAreaHealthWarnings() {
+  return useQuery({
+    queryKey: ['admin', 'service-area-health-warnings'],
+    queryFn: async (): Promise<ServiceAreaHealthWarning[]> => {
+      await requireAdminPermission('locations.manage')
+
+      const { data: areas, error } = await supabase
+        .from('service_areas')
+        .select('id, city, postcode_prefix, enabled')
+
+      if (error) throw error
+
+      const areaIds = (areas ?? []).map((area) => area.id)
+      const { data: assignments, error: assignmentsError } = areaIds.length > 0
+        ? await supabase
+          .from('provider_service_areas')
+          .select('service_area_id, provider_id')
+          .in('service_area_id', areaIds)
+        : { data: [], error: null as Error | null }
+
+      if (assignmentsError) throw assignmentsError
+
+      const providerIds = Array.from(new Set((assignments ?? []).map((assignment) => assignment.provider_id)))
+      const { data: profiles, error: profilesError } = providerIds.length > 0
+        ? await supabase
+          .from('profiles')
+          .select('user_id')
+          .in('user_id', providerIds)
+          .eq('role', 'handy')
+          .eq('account_status', 'active')
+        : { data: [], error: null as Error | null }
+
+      if (profilesError) throw profilesError
+
+      const activeProfileIds = new Set((profiles ?? []).map((profile) => profile.user_id))
+      const assignedCounts = new Map<string, number>()
+      const activeAssignedCounts = new Map<string, number>()
+
+      for (const assignment of assignments ?? []) {
+        assignedCounts.set(assignment.service_area_id, (assignedCounts.get(assignment.service_area_id) || 0) + 1)
+        if (activeProfileIds.has(assignment.provider_id)) {
+          activeAssignedCounts.set(assignment.service_area_id, (activeAssignedCounts.get(assignment.service_area_id) || 0) + 1)
+        }
+      }
+
+      const warnings: ServiceAreaHealthWarning[] = []
+      for (const area of areas ?? []) {
+        const assignedProviders = assignedCounts.get(area.id) || 0
+        const activeAssignedProviders = activeAssignedCounts.get(area.id) || 0
+
+        if (area.enabled && activeAssignedProviders === 0) {
+          warnings.push({
+            type: 'enabled_without_active_providers',
+            serviceAreaId: area.id,
+            city: area.city,
+            postcodePrefix: area.postcode_prefix,
+            assignedProviders,
+            activeAssignedProviders,
+          })
+        }
+
+        if (!area.enabled && assignedProviders > 0) {
+          warnings.push({
+            type: 'disabled_with_assigned_providers',
+            serviceAreaId: area.id,
+            city: area.city,
+            postcodePrefix: area.postcode_prefix,
+            assignedProviders,
+            activeAssignedProviders,
+          })
+        }
+      }
+
+      return warnings
     },
     staleTime: 30 * 1000,
   })
@@ -275,6 +427,7 @@ export function useSaveServiceArea() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'service-areas'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'service-area-health-warnings'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'location-areas'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'location-coverage-summary'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'location-map-data'] })
@@ -350,6 +503,7 @@ export function useAssignProviderToServiceArea() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'service-area-assignments', variables.serviceAreaId] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'provider-candidates', variables.serviceAreaId] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'service-areas'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'service-area-health-warnings'] })
     },
   })
 }
@@ -381,6 +535,7 @@ export function useRemoveProviderFromServiceArea() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'service-area-assignments', variables.serviceAreaId] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'provider-candidates', variables.serviceAreaId] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'service-areas'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'service-area-health-warnings'] })
     },
   })
 }
@@ -757,5 +912,77 @@ export function useBulkImportLocationAreas() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'location-coverage-summary'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'location-map-data'] })
     },
+  })
+}
+
+export function useCoverageDemandInsights() {
+  return useQuery({
+    queryKey: ['admin', 'coverage-demand-insights'],
+    queryFn: async (): Promise<CoverageDemandInsight> => {
+      await requireAdminPermission('locations.manage')
+
+      const since = new Date()
+      since.setDate(since.getDate() - 30)
+
+      const { data, error } = await supabase
+        .from('service_area_demand_logs')
+        .select('postcode_outward, route, available, created_at')
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(2000)
+
+      if (error) throw error
+
+      const rows = data ?? []
+      const byOutward = new Map<string, CoverageDemandArea>()
+      const byRoute = new Map<string, CoverageDemandRoute>()
+
+      for (const row of rows) {
+        const outwardKey = row.postcode_outward || 'Unknown'
+        const currentArea = byOutward.get(outwardKey)
+        if (currentArea) {
+          currentArea.attempts += 1
+          if (!row.available) currentArea.unavailableAttempts += 1
+          if (row.created_at > currentArea.lastAttemptAt) currentArea.lastAttemptAt = row.created_at
+        } else {
+          byOutward.set(outwardKey, {
+            outward: outwardKey,
+            attempts: 1,
+            unavailableAttempts: row.available ? 0 : 1,
+            lastAttemptAt: row.created_at,
+          })
+        }
+
+        const routeKey = row.route || 'unknown'
+        const currentRoute = byRoute.get(routeKey)
+        if (currentRoute) {
+          currentRoute.attempts += 1
+          if (!row.available) currentRoute.unavailableAttempts += 1
+        } else {
+          byRoute.set(routeKey, {
+            route: routeKey,
+            attempts: 1,
+            unavailableAttempts: row.available ? 0 : 1,
+          })
+        }
+      }
+
+      return {
+        summary: {
+          attempts: rows.length,
+          unavailableAttempts: rows.filter((row) => !row.available).length,
+          availableAttempts: rows.filter((row) => row.available).length,
+          lastAttemptAt: rows[0]?.created_at ?? null,
+        },
+        topUnavailableAreas: Array.from(byOutward.values())
+          .filter((row) => row.unavailableAttempts > 0)
+          .sort((a, b) => b.unavailableAttempts - a.unavailableAttempts || b.attempts - a.attempts)
+          .slice(0, 8),
+        routeBreakdown: Array.from(byRoute.values())
+          .sort((a, b) => b.attempts - a.attempts)
+          .slice(0, 8),
+      }
+    },
+    staleTime: 30 * 1000,
   })
 }
