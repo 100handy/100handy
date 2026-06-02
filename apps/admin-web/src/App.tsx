@@ -172,9 +172,9 @@ function App() {
             <Route path="/accounts/verification" element={<VerificationOptions />} />
             <Route path="/accounts/deleted" element={<AccountStatus />} />
             <Route path="/accounts/paused" element={<AccountStatus />} />
-            <Route path="/accounts/location" element={<AccountStatus />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['locations.manage']} />}>
+            <Route path="/accounts/location" element={<ServiceAreasPage />} />
             <Route path="/accounts/service-areas" element={<ServiceAreasPage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['audit.view']} />}>

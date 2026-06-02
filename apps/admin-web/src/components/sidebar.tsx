@@ -109,9 +109,9 @@ const groups = [
       { label: 'Verification Options', path: '/accounts/verification', permissions: ['accounts.manage'] as AdminPermission[] },
       { label: 'Deleted Accounts', path: '/accounts/deleted', permissions: ['accounts.manage'] as AdminPermission[] },
       { label: 'Paused Accounts', path: '/accounts/paused', permissions: ['accounts.manage'] as AdminPermission[] },
-      { label: 'Location Status', path: '/accounts/location', permissions: ['accounts.manage'] as AdminPermission[] },
+      { label: 'Location Status', path: '/accounts/location', permissions: ['locations.manage'] as AdminPermission[] },
     ],
-    permissions: ['accounts.manage', 'audit.view'] as AdminPermission[],
+    permissions: ['accounts.manage', 'audit.view', 'locations.manage'] as AdminPermission[],
   },
   {
     key: 'notifications',
@@ -170,9 +170,12 @@ const groups = [
     key: 'locations',
     label: 'Locations',
     icon: MapPinned,
-    basePath: '/accounts/service-areas',
+    basePath: '/accounts/location',
     defaultExpanded: false,
-    items: [{ label: 'Service Areas', path: '/accounts/service-areas', permissions: ['locations.manage'] as AdminPermission[] }],
+    items: [
+      { label: 'Coverage Controls', path: '/accounts/location', permissions: ['locations.manage'] as AdminPermission[] },
+      { label: 'Service Areas', path: '/accounts/service-areas', permissions: ['locations.manage'] as AdminPermission[] },
+    ],
     permissions: ['locations.manage'] as AdminPermission[],
   },
   {

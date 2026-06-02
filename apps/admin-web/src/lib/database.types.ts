@@ -546,6 +546,7 @@ export interface Database {
           id: string
           city: string
           postcode_prefix: string
+          location_area_id: string | null
           enabled: boolean
           notes: string | null
           created_at: string
@@ -555,6 +556,7 @@ export interface Database {
           id?: string
           city: string
           postcode_prefix: string
+          location_area_id?: string | null
           enabled?: boolean
           notes?: string | null
           created_at?: string
@@ -564,7 +566,49 @@ export interface Database {
           id?: string
           city?: string
           postcode_prefix?: string
+          location_area_id?: string | null
           enabled?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      location_areas: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          area_type: 'country' | 'nation' | 'region' | 'city' | 'postcode_area' | 'postcode_district'
+          parent_id: string | null
+          country_code: string
+          enabled: boolean
+          sort_order: number
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          area_type: 'country' | 'nation' | 'region' | 'city' | 'postcode_area' | 'postcode_district'
+          parent_id?: string | null
+          country_code?: string
+          enabled?: boolean
+          sort_order?: number
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          area_type?: 'country' | 'nation' | 'region' | 'city' | 'postcode_area' | 'postcode_district'
+          parent_id?: string | null
+          country_code?: string
+          enabled?: boolean
+          sort_order?: number
           notes?: string | null
           created_at?: string
           updated_at?: string
