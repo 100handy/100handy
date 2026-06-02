@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
 /**
@@ -193,6 +195,7 @@ export function useUpdateVerificationStatus() {
       userId: string
       status: 'verified' | 'rejected' | 'pending'
     }) => {
+      await requireAdminPermission('providers.manage')
       const updates: Record<string, unknown> = {
         verification_status: status,
       }
@@ -210,6 +213,16 @@ export function useUpdateVerificationStatus() {
         .eq('user_id', userId)
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'provider.verification.update',
+        entityType: 'provider',
+        entityId: userId,
+        summary: `Updated provider verification status to ${status}`,
+        metadata: {
+          status,
+        },
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'verification-requests'] })

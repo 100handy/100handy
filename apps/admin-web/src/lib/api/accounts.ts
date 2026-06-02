@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
@@ -305,6 +306,18 @@ export function useUpdateAccountLifecycleStatus() {
 
       if (error) throw error
 
+      await createAdminAuditLog({
+        action: 'account.lifecycle.update',
+        entityType: 'user',
+        entityId: userId,
+        summary: `Changed account lifecycle to ${status} for ${data.first_name || ''} ${data.last_name || ''}`.trim(),
+        metadata: {
+          role: data.role,
+          status,
+          reason: reason || null,
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -340,6 +353,16 @@ export function useUpdateAdminRole() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'admin.role.update',
+        entityType: 'admin',
+        entityId: userId,
+        summary: `Changed admin role to ${adminRole} for ${data.first_name || ''} ${data.last_name || ''}`.trim(),
+        metadata: {
+          adminRole,
+        },
+      })
 
       return data
     },

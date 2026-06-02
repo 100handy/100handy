@@ -25,6 +25,62 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 export interface Database {
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          id: string
+          actor_id: string
+          actor_admin_role:
+            | 'super_admin'
+            | 'content_admin'
+            | 'ops_admin'
+            | 'support_admin'
+            | 'finance_admin'
+            | 'seo_admin'
+            | null
+          action: string
+          entity_type: string
+          entity_id: string | null
+          summary: string
+          metadata_json: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          actor_id: string
+          actor_admin_role?:
+            | 'super_admin'
+            | 'content_admin'
+            | 'ops_admin'
+            | 'support_admin'
+            | 'finance_admin'
+            | 'seo_admin'
+            | null
+          action: string
+          entity_type: string
+          entity_id?: string | null
+          summary: string
+          metadata_json?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          actor_id?: string
+          actor_admin_role?:
+            | 'super_admin'
+            | 'content_admin'
+            | 'ops_admin'
+            | 'support_admin'
+            | 'finance_admin'
+            | 'seo_admin'
+            | null
+          action?: string
+          entity_type?: string
+          entity_id?: string | null
+          summary?: string
+          metadata_json?: Json
+          created_at?: string
+        }
+      }
       profiles: {
         Row: {
           user_id: string
@@ -181,6 +237,13 @@ export interface Database {
           hourly_rate_cents: number
           estimated_hours: number
           status: BookingStatus
+          payment_status?: string | null
+          payout_status?: string | null
+          payout_amount_cents?: number | null
+          platform_fee_cents?: number | null
+          transfer_id?: string | null
+          payment_intent_id?: string | null
+          completed_at?: string | null
           created_at: string
         }
         Insert: {
@@ -196,6 +259,13 @@ export interface Database {
           hourly_rate_cents: number
           estimated_hours?: number
           status?: BookingStatus
+          payment_status?: string | null
+          payout_status?: string | null
+          payout_amount_cents?: number | null
+          platform_fee_cents?: number | null
+          transfer_id?: string | null
+          payment_intent_id?: string | null
+          completed_at?: string | null
           created_at?: string
         }
         Update: {
@@ -211,6 +281,13 @@ export interface Database {
           hourly_rate_cents?: number
           estimated_hours?: number
           status?: BookingStatus
+          payment_status?: string | null
+          payout_status?: string | null
+          payout_amount_cents?: number | null
+          platform_fee_cents?: number | null
+          transfer_id?: string | null
+          payment_intent_id?: string | null
+          completed_at?: string | null
           created_at?: string
         }
       }
@@ -221,6 +298,7 @@ export interface Database {
           amount_cents: number
           status: PaymentStatus
           stripe_payment_intent_id: string | null
+          refund_id?: string | null
           created_at: string
         }
         Insert: {
@@ -229,6 +307,7 @@ export interface Database {
           amount_cents: number
           status?: PaymentStatus
           stripe_payment_intent_id?: string | null
+          refund_id?: string | null
           created_at?: string
         }
         Update: {
@@ -237,6 +316,176 @@ export interface Database {
           amount_cents?: number
           status?: PaymentStatus
           stripe_payment_intent_id?: string | null
+          refund_id?: string | null
+          created_at?: string
+        }
+      }
+      disputes: {
+        Row: {
+          id: string
+          booking_id: string
+          customer_id: string | null
+          provider_id: string | null
+          assigned_to: string | null
+          status: 'open' | 'investigating' | 'resolved' | 'refunded' | 'rejected'
+          subject: string
+          description: string
+          resolution_summary: string | null
+          refund_amount_cents: number | null
+          opened_at: string
+          resolved_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          booking_id: string
+          customer_id?: string | null
+          provider_id?: string | null
+          assigned_to?: string | null
+          status?: 'open' | 'investigating' | 'resolved' | 'refunded' | 'rejected'
+          subject: string
+          description: string
+          resolution_summary?: string | null
+          refund_amount_cents?: number | null
+          opened_at?: string
+          resolved_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          booking_id?: string
+          customer_id?: string | null
+          provider_id?: string | null
+          assigned_to?: string | null
+          status?: 'open' | 'investigating' | 'resolved' | 'refunded' | 'rejected'
+          subject?: string
+          description?: string
+          resolution_summary?: string | null
+          refund_amount_cents?: number | null
+          opened_at?: string
+          resolved_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      dispute_messages: {
+        Row: {
+          id: string
+          dispute_id: string
+          sender_id: string
+          message: string
+          internal_only: boolean
+          attachment_url: string | null
+          attachment_name: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          dispute_id: string
+          sender_id: string
+          message: string
+          internal_only?: boolean
+          attachment_url?: string | null
+          attachment_name?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          dispute_id?: string
+          sender_id?: string
+          message?: string
+          internal_only?: boolean
+          attachment_url?: string | null
+          attachment_name?: string | null
+          created_at?: string
+        }
+      }
+      support_tickets: {
+        Row: {
+          id: string
+          user_id: string | null
+          subject: string | null
+          status: string | null
+          priority: string | null
+          assigned_to: string | null
+          last_message_at: string | null
+          updated_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          subject?: string | null
+          status?: string | null
+          priority?: string | null
+          assigned_to?: string | null
+          last_message_at?: string | null
+          updated_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          subject?: string | null
+          status?: string | null
+          priority?: string | null
+          assigned_to?: string | null
+          last_message_at?: string | null
+          updated_at?: string | null
+          created_at?: string
+        }
+      }
+      support_messages: {
+        Row: {
+          id: string
+          ticket_id: string | null
+          from_user: boolean
+          message: string
+          attachment_url: string | null
+          attachment_name: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          ticket_id?: string | null
+          from_user: boolean
+          message: string
+          attachment_url?: string | null
+          attachment_name?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          ticket_id?: string | null
+          from_user?: boolean
+          message?: string
+          attachment_url?: string | null
+          attachment_name?: string | null
+          created_at?: string
+        }
+      }
+      support_ticket_internal_notes: {
+        Row: {
+          id: string
+          ticket_id: string
+          admin_id: string
+          note: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          ticket_id: string
+          admin_id: string
+          note: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          ticket_id?: string
+          admin_id?: string
+          note?: string
           created_at?: string
         }
       }
@@ -247,6 +496,7 @@ export interface Database {
           hourly_rate_cents: number
           experience_years: number
           verified: boolean
+          stripe_connect_account_id?: string | null
           created_at: string
         }
         Insert: {
@@ -255,6 +505,7 @@ export interface Database {
           hourly_rate_cents?: number
           experience_years?: number
           verified?: boolean
+          stripe_connect_account_id?: string | null
           created_at?: string
         }
         Update: {
@@ -263,6 +514,82 @@ export interface Database {
           hourly_rate_cents?: number
           experience_years?: number
           verified?: boolean
+          stripe_connect_account_id?: string | null
+          created_at?: string
+        }
+      }
+      professional_work_areas: {
+        Row: {
+          id: string
+          user_id: string
+          coordinates: Json
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          coordinates: Json
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          coordinates?: Json
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      service_areas: {
+        Row: {
+          id: string
+          city: string
+          postcode_prefix: string
+          enabled: boolean
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          city: string
+          postcode_prefix: string
+          enabled?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          city?: string
+          postcode_prefix?: string
+          enabled?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      provider_service_areas: {
+        Row: {
+          id: string
+          service_area_id: string
+          provider_id: string
+          assigned_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          service_area_id: string
+          provider_id: string
+          assigned_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          service_area_id?: string
+          provider_id?: string
+          assigned_by?: string | null
           created_at?: string
         }
       }
@@ -309,6 +636,8 @@ export interface Database {
           handy_id: string | null
           rating: number
           comment: string | null
+          reviewer_type?: 'customer' | 'handy'
+          private_notes?: string | null
           created_at: string
         }
         Insert: {
@@ -318,6 +647,8 @@ export interface Database {
           handy_id?: string | null
           rating: number
           comment?: string | null
+          reviewer_type?: 'customer' | 'handy'
+          private_notes?: string | null
           created_at?: string
         }
         Update: {
@@ -327,6 +658,34 @@ export interface Database {
           handy_id?: string | null
           rating?: number
           comment?: string | null
+          reviewer_type?: 'customer' | 'handy'
+          private_notes?: string | null
+          created_at?: string
+        }
+      }
+      review_moderation_events: {
+        Row: {
+          id: string
+          review_id: string
+          admin_id: string
+          action: string
+          reason: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          review_id: string
+          admin_id: string
+          action: string
+          reason?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          review_id?: string
+          admin_id?: string
+          action?: string
+          reason?: string | null
           created_at?: string
         }
       }

@@ -6,6 +6,31 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 100handy is a Turborepo monorepo for a multi-platform service marketplace application with web (Next.js), mobile (Expo), and admin (Vite) clients. The project uses pnpm workspaces, Supabase for backend, and shares code through workspace packages.
 
+## Working Rules For Codex
+
+- Inspect the existing route tree, Supabase schema, auth flow, hooks, and UI components before changing behavior.
+- Extend the existing structure. Do not rewrite the admin, web, or mobile apps into a new architecture mid-task.
+- Prefer adding to existing API hook modules under `apps/admin-web/src/lib/api/*` rather than creating parallel data layers.
+- Prefer existing route groups and layouts in `apps/admin-web/src/App.tsx` and `apps/admin-web/src/layouts/*`.
+- When adding admin features, wire all three layers together:
+  1. database / migration
+  2. API hooks / validation / permission checks
+  3. UI pages and reusable admin components
+- Every sensitive admin mutation should:
+  - require an authenticated active admin
+  - check permission scope
+  - write an audit log when the repository has an audit path for that action
+- Avoid committing or editing local-only credential files unless explicitly asked:
+  - `apps/client-mobile/eas.json`
+  - `AuthKey_UMY974H849.p8`
+  - `apps/client-mobile/assets/images/welcome-splash-loading.png`
+- For admin UI changes, keep the information architecture simple:
+  - reuse the existing sidebar groups
+  - prefer clear labels over internal naming
+  - add loading, empty, and error states
+  - keep table-heavy views responsive and scannable
+- For CMS/content work, prefer adding schema fields to the existing registry/config-driven editors instead of hardcoding new one-off forms.
+
 ## Common Commands
 
 ### Development

@@ -1,285 +1,206 @@
 import { useQuery } from '@tanstack/react-query'
+import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
-/**
- * Dashboard Metrics API Hooks
- *
- * Hooks for fetching dashboard statistics and recent activity
- */
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface DashboardMetrics {
-  totalRevenue: number
-  tasksCompleted: number
-  totalUsers: number
-  totalHandys: number
+export interface DashboardMetricCard {
+  label: string
+  value: number
+  format: 'number' | 'currency'
 }
 
-export interface RecentActivity {
+export interface DashboardTrendPoint {
+  label: string
+  bookings: number
+  revenue: number
+  providerGrowth: number
+  customerGrowth: number
+}
+
+export interface DashboardRecentBooking {
   id: string
-  user: {
-    name: string
-    avatar_url: string | null
-  }
-  task: string
-  status: 'Completed' | 'In Progress' | 'Scheduled' | 'Pending' | 'Cancelled'
-  statusColor: 'green' | 'yellow' | 'blue' | 'gray' | 'red'
-  date: string
-  category: string | null
+  customer_name: string
+  provider_name: string
+  task_title: string
+  category_name: string
+  status: string
+  scheduled_date: string
 }
 
-// ============================================================================
-// Dashboard Metrics Hook
-// ============================================================================
+export interface DashboardOverview {
+  metrics: {
+    totalCustomers: DashboardMetricCard
+    totalProviders: DashboardMetricCard
+    pendingProviderApprovals: DashboardMetricCard
+    activeJobs: DashboardMetricCard
+    completedJobs: DashboardMetricCard
+    cancelledJobs: DashboardMetricCard
+    revenue: DashboardMetricCard
+    refunds: DashboardMetricCard
+    openSupportTickets: DashboardMetricCard
+    failedPayments: DashboardMetricCard
+  }
+  trends: DashboardTrendPoint[]
+  recentBookings: DashboardRecentBooking[]
+}
 
-export function useDashboardMetrics() {
+function buildMonthBuckets() {
+  const now = new Date()
+  return Array.from({ length: 6 }).map((_, index) => {
+    const date = subMonths(now, 5 - index)
+    return {
+      key: format(date, 'yyyy-MM'),
+      label: format(date, 'MMM'),
+      start: startOfMonth(date).toISOString(),
+      end: endOfMonth(date).toISOString(),
+    }
+  })
+}
+
+export function useDashboardOverview() {
   return useQuery({
-    queryKey: ['dashboard', 'metrics'],
-    queryFn: async (): Promise<DashboardMetrics> => {
-      // Fetch all metrics in parallel for better performance
-      const [revenueResult, completedResult, usersResult, handysResult] = await Promise.all([
-        // Total revenue from paid payments
-        supabase
-          .from('payments')
-          .select('amount_cents')
-          .eq('status', 'paid'),
+    queryKey: ['dashboard', 'overview-v2'],
+    queryFn: async (): Promise<DashboardOverview> => {
+      await requireAdminPermission('dashboard.view')
 
-        // Tasks completed count
+      const monthBuckets = buildMonthBuckets()
+
+      const [
+        customerCountResult,
+        providerCountResult,
+        pendingApprovalsResult,
+        activeBookingsResult,
+        completedBookingsResult,
+        cancelledBookingsResult,
+        paidPaymentsResult,
+        refundedPaymentsResult,
+        failedPaymentsResult,
+        supportTicketsResult,
+        profilesResult,
+        bookingsResult,
+        recentBookingsResult,
+      ] = await Promise.all([
+        supabase.from('profiles').select('user_id', { count: 'exact', head: true }).eq('role', 'customer'),
+        supabase.from('profiles').select('user_id', { count: 'exact', head: true }).eq('role', 'handy'),
+        supabase
+          .from('handy_profiles')
+          .select('user_id', { count: 'exact', head: true })
+          .in('verification_status', ['pending', 'submitted']),
         supabase
           .from('bookings')
           .select('id', { count: 'exact', head: true })
-          .eq('status', 'completed'),
-
-        // Total customers count
+          .in('status', ['pending', 'accepted', 'in_progress']),
+        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'cancelled'),
+        supabase.from('payments').select('amount_cents, created_at').eq('status', 'paid'),
+        supabase.from('payments').select('amount_cents').eq('status', 'refunded'),
+        supabase.from('payments').select('id', { count: 'exact', head: true }).eq('status', 'failed'),
+        supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'pending']),
+        supabase.from('profiles').select('role, created_at'),
+        supabase.from('bookings').select('status, created_at'),
         supabase
-          .from('profiles')
-          .select('user_id', { count: 'exact', head: true })
-          .eq('role', 'customer'),
-
-        // Total handys count
-        supabase
-          .from('profiles')
-          .select('user_id', { count: 'exact', head: true })
-          .eq('role', 'handy'),
+          .from('bookings')
+          .select(`
+            id,
+            task_title,
+            status,
+            scheduled_date,
+            categories(name),
+            customer:profiles!bookings_customer_profile_fkey(first_name, last_name),
+            provider:profiles!bookings_handy_id_fkey(first_name, last_name)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(8),
       ])
 
-      // Handle errors
-      if (revenueResult.error) throw revenueResult.error
-      if (completedResult.error) throw completedResult.error
-      if (usersResult.error) throw usersResult.error
-      if (handysResult.error) throw handysResult.error
-
-      // Calculate total revenue
-      const totalRevenueCents = revenueResult.data?.reduce(
-        (sum, payment) => sum + payment.amount_cents,
-        0
-      ) || 0
-
-      return {
-        totalRevenue: totalRevenueCents / 100, // Convert cents to dollars
-        tasksCompleted: completedResult.count || 0,
-        totalUsers: usersResult.count || 0,
-        totalHandys: handysResult.count || 0,
-      }
-    },
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
-    refetchInterval: 60 * 1000, // Auto-refetch every minute
-  })
-}
-
-// ============================================================================
-// Recent Activity Hook
-// ============================================================================
-
-export function useRecentActivity(limit = 5) {
-  return useQuery({
-    queryKey: ['dashboard', 'recent-activity', limit],
-    queryFn: async (): Promise<RecentActivity[]> => {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select(`
-          id,
-          task_title,
-          status,
-          scheduled_date,
-          customer_id,
-          profiles!bookings_customer_profile_fkey (
-            first_name,
-            last_name,
-            avatar_url
-          ),
-          categories (
-            name
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(limit)
+      const error =
+        customerCountResult.error ||
+        providerCountResult.error ||
+        pendingApprovalsResult.error ||
+        activeBookingsResult.error ||
+        completedBookingsResult.error ||
+        cancelledBookingsResult.error ||
+        paidPaymentsResult.error ||
+        refundedPaymentsResult.error ||
+        failedPaymentsResult.error ||
+        supportTicketsResult.error ||
+        profilesResult.error ||
+        bookingsResult.error ||
+        recentBookingsResult.error
 
       if (error) throw error
 
-      // Transform data to match UI expectations
-      return (data || []).map((booking) => {
-        const profile = Array.isArray(booking.profiles)
-          ? booking.profiles[0]
-          : booking.profiles
+      const profiles = profilesResult.data ?? []
+      const bookings = bookingsResult.data ?? []
+      const paidPayments = paidPaymentsResult.data ?? []
+      const refundedPayments = refundedPaymentsResult.data ?? []
 
-        const firstName = profile?.first_name || 'Unknown'
-        const lastName = profile?.last_name || 'User'
-        const fullName = `${firstName} ${lastName}`
-
-        // Map booking status to display status
-        let displayStatus: RecentActivity['status']
-        let statusColor: RecentActivity['statusColor']
-
-        switch (booking.status) {
-          case 'completed':
-            displayStatus = 'Completed'
-            statusColor = 'green'
-            break
-          case 'in_progress':
-            displayStatus = 'In Progress'
-            statusColor = 'yellow'
-            break
-          case 'accepted':
-            displayStatus = 'Scheduled'
-            statusColor = 'blue'
-            break
-          case 'cancelled':
-            displayStatus = 'Cancelled'
-            statusColor = 'red'
-            break
-          default:
-            displayStatus = 'Pending'
-            statusColor = 'gray'
-        }
-
-        const category = Array.isArray(booking.categories)
-          ? booking.categories[0]
-          : booking.categories
+      const trends = monthBuckets.map((bucket) => {
+        const monthlyBookings = bookings.filter(
+          (booking) => booking.created_at >= bucket.start && booking.created_at <= bucket.end,
+        )
+        const monthlyRevenue = paidPayments
+          .filter((payment) => payment.created_at >= bucket.start && payment.created_at <= bucket.end)
+          .reduce((sum, payment) => sum + payment.amount_cents, 0)
+        const providerGrowth = profiles.filter(
+          (profile) =>
+            profile.role === 'handy' && profile.created_at >= bucket.start && profile.created_at <= bucket.end,
+        ).length
+        const customerGrowth = profiles.filter(
+          (profile) =>
+            profile.role === 'customer' && profile.created_at >= bucket.start && profile.created_at <= bucket.end,
+        ).length
 
         return {
-          id: booking.id,
-          user: {
-            name: fullName,
-            avatar_url: profile?.avatar_url || null,
-          },
-          task: booking.task_title,
-          status: displayStatus,
-          statusColor,
-          date: booking.scheduled_date,
-          category: category?.name || null,
+          label: bucket.label,
+          bookings: monthlyBookings.length,
+          revenue: monthlyRevenue / 100,
+          providerGrowth,
+          customerGrowth,
         }
       })
-    },
-    staleTime: 30 * 1000, // Consider data fresh for 30 seconds
-    refetchInterval: 60 * 1000, // Auto-refetch every minute
-  })
-}
-
-// ============================================================================
-// Quick Stats Hook (Customer satisfaction, new users, pending payments)
-// ============================================================================
-
-export interface QuickStats {
-  customerSatisfaction: {
-    value: string
-    suffix: string
-    change: string
-    changeColor: 'green' | 'red' | 'gray'
-  }
-  newUsersThisMonth: {
-    value: string
-    change: string
-    changeColor: 'green' | 'red' | 'gray'
-  }
-  pendingPayments: {
-    value: string
-    change: string
-    changeColor: 'green' | 'red' | 'gray'
-  }
-}
-
-export function useQuickStats() {
-  return useQuery({
-    queryKey: ['dashboard', 'quick-stats'],
-    queryFn: async (): Promise<QuickStats> => {
-      const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
-
-      const [ratingsResult, usersThisMonthResult, usersLastMonthResult, pendingPaymentsResult] =
-        await Promise.all([
-          // Average rating from reviews
-          supabase.from('reviews').select('rating'),
-
-          // New users this month
-          supabase
-            .from('profiles')
-            .select('user_id', { count: 'exact', head: true })
-            .gte('created_at', startOfMonth.toISOString()),
-
-          // New users last month
-          supabase
-            .from('profiles')
-            .select('user_id', { count: 'exact', head: true })
-            .gte('created_at', startOfLastMonth.toISOString())
-            .lte('created_at', endOfLastMonth.toISOString()),
-
-          // Pending payments
-          supabase
-            .from('payments')
-            .select('amount_cents')
-            .eq('status', 'pending'),
-        ])
-
-      // Calculate average rating
-      const ratings = ratingsResult.data || []
-      const avgRating = ratings.length > 0
-        ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
-        : '0.0'
-
-      // Calculate new users change
-      const usersThisMonth = usersThisMonthResult.count || 0
-      const usersLastMonth = usersLastMonthResult.count || 0
-      const userChange = usersLastMonth > 0
-        ? Math.round(((usersThisMonth - usersLastMonth) / usersLastMonth) * 100)
-        : 0
-
-      // Calculate pending payments total
-      const pendingTotal = (pendingPaymentsResult.data || []).reduce(
-        (sum, p) => sum + p.amount_cents,
-        0
-      )
-      const pendingCount = pendingPaymentsResult.data?.length || 0
 
       return {
-        customerSatisfaction: {
-          value: avgRating,
-          suffix: '/5',
-          change: ratings.length > 0 ? `Based on ${ratings.length} reviews` : 'No reviews yet',
-          changeColor: 'gray',
+        metrics: {
+          totalCustomers: { label: 'Customers', value: customerCountResult.count || 0, format: 'number' },
+          totalProviders: { label: 'Providers', value: providerCountResult.count || 0, format: 'number' },
+          pendingProviderApprovals: { label: 'Pending Provider Approvals', value: pendingApprovalsResult.count || 0, format: 'number' },
+          activeJobs: { label: 'Active Jobs', value: activeBookingsResult.count || 0, format: 'number' },
+          completedJobs: { label: 'Completed Jobs', value: completedBookingsResult.count || 0, format: 'number' },
+          cancelledJobs: { label: 'Cancelled Jobs', value: cancelledBookingsResult.count || 0, format: 'number' },
+          revenue: {
+            label: 'Revenue',
+            value: paidPayments.reduce((sum, payment) => sum + payment.amount_cents, 0) / 100,
+            format: 'currency',
+          },
+          refunds: {
+            label: 'Refunds',
+            value: refundedPayments.reduce((sum, payment) => sum + payment.amount_cents, 0) / 100,
+            format: 'currency',
+          },
+          openSupportTickets: { label: 'Open Support Tickets', value: supportTicketsResult.count || 0, format: 'number' },
+          failedPayments: { label: 'Failed Payments', value: failedPaymentsResult.count || 0, format: 'number' },
         },
-        newUsersThisMonth: {
-          value: usersThisMonth.toString(),
-          change: userChange > 0
-            ? `+${userChange}% from last month`
-            : userChange < 0
-            ? `${userChange}% from last month`
-            : 'No change from last month',
-          changeColor: userChange > 0 ? 'green' : userChange < 0 ? 'red' : 'gray',
-        },
-        pendingPayments: {
-          value: `$${(pendingTotal / 100).toLocaleString()}`,
-          change: `${pendingCount} pending transaction${pendingCount !== 1 ? 's' : ''}`,
-          changeColor: 'gray',
-        },
+        trends,
+        recentBookings: (recentBookingsResult.data ?? []).map((booking) => {
+          const customer = Array.isArray(booking.customer) ? booking.customer[0] : booking.customer
+          const provider = Array.isArray(booking.provider) ? booking.provider[0] : booking.provider
+          const category = Array.isArray(booking.categories) ? booking.categories[0] : booking.categories
+          return {
+            id: String(booking.id),
+            customer_name:
+              `${customer?.first_name || ''} ${customer?.last_name || ''}`.trim() || 'Unknown customer',
+            provider_name:
+              `${provider?.first_name || ''} ${provider?.last_name || ''}`.trim() || 'Unassigned',
+            task_title: booking.task_title,
+            category_name: category?.name || 'Uncategorised',
+            status: booking.status,
+            scheduled_date: booking.scheduled_date,
+          }
+        }),
       }
     },
-    staleTime: 60 * 1000, // Consider data fresh for 1 minute
-    refetchInterval: 5 * 60 * 1000, // Auto-refetch every 5 minutes
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
   })
 }

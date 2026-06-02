@@ -1,220 +1,203 @@
-import { DollarSign, CheckCircle, Users as UsersIcon, Wrench } from 'lucide-react'
 import { format } from 'date-fns'
+import {
+  Activity,
+  CreditCard,
+  LifeBuoy,
+  TrendingUp,
+  UserRound,
+  Wrench,
+} from 'lucide-react'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import Header from '@/components/header'
-import { useDashboardMetrics, useRecentActivity, useQuickStats } from '@/lib/api/dashboard'
+import { useDashboardOverview } from '@/lib/api/dashboard'
 
-const statusColors = {
-  green: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-  yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
-  blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  gray: 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300',
-  red: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
+const STATUS_STYLES: Record<string, string> = {
+  pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+  accepted: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+  in_progress: 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300',
+  completed: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+  cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+}
+
+const CARD_ICONS = [
+  UserRound,
+  Wrench,
+  Activity,
+  Activity,
+  TrendingUp,
+  TrendingUp,
+  CreditCard,
+  CreditCard,
+  LifeBuoy,
+  CreditCard,
+]
+
+function formatMetric(value: number, formatType: 'number' | 'currency') {
+  if (formatType === 'currency') {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
+  return new Intl.NumberFormat('en-GB').format(value)
 }
 
 export default function DashboardPage() {
-  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics()
-  const { data: activity, isLoading: activityLoading, error: activityError } = useRecentActivity(5)
-  const { data: quickStats, isLoading: statsLoading, error: statsError } = useQuickStats()
+  const { data, isLoading, error } = useDashboardOverview()
 
-  // KPI data structure with real values
-  const kpiData = [
-    {
-      label: 'Total Revenue',
-      value: metrics ? `$${metrics.totalRevenue.toLocaleString()}` : '$0',
-      icon: DollarSign,
-      iconColor: 'text-primary',
-      bgColor: 'bg-primary/10',
-    },
-    {
-      label: 'Tasks Completed',
-      value: metrics ? metrics.tasksCompleted.toLocaleString() : '0',
-      icon: CheckCircle,
-      iconColor: 'text-green-500',
-      bgColor: 'bg-green-500/10',
-    },
-    {
-      label: 'Total Users',
-      value: metrics ? metrics.totalUsers.toLocaleString() : '0',
-      icon: UsersIcon,
-      iconColor: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10',
-    },
-    {
-      label: 'Total Handys',
-      value: metrics ? metrics.totalHandys.toLocaleString() : '0',
-      icon: Wrench,
-      iconColor: 'text-red-500',
-      bgColor: 'bg-red-500/10',
-    },
-  ]
+  const metricCards = data ? Object.values(data.metrics) : []
 
   return (
     <main className="flex-1">
-      <Header title="Overview" />
+      <Header title="Admin Dashboard" />
 
-      <div className="p-6 space-y-8">
-        {/* Error state */}
-        {metricsError && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-            <p className="text-sm text-red-500">Failed to load dashboard metrics. Please try refreshing the page.</p>
+      <div className="space-y-8 p-6">
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+            {error instanceof Error ? error.message : 'Failed to load dashboard data.'}
           </div>
         )}
 
-        {/* KPI Cards */}
-        <section>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {kpiData.map((kpi) => {
-              const Icon = kpi.icon
-              return (
-                <div
-                  key={kpi.label}
-                  className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center gap-4"
-                >
-                  <div className={`p-3 rounded-full ${kpi.bgColor}`}>
-                    <Icon className={`${kpi.iconColor} w-7 h-7`} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{kpi.label}</p>
-                    {metricsLoading ? (
-                      <div className="h-8 w-24 bg-gray-200 dark:bg-gray-800 animate-pulse rounded mt-1"></div>
-                    ) : (
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{kpi.value}</p>
-                    )}
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {metricCards.map((metric, index) => {
+            const Icon = CARD_ICONS[index] || Activity
+            return (
+              <div
+                key={metric.label}
+                className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{metric.label}</p>
+                  <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                    <Icon className="h-5 w-5" />
                   </div>
                 </div>
-              )
-            })}
+                {isLoading ? (
+                  <div className="mt-4 h-8 w-28 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                ) : (
+                  <p className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">
+                    {formatMetric(metric.value, metric.format)}
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </section>
+
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Bookings & Revenue</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Six-month booking and revenue trend.</p>
+            </div>
+            <div className="h-80">
+              {isLoading ? (
+                <div className="h-full animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data?.trends || []}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#33415522" />
+                    <XAxis dataKey="label" stroke="#64748b" />
+                    <YAxis yAxisId="left" stroke="#64748b" />
+                    <YAxis yAxisId="right" orientation="right" stroke="#64748b" />
+                    <Tooltip />
+                    <Legend />
+                    <Bar yAxisId="left" dataKey="bookings" fill="#f97316" radius={[4, 4, 0, 0]} />
+                    <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#0ea5e9" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Marketplace Growth</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">New providers and customers per month.</p>
+            </div>
+            <div className="h-80">
+              {isLoading ? (
+                <div className="h-full animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data?.trends || []}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#33415522" />
+                    <XAxis dataKey="label" stroke="#64748b" />
+                    <YAxis stroke="#64748b" />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="providerGrowth" name="Providers" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="customerGrowth" name="Customers" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Activity */}
-          <section className="lg:col-span-2">
-            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Recent Activity</h3>
-            {activityError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-sm text-red-500">Failed to load recent activity.</p>
-              </div>
-            )}
-            <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-x-auto">
-              {activityLoading ? (
-                <div className="p-6 space-y-4">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex gap-4 animate-pulse">
-                      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded flex-1"></div>
-                      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-24"></div>
-                      <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-20"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : activity && activity.length > 0 ? (
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-gray-700 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50">
-                    <tr>
-                      <th scope="col" className="px-6 py-3">
-                        User
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Task
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Status
-                      </th>
-                      <th scope="col" className="px-6 py-3">
-                        Date
-                      </th>
+        <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-gray-900/50">
+          <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Bookings</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Latest customer jobs entering the marketplace.</p>
+          </div>
+          {isLoading ? (
+            <div className="space-y-3 p-5">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="h-12 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
+              ))}
+            </div>
+          ) : !data || data.recentBookings.length === 0 ? (
+            <div className="p-10 text-center text-sm text-slate-500 dark:text-slate-400">No bookings available.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
+                  <tr>
+                    <th className="px-5 py-3">Job</th>
+                    <th className="px-5 py-3">Customer</th>
+                    <th className="px-5 py-3">Provider</th>
+                    <th className="px-5 py-3">Category</th>
+                    <th className="px-5 py-3">Scheduled</th>
+                    <th className="px-5 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.recentBookings.map((booking) => (
+                    <tr key={booking.id} className="border-t border-slate-200 dark:border-slate-800">
+                      <td className="px-5 py-4 font-medium text-slate-900 dark:text-white">{booking.task_title}</td>
+                      <td className="px-5 py-4">{booking.customer_name}</td>
+                      <td className="px-5 py-4">{booking.provider_name}</td>
+                      <td className="px-5 py-4">{booking.category_name}</td>
+                      <td className="px-5 py-4">{format(new Date(booking.scheduled_date), 'dd MMM yyyy')}</td>
+                      <td className="px-5 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                            STATUS_STYLES[booking.status] || 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          }`}
+                        >
+                          {booking.status.replaceAll('_', ' ')}
+                        </span>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {activity.map((item) => (
-                      <tr key={item.id} className="border-b border-gray-200 dark:border-gray-800">
-                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                          {item.user.name}
-                        </td>
-                        <td className="px-6 py-4">{item.task}</td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              statusColors[item.statusColor]
-                            }`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {format(new Date(item.date), 'MMM dd, yyyy')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="p-12 text-center">
-                  <p className="text-gray-500 dark:text-gray-400">No recent activity</p>
-                </div>
-              )}
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </section>
-
-          {/* Quick Statistics */}
-          <section>
-            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Quick Statistics</h3>
-            {statsError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-sm text-red-500">Failed to load statistics.</p>
-              </div>
-            )}
-            <div className="space-y-6">
-              {statsLoading ? (
-                [...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800 animate-pulse"
-                  >
-                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-32 mb-3"></div>
-                    <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-20 mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-40"></div>
-                  </div>
-                ))
-              ) : quickStats ? (
-                <>
-                  <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Customer Satisfaction
-                    </p>
-                    <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
-                      {quickStats.customerSatisfaction.value}
-                      <span className="text-lg">{quickStats.customerSatisfaction.suffix}</span>
-                    </p>
-                    <p className={`text-sm font-medium mt-1 text-${quickStats.customerSatisfaction.changeColor}-500`}>
-                      {quickStats.customerSatisfaction.change}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      New Users This Month
-                    </p>
-                    <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
-                      {quickStats.newUsersThisMonth.value}
-                    </p>
-                    <p className={`text-sm font-medium mt-1 text-${quickStats.newUsersThisMonth.changeColor}-500`}>
-                      {quickStats.newUsersThisMonth.change}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Payments</p>
-                    <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">
-                      {quickStats.pendingPayments.value}
-                    </p>
-                    <p className={`text-sm font-medium mt-1 text-${quickStats.pendingPayments.changeColor}-500`}>
-                      {quickStats.pendingPayments.change}
-                    </p>
-                  </div>
-                </>
-              ) : null}
-            </div>
-          </section>
-        </div>
+          )}
+        </section>
       </div>
     </main>
   )

@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Database, BookingStatus } from '@/lib/database.types'
 
@@ -41,6 +43,29 @@ export interface TaskWithDetails extends Booking {
     city: string | null
     postcode: string
   } | null
+}
+
+export interface TaskTimelineItem {
+  id: string
+  label: string
+  detail: string
+  created_at: string
+}
+
+export interface TaskManagementDetails extends TaskWithDetails {
+  payment: {
+    id: string
+    amount: number
+    status: Database['public']['Tables']['payments']['Row']['status']
+    created_at: string
+  } | null
+  review: {
+    id: string
+    rating: number
+    comment: string | null
+    created_at: string
+  } | null
+  timeline: TaskTimelineItem[]
 }
 
 export interface TaskFilters {
@@ -228,6 +253,148 @@ export function useTask(taskId: string | undefined) {
   })
 }
 
+export function useTaskManagementDetails(taskId: string | undefined) {
+  return useQuery({
+    queryKey: ['tasks', 'management-details', taskId],
+    queryFn: async (): Promise<TaskManagementDetails | null> => {
+      if (!taskId) return null
+      await requireAdminPermission('tasks.manage')
+
+      const task = await supabase
+        .from('bookings')
+        .select(
+          `
+          *,
+          customer:profiles!bookings_customer_profile_fkey (
+            user_id,
+            first_name,
+            last_name,
+            avatar_url,
+            phone
+          ),
+          handy:profiles!bookings_handy_profile_fkey (
+            user_id,
+            first_name,
+            last_name,
+            avatar_url,
+            rating,
+            phone
+          ),
+          category:categories (
+            id,
+            name
+          ),
+          address:addresses (
+            id,
+            street,
+            city,
+            postcode
+          )
+        `,
+        )
+        .eq('id', taskId)
+        .single()
+
+      if (task.error) throw task.error
+
+      const [paymentResult, reviewResult] = await Promise.all([
+        supabase
+          .from('payments')
+          .select('id, amount_cents, status, created_at')
+          .eq('booking_id', taskId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('reviews')
+          .select('id, rating, comment, created_at')
+          .eq('booking_id', taskId)
+          .maybeSingle(),
+      ])
+
+      if (paymentResult.error) throw paymentResult.error
+      if (reviewResult.error) throw reviewResult.error
+
+      const booking = task.data
+      const customer = Array.isArray(booking.customer) ? booking.customer[0] : booking.customer
+      const handy = Array.isArray(booking.handy) ? booking.handy[0] : booking.handy
+      const category = Array.isArray(booking.category) ? booking.category[0] : booking.category
+      const address = Array.isArray(booking.address) ? booking.address[0] : booking.address
+
+      const timeline: TaskTimelineItem[] = [
+        {
+          id: `created-${booking.id}`,
+          label: 'Booking created',
+          detail: `Task opened for ${customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() : 'customer'}`.trim(),
+          created_at: booking.created_at,
+        },
+        {
+          id: `scheduled-${booking.id}`,
+          label: 'Scheduled date',
+          detail: `${booking.scheduled_date} ${booking.scheduled_time}`,
+          created_at: booking.created_at,
+        },
+      ]
+
+      if (booking.handy_id && handy) {
+        timeline.push({
+          id: `provider-${booking.id}`,
+          label: 'Provider assigned',
+          detail: `${handy.first_name || ''} ${handy.last_name || ''}`.trim() || 'Assigned provider',
+          created_at: booking.created_at,
+        })
+      }
+
+      if (paymentResult.data) {
+        timeline.push({
+          id: `payment-${paymentResult.data.id}`,
+          label: 'Payment',
+          detail: `${paymentResult.data.status} - £${(paymentResult.data.amount_cents / 100).toFixed(2)}`,
+          created_at: paymentResult.data.created_at,
+        })
+      }
+
+      if (reviewResult.data) {
+        timeline.push({
+          id: `review-${reviewResult.data.id}`,
+          label: 'Review submitted',
+          detail: `${reviewResult.data.rating}/5`,
+          created_at: reviewResult.data.created_at,
+        })
+      }
+
+      timeline.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+
+      return {
+        ...booking,
+        customer,
+        handy,
+        category,
+        address,
+        payment: paymentResult.data
+          ? {
+              id: String(paymentResult.data.id),
+              amount: paymentResult.data.amount_cents / 100,
+              status: paymentResult.data.status,
+              created_at: paymentResult.data.created_at,
+            }
+          : null,
+        review: reviewResult.data
+          ? {
+              id: String(reviewResult.data.id),
+              rating: reviewResult.data.rating,
+              comment: reviewResult.data.comment,
+              created_at: reviewResult.data.created_at,
+            }
+          : null,
+        timeline,
+      }
+    },
+    enabled: !!taskId,
+    staleTime: 30 * 1000,
+  })
+}
+
 /**
  * Get tasks count by status
  */
@@ -310,6 +477,7 @@ export function useUpdateTask() {
 
   return useMutation({
     mutationFn: async (input: UpdateTaskInput) => {
+      await requireAdminPermission('tasks.manage')
       const updateData: BookingUpdate = {}
 
       if (input.task_title !== undefined) updateData.task_title = input.task_title
@@ -332,6 +500,16 @@ export function useUpdateTask() {
 
       if (error) throw error
 
+      await createAdminAuditLog({
+        action: 'booking.update',
+        entityType: 'booking',
+        entityId: String(data.id),
+        summary: `Updated booking ${data.id}`,
+        metadata: {
+          changes: updateData,
+        },
+      })
+
       return data
     },
     onSuccess: (data) => {
@@ -351,6 +529,7 @@ export function useRescheduleTask() {
 
   return useMutation({
     mutationFn: async (input: RescheduleTaskInput) => {
+      await requireAdminPermission('tasks.manage')
       const updateData: BookingUpdate = {
         scheduled_date: input.scheduled_date,
         scheduled_time: input.scheduled_time,
@@ -369,6 +548,18 @@ export function useRescheduleTask() {
 
       if (error) throw error
 
+      await createAdminAuditLog({
+        action: 'booking.reschedule',
+        entityType: 'booking',
+        entityId: String(data.id),
+        summary: `Rescheduled booking ${data.id}`,
+        metadata: {
+          scheduled_date: input.scheduled_date,
+          scheduled_time: input.scheduled_time,
+          handy_id: input.handy_id,
+        },
+      })
+
       return data
     },
     onSuccess: (data) => {
@@ -386,6 +577,7 @@ export function useCancelTask() {
 
   return useMutation({
     mutationFn: async (taskId: string) => {
+      await requireAdminPermission('tasks.manage')
       const { data, error } = await supabase
         .from('bookings')
         .update({ status: 'cancelled' as BookingStatus })
@@ -394,6 +586,13 @@ export function useCancelTask() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'booking.cancel',
+        entityType: 'booking',
+        entityId: String(data.id),
+        summary: `Cancelled booking ${data.id}`,
+      })
 
       return data
     },

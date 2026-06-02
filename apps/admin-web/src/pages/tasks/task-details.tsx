@@ -1,338 +1,262 @@
-import { Edit, Calendar, X, Loader2 } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { format } from 'date-fns'
+import { Calendar, CreditCard, Loader2, RefreshCcw, X } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import Header from '@/components/header'
-import { useTask, statusDisplayMap } from '@/lib/api/tasks'
-
-const statusColors = {
-  blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
-  green: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-  red: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
-  gray: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-}
+import { useAvailableHandys } from '@/lib/api/handys'
+import { useRefundPayment } from '@/lib/api/finance'
+import { useCancelTask, useRescheduleTask, useTaskManagementDetails, useUpdateTask } from '@/lib/api/tasks'
 
 export default function TaskDetailsPage() {
   const { taskId } = useParams<{ taskId: string }>()
-  const { data: task, isLoading, error } = useTask(taskId)
+  const { data: task, isLoading, error } = useTaskManagementDetails(taskId)
+  const { data: handys = [] } = useAvailableHandys()
+  const updateTask = useUpdateTask()
+  const rescheduleTask = useRescheduleTask()
+  const cancelTask = useCancelTask()
+  const refundPayment = useRefundPayment()
 
-  const formatDateTime = (date: string, time: string) => {
-    try {
-      const dateObj = new Date(`${date}T${time}`)
-      return dateObj.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      })
-    } catch {
-      return `${date} ${time}`
-    }
-  }
-
-  const formatLocation = (
-    address: { street: string; city: string | null; postcode: string } | null
-  ) => {
-    if (!address) return 'No address provided'
-    const parts = [address.street, address.city, address.postcode].filter(Boolean)
-    return parts.join(', ')
-  }
-
-  const formatName = (firstName: string | null, lastName: string | null) => {
-    const parts = [firstName, lastName].filter(Boolean)
-    return parts.length > 0 ? parts.join(' ') : 'Unknown'
-  }
+  const [selectedHandy, setSelectedHandy] = useState<string>('')
+  const [rescheduleDate, setRescheduleDate] = useState('')
+  const [rescheduleTime, setRescheduleTime] = useState('')
 
   if (isLoading) {
     return (
       <div className="flex-1 flex flex-col">
-        <Header title="Task Details" />
-        <div className="flex-1 flex items-center justify-center bg-background-light dark:bg-background-dark">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="ml-2 text-gray-500">Loading task details...</span>
+        <Header title="Booking Details" />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
     )
   }
 
-  if (error) {
+  if (error || !task) {
     return (
       <div className="flex-1 flex flex-col">
-        <Header title="Task Details" />
-        <div className="flex-1 p-8 bg-background-light dark:bg-background-dark">
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
-              Failed to load task: {error.message}
-            </div>
-            <Link to="/tasks" className="mt-4 inline-block text-primary hover:underline">
-              ← Back to Tasks
-            </Link>
+        <Header title="Booking Details" />
+        <main className="flex-1 p-8">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+            {error instanceof Error ? error.message : 'Booking not found.'}
           </div>
-        </div>
+        </main>
       </div>
     )
   }
 
-  if (!task) {
-    return (
-      <div className="flex-1 flex flex-col">
-        <Header title="Task Details" />
-        <div className="flex-1 p-8 bg-background-light dark:bg-background-dark">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">Task not found</p>
-              <Link to="/tasks" className="mt-4 inline-block text-primary hover:underline">
-                ← Back to Tasks
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  async function handleReassign() {
+    if (!selectedHandy) return
+    await updateTask.mutateAsync({ taskId: String(task.id), handy_id: selectedHandy, status: task.status === 'pending' ? 'accepted' : task.status })
+    setSelectedHandy('')
   }
 
-  const statusDisplay = statusDisplayMap[task.status]
+  async function handleReschedule() {
+    if (!rescheduleDate || !rescheduleTime) return
+    await rescheduleTask.mutateAsync({
+      taskId: String(task.id),
+      scheduled_date: rescheduleDate,
+      scheduled_time: rescheduleTime,
+      handy_id: task.handy?.user_id || undefined,
+    })
+    setRescheduleDate('')
+    setRescheduleTime('')
+  }
+
+  async function handleCancel() {
+    if (!window.confirm('Cancel this booking?')) return
+    await cancelTask.mutateAsync(String(task.id))
+  }
+
+  async function handleRefund() {
+    if (!task.payment) return
+    const reason = window.prompt('Refund reason')
+    if (!reason) return
+    await refundPayment.mutateAsync({ paymentId: task.payment.id, reason })
+  }
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title={`Task Details #${task.id.slice(0, 8)}`} />
-      <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-6">
-            <Link to="/tasks" className="text-primary hover:underline text-sm">
-              ← Back to Tasks
+      <Header title={`Booking #${String(task.id).slice(0, 8)}`} />
+      <main className="flex-1 p-8">
+        <div className="mx-auto max-w-7xl space-y-8">
+          <div>
+            <Link to="/tasks/list" className="text-sm text-primary hover:underline">
+              ← Back to bookings
             </Link>
-            <p className="text-gray-500 dark:text-gray-400 mt-2">
-              Viewing details for task #{task.id.slice(0, 8)}
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Task Information */}
-              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                  Task Information
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Task ID
-                    </label>
-                    <p className="mt-1 text-gray-900 dark:text-white font-medium">
-                      #{task.id.slice(0, 8)}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Status
-                    </label>
-                    <p className="mt-1">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[statusDisplay.color]}`}
-                      >
-                        {statusDisplay.label}
-                      </span>
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Category
-                    </label>
-                    <p className="mt-1 text-gray-900 dark:text-white">
-                      {task.category?.name || 'Uncategorized'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Scheduled Date & Time
-                    </label>
-                    <p className="mt-1 text-gray-900 dark:text-white">
-                      {formatDateTime(task.scheduled_date, task.scheduled_time)}
-                    </p>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Location
-                    </label>
-                    <p className="mt-1 text-gray-900 dark:text-white">
-                      {formatLocation(task.address)}
-                    </p>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Title
-                    </label>
-                    <p className="mt-1 text-gray-900 dark:text-white font-medium">
-                      {task.task_title}
-                    </p>
-                  </div>
-                  {task.task_details && (
-                    <div className="sm:col-span-2">
-                      <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Description
-                      </label>
-                      <p className="mt-1 text-gray-600 dark:text-gray-300">{task.task_details}</p>
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Hourly Rate
-                    </label>
-                    <p className="mt-1 text-gray-900 dark:text-white">
-                      ${(task.hourly_rate_cents / 100).toFixed(2)}/hr
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Estimated Hours
-                    </label>
-                    <p className="mt-1 text-gray-900 dark:text-white">{task.estimated_hours} hrs</p>
-                  </div>
+          <section className="grid gap-6 xl:grid-cols-[2fr,1fr]">
+            <div className="space-y-6">
+              <Panel title="Booking details">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Info label="Task" value={task.task_title} />
+                  <Info label="Category" value={task.category?.name || 'Uncategorised'} />
+                  <Info label="Status" value={task.status.replaceAll('_', ' ')} />
+                  <Info label="Scheduled" value={`${task.scheduled_date} ${task.scheduled_time}`} />
+                  <Info label="Customer" value={`${task.customer?.first_name || ''} ${task.customer?.last_name || ''}`.trim() || 'Unknown customer'} />
+                  <Info label="Provider" value={`${task.handy?.first_name || ''} ${task.handy?.last_name || ''}`.trim() || 'Unassigned'} />
+                  <Info label="Address" value={task.address ? `${task.address.street}, ${task.address.city || ''} ${task.address.postcode}`.trim() : 'No address'} />
+                  <Info label="Value" value={`£${((task.hourly_rate_cents * task.estimated_hours) / 100).toFixed(2)}`} />
                 </div>
-              </div>
+                {task.task_details ? (
+                  <div className="mt-4">
+                    <div className="text-sm font-medium text-slate-500 dark:text-slate-400">Description</div>
+                    <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{task.task_details}</p>
+                  </div>
+                ) : null}
+              </Panel>
 
-              {/* Chat History - Placeholder */}
-              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
-                <h3 className="text-xl font-semibold p-6 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">
-                  Chat History
-                </h3>
-                <div className="p-6">
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-                    Chat history is not available for this task.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-8">
-              {/* Assigned Handy */}
-              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                  Assigned Handy
-                </h3>
-                {task.handy ? (
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 bg-cover bg-center flex items-center justify-center"
-                      style={
-                        task.handy.avatar_url
-                          ? { backgroundImage: `url('${task.handy.avatar_url}')` }
-                          : {}
-                      }
-                    >
-                      {!task.handy.avatar_url && (
-                        <span className="text-2xl text-gray-500 dark:text-gray-400">
-                          {(task.handy.first_name?.[0] || 'H').toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 dark:text-white">
-                        {formatName(task.handy.first_name, task.handy.last_name)}
-                      </p>
-                      <div className="flex items-center gap-1 text-sm text-yellow-500">
-                        <span>⭐</span>
-                        <span>{task.handy.rating.toFixed(1)}</span>
+              <Panel title="Timeline">
+                <div className="space-y-4">
+                  {task.timeline.map((item) => (
+                    <div key={item.id} className="flex gap-4">
+                      <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                      <div>
+                        <div className="font-medium text-slate-900 dark:text-white">{item.label}</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-300">{item.detail}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {format(new Date(item.created_at), 'dd MMM yyyy, HH:mm')}
+                        </div>
                       </div>
-                      {task.handy.phone && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {task.handy.phone}
-                        </p>
-                      )}
-                      <Link
-                        to={`/users/profile/${task.handy.user_id}`}
-                        className="text-primary text-sm font-medium hover:underline"
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            </div>
+
+            <div className="space-y-6">
+              <Panel title="Booking actions">
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Reassign provider</label>
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedHandy}
+                        onChange={(event) => setSelectedHandy(event.target.value)}
+                        className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
                       >
-                        View Profile
-                      </Link>
+                        <option value="">Select provider</option>
+                        {handys.map((handy) => (
+                          <option key={handy.user_id} value={handy.user_id}>
+                            {handy.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        disabled={!selectedHandy || updateTask.isPending}
+                        onClick={handleReassign}
+                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                      >
+                        Assign
+                      </button>
                     </div>
                   </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400">No handy assigned yet</p>
-                )}
-              </div>
 
-              {/* Customer */}
-              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                  Customer
-                </h3>
-                {task.customer ? (
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 bg-cover bg-center flex items-center justify-center"
-                      style={
-                        task.customer.avatar_url
-                          ? { backgroundImage: `url('${task.customer.avatar_url}')` }
-                          : {}
-                      }
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Reschedule</label>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <input
+                        type="date"
+                        value={rescheduleDate}
+                        onChange={(event) => setRescheduleDate(event.target.value)}
+                        className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      />
+                      <input
+                        type="time"
+                        value={rescheduleTime}
+                        onChange={(event) => setRescheduleTime(event.target.value)}
+                        className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      disabled={!rescheduleDate || !rescheduleTime || rescheduleTask.isPending}
+                      onClick={handleReschedule}
+                      className="mt-2 inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
                     >
-                      {!task.customer.avatar_url && (
-                        <span className="text-2xl text-gray-500 dark:text-gray-400">
-                          {(task.customer.first_name?.[0] || 'C').toUpperCase()}
-                        </span>
-                      )}
+                      <Calendar className="h-4 w-4" />
+                      Update schedule
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={cancelTask.isPending || task.status === 'cancelled'}
+                      onClick={handleCancel}
+                      className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 disabled:opacity-50 dark:border-red-900/60"
+                    >
+                      <X className="h-4 w-4" />
+                      Cancel booking
+                    </button>
+                  </div>
+                </div>
+              </Panel>
+
+              <Panel title="Payment & review">
+                {task.payment ? (
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Payment</span>
+                      <span className="font-medium text-slate-900 dark:text-white">£{task.payment.amount.toFixed(2)}</span>
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-900 dark:text-white">
-                        {formatName(task.customer.first_name, task.customer.last_name)}
-                      </p>
-                      {task.customer.phone && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {task.customer.phone}
-                        </p>
-                      )}
-                      <Link
-                        to={`/users/profile/${task.customer.user_id}`}
-                        className="text-primary text-sm font-medium hover:underline"
-                      >
-                        View Profile
-                      </Link>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 dark:text-slate-400">Status</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{task.payment.status}</span>
                     </div>
+                    <button
+                      type="button"
+                      disabled={refundPayment.isPending || task.payment.status !== 'paid'}
+                      onClick={handleRefund}
+                      className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 disabled:opacity-50 dark:border-red-900/60"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      Issue refund
+                    </button>
                   </div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">No customer information</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">No payment record linked yet.</p>
                 )}
-              </div>
 
-              {/* Actions */}
-              <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Actions</h3>
-                <div className="space-y-3">
-                  <Link
-                    to={`/tasks/edit/${task.id}`}
-                    className="w-full bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary/90"
-                  >
-                    <Edit className="w-5 h-5" />
-                    Edit Task
-                  </Link>
-                  {task.status !== 'completed' && task.status !== 'cancelled' && (
-                    <>
-                      <Link
-                        to={`/tasks/reschedule/${task.id}`}
-                        className="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-yellow-600"
-                      >
-                        <Calendar className="w-5 h-5" />
-                        Reschedule Task
-                      </Link>
-                      <Link
-                        to={`/tasks/cancel/${task.id}`}
-                        className="w-full bg-red-500 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-red-600"
-                      >
-                        <X className="w-5 h-5" />
-                        Cancel Task
-                      </Link>
-                    </>
+                <div className="mt-5 border-t border-slate-200 pt-4 dark:border-slate-800">
+                  {task.review ? (
+                    <div className="space-y-2 text-sm">
+                      <div className="font-medium text-slate-900 dark:text-white">
+                        Review: {task.review.rating}/5
+                      </div>
+                      <div className="text-slate-600 dark:text-slate-300">{task.review.comment || 'No review comment.'}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {format(new Date(task.review.created_at), 'dd MMM yyyy')}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No review submitted.</p>
                   )}
                 </div>
-              </div>
+              </Panel>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
+    </div>
+  )
+}
+
+function Panel({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+      <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
+      <div className="mt-4">{children}</div>
+    </div>
+  )
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="mt-1 text-sm text-slate-900 dark:text-white">{value}</div>
     </div>
   )
 }

@@ -148,9 +148,14 @@ export default function HandysPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-background-dark">
                   {handys.map((handy) => {
+                    const verificationStatus = (handy.handy_profile as { verification_status?: string | null } | null)?.verification_status
                     const isVerified = handy.handy_profile?.verified ?? false
                     const statusColor = isVerified ? 'green' : 'gray'
-                    const statusLabel = isVerified ? 'Active' : 'Inactive'
+                    const statusLabel = isVerified
+                      ? 'Verified'
+                      : verificationStatus === 'submitted'
+                      ? 'Pending Review'
+                      : 'Needs Setup'
 
                     return (
                       <tr key={handy.user_id}>
@@ -185,10 +190,7 @@ export default function HandysPage() {
                           {handy.rating.toFixed(1)}
                         </td>
                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <Link
-                            to={`/users/profile/${handy.user_id}`}
-                            className="text-primary hover:text-primary/80"
-                          >
+                          <Link to={`/handys/${handy.user_id}`} className="text-primary hover:text-primary/80">
                             View Profile
                             <span className="sr-only">
                               , {formatName(handy.first_name, handy.last_name)}

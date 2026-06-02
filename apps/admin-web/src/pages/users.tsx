@@ -6,12 +6,14 @@ import { useUsers, useDeleteUsers } from '@/lib/api/users'
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [accountStatus, setAccountStatus] = useState<'active' | 'paused' | 'deleted' | ''>('')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
 
   // Fetch users with search filter
   const { data: users, isLoading, error } = useUsers({
     search: searchQuery,
     role: 'customer', // Only show customers by default
+    accountStatus: accountStatus || undefined,
   })
 
   const deleteUsersMutation = useDeleteUsers()
@@ -95,17 +97,27 @@ export default function UsersPage() {
             </div>
           </div>
 
-          <div className="mb-6">
-            <div className="relative">
+          <div className="mb-6 flex flex-col gap-3 lg:flex-row">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
-                placeholder="Search users by name, email or phone..."
+                placeholder="Search users by name or phone..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-12 pl-10 pr-4 rounded-lg bg-white dark:bg-background-dark border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-primary focus:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-shadow"
               />
             </div>
+            <select
+              value={accountStatus}
+              onChange={(event) => setAccountStatus(event.target.value as 'active' | 'paused' | 'deleted' | '')}
+              className="h-12 rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 dark:border-slate-700 dark:bg-background-dark dark:text-white lg:w-56"
+            >
+              <option value="">All account states</option>
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+              <option value="deleted">Deleted</option>
+            </select>
           </div>
 
           <div className="overflow-x-auto bg-white dark:bg-background-dark rounded-lg border border-slate-200 dark:border-slate-800">
@@ -137,6 +149,9 @@ export default function UsersPage() {
                     </th>
                     <th scope="col" className="px-6 py-3 font-medium">
                       Role
+                    </th>
+                    <th scope="col" className="px-6 py-3 font-medium">
+                      Account
                     </th>
                     <th scope="col" className="px-6 py-3 font-medium text-right">
                       Actions
@@ -185,6 +200,11 @@ export default function UsersPage() {
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary capitalize">
                           {user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 capitalize">
+                          {user.account_status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

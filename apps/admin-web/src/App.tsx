@@ -18,8 +18,12 @@ import CancelTaskPage from '@/pages/tasks/cancel-task'
 import EditCategoriesPage from '@/pages/tasks/edit-categories'
 import DeleteCategoriesPage from '@/pages/tasks/delete-categories'
 import HandysPage from '@/pages/handys'
+import ProviderProfilePage from '@/pages/handys/provider-profile'
 import EarningsDashboardPage from '@/pages/finance/earnings-dashboard'
+import TransactionsRefundsPage from '@/pages/finance/transactions-refunds'
+import PayoutOperationsPage from '@/pages/finance/payout-operations'
 import DataAnalyticsPage from '@/pages/insights/data-analytics'
+import MarketplaceReportsPage from '@/pages/insights/marketplace-reports'
 import PromotionsManagementPage from '@/pages/promotions/promotions-management'
 import ContentPagesPage from '@/pages/content/pages'
 import CreatePagePage from '@/pages/content/create-page'
@@ -46,11 +50,15 @@ import SecurityOptions from '@/pages/accounts/security-options'
 import VerificationOptions from '@/pages/accounts/verification-options'
 import AccountStatus from '@/pages/accounts/account-status'
 import AccountsOverviewPage from '@/pages/accounts'
+import AuditLogPage from '@/pages/accounts/audit-log'
+import ServiceAreasPage from '@/pages/accounts/service-areas'
 import EmailNotifications from '@/pages/notifications/email-notifications'
 import PopupsPage from '@/pages/notifications/popups'
 import PushNotificationsPage from '@/pages/notifications/push-notifications'
 import NotificationsOverviewPage from '@/pages/notifications'
 import SupportCentre from '@/pages/support/support-centre'
+import ReviewsModerationPage from '@/pages/support/reviews-moderation'
+import DisputesPage from '@/pages/support/disputes'
 import AnnouncementsPage from '@/pages/dashboard/announcements'
 import TaskQuestionsPage from '@/pages/tasks/task-questions'
 
@@ -112,7 +120,7 @@ function App() {
             <Route path="/tasks/list" element={<TaskListPage />} />
             <Route path="/tasks/open" element={<TaskListPage pageTitle="Open Tasks" forcedStatus="pending" />} />
             <Route path="/tasks/scheduled" element={<TaskListPage pageTitle="Scheduled Tasks" forcedStatus="accepted" />} />
-            <Route path="/tasks/details" element={<TaskDetailsPage />} />
+            <Route path="/tasks/details/:taskId" element={<TaskDetailsPage />} />
             <Route path="/tasks/edit/:id" element={<EditTaskPage />} />
             <Route path="/tasks/reschedule/:id" element={<RescheduleTaskPage />} />
             <Route path="/tasks/cancel/:id" element={<CancelTaskPage />} />
@@ -122,12 +130,15 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute permissions={['handys.manage']} />}>
             <Route path="/handys" element={<HandysPage />} />
+            <Route path="/handys/:userId" element={<ProviderProfilePage />} />
             <Route path="/handys/selection-process" element={<HandySelectionProcess />} />
             <Route path="/handys/availability" element={<AvailabilityManagement />} />
             <Route path="/handys/calendar-settings" element={<CalendarSettings />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['finance.view']} />}>
             <Route path="/finance/earnings" element={<EarningsDashboardPage />} />
+            <Route path="/finance/transactions" element={<TransactionsRefundsPage />} />
+            <Route path="/finance/payouts" element={<PayoutOperationsPage />} />
             <Route path="/finance/income" element={<TotalIncome />} />
             <Route path="/finance/rates" element={<RatesAdjustments />} />
             <Route path="/finance/payment-methods" element={<PaymentMethods />} />
@@ -136,6 +147,9 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute permissions={['insights.view']} />}>
             <Route path="/insights/analytics" element={<DataAnalyticsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={['reports.view']} />}>
+            <Route path="/insights/reports" element={<MarketplaceReportsPage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['promotions.manage']} />}>
             <Route path="/promotions/management" element={<PromotionsManagementPage />} />
@@ -160,6 +174,12 @@ function App() {
             <Route path="/accounts/paused" element={<AccountStatus />} />
             <Route path="/accounts/location" element={<AccountStatus />} />
           </Route>
+          <Route element={<ProtectedRoute permissions={['locations.manage']} />}>
+            <Route path="/accounts/service-areas" element={<ServiceAreasPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={['audit.view']} />}>
+            <Route path="/accounts/audit-log" element={<AuditLogPage />} />
+          </Route>
           <Route element={<ProtectedRoute permissions={['notifications.manage']} />}>
             <Route path="/notifications" element={<NotificationsOverviewPage />} />
             <Route path="/notifications/email" element={<EmailNotifications />} />
@@ -168,6 +188,10 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute permissions={['support.view']} />}>
             <Route path="/support/centre" element={<SupportCentre />} />
+            <Route path="/support/reviews" element={<ReviewsModerationPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={['disputes.manage']} />}>
+            <Route path="/support/disputes" element={<DisputesPage />} />
           </Route>
           </Route>
         </Route>

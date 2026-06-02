@@ -7,7 +7,7 @@ type AdminProfile = {
   account_status: 'active' | 'paused' | 'deleted'
 }
 
-export async function requireAdminPermissions(permissions: AdminPermission[]) {
+export async function requireActiveAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('Not authenticated')
@@ -26,6 +26,12 @@ export async function requireAdminPermissions(permissions: AdminPermission[]) {
   if (profile.role !== 'admin' || profile.account_status !== 'active') {
     throw new Error('Active admin access is required')
   }
+
+  return { user, profile }
+}
+
+export async function requireAdminPermissions(permissions: AdminPermission[]) {
+  const { user, profile } = await requireActiveAdmin()
 
   if (!adminRoleHasAnyPermission(profile.admin_role, permissions)) {
     throw new Error('You do not have permission to perform this action')

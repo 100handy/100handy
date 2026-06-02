@@ -7,6 +7,7 @@ import {
   FileText,
   Gauge,
   LifeBuoy,
+  MapPinned,
   Megaphone,
   Settings2,
   Shield,
@@ -71,7 +72,6 @@ const groups = [
       { label: 'Task List', path: '/tasks/list', permissions: ['tasks.manage'] as AdminPermission[] },
       { label: 'Open Tasks', path: '/tasks/open', permissions: ['tasks.manage'] as AdminPermission[] },
       { label: 'Scheduled Tasks', path: '/tasks/scheduled', permissions: ['tasks.manage'] as AdminPermission[] },
-      { label: 'Task Details', path: '/tasks/details', permissions: ['tasks.manage'] as AdminPermission[] },
       { label: 'Completed Tasks', path: '/tasks/completed', permissions: ['tasks.manage'] as AdminPermission[] },
       { label: 'Cancelled Tasks', path: '/tasks/cancelled', permissions: ['tasks.manage'] as AdminPermission[] },
       { label: 'Task Questions', path: '/tasks/questions', permissions: ['tasks.manage'] as AdminPermission[] },
@@ -105,12 +105,13 @@ const groups = [
     items: [
       { label: 'Overview', path: '/accounts', permissions: ['accounts.manage'] as AdminPermission[] },
       { label: 'Security Options', path: '/accounts/security', permissions: ['accounts.manage'] as AdminPermission[] },
+      { label: 'Audit Log', path: '/accounts/audit-log', permissions: ['audit.view'] as AdminPermission[] },
       { label: 'Verification Options', path: '/accounts/verification', permissions: ['accounts.manage'] as AdminPermission[] },
       { label: 'Deleted Accounts', path: '/accounts/deleted', permissions: ['accounts.manage'] as AdminPermission[] },
       { label: 'Paused Accounts', path: '/accounts/paused', permissions: ['accounts.manage'] as AdminPermission[] },
       { label: 'Location Status', path: '/accounts/location', permissions: ['accounts.manage'] as AdminPermission[] },
     ],
-    permissions: ['accounts.manage'] as AdminPermission[],
+    permissions: ['accounts.manage', 'audit.view'] as AdminPermission[],
   },
   {
     key: 'notifications',
@@ -134,6 +135,8 @@ const groups = [
     defaultExpanded: false,
     items: [
       { label: 'Earnings', path: '/finance/earnings', permissions: ['finance.view'] as AdminPermission[] },
+      { label: 'Transactions & Refunds', path: '/finance/transactions', permissions: ['finance.view'] as AdminPermission[] },
+      { label: 'Payout Operations', path: '/finance/payouts', permissions: ['finance.view'] as AdminPermission[] },
       { label: 'Total Income', path: '/finance/income', permissions: ['finance.view'] as AdminPermission[] },
       { label: 'Rates & Adjustments', path: '/finance/rates', permissions: ['finance.view'] as AdminPermission[] },
       { label: 'Payment Methods', path: '/finance/payment-methods', permissions: ['finance.view'] as AdminPermission[] },
@@ -148,8 +151,11 @@ const groups = [
     icon: FileBarChart2,
     basePath: '/insights',
     defaultExpanded: false,
-    items: [{ label: 'Analytics', path: '/insights/analytics', permissions: ['insights.view'] as AdminPermission[] }],
-    permissions: ['insights.view'] as AdminPermission[],
+    items: [
+      { label: 'Analytics', path: '/insights/analytics', permissions: ['insights.view'] as AdminPermission[] },
+      { label: 'Marketplace Reports', path: '/insights/reports', permissions: ['reports.view'] as AdminPermission[] },
+    ],
+    permissions: ['insights.view', 'reports.view'] as AdminPermission[],
   },
   {
     key: 'promotions',
@@ -161,13 +167,26 @@ const groups = [
     permissions: ['promotions.manage'] as AdminPermission[],
   },
   {
+    key: 'locations',
+    label: 'Locations',
+    icon: MapPinned,
+    basePath: '/accounts/service-areas',
+    defaultExpanded: false,
+    items: [{ label: 'Service Areas', path: '/accounts/service-areas', permissions: ['locations.manage'] as AdminPermission[] }],
+    permissions: ['locations.manage'] as AdminPermission[],
+  },
+  {
     key: 'support',
     label: 'Support',
     icon: LifeBuoy,
     basePath: '/support',
     defaultExpanded: false,
-    items: [{ label: 'Support Centre', path: '/support/centre', permissions: ['support.view'] as AdminPermission[] }],
-    permissions: ['support.view'] as AdminPermission[],
+    items: [
+      { label: 'Support Centre', path: '/support/centre', permissions: ['support.view'] as AdminPermission[] },
+      { label: 'Reviews Moderation', path: '/support/reviews', permissions: ['support.view'] as AdminPermission[] },
+      { label: 'Disputes', path: '/support/disputes', permissions: ['disputes.manage'] as AdminPermission[] },
+    ],
+    permissions: ['support.view', 'disputes.manage'] as AdminPermission[],
   },
 ] as const
 
