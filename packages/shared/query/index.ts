@@ -207,6 +207,13 @@ export {
   type CreateReviewInput,
 } from './hooks/useReviews';
 
+// Service area coverage hooks and utilities
+export {
+  useServiceAreaCoverage,
+  serviceAreaCoverageKeys,
+} from './hooks/useServiceAreaCoverage';
+export type { ServiceAreaCoverageResult } from '../supabase/service-area-coverage';
+
 // Account balance hooks and utilities
 export {
   useAccountBalance,

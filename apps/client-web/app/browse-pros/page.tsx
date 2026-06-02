@@ -17,6 +17,8 @@ import { useAuthContext } from "@/components/providers/auth-provider";
 import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
 import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store'; import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, type HandymanProfile } from '@shared/query';
+import { getServiceAreaCoverage } from '@shared/supabase';
+import { useServiceAreaCoverage } from '@shared/query';
 import { createClient } from "@/lib/supabase";
 import { createAddress } from "@/lib/supabase/addresses";
 import { createBooking } from "@/lib/supabase/bookings";
@@ -207,6 +209,11 @@ function BrowseProsContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const currentPostcode =
+    googlePlaceData?.address_components?.find((c) => c.types.includes("postal_code"))?.long_name ||
+    location?.postalCode ||
+    "";
+  const { data: serviceAreaCoverage } = useServiceAreaCoverage(currentPostcode);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -396,6 +403,17 @@ function BrowseProsContent() {
 
   const handleLocationContinue = async () => {
     if (!streetAddress.trim()) return;
+    const postcode =
+      googlePlaceData?.address_components?.find((c) =>
+        c.types.includes("postal_code")
+      )?.long_name || location?.postalCode || "";
+    if (postcode) {
+      const coverage = await getServiceAreaCoverage(postcode);
+      if (!coverage.available) {
+        setError(coverage.message);
+        return;
+      }
+    }
     setLocation({
       streetAddress,
       unitNumber: unitFlat || undefined,
@@ -572,6 +590,15 @@ function BrowseProsContent() {
                 <div className="text-center py-12">
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-terracotta" />
                   <p className="mt-4 text-gray-600">Loading pros...</p>
+                </div>
+              ) : currentPostcode && serviceAreaCoverage && !serviceAreaCoverage.available ? (
+                <div className="text-center py-12 bg-white rounded-lg border p-8">
+                  <p className="text-gray-800 font-medium">
+                    No pros available in this area.
+                  </p>
+                  <p className="mt-2 text-gray-600">
+                    We do not currently have any 100Handy Pros available for this postcode.
+                  </p>
                 </div>
               ) : handymenError ? (
                 <div className="text-center py-12 bg-white rounded-lg border p-8">

@@ -22,7 +22,8 @@ import { createPaymentIntent, cancelPaymentIntent } from "@/lib/stripe/payment";
 import { createClient } from "@/lib/supabase";
 import type { FormResponse } from "@shared/supabase";
 import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store';
-import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, type Category, type HandymanProfile, type AvailabilitySlot } from '@shared/query';
+import { getServiceAreaCoverage } from '@shared/supabase';
+import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, useServiceAreaCoverage, type Category, type HandymanProfile, type AvailabilitySlot } from '@shared/query';
 
 // Sort options type
 type SortOption = 'recommended' | 'price_low' | 'price_high' | 'rating' | 'reviews';
@@ -73,6 +74,8 @@ function TaskFormContent() {
   const [unitFlat, setUnitFlat] = useState("");
   const [googlePlaceData, setGooglePlaceData] = useState<any>(null);
   const [formResponses, setFormResponses] = useState<FormResponse>({});
+  const currentPostcode = googlePlaceData?.address_components?.find((c: any) => c.types.includes('postal_code'))?.long_name || '';
+  const { data: serviceAreaCoverage } = useServiceAreaCoverage(currentPostcode);
 
   // Flow state
   const [locationConfirmed, setLocationConfirmed] = useState(false);
@@ -361,6 +364,16 @@ function TaskFormContent() {
     try {
       setLoading(true);
       setError(null);
+
+      const postcode =
+        googlePlaceData?.address_components?.find((c: any) => c.types.includes('postal_code'))?.long_name || '';
+      if (postcode) {
+        const coverage = await getServiceAreaCoverage(postcode);
+        if (!coverage.available) {
+          setError(coverage.message);
+          return;
+        }
+      }
 
       // If user is authenticated, create/find address in database
       if (userId) {
@@ -960,6 +973,11 @@ function TaskFormContent() {
                   <div className="text-center py-12">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-terracotta"></div>
                     <p className="mt-4 text-gray-600">Loading handymen...</p>
+                  </div>
+                ) : currentPostcode && serviceAreaCoverage && !serviceAreaCoverage.available ? (
+                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200 p-8">
+                    <p className="text-gray-800 text-lg mb-2">No pros available in this area</p>
+                    <p className="text-gray-500 text-sm">We do not currently have any 100Handy Pros available for this postcode.</p>
                   </div>
                 ) : handymenError ? (
                   <div className="text-center py-12 bg-white rounded-lg border border-gray-200 p-8">

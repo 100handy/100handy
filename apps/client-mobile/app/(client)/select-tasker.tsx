@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocationStore } from '@shared/store';
-import { type HandymanFilters, type Coordinate, type WorkArea, doesAvailabilitySlotApplyToDate, type AvailabilitySlot } from '@shared/query';
+import { type HandymanFilters, type Coordinate, type WorkArea, doesAvailabilitySlotApplyToDate, type AvailabilitySlot, useServiceAreaCoverage } from '@shared/query';
 import { ScrollView, ActivityIndicator, View, Text, Pressable } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { ChevronLeft, SlidersHorizontal, Check } from 'lucide-react-native'; import { useRouter, useLocalSearchParams } from 'expo-router'; import { FilterChip, TaskerCard, type TaskerData } from '@/components/tasker'; import { useHandymenByCategory } from '@shared/query'; import { getWorkAreaByUserId, isLocationInWorkArea, getAvailabilityByUserId } from '@shared/supabase';
 import { Modal, ModalBackdrop, ModalContent, ModalBody } from '@/components/ui/modal';
 import { goBackOrReplace } from '@/lib/navigation';
@@ -44,6 +44,8 @@ export default function SelectTaskerScreen() {
     'error.body': 'Please try again later',
     'empty.title': 'No pros found',
     'empty.body': 'Try adjusting your filters or search in a different category',
+    'coverage.title': 'Area not available',
+    'coverage.body': 'We do not currently have any 100Handy Pros available in this area.',
   });
   const categoryId = params.categoryId as string;
   const categoryName = params.categoryName as string;
@@ -59,6 +61,8 @@ export default function SelectTaskerScreen() {
 
   // Get client location from store
   const location = useLocationStore((state) => state.location);
+  const coveragePostcode = location?.postalCode || '';
+  const { data: serviceAreaCoverage, isLoading: serviceAreaCoverageLoading } = useServiceAreaCoverage(coveragePostcode);
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showSortSheet, setShowSortSheet] = useState(false);
@@ -314,11 +318,20 @@ export default function SelectTaskerScreen() {
         style={{ backgroundColor: '#F9FAFB' }}
         showsVerticalScrollIndicator={false}
       >
-        {isLoading ? (
+        {isLoading || serviceAreaCoverageLoading ? (
           <View className="flex-col items-center justify-center py-20">
             <ActivityIndicator size="large" color="#000000" />
             <Text className="text-sm text-gray-600 mt-3">
               {getAppContentValue(content, 'loading.text', 'Loading taskers...')}
+            </Text>
+          </View>
+        ) : coveragePostcode && serviceAreaCoverage && !serviceAreaCoverage.available ? (
+          <View className="flex-col items-center justify-center py-20 px-6">
+            <Text className="text-base font-semibold text-gray-900 mb-2 text-center">
+              {getAppContentValue(content, 'coverage.title', 'Area not available')}
+            </Text>
+            <Text className="text-sm text-gray-600 text-center">
+              {getAppContentValue(content, 'coverage.body', 'We do not currently have any 100Handy Pros available in this area.')}
             </Text>
           </View>
         ) : isError ? (
