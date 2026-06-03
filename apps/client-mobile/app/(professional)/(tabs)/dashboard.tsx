@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { ScrollView, View, Text, Pressable, Alert, RefreshControl, Image } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import {   DollarSign, Landmark, Smile, Calendar, MapPin, Bell, Mail, AlertTriangle, ChevronRight, ShieldCheck, Clock, } from 'lucide-react-native'; import { LinearGradient } from 'expo-linear-gradient'; import { OnboardingTask } from '@/components/dashboard'; import { useAuthStore } from '@shared/store';
+import { ScrollView, View, Text, Pressable, Alert, RefreshControl, Image } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { router } from 'expo-router'; import {   DollarSign, Landmark, Smile, Calendar, MapPin, Bell, Mail, AlertTriangle, ChevronRight, ShieldCheck, Clock, } from 'lucide-react-native'; import { LinearGradient } from 'expo-linear-gradient'; import { OnboardingTask } from '@/components/dashboard'; import { InlineAppAnnouncements } from '@/components/announcements/AppAnnouncements'; import { useAuthStore } from '@shared/store';
 import { useProfileStore } from '@shared/store';
 import { supabase } from '@shared/supabase';
 import { useWeeklyAvailability } from '@shared/query';
@@ -435,6 +435,7 @@ export default function ProfessionalDashboard() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#C1856A" />
         }
       >
+        <InlineAppAnnouncements placement="dashboard" />
         <View className="flex-col px-5 pt-5 pb-3">
           <Text className="font-worksans-bold text-[18px] text-brand-dark-alt mb-2.5">
             {getAppContentValue(content, 'progress.label_prefix', DEFAULT_CONTENT['progress.label_prefix'])} ({completedTasks}/{totalTasks})

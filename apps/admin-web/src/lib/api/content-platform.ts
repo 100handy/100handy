@@ -151,6 +151,7 @@ export interface AnnouncementInput {
   id?: string
   audience: 'all' | 'client' | 'professional' | 'web'
   placement: 'banner' | 'dashboard' | 'modal' | 'support'
+  channel_scope: 'both' | 'web' | 'app'
   title: string
   body: string
   cta_label: string

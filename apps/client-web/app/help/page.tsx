@@ -3,6 +3,7 @@ import { BookOpen, Globe, CheckSquare, Handshake, User } from "lucide-react";
 import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
+import { InlineAnnouncements } from "@/components/marketing/public-announcements";
 import { HelpSearch } from "@/components/help/help-search";
 import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 
@@ -21,6 +22,7 @@ export default async function HelpPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <InlineAnnouncements placement="support" />
 
       <div className="relative overflow-hidden">
         <div className="absolute inset-0" aria-hidden="true">

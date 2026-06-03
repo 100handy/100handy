@@ -11,6 +11,7 @@ import DashboardPage from '@/pages/dashboard'
 import UsersPage from '@/pages/users'
 import TaskListPage from '@/pages/tasks/task-list'
 import BrowseCategoriesPage from '@/pages/tasks/browse-categories'
+import RolloutPlannerPage from '@/pages/tasks/rollout-planner'
 import TaskDetailsPage from '@/pages/tasks/task-details'
 import EditTaskPage from '@/pages/tasks/edit-task'
 import RescheduleTaskPage from '@/pages/tasks/reschedule-task'
@@ -51,6 +52,7 @@ import VerificationOptions from '@/pages/accounts/verification-options'
 import AccountStatus from '@/pages/accounts/account-status'
 import AccountsOverviewPage from '@/pages/accounts'
 import AuditLogPage from '@/pages/accounts/audit-log'
+import AdminTimelinePage from '@/pages/accounts/timeline'
 import ServiceAreasPage from '@/pages/accounts/service-areas'
 import EmailNotifications from '@/pages/notifications/email-notifications'
 import PopupsPage from '@/pages/notifications/popups'
@@ -115,6 +117,7 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute permissions={['tasks.manage']} />}>
             <Route path="/tasks/categories" element={<BrowseCategoriesPage />} />
+            <Route path="/tasks/rollouts" element={<RolloutPlannerPage />} />
             <Route path="/tasks/categories/edit" element={<EditCategoriesPage />} />
             <Route path="/tasks/categories/delete" element={<DeleteCategoriesPage />} />
             <Route path="/tasks/list" element={<TaskListPage />} />
@@ -179,6 +182,7 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute permissions={['audit.view']} />}>
             <Route path="/accounts/audit-log" element={<AuditLogPage />} />
+            <Route path="/accounts/timeline" element={<AdminTimelinePage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['notifications.manage']} />}>
             <Route path="/notifications" element={<NotificationsOverviewPage />} />

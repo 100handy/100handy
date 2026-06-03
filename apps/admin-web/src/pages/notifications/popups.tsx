@@ -21,6 +21,7 @@ type PopupPlacement = 'modal' | 'banner'
 const emptyPopup = {
   audience: 'all' as const,
   placement: 'modal' as PopupPlacement,
+  channel_scope: 'both' as const,
   title: '',
   body: '',
   cta_label: '',
@@ -64,6 +65,7 @@ export default function PopupsPage() {
     setForm({
       audience: (draftAnnouncement?.audience as typeof emptyPopup.audience | undefined) ?? selected?.audience ?? 'all',
       placement: ((draftAnnouncement?.placement as string | undefined) === 'banner' ? 'banner' : selected?.placement === 'banner' ? 'banner' : 'modal') as 'modal' | 'banner',
+      channel_scope: (draftAnnouncement?.channel_scope as typeof emptyPopup.channel_scope | undefined) ?? ((selected as { channel_scope?: typeof emptyPopup.channel_scope } | null)?.channel_scope ?? 'both'),
       title: (draftAnnouncement?.title as string | undefined) ?? selected?.title ?? '',
       body: (draftAnnouncement?.body as string | undefined) ?? selected?.body ?? '',
       cta_label: (draftAnnouncement?.cta_label as string | undefined) ?? selected?.cta_label ?? '',
@@ -93,6 +95,7 @@ export default function PopupsPage() {
     return JSON.stringify(form) !== JSON.stringify({
       audience: latestDraft.announcement_json?.audience ?? 'all',
       placement: latestDraft.announcement_json?.placement === 'banner' ? 'banner' : 'modal',
+      channel_scope: latestDraft.announcement_json?.channel_scope ?? 'both',
       title: latestDraft.announcement_json?.title ?? '',
       body: latestDraft.announcement_json?.body ?? '',
       cta_label: latestDraft.announcement_json?.cta_label ?? '',
@@ -130,6 +133,7 @@ export default function PopupsPage() {
         id: selected?.id,
         audience: form.audience,
         placement: form.placement,
+        channel_scope: form.channel_scope,
         title: form.title,
         body: form.body,
         cta_label: form.cta_label,
@@ -193,6 +197,7 @@ export default function PopupsPage() {
                 <th className="px-6 py-3">Pop-up Title</th>
                 <th className="px-6 py-3">Audience</th>
                 <th className="px-6 py-3">Placement</th>
+                <th className="px-6 py-3">Channel</th>
                 <th className="px-6 py-3">Status</th>
                 <th className="px-6 py-3">Schedule</th>
                 <th className="px-6 py-3 text-right">Actions</th>
@@ -201,13 +206,13 @@ export default function PopupsPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td className="px-6 py-6" colSpan={6}>
+                  <td className="px-6 py-6" colSpan={7}>
                     <Loader2 className="h-5 w-5 animate-spin" />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-6 py-6 text-center text-gray-500" colSpan={6}>
+                  <td className="px-6 py-6 text-center text-gray-500" colSpan={7}>
                     No pop-ups found.
                   </td>
                 </tr>
@@ -217,6 +222,7 @@ export default function PopupsPage() {
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{popup.title}</td>
                     <td className="px-6 py-4">{popup.audience}</td>
                     <td className="px-6 py-4">{popup.placement}</td>
+                    <td className="px-6 py-4">{(popup as { channel_scope?: string }).channel_scope ?? 'both'}</td>
                     <td className="px-6 py-4">{popup.active ? 'active' : 'inactive'}</td>
                     <td className="px-6 py-4">
                       {popup.starts_at ? format(new Date(popup.starts_at), 'MMM d, yyyy') : 'Immediately'}
@@ -272,6 +278,12 @@ export default function PopupsPage() {
               value={form.placement}
               onChange={(value) => setForm((prev) => ({ ...prev, placement: value as typeof prev.placement }))}
               options={['modal', 'banner']}
+            />
+            <SelectField
+              label="Channel"
+              value={form.channel_scope}
+              onChange={(value) => setForm((prev) => ({ ...prev, channel_scope: value as typeof prev.channel_scope }))}
+              options={['both', 'web', 'app']}
             />
             <ToggleField label="Active" checked={form.active} onChange={(checked) => setForm((prev) => ({ ...prev, active: checked }))} />
             <div className="md:col-span-2">

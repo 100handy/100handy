@@ -1,8 +1,9 @@
 import React from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Megaphone } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { AppAnnouncementsFeed } from '@/components/announcements/AppAnnouncements';
 import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 const DEFAULT_CONTENT = {
@@ -36,17 +37,7 @@ export default function AnnouncementsScreen() {
         <View className="w-7" />
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Empty State */}
-        <View className="flex-col items-center justify-center py-32 px-6">
-          <View className="w-20 h-20 rounded-full bg-brand-taupe items-center justify-center mb-4">
-            <Megaphone color="white" size={36} strokeWidth={1.5} />
-          </View>
-          <Text className="font-worksans-semibold text-[16px] text-brand-dark-alt">
-            {getAppContentValue(content, 'empty.title', DEFAULT_CONTENT['empty.title'])}
-          </Text>
-        </View>
-      </ScrollView>
+      <AppAnnouncementsFeed />
     </SafeAreaView>
   );
 }

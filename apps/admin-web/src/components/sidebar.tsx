@@ -69,6 +69,7 @@ const groups = [
     defaultExpanded: true,
     items: [
       { label: 'Browse Categories', path: '/tasks/categories', permissions: ['tasks.manage'] as AdminPermission[] },
+      { label: 'Rollout Planner', path: '/tasks/rollouts', permissions: ['tasks.manage'] as AdminPermission[] },
       { label: 'Task List', path: '/tasks/list', permissions: ['tasks.manage'] as AdminPermission[] },
       { label: 'Open Tasks', path: '/tasks/open', permissions: ['tasks.manage'] as AdminPermission[] },
       { label: 'Scheduled Tasks', path: '/tasks/scheduled', permissions: ['tasks.manage'] as AdminPermission[] },
@@ -105,6 +106,7 @@ const groups = [
     items: [
       { label: 'Overview', path: '/accounts', permissions: ['accounts.manage'] as AdminPermission[] },
       { label: 'Security Options', path: '/accounts/security', permissions: ['accounts.manage'] as AdminPermission[] },
+      { label: 'Timeline', path: '/accounts/timeline', permissions: ['audit.view'] as AdminPermission[] },
       { label: 'Audit Log', path: '/accounts/audit-log', permissions: ['audit.view'] as AdminPermission[] },
       { label: 'Verification Options', path: '/accounts/verification', permissions: ['accounts.manage'] as AdminPermission[] },
       { label: 'Deleted Accounts', path: '/accounts/deleted', permissions: ['accounts.manage'] as AdminPermission[] },

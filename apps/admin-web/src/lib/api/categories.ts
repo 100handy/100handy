@@ -67,6 +67,23 @@ export interface UpdateCategoryInput {
   faqs_json?: Array<{ question: string; answer: string }>
 }
 
+export interface CategoryAreaCoverageCell {
+  serviceAreaId: string
+  city: string
+  postcodePrefix: string
+  providerCount: number
+  explicitlyEnabled: boolean
+  hasOverride: boolean
+  enabledInArea: boolean
+}
+
+export interface CategoryAreaCoverageRow {
+  categoryId: string
+  categoryName: string
+  active: boolean
+  cells: CategoryAreaCoverageCell[]
+}
+
 // ============================================================================
 // Query Hooks
 // ============================================================================
@@ -305,6 +322,161 @@ export function useBulkUpdateCategories() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
+    },
+  })
+}
+
+export function useCategoryAreaCoverageMatrix() {
+  return useQuery({
+    queryKey: ['categories', 'coverage-matrix'],
+    queryFn: async (): Promise<{ serviceAreas: Array<{ id: string; city: string; postcode_prefix: string }>; rows: CategoryAreaCoverageRow[] }> => {
+      await requireAdminPermission('tasks.manage')
+
+      const [
+        { data: categories, error: categoriesError },
+        { data: serviceAreas, error: serviceAreasError },
+        { data: assignments, error: assignmentsError },
+        { data: overrides, error: overridesError },
+      ] = await Promise.all([
+        supabase
+          .from('categories')
+          .select('id, name, active, level')
+          .in('level', [0, 1])
+          .order('level', { ascending: true })
+          .order('display_order', { ascending: true }),
+        supabase
+          .from('service_areas')
+          .select('id, city, postcode_prefix')
+          .eq('enabled', true)
+          .order('city', { ascending: true })
+          .limit(12),
+        supabase
+          .from('provider_service_areas')
+          .select('service_area_id, provider_id'),
+        supabase
+          .from('service_area_category_overrides')
+          .select('service_area_id, category_id, enabled'),
+      ])
+
+      if (categoriesError) throw categoriesError
+      if (serviceAreasError) throw serviceAreasError
+      if (assignmentsError) throw assignmentsError
+      if (overridesError) throw overridesError
+
+      const providerIds = Array.from(new Set((assignments ?? []).map((row) => row.provider_id)))
+
+      const [
+        { data: activeProfiles, error: profilesError },
+        { data: handyCategories, error: handyCategoriesError },
+      ] = await Promise.all([
+        providerIds.length > 0
+          ? supabase
+            .from('profiles')
+            .select('user_id')
+            .in('user_id', providerIds)
+            .eq('role', 'handy')
+            .eq('account_status', 'active')
+          : Promise.resolve({ data: [], error: null }),
+        providerIds.length > 0
+          ? supabase
+            .from('handy_categories')
+            .select('handy_id, category_id')
+            .in('handy_id', providerIds)
+          : Promise.resolve({ data: [], error: null }),
+      ])
+
+      if (profilesError) throw profilesError
+      if (handyCategoriesError) throw handyCategoriesError
+
+      const activeProviderIds = new Set((activeProfiles ?? []).map((profile) => profile.user_id))
+      const providerIdsByArea = new Map<string, Set<string>>()
+      for (const assignment of assignments ?? []) {
+        if (!activeProviderIds.has(assignment.provider_id)) continue
+        const set = providerIdsByArea.get(assignment.service_area_id) || new Set<string>()
+        set.add(assignment.provider_id)
+        providerIdsByArea.set(assignment.service_area_id, set)
+      }
+
+      const categoryIdsByProvider = new Map<string, Set<string>>()
+      for (const row of handyCategories ?? []) {
+        const set = categoryIdsByProvider.get(row.handy_id) || new Set<string>()
+        set.add(row.category_id)
+        categoryIdsByProvider.set(row.handy_id, set)
+      }
+
+      const overrideMap = new Map<string, boolean>()
+      for (const row of overrides ?? []) {
+        overrideMap.set(`${row.service_area_id}:${row.category_id}`, row.enabled)
+      }
+
+      const rows: CategoryAreaCoverageRow[] = (categories ?? []).map((category) => ({
+        categoryId: category.id,
+        categoryName: category.name,
+        active: category.active,
+        cells: (serviceAreas ?? []).map((area) => {
+          const providers = providerIdsByArea.get(area.id) || new Set<string>()
+          let providerCount = 0
+          for (const providerId of providers) {
+            if (categoryIdsByProvider.get(providerId)?.has(category.id)) {
+              providerCount += 1
+            }
+          }
+          const overrideKey = `${area.id}:${category.id}`
+          const hasOverride = overrideMap.has(overrideKey)
+          const explicitlyEnabled = overrideMap.get(overrideKey) ?? false
+          return {
+            serviceAreaId: area.id,
+            city: area.city,
+            postcodePrefix: area.postcode_prefix,
+            providerCount,
+            explicitlyEnabled,
+            hasOverride,
+            enabledInArea: category.active && (!hasOverride || explicitlyEnabled),
+          }
+        }),
+      }))
+
+      return {
+        serviceAreas: serviceAreas ?? [],
+        rows,
+      }
+    },
+    staleTime: 30 * 1000,
+  })
+}
+
+export function useSaveServiceAreaCategoryOverride() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      serviceAreaId,
+      categoryId,
+      enabled,
+    }: {
+      serviceAreaId: string
+      categoryId: string
+      enabled: boolean
+    }) => {
+      await requireAdminPermission('tasks.manage')
+
+      const { error } = await supabase
+        .from('service_area_category_overrides')
+        .upsert(
+          {
+            service_area_id: serviceAreaId,
+            category_id: categoryId,
+            enabled,
+          },
+          { onConflict: 'service_area_id,category_id' },
+        )
+
+      if (error) throw error
+
+      return { serviceAreaId, categoryId, enabled }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories', 'coverage-matrix'] })
     },
   })
 }

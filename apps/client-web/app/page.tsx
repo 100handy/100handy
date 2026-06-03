@@ -9,6 +9,7 @@ import { Testimonials } from "@/components/marketing/testimonials";
 import { Guarantees } from "@/components/marketing/guarantees";
 import { GetHelpToday } from "@/components/marketing/get-help-today";
 import { PendingBookingBanner } from "@/components/pending-booking-banner";
+import { InlineAnnouncements } from "@/components/marketing/public-announcements";
 import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,7 @@ export default async function HomePage() {
       <Header />
       <PendingBookingBanner />
       <main className="flex-1">
+        <InlineAnnouncements placement="dashboard" />
         <Hero
           title={c("hero.title", "Book trusted help for your home — fast.")}
           subtitle={c("hero.subtitle", "Assembly, repairs, cleaning, moving, and more—handled by vetted pros, scheduled when it suits you, and paid securely in one place.")}

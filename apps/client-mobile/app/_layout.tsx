@@ -2,6 +2,7 @@ import "@/globals.css";
 import { SplashScreen, Stack, router } from "expo-router"; import { useFonts } from "expo-font"; import { useCallback, useEffect, useRef } from "react"; import { AppState, Platform } from "react-native"; import * as Linking from "expo-linking"; import { GestureHandlerRootView } from "react-native-gesture-handler"; import { supabase } from "@shared/supabase/supabaseClient"; import { useAuthStore } from '@shared/store'; import { upsertDevicePushToken } from '@shared/supabase';
 import { Asset } from "expo-asset";
 import { QueryProvider } from "@/components/providers";
+import { GlobalAppAnnouncementsHost } from "@/components/announcements/AppAnnouncements";
 import { ToastProvider } from "@/components/ui/toast";
 import { StripeProviderWrapper } from "@/components/StripeProviderWrapper";
 import { initializePendingBookingStorage } from "@/lib/pending-booking-storage";
@@ -206,6 +207,7 @@ export default function RootLayout() {
               <Stack.Screen name="(client)" />
               <Stack.Screen name="(professional)" />
             </Stack>
+            <GlobalAppAnnouncementsHost />
           </ToastProvider>
         </QueryProvider>
       </StripeProviderWrapper>

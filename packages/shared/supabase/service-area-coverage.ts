@@ -37,6 +37,12 @@ interface ProviderServiceAreaRow {
   provider_id: string;
 }
 
+interface ServiceAreaCategoryOverrideRow {
+  service_area_id: string;
+  category_id: string;
+  enabled: boolean;
+}
+
 function normalizePostcode(value: string) {
   return value.replace(/\s+/g, '').toUpperCase();
 }
@@ -160,6 +166,21 @@ export async function getServiceAreaCoverage(
       let eligibleProviderIds = new Set((profiles ?? []).map((profile) => profile.user_id));
 
       if (categoryId && eligibleProviderIds.size > 0) {
+        const { data: overrides, error: overridesError } = await supabase
+          .from('service_area_category_overrides')
+          .select('service_area_id, category_id, enabled')
+          .eq('service_area_id', area.id)
+          .eq('category_id', categoryId);
+
+        if (overridesError) {
+          throw new Error(overridesError.message);
+        }
+
+        const typedOverrides = (overrides ?? []) as ServiceAreaCategoryOverrideRow[];
+        if (typedOverrides.length > 0 && !typedOverrides.some((row) => row.enabled)) {
+          continue;
+        }
+
         const { data: handyCategories, error: handyCategoriesError } = await supabase
           .from('handy_categories')
           .select('handy_id')

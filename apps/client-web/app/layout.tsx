@@ -6,6 +6,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { PendingBookingProvider } from "@/components/providers/pending-booking-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ScrollToTopButton } from "@/components/ui/scroll-to-top";
+import { GlobalAnnouncementsHost } from "@/components/marketing/public-announcements";
 
 const workSans = localFont({
   src: [
@@ -48,6 +49,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <PendingBookingProvider>
+              <GlobalAnnouncementsHost />
               {children}
               <ScrollToTopButton />
             </PendingBookingProvider>

@@ -3,6 +3,7 @@ import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { InlineAppAnnouncements } from '@/components/announcements/AppAnnouncements';
 import * as Notifications from 'expo-notifications';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -117,6 +118,7 @@ export default function SupportScreen() {
       </View>
 
       <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+        <InlineAppAnnouncements placement="support" />
         {/* Menu Items */}
         <View className="flex-col ">
           {menuItems.map((item, index) => (

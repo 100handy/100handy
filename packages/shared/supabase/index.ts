@@ -19,4 +19,5 @@ export * from './earnings';
 export * from './analytics';
 export * from './balance';
 export * from './service-area-coverage';
+export * from './announcements';
 export * from './types/forms';

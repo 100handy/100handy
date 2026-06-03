@@ -1,377 +1,192 @@
-import { useState } from 'react';
-import Header from '../../components/header';
-import { Save, PlusCircle, Download, Edit2, Trash2, ChevronDown } from 'lucide-react';
+import { useMemo, useState, type ReactNode } from 'react'
+import { Loader2, Save, Trash2 } from 'lucide-react'
+import Header from '@/components/header'
+import {
+  useDeletePricingRule,
+  usePricingRuleOptions,
+  usePricingRules,
+  useSavePricingRule,
+} from '@/lib/api/finance-config'
 
-const conversionRates = [
-    { base: 'USD ($)', target: 'CAD ($)', rate: '1.35' },
-    { base: 'USD ($)', target: 'GBP (£)', rate: '0.79' },
-];
-
-const rateHistory = [
-    {
-        date: '2024-07-15',
-        category: 'Cleaning (Base - USA)',
-        previousRate: '$30.00 USD',
-        newRate: '$35.00 USD',
-        changedBy: 'Admin',
-        isIncrease: true,
-    },
-    {
-        date: '2024-06-20',
-        category: 'Plumbing (London, UK)',
-        previousRate: '£45.00',
-        newRate: '£50.00',
-        changedBy: 'Admin',
-        isIncrease: true,
-    },
-    {
-        date: '2024-05-01',
-        category: 'Assembly (Base - CAD)',
-        previousRate: '$40.00 CAD',
-        newRate: '$38.00 CAD',
-        changedBy: 'Admin',
-        isIncrease: false,
-    },
-];
+const emptyForm = {
+  id: '',
+  category_id: '',
+  location_area_id: '',
+  currency_code: 'GBP',
+  rate_kind: 'hourly' as 'hourly' | 'fixed',
+  base_rate: '',
+  active: true,
+  notes: '',
+}
 
 export default function RatesAdjustments() {
-    const [category, setCategory] = useState('Plumbing');
-    const [region, setRegion] = useState('United States');
-    const [location, setLocation] = useState('');
-    const [currency, setCurrency] = useState('USD ($)');
-    const [newRate, setNewRate] = useState('');
-    const [baseCurrency, setBaseCurrency] = useState('USD ($)');
-    const [targetCurrency, setTargetCurrency] = useState('CAD ($)');
-    const [conversionRate, setConversionRate] = useState('');
+  const [form, setForm] = useState(emptyForm)
+  const { data: rules = [], isLoading } = usePricingRules()
+  const { data: options, isLoading: optionsLoading } = usePricingRuleOptions()
+  const saveRule = useSavePricingRule()
+  const deleteRule = useDeletePricingRule()
 
-    const handleApplyRate = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log('Apply new rate');
-    };
+  const activeRules = useMemo(() => rules.filter((rule) => rule.active).length, [rules])
 
-    const handleAddConversion = () => {
-        console.log('Add conversion rate');
-    };
+  function editRule(rule: (typeof rules)[number]) {
+    setForm({
+      id: rule.id,
+      category_id: rule.category_id,
+      location_area_id: rule.location_area_id ?? '',
+      currency_code: rule.currency_code,
+      rate_kind: rule.rate_kind,
+      base_rate: (rule.base_rate_cents / 100).toFixed(2),
+      active: rule.active,
+      notes: rule.notes ?? '',
+    })
+  }
 
-    return (
-        <div className="flex-1 flex flex-col">
-            <Header title="Rates Adjustments" />
+  function resetForm() {
+    setForm(emptyForm)
+  }
 
-            <main className="flex-1 p-6 space-y-6">
-                {/* Adjust Rates Section */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                        Adjust Rates by Category & Location
-                    </h3>
-                    <form onSubmit={handleApplyRate}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {/* Task Category */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="category"
-                                >
-                                    Task Category
-                                </label>
-                                <div className="relative mt-1">
-                                    <select
-                                        className="appearance-none w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="category"
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        value={category}
-                                    >
-                                        <option>Plumbing</option>
-                                        <option>Cleaning</option>
-                                        <option>Assembly</option>
-                                        <option>Electrical</option>
-                                        <option>Moving</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    const amount = Number(form.base_rate)
+    if (!form.category_id || !Number.isFinite(amount)) return
+    await saveRule.mutateAsync({
+      id: form.id || undefined,
+      category_id: form.category_id,
+      location_area_id: form.location_area_id || null,
+      currency_code: form.currency_code,
+      rate_kind: form.rate_kind,
+      base_rate_cents: Math.round(amount * 100),
+      active: form.active,
+      notes: form.notes.trim() || null,
+    })
+    resetForm()
+  }
 
-                            {/* Region/Country */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="region"
-                                >
-                                    Region/Country
-                                </label>
-                                <div className="relative mt-1">
-                                    <select
-                                        className="appearance-none w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="region"
-                                        onChange={(e) => setRegion(e.target.value)}
-                                        value={region}
-                                    >
-                                        <option>United States</option>
-                                        <option>Canada</option>
-                                        <option>United Kingdom</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header title="Rates & Adjustments" />
 
-                            {/* Specific Location */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="location"
-                                >
-                                    Specific Location (Optional)
-                                </label>
-                                <input
-                                    className="w-full mt-1 px-3 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    id="location"
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    placeholder="e.g., New York, London"
-                                    type="text"
-                                    value={location}
-                                />
-                            </div>
-
-                            {/* Currency */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="currency"
-                                >
-                                    Currency
-                                </label>
-                                <div className="relative mt-1">
-                                    <select
-                                        className="appearance-none w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="currency"
-                                        onChange={(e) => setCurrency(e.target.value)}
-                                        value={currency}
-                                    >
-                                        <option>USD ($)</option>
-                                        <option>CAD ($)</option>
-                                        <option>GBP (£)</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-
-                            {/* Current Base Rate */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="current-rate"
-                                >
-                                    Current Base Rate (per hour)
-                                </label>
-                                <input
-                                    className="w-full mt-1 px-3 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm"
-                                    disabled
-                                    id="current-rate"
-                                    type="text"
-                                    value="$45.00"
-                                />
-                            </div>
-
-                            {/* New Base Rate */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="new-rate"
-                                >
-                                    New Base Rate (per hour)
-                                </label>
-                                <input
-                                    className="w-full mt-1 px-3 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    id="new-rate"
-                                    onChange={(e) => setNewRate(e.target.value)}
-                                    placeholder="e.g., 50.00"
-                                    type="text"
-                                    value={newRate}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-6 flex justify-end">
-                            <button
-                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm"
-                                type="submit"
-                            >
-                                <Save className="w-4 h-4" />
-                                <span>Apply New Rate</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                {/* Currency Conversion Management */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                        Currency Conversion Management
-                    </h3>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                            {/* Base Currency */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="base-currency"
-                                >
-                                    Base Currency
-                                </label>
-                                <div className="relative mt-1">
-                                    <select
-                                        className="appearance-none w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="base-currency"
-                                        onChange={(e) => setBaseCurrency(e.target.value)}
-                                        value={baseCurrency}
-                                    >
-                                        <option>USD ($)</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-
-                            {/* Target Currency */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="target-currency"
-                                >
-                                    Target Currency
-                                </label>
-                                <div className="relative mt-1">
-                                    <select
-                                        className="appearance-none w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="target-currency"
-                                        onChange={(e) => setTargetCurrency(e.target.value)}
-                                        value={targetCurrency}
-                                    >
-                                        <option>CAD ($)</option>
-                                        <option>GBP (£)</option>
-                                        <option>EUR (€)</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-
-                            {/* Conversion Rate */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="conversion-rate"
-                                >
-                                    Conversion Rate (1 Base = X Target)
-                                </label>
-                                <input
-                                    className="w-full mt-1 px-3 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    id="conversion-rate"
-                                    onChange={(e) => setConversionRate(e.target.value)}
-                                    placeholder="e.g., 1.35"
-                                    type="text"
-                                    value={conversionRate}
-                                />
-                            </div>
-
-                            {/* Add Button */}
-                            <div className="flex justify-end">
-                                <button
-                                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm w-full md:w-auto"
-                                    onClick={handleAddConversion}
-                                    type="button"
-                                >
-                                    <PlusCircle className="w-4 h-4" />
-                                    <span>Add Conversion Rate</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Conversion Rates Table */}
-                    <div className="overflow-x-auto mt-6">
-                        <table className="w-full min-w-[600px] text-sm text-left">
-                            <thead className="text-xs text-gray-700 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50">
-                                <tr>
-                                    <th className="px-6 py-3">Base Currency</th>
-                                    <th className="px-6 py-3">Target Currency</th>
-                                    <th className="px-6 py-3">Conversion Rate</th>
-                                    <th className="px-6 py-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {conversionRates.map((rate, idx) => (
-                                    <tr
-                                        key={idx}
-                                        className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/20"
-                                    >
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                            {rate.base}
-                                        </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                            {rate.target}
-                                        </td>
-                                        <td className="px-6 py-4">{rate.rate}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="p-1 text-primary hover:bg-primary/10 rounded-full inline-flex items-center justify-center">
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button className="p-1 text-red-500 hover:bg-red-500/10 rounded-full inline-flex items-center justify-center ml-2">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Rate Change History */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Rate Change History
-                        </h3>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-sm">
-                            <Download className="w-4 h-4" />
-                            <span>Export History</span>
-                        </button>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[700px] text-sm text-left">
-                            <thead className="text-xs text-gray-700 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50">
-                                <tr>
-                                    <th className="px-6 py-3">Date</th>
-                                    <th className="px-6 py-3">Category / Location</th>
-                                    <th className="px-6 py-3">Previous Rate</th>
-                                    <th className="px-6 py-3">New Rate</th>
-                                    <th className="px-6 py-3">Changed By</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rateHistory.map((history, idx) => (
-                                    <tr
-                                        key={idx}
-                                        className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/20 last:border-0"
-                                    >
-                                        <td className="px-6 py-4">{history.date}</td>
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                            {history.category}
-                                        </td>
-                                        <td className="px-6 py-4">{history.previousRate}</td>
-                                        <td
-                                            className={`px-6 py-4 font-semibold ${history.isIncrease ? 'text-green-500' : 'text-red-500'
-                                                }`}
-                                        >
-                                            {history.newRate}
-                                        </td>
-                                        <td className="px-6 py-4">{history.changedBy}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </main>
+      <main className="flex-1 p-6 space-y-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          <MetricCard label="Pricing rules" value={rules.length} />
+          <MetricCard label="Active rules" value={activeRules} />
+          <MetricCard label="Categories covered" value={new Set(rules.map((rule) => rule.category_id)).size} />
         </div>
-    );
+
+        <div className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
+          <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Pricing rules</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Base pricing rules by category and optional UK area.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
+                  <tr>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Area</th>
+                    <th className="px-4 py-3">Rate</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr><td colSpan={6} className="px-4 py-10 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" /></td></tr>
+                  ) : rules.length === 0 ? (
+                    <tr><td colSpan={6} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">No pricing rules configured yet.</td></tr>
+                  ) : (
+                    rules.map((rule) => (
+                      <tr key={rule.id} className="border-t border-gray-200 dark:border-gray-800">
+                        <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{rule.category_name}</td>
+                        <td className="px-4 py-3">{rule.location_area_name ?? 'Global'}</td>
+                        <td className="px-4 py-3">{rule.currency_code} {(rule.base_rate_cents / 100).toFixed(2)}</td>
+                        <td className="px-4 py-3">{rule.rate_kind}</td>
+                        <td className="px-4 py-3">{rule.active ? 'Active' : 'Inactive'}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => editRule(rule)} className="rounded-lg px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10">Edit</button>
+                            <button onClick={() => deleteRule.mutate(rule)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"><Trash2 className="h-4 w-4" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{form.id ? 'Edit pricing rule' : 'Add pricing rule'}</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Use area-specific pricing only where rollout or supply makes it necessary. Leave area blank for global category pricing.</p>
+
+            {optionsLoading ? (
+              <div className="mt-8 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : (
+              <form onSubmit={handleSave} className="mt-6 space-y-4">
+                <Field label="Category">
+                  <select value={form.category_id} onChange={(e) => setForm((prev) => ({ ...prev, category_id: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900">
+                    <option value="">Select category</option>
+                    {options?.categories.map((category) => (
+                      <option key={category.id} value={category.id}>{category.name}{category.active ? '' : ' (off)'}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Area override">
+                  <select value={form.location_area_id} onChange={(e) => setForm((prev) => ({ ...prev, location_area_id: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900">
+                    <option value="">Global category rule</option>
+                    {options?.locations.map((location) => (
+                      <option key={location.id} value={location.id}>{location.name}{location.enabled ? '' : ' (off)'}</option>
+                    ))}
+                  </select>
+                </Field>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Currency code"><input value={form.currency_code} onChange={(e) => setForm((prev) => ({ ...prev, currency_code: e.target.value.toUpperCase() }))} className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+                  <Field label="Rate type">
+                    <select value={form.rate_kind} onChange={(e) => setForm((prev) => ({ ...prev, rate_kind: e.target.value as 'hourly' | 'fixed' }))} className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900">
+                      <option value="hourly">Hourly</option>
+                      <option value="fixed">Fixed</option>
+                    </select>
+                  </Field>
+                </div>
+                <Field label="Base rate"><input value={form.base_rate} onChange={(e) => setForm((prev) => ({ ...prev, base_rate: e.target.value }))} placeholder="45.00" className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+                <Field label="Notes"><textarea value={form.notes} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} rows={3} className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <input type="checkbox" checked={form.active} onChange={(e) => setForm((prev) => ({ ...prev, active: e.target.checked }))} />
+                  Active pricing rule
+                </label>
+                <div className="flex gap-3">
+                  <button type="submit" disabled={saveRule.isPending || !form.category_id || !form.base_rate.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
+                    <Save className="h-4 w-4" />
+                    Save rule
+                  </button>
+                  <button type="button" onClick={resetForm} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium dark:border-gray-700">Clear</button>
+                </div>
+              </form>
+            )}
+          </section>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+function MetricCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900/50">
+      <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</div>
+      <div className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">{value}</div>
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <div className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</div>
+      {children}
+    </div>
+  )
 }

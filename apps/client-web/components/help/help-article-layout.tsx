@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/marketing/footer";
+import { InlineAnnouncements } from "@/components/marketing/public-announcements";
 import { LogoIcon, MailIcon, HelpIcon } from "@/components/icons";
 import { usePublicSiteSetting } from "@/lib/public-site-settings";
 
@@ -75,6 +76,7 @@ export function HelpArticleLayout({
   return (
     <div className="bg-white min-h-screen">
       <Header />
+      <InlineAnnouncements placement="support" />
       <div className="flex flex-col lg:flex-row max-w-screen-xl mx-auto">
         <Sidebar links={sidebarLinks} title={ui.sectionsTitle} />
         <main className="flex-1 max-w-full lg:max-w-[800px] px-6 md:px-12 py-12">

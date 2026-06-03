@@ -2,6 +2,10 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { ChevronDown, Loader2, MapPinned, Plus, UserPlus } from 'lucide-react'
 import Header from '@/components/header'
 import {
+  useCategoryAreaCoverageMatrix,
+  useSaveServiceAreaCategoryOverride,
+} from '@/lib/api/categories'
+import {
   useAssignProviderToServiceArea,
   useBulkImportLocationAreas,
   useCoverageDemandInsights,
@@ -49,10 +53,12 @@ export default function ServiceAreasPage() {
   const { data: locationMapData = [] } = useLocationMapData()
   const { data: healthWarnings = [] } = useServiceAreaHealthWarnings()
   const { data: coverageDemand } = useCoverageDemandInsights()
+  const { data: categoryMatrix, isLoading: categoryMatrixLoading } = useCategoryAreaCoverageMatrix()
   const { data: assignments = [], isLoading: assignmentsLoading } = useServiceAreaAssignments(selectedAreaId)
   const { data: candidates = [] } = useProviderCandidates(selectedAreaId)
   const { data: overlapWarnings = [] } = useServiceAreaOverlapCheck(postcodePrefix, selectedAreaId)
   const saveArea = useSaveServiceArea()
+  const saveCategoryOverride = useSaveServiceAreaCategoryOverride()
   const saveLocationArea = useSaveLocationArea()
   const bulkImportLocationAreas = useBulkImportLocationAreas()
   const toggleLocationArea = useToggleLocationArea()
@@ -93,6 +99,14 @@ export default function ServiceAreasPage() {
       return matchesSearch && matchesStatus
     })
   }, [areas, serviceAreaSearch, serviceAreaStatusFilter])
+  const rolloutMatrix = useMemo(() => {
+    if (!categoryMatrix) return null
+
+    return {
+      serviceAreas: categoryMatrix.serviceAreas,
+      rows: categoryMatrix.rows.filter((row) => row.active),
+    }
+  }, [categoryMatrix])
 
   function startCreate() {
     setSelectedAreaId(null)
@@ -774,6 +788,78 @@ export default function ServiceAreasPage() {
             >
               Save area
             </button>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Category rollout by area</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Override global category rollout for specific enabled service areas. If no override exists, the area follows the global category state.
+              </p>
+            </div>
+
+            {categoryMatrixLoading ? (
+              <div className="py-8 text-center">
+                <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : !rolloutMatrix || rolloutMatrix.rows.length === 0 || rolloutMatrix.serviceAreas.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                No enabled areas or active categories are ready for rollout overrides yet.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
+                    <tr>
+                      <th className="px-4 py-3">Category</th>
+                      {rolloutMatrix.serviceAreas.map((area) => (
+                        <th key={area.id} className="px-4 py-3 text-center">
+                          <div>{area.city}</div>
+                          <div className="mt-1 text-[10px] normal-case text-slate-400 dark:text-slate-500">
+                            {area.postcode_prefix}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rolloutMatrix.rows.map((row) => (
+                      <tr key={row.categoryId} className="border-t border-slate-200 dark:border-slate-800">
+                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.categoryName}</td>
+                        {row.cells.map((cell) => (
+                          <td key={`${row.categoryId}-${cell.serviceAreaId}`} className="px-4 py-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                saveCategoryOverride.mutate({
+                                  serviceAreaId: cell.serviceAreaId,
+                                  categoryId: row.categoryId,
+                                  enabled: !cell.enabledInArea,
+                                })
+                              }
+                              disabled={saveCategoryOverride.isPending}
+                              className={`inline-flex min-w-[6.5rem] flex-col items-center rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
+                                cell.enabledInArea
+                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300'
+                                  : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                              }`}
+                            >
+                              <span>{cell.enabledInArea ? 'On' : 'Off'}</span>
+                              <span className="mt-1 text-[10px] font-medium opacity-80">
+                                {cell.providerCount} pro{cell.providerCount === 1 ? '' : 's'}
+                              </span>
+                              <span className="mt-1 text-[10px] font-normal opacity-70">
+                                {cell.hasOverride ? 'Area override' : 'Using global'}
+                              </span>
+                            </button>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </section>
 

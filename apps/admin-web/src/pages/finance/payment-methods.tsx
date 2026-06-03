@@ -1,219 +1,211 @@
-import { useState } from 'react';
-import Header from '../../components/header';
-import { Plus, Edit2, Trash2, Save, ChevronDown } from 'lucide-react';
+import { useMemo, useState } from 'react'
+import { Edit2, Loader2, Plus, Save, Trash2 } from 'lucide-react'
+import Header from '@/components/header'
+import {
+  useDeletePaymentMethodConfig,
+  usePaymentMethodConfigs,
+  useSavePaymentMethodConfig,
+  type PaymentMethodConfig,
+} from '@/lib/api/finance-config'
 
-const paymentMethods = [
-    { name: 'Stripe Connect', type: 'Gateway', status: 'Active', statusColor: 'green' },
-    { name: 'PayPal', type: 'Gateway', status: 'Active', statusColor: 'green' },
-    {
-        name: 'Bank Transfer (ACH)',
-        type: 'Payout',
-        status: 'Pending Configuration',
-        statusColor: 'yellow',
-    },
-];
-
-const statusColors = {
-    green: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-    yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-};
+const emptyForm = {
+  id: '',
+  display_name: '',
+  provider_key: '',
+  method_type: 'gateway' as PaymentMethodConfig['method_type'],
+  status: 'pending' as PaymentMethodConfig['status'],
+  public_enabled: false,
+  supported_currencies: 'GBP',
+  config_reference: '',
+  notes: '',
+  sort_order: 0,
+}
 
 export default function PaymentMethods() {
-    const [methodName, setMethodName] = useState('');
-    const [methodType, setMethodType] = useState('Payment Gateway');
-    const [apiKey, setApiKey] = useState('');
-    const [secretKey, setSecretKey] = useState('');
-    const [enableMethod, setEnableMethod] = useState(false);
+  const [form, setForm] = useState(emptyForm)
+  const { data: methods = [], isLoading } = usePaymentMethodConfigs()
+  const saveMethod = useSavePaymentMethodConfig()
+  const deleteMethod = useDeletePaymentMethodConfig()
 
-    const handleSaveMethod = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log('Save payment method');
-    };
+  const activeCount = useMemo(() => methods.filter((method) => method.status === 'active').length, [methods])
 
-    return (
-        <div className="flex-1 flex flex-col">
-            <Header title="Payment Methods" />
+  function startEdit(method: PaymentMethodConfig) {
+    setForm({
+      id: method.id,
+      display_name: method.display_name,
+      provider_key: method.provider_key,
+      method_type: method.method_type,
+      status: method.status,
+      public_enabled: method.public_enabled,
+      supported_currencies: method.supported_currencies.join(', '),
+      config_reference: method.config_reference ?? '',
+      notes: method.notes ?? '',
+      sort_order: method.sort_order,
+    })
+  }
 
-            <main className="flex-1 p-6 space-y-6">
-                {/* Manage Payment Methods Table */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Manage Payment Methods
-                        </h3>
-                        <button className="flex items-center gap-2 mt-4 sm:mt-0 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm">
-                            <Plus className="w-4 h-4" />
-                            <span>Add New Method</span>
-                        </button>
-                    </div>
+  function resetForm() {
+    setForm(emptyForm)
+  }
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[600px] text-sm text-left">
-                            <thead className="text-xs text-gray-700 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50">
-                                <tr>
-                                    <th className="px-6 py-3">Method Name</th>
-                                    <th className="px-6 py-3">Type</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {paymentMethods.map((method, idx) => (
-                                    <tr
-                                        key={idx}
-                                        className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/20"
-                                    >
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                            {method.name}
-                                        </td>
-                                        <td className="px-6 py-4">{method.type}</td>
-                                        <td className="px-6 py-4">
-                                            <span
-                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[method.statusColor as keyof typeof statusColors]
-                                                    }`}
-                                            >
-                                                {method.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right space-x-2">
-                                            <button className="p-1 text-primary hover:bg-primary/10 rounded-full inline-flex items-center justify-center">
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button className="p-1 text-red-500 hover:bg-red-500/10 rounded-full inline-flex items-center justify-center">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.display_name.trim() || !form.provider_key.trim()) return
 
-                {/* Add/Edit Payment Method Form */}
-                <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                        Add/Edit Payment Method
-                    </h3>
+    await saveMethod.mutateAsync({
+      id: form.id || undefined,
+      display_name: form.display_name.trim(),
+      provider_key: form.provider_key.trim(),
+      method_type: form.method_type,
+      status: form.status,
+      public_enabled: form.public_enabled,
+      supported_currencies: form.supported_currencies
+        .split(',')
+        .map((value) => value.trim().toUpperCase())
+        .filter(Boolean),
+      config_reference: form.config_reference.trim() || null,
+      notes: form.notes.trim() || null,
+      sort_order: form.sort_order,
+    })
 
-                    <form className="space-y-4" onSubmit={handleSaveMethod}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Method Name */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="method-name"
-                                >
-                                    Method Name
-                                </label>
-                                <input
-                                    className="w-full mt-1 px-3 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    id="method-name"
-                                    onChange={(e) => setMethodName(e.target.value)}
-                                    placeholder="e.g., Stripe"
-                                    type="text"
-                                    value={methodName}
-                                />
-                            </div>
+    resetForm()
+  }
 
-                            {/* Method Type */}
-                            <div>
-                                <label
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    htmlFor="method-type"
-                                >
-                                    Method Type
-                                </label>
-                                <div className="relative mt-1">
-                                    <select
-                                        className="appearance-none w-full bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="method-type"
-                                        onChange={(e) => setMethodType(e.target.value)}
-                                        value={methodType}
-                                    >
-                                        <option>Payment Gateway</option>
-                                        <option>Payout Option</option>
-                                        <option>Client Preference</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-                        </div>
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header title="Payment Methods" />
 
-                        {/* Configuration Section */}
-                        <div>
-                            <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mt-4 mb-2">
-                                Configuration
-                            </h4>
-                            <div className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                {/* API Key */}
-                                <div>
-                                    <label
-                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        htmlFor="api-key"
-                                    >
-                                        API Key
-                                    </label>
-                                    <input
-                                        className="w-full mt-1 px-3 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="api-key"
-                                        onChange={(e) => setApiKey(e.target.value)}
-                                        placeholder="Enter API Key"
-                                        type="password"
-                                        value={apiKey}
-                                    />
-                                </div>
-
-                                {/* Secret Key */}
-                                <div>
-                                    <label
-                                        className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                        htmlFor="secret-key"
-                                    >
-                                        Secret Key
-                                    </label>
-                                    <input
-                                        className="w-full mt-1 px-3 py-2 bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="secret-key"
-                                        onChange={(e) => setSecretKey(e.target.value)}
-                                        placeholder="Enter Secret Key"
-                                        type="password"
-                                        value={secretKey}
-                                    />
-                                </div>
-
-                                {/* Enable Method Checkbox */}
-                                <div className="flex items-center">
-                                    <input
-                                        checked={enableMethod}
-                                        className="h-4 w-4 text-primary bg-background-light dark:bg-background-dark border-gray-300 dark:border-gray-600 rounded focus:ring-primary"
-                                        id="enable-method"
-                                        onChange={(e) => setEnableMethod(e.target.checked)}
-                                        type="checkbox"
-                                    />
-                                    <label
-                                        className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
-                                        htmlFor="enable-method"
-                                    >
-                                        Enable this payment method
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="mt-6 flex justify-end">
-                            <button
-                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm"
-                                type="submit"
-                            >
-                                <Save className="w-4 h-4" />
-                                <span>Save Method</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </main>
+      <main className="flex-1 p-6 space-y-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          <MetricCard label="Configured methods" value={methods.length} />
+          <MetricCard label="Active methods" value={activeCount} />
+          <MetricCard label="Public checkout methods" value={methods.filter((m) => m.public_enabled).length} />
         </div>
-    );
+
+        <div className="grid gap-6 xl:grid-cols-[1.1fr,0.9fr]">
+          <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Configured payment methods</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Operational payment and payout methods used by web and mobile flows.</p>
+              </div>
+              <button onClick={resetForm} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium dark:border-gray-700">
+                <Plus className="h-4 w-4" />
+                New method
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
+                  <tr>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Provider</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Public</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr><td colSpan={6} className="px-4 py-10 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" /></td></tr>
+                  ) : methods.length === 0 ? (
+                    <tr><td colSpan={6} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">No payment methods configured yet.</td></tr>
+                  ) : (
+                    methods.map((method) => (
+                      <tr key={method.id} className="border-t border-gray-200 dark:border-gray-800">
+                        <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{method.display_name}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">{method.provider_key}</td>
+                        <td className="px-4 py-3">{method.method_type}</td>
+                        <td className="px-4 py-3"><StatusBadge status={method.status} /></td>
+                        <td className="px-4 py-3">{method.public_enabled ? 'Yes' : 'No'}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => startEdit(method)} className="rounded-lg p-2 text-primary hover:bg-primary/10"><Edit2 className="h-4 w-4" /></button>
+                            <button onClick={() => deleteMethod.mutate(method)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"><Trash2 className="h-4 w-4" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{form.id ? 'Edit payment method' : 'Add payment method'}</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              This stores operational method status and references only. Keep live API secrets in server-side env or provider dashboards.
+            </p>
+
+            <form onSubmit={handleSave} className="mt-6 space-y-4">
+              <Field label="Display name"><input value={form.display_name} onChange={(e) => setForm((prev) => ({ ...prev, display_name: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+              <Field label="Provider key"><input value={form.provider_key} onChange={(e) => setForm((prev) => ({ ...prev, provider_key: e.target.value }))} className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="Method type">
+                  <select value={form.method_type} onChange={(e) => setForm((prev) => ({ ...prev, method_type: e.target.value as PaymentMethodConfig['method_type'] }))} className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900">
+                    <option value="gateway">Gateway</option>
+                    <option value="wallet">Wallet</option>
+                    <option value="payout">Payout</option>
+                    <option value="bank_transfer">Bank transfer</option>
+                  </select>
+                </Field>
+                <Field label="Status">
+                  <select value={form.status} onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as PaymentMethodConfig['status'] }))} className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </Field>
+              </div>
+              <Field label="Supported currencies"><input value={form.supported_currencies} onChange={(e) => setForm((prev) => ({ ...prev, supported_currencies: e.target.value }))} placeholder="GBP, USD" className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+              <Field label="Config reference"><input value={form.config_reference} onChange={(e) => setForm((prev) => ({ ...prev, config_reference: e.target.value }))} placeholder="Supabase secrets / Stripe dashboard" className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+              <Field label="Operational notes"><textarea value={form.notes} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} rows={4} className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+              <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <input type="checkbox" checked={form.public_enabled} onChange={(e) => setForm((prev) => ({ ...prev, public_enabled: e.target.checked }))} />
+                Enabled in public checkout
+              </label>
+              <div className="flex gap-3">
+                <button type="submit" disabled={saveMethod.isPending || !form.display_name.trim() || !form.provider_key.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
+                  <Save className="h-4 w-4" />
+                  Save method
+                </button>
+                <button type="button" onClick={resetForm} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium dark:border-gray-700">Clear</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+function MetricCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900/50">
+      <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</div>
+      <div className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">{value}</div>
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</div>
+      {children}
+    </div>
+  )
+}
+
+function StatusBadge({ status }: { status: PaymentMethodConfig['status'] }) {
+  const className =
+    status === 'active'
+      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+      : status === 'pending'
+        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+        : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
+  return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${className}`}>{status}</span>
 }

@@ -684,6 +684,167 @@ export interface Database {
           created_at?: string
         }
       }
+      service_area_category_overrides: {
+        Row: {
+          id: string
+          service_area_id: string
+          category_id: string
+          enabled: boolean
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          service_area_id: string
+          category_id: string
+          enabled?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          service_area_id?: string
+          category_id?: string
+          enabled?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      rollout_presets: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          rollout_month: string
+          status: 'draft' | 'scheduled' | 'applied' | 'archived'
+          category_states: Json
+          service_area_states: Json
+          area_category_states: Json
+          notes: string | null
+          created_by: string | null
+          applied_by: string | null
+          applied_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          rollout_month: string
+          status?: 'draft' | 'scheduled' | 'applied' | 'archived'
+          category_states?: Json
+          service_area_states?: Json
+          area_category_states?: Json
+          notes?: string | null
+          created_by?: string | null
+          applied_by?: string | null
+          applied_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          rollout_month?: string
+          status?: 'draft' | 'scheduled' | 'applied' | 'archived'
+          category_states?: Json
+          service_area_states?: Json
+          area_category_states?: Json
+          notes?: string | null
+          created_by?: string | null
+          applied_by?: string | null
+          applied_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      payment_method_configs: {
+        Row: {
+          id: string
+          display_name: string
+          provider_key: string
+          method_type: 'gateway' | 'payout' | 'wallet' | 'bank_transfer'
+          status: 'active' | 'inactive' | 'pending'
+          public_enabled: boolean
+          supported_currencies: string[]
+          config_reference: string | null
+          notes: string | null
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          display_name: string
+          provider_key: string
+          method_type: 'gateway' | 'payout' | 'wallet' | 'bank_transfer'
+          status?: 'active' | 'inactive' | 'pending'
+          public_enabled?: boolean
+          supported_currencies?: string[]
+          config_reference?: string | null
+          notes?: string | null
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          display_name?: string
+          provider_key?: string
+          method_type?: 'gateway' | 'payout' | 'wallet' | 'bank_transfer'
+          status?: 'active' | 'inactive' | 'pending'
+          public_enabled?: boolean
+          supported_currencies?: string[]
+          config_reference?: string | null
+          notes?: string | null
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      service_pricing_rules: {
+        Row: {
+          id: string
+          category_id: string
+          location_area_id: string | null
+          currency_code: string
+          rate_kind: 'hourly' | 'fixed'
+          base_rate_cents: number
+          active: boolean
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          category_id: string
+          location_area_id?: string | null
+          currency_code?: string
+          rate_kind?: 'hourly' | 'fixed'
+          base_rate_cents: number
+          active?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          category_id?: string
+          location_area_id?: string | null
+          currency_code?: string
+          rate_kind?: 'hourly' | 'fixed'
+          base_rate_cents?: number
+          active?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       addresses: {
         Row: {
           id: string

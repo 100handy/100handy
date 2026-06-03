@@ -3,7 +3,7 @@ import { Search, Plus, Edit, Trash2, Loader2, ArrowUp, ArrowDown, Image as Image
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { useAuth } from '@/contexts/AuthContext'
-import { useBulkUpdateCategories, useCategories, useUpdateCategory } from '@/lib/api/categories'
+import { useBulkUpdateCategories, useCategories, useCategoryAreaCoverageMatrix, useUpdateCategory } from '@/lib/api/categories'
 
 const ITEMS_PER_PAGE = 10
 
@@ -14,6 +14,7 @@ export default function BrowseCategoriesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
   const [levelFilter, setLevelFilter] = useState<'all' | 'main' | 'sub'>('all')
+  const [includeChildrenForBulk, setIncludeChildrenForBulk] = useState(true)
 
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -38,6 +39,7 @@ export default function BrowseCategoriesPage() {
   })
   const updateCategory = useUpdateCategory()
   const bulkUpdateCategories = useBulkUpdateCategories()
+  const { data: coverageMatrix, isLoading: coverageMatrixLoading } = useCategoryAreaCoverageMatrix()
 
   // Get top categories by task count for trending
   const trendingCategories = useMemo(() => {
@@ -51,6 +53,16 @@ export default function BrowseCategoriesPage() {
     [categories, selectedCategoryIds],
   )
   const allVisibleSelected = categories?.length ? categories.every((category) => selectedCategoryIds.includes(category.id)) : false
+  const categoryChildrenMap = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const category of categories || []) {
+      if (!category.parent_id) continue
+      const existing = map.get(category.parent_id) || []
+      existing.push(category.id)
+      map.set(category.parent_id, existing)
+    }
+    return map
+  }, [categories])
 
   const moveCategory = async (categoryId: string, direction: 'up' | 'down') => {
     if (!canManageTasks) return
@@ -107,11 +119,30 @@ export default function BrowseCategoriesPage() {
 
   const handleBulkToggle = async (active: boolean) => {
     if (!canManageTasks || selectedCategoryIds.length === 0) return
+    const categoryIds = includeChildrenForBulk
+      ? Array.from(
+          new Set(
+            selectedCategoryIds.flatMap((categoryId) => [
+              categoryId,
+              ...(categoryChildrenMap.get(categoryId) || []),
+            ]),
+          ),
+        )
+      : selectedCategoryIds
     await bulkUpdateCategories.mutateAsync({
-      categoryIds: selectedCategoryIds,
+      categoryIds,
       updates: { active },
     })
     setSelectedCategoryIds([])
+  }
+
+  const handleFamilyToggle = async (categoryId: string, active: boolean) => {
+    if (!canManageTasks) return
+    const categoryIds = Array.from(new Set([categoryId, ...(categoryChildrenMap.get(categoryId) || [])]))
+    await bulkUpdateCategories.mutateAsync({
+      categoryIds,
+      updates: { active },
+    })
   }
 
   return (
@@ -221,6 +252,14 @@ export default function BrowseCategoriesPage() {
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   {selectedCategoryIds.length} selected
                 </span>
+                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={includeChildrenForBulk}
+                    onChange={(e) => setIncludeChildrenForBulk(e.target.checked)}
+                  />
+                  Include subcategories
+                </label>
                 <button
                   type="button"
                   onClick={() => handleBulkToggle(true)}
@@ -404,6 +443,26 @@ export default function BrowseCategoriesPage() {
                         {category.tasks_count}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {category.level === 0 && (
+                          <>
+                            <button
+                              type="button"
+                              disabled={!canManageTasks || bulkUpdateCategories.isPending}
+                              onClick={() => handleFamilyToggle(category.id, true)}
+                              className="text-green-700 hover:text-green-900 mr-3 disabled:opacity-50"
+                            >
+                              Turn on family
+                            </button>
+                            <button
+                              type="button"
+                              disabled={!canManageTasks || bulkUpdateCategories.isPending}
+                              onClick={() => handleFamilyToggle(category.id, false)}
+                              className="text-red-700 hover:text-red-900 mr-3 disabled:opacity-50"
+                            >
+                              Turn off family
+                            </button>
+                          </>
+                        )}
                         <button
                           type="button"
                           disabled={!canManageTasks}
@@ -464,6 +523,70 @@ export default function BrowseCategoriesPage() {
               </div>
             </div>
           )}
+
+          <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-800/50">
+            <div className="mb-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white">Category by area coverage</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Active assigned provider counts for enabled service areas. Use this to decide which categories can launch in which areas.
+              </p>
+            </div>
+
+            {coverageMatrixLoading ? (
+              <div className="py-8 text-center">
+                <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : !coverageMatrix || coverageMatrix.rows.length === 0 || coverageMatrix.serviceAreas.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                No category coverage matrix available yet.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900/50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        Category
+                      </th>
+                      {coverageMatrix.serviceAreas.map((area) => (
+                        <th
+                          key={area.id}
+                          className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+                        >
+                          <div>{area.city}</div>
+                          <div className="mt-1 text-[10px] normal-case text-gray-400 dark:text-gray-500">{area.postcode_prefix}</div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-800/50">
+                    {coverageMatrix.rows
+                      .filter((row) => row.active)
+                      .map((row) => (
+                        <tr key={row.categoryId}>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                            {row.categoryName}
+                          </td>
+                          {row.cells.map((cell) => (
+                            <td key={`${row.categoryId}-${cell.serviceAreaId}`} className="px-4 py-3 text-center text-sm">
+                              <span
+                                className={`inline-flex min-w-[2rem] justify-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                  cell.providerCount > 0
+                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                    : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
+                                }`}
+                              >
+                                {cell.providerCount}
+                              </span>
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </main>

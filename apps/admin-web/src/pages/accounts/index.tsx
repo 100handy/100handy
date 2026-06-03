@@ -1,5 +1,5 @@
 import Header from '@/components/header'
-import { Shield, UserX, PauseCircle, MapPin, Users, Wrench, Loader2 } from 'lucide-react'
+import { Shield, UserX, PauseCircle, MapPin, Users, Wrench, Loader2, History } from 'lucide-react'
 import { useAccountsSummary } from '@/lib/api/accounts'
 
 export default function AccountsOverviewPage() {
@@ -28,6 +28,12 @@ export default function AccountsOverviewPage() {
       description: 'Review paused or restricted accounts and their operational state.',
       href: '/accounts/paused',
       icon: PauseCircle,
+    },
+    {
+      title: 'Timeline & Backups',
+      description: 'Review who changed what, section activity, and revision/rollout backup coverage.',
+      href: '/accounts/timeline',
+      icon: History,
     },
     {
       title: 'Location Status',
