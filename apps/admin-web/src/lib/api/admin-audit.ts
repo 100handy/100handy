@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { fetchAdminAuthUsersByIds } from '@/lib/api/admin-user-management'
 import { requireActiveAdmin, requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Database, Json } from '@/lib/database.types'
@@ -116,17 +117,7 @@ export function useAdminAuditLogs(filters: AdminAuditLogFilters = {}) {
         ]),
       )
 
-      const emailMap = new Map<string, string>()
-      for (const actorId of actorIds) {
-        try {
-          const { data: authData } = await supabase.auth.admin.getUserById(actorId)
-          if (authData?.user?.email) {
-            emailMap.set(actorId, authData.user.email)
-          }
-        } catch {
-          // Email is a non-critical enhancement for the audit stream.
-        }
-      }
+      const emailMap = await fetchAdminAuthUsersByIds(actorIds)
 
       return rows
         .map((row) => ({
