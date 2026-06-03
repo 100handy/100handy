@@ -1,22 +1,44 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '../../components/header'
-import { ChevronRight, Loader2, X, Check, XCircle, ExternalLink } from 'lucide-react'
+import { ChevronRight, Loader2, X, Check, XCircle, ExternalLink, Save } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import {
+  useVerificationSettings,
   useVerificationRequests,
   useVerificationStats,
+  useSaveVerificationSettings,
   useUpdateVerificationStatus,
   useVerificationDetail,
   type VerificationRequest,
+  type VerificationSettings,
 } from '@/lib/api/verification'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function VerificationOptions() {
+  const { hasPermission } = useAuth()
+  const canManageSettings = hasPermission('accounts.manage')
   const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'verified' | 'rejected'>('all')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [settingsDraft, setSettingsDraft] = useState<VerificationSettings | null>(null)
 
+  const { data: verificationSettings, isLoading: settingsLoading } = useVerificationSettings()
   const { data: verificationRequests, isLoading: requestsLoading } = useVerificationRequests(filter)
   const { data: stats, isLoading: statsLoading } = useVerificationStats()
   const { data: selectedDetail, isLoading: detailLoading } = useVerificationDetail(selectedUserId || '')
   const updateStatus = useUpdateVerificationStatus()
+  const saveSettings = useSaveVerificationSettings()
+
+  useEffect(() => {
+    if (verificationSettings) {
+      setSettingsDraft(verificationSettings)
+    }
+  }, [verificationSettings])
+
+  const isDirty = JSON.stringify(settingsDraft) !== JSON.stringify(verificationSettings)
+
+  const toggleSetting = (key: keyof VerificationSettings) => {
+    setSettingsDraft((prev) => (prev ? { ...prev, [key]: !prev[key] } : prev))
+  }
 
   const handleApprove = async (userId: string) => {
     try {
@@ -34,6 +56,15 @@ export default function VerificationOptions() {
       setSelectedUserId(null)
     } catch (error) {
       console.error('Failed to reject:', error)
+    }
+  }
+
+  const handleSaveSettings = async () => {
+    if (!settingsDraft || !canManageSettings) return
+    try {
+      await saveSettings.mutateAsync(settingsDraft)
+    } catch (error) {
+      console.error('Failed to save verification settings:', error)
     }
   }
 
@@ -59,9 +90,9 @@ export default function VerificationOptions() {
         <div className="max-w-5xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center text-sm mb-4">
-            <a className="text-slate-500 dark:text-slate-400 hover:text-primary" href="/accounts">
+            <Link className="text-slate-500 dark:text-slate-400 hover:text-primary" to="/accounts">
               Accounts
-            </a>
+            </Link>
             <ChevronRight className="w-4 h-4 mx-2 text-slate-400 dark:text-slate-500" />
             <span className="text-slate-800 dark:text-slate-200">Account Verification Options</span>
           </div>
@@ -103,76 +134,70 @@ export default function VerificationOptions() {
           </div>
 
           <div className="space-y-10">
-            {/* ID Verification Section */}
             <section>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-200/50 dark:border-slate-800/50 pb-2">
-                ID Verification
-              </h3>
-              <div className="bg-background-light/50 dark:bg-background-dark/50 p-4 rounded-lg border border-slate-200/50 dark:border-slate-800/50 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-slate-800 dark:text-slate-200">
-                      Government ID Check
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Verify user's identity using a government-issued ID.
-                    </p>
-                  </div>
-                  <button className="h-9 px-4 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary text-sm font-medium hover:bg-primary/20 dark:hover:bg-primary/30">
-                    Manage
-                  </button>
+              <div className="mb-4 flex items-center justify-between border-b border-slate-200/50 pb-2 dark:border-slate-800/50">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Verification Rules
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    These controls define which verification requirements are active across provider review flows.
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-slate-800 dark:text-slate-200">Liveness Check</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Ensure the user is physically present during verification.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-green-600 dark:text-green-400 font-medium">
-                      Enabled
-                    </span>
-                    <button className="h-9 px-4 rounded-lg bg-red-500/10 dark:bg-red-400/20 text-red-500 dark:text-red-400 text-sm font-medium hover:bg-red-500/20 dark:hover:bg-red-400/30">
-                      Disable
-                    </button>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveSettings}
+                  disabled={!canManageSettings || !isDirty || saveSettings.isPending || !settingsDraft}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {saveSettings.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Save Rules
+                </button>
               </div>
-            </section>
 
-            {/* Profile Verification Section */}
-            <section>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-200/50 dark:border-slate-800/50 pb-2">
-                Profile Verification
-              </h3>
-              <div className="bg-background-light/50 dark:bg-background-dark/50 p-4 rounded-lg border border-slate-200/50 dark:border-slate-800/50 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-slate-800 dark:text-slate-200">
-                      Profile Photo Check
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Ensure profile photo meets platform standards.
-                    </p>
-                  </div>
-                  <button className="h-9 px-4 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">
-                    Enable
-                  </button>
+              {!canManageSettings && (
+                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+                  Your role can review verification requests, but it cannot change verification rules.
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-slate-800 dark:text-slate-200">
-                      Social Media Verification
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Allow users to connect their social media accounts for verification.
-                    </p>
+              )}
+
+              <div className="bg-background-light/50 dark:bg-background-dark/50 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
+                {settingsLoading || !settingsDraft ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
-                  <button className="h-9 px-4 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">
-                    Enable
-                  </button>
-                </div>
+                ) : (
+                  <div className="divide-y divide-slate-200/50 dark:divide-slate-800/50">
+                    <VerificationRuleRow
+                      title="Government ID Check"
+                      description="Require a government-issued identity document before provider approval."
+                      enabled={settingsDraft.governmentIdCheckEnabled}
+                      disabled={!canManageSettings}
+                      onToggle={() => toggleSetting('governmentIdCheckEnabled')}
+                    />
+                    <VerificationRuleRow
+                      title="Liveness Check"
+                      description="Require selfie/liveness validation alongside identity documents."
+                      enabled={settingsDraft.livenessCheckEnabled}
+                      disabled={!canManageSettings}
+                      onToggle={() => toggleSetting('livenessCheckEnabled')}
+                    />
+                    <VerificationRuleRow
+                      title="Profile Photo Check"
+                      description="Require manual review of provider profile photos before activation."
+                      enabled={settingsDraft.profilePhotoCheckEnabled}
+                      disabled={!canManageSettings}
+                      onToggle={() => toggleSetting('profilePhotoCheckEnabled')}
+                    />
+                    <VerificationRuleRow
+                      title="Social Media Verification"
+                      description="Allow providers to link social profiles as an additional verification signal."
+                      enabled={settingsDraft.socialMediaVerificationEnabled}
+                      disabled={!canManageSettings}
+                      onToggle={() => toggleSetting('socialMediaVerificationEnabled')}
+                    />
+                  </div>
+                )}
               </div>
             </section>
 
@@ -394,6 +419,41 @@ export default function VerificationOptions() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function VerificationRuleRow({
+  title,
+  description,
+  enabled,
+  disabled,
+  onToggle,
+}: {
+  title: string
+  description: string
+  enabled: boolean
+  disabled?: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 p-4">
+      <div>
+        <p className="font-medium text-slate-800 dark:text-slate-200">{title}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={disabled}
+        className={`min-w-[110px] rounded-lg px-4 py-2 text-sm font-medium transition ${
+          enabled
+            ? 'bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:bg-green-500/20 dark:text-green-300'
+            : 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+        } disabled:cursor-not-allowed disabled:opacity-50`}
+      >
+        {enabled ? 'Enabled' : 'Disabled'}
+      </button>
     </div>
   )
 }

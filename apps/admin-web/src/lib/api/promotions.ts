@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
 /**
@@ -206,6 +208,7 @@ export function useCreatePromoCode() {
 
   return useMutation({
     mutationFn: async (input: CreatePromoCodeInput) => {
+      await requireAdminPermission('promotions.manage')
       const { data, error } = await supabase
         .from('promo_codes')
         .insert({
@@ -219,6 +222,19 @@ export function useCreatePromoCode() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'promotion.create',
+        entityType: 'promotion',
+        entityId: data.id,
+        summary: `Created promotion code ${data.code}`,
+        metadata: {
+          amountCents: data.amount_cents,
+          expiresAt: data.expires_at,
+          maxUses: data.max_uses,
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -243,6 +259,7 @@ export function useUpdatePromoCode() {
 
   return useMutation({
     mutationFn: async (input: UpdatePromoCodeInput) => {
+      await requireAdminPermission('promotions.manage')
       const { data, error } = await supabase
         .from('promo_codes')
         .update({
@@ -254,6 +271,18 @@ export function useUpdatePromoCode() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'promotion.update',
+        entityType: 'promotion',
+        entityId: data.id,
+        summary: `Updated promotion code ${data.code}`,
+        metadata: {
+          expiresAt: data.expires_at,
+          maxUses: data.max_uses,
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -271,6 +300,15 @@ export function useExpirePromoCode() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      await requireAdminPermission('promotions.manage')
+      const { data: existing, error: existingError } = await supabase
+        .from('promo_codes')
+        .select('id, code')
+        .eq('id', id)
+        .single()
+
+      if (existingError) throw existingError
+
       // Set expires_at to now to expire the code
       const { error } = await supabase
         .from('promo_codes')
@@ -278,6 +316,13 @@ export function useExpirePromoCode() {
         .eq('id', id)
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'promotion.expire',
+        entityType: 'promotion',
+        entityId: existing.id,
+        summary: `Expired promotion code ${existing.code}`,
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'promo-codes'] })

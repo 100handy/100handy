@@ -31,6 +31,20 @@ export interface VerificationStats {
   submittedCount: number
 }
 
+export interface VerificationSettings {
+  governmentIdCheckEnabled: boolean
+  livenessCheckEnabled: boolean
+  profilePhotoCheckEnabled: boolean
+  socialMediaVerificationEnabled: boolean
+}
+
+const DEFAULT_VERIFICATION_SETTINGS: VerificationSettings = {
+  governmentIdCheckEnabled: true,
+  livenessCheckEnabled: true,
+  profilePhotoCheckEnabled: false,
+  socialMediaVerificationEnabled: false,
+}
+
 // ============================================================================
 // Status Color Map
 // ============================================================================
@@ -40,6 +54,67 @@ const statusColors: Record<string, string> = {
   submitted: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
   verified: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+}
+
+const VERIFICATION_SETTINGS_KEY = 'accounts.verification_settings'
+
+export function useVerificationSettings() {
+  return useQuery({
+    queryKey: ['admin', 'verification-settings'],
+    queryFn: async (): Promise<VerificationSettings> => {
+      await requireAdminPermission('accounts.manage')
+
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value_json')
+        .eq('setting_key', VERIFICATION_SETTINGS_KEY)
+        .maybeSingle()
+
+      if (error) throw error
+
+      const value = (data?.value_json as Partial<VerificationSettings> | null) ?? {}
+      return {
+        ...DEFAULT_VERIFICATION_SETTINGS,
+        ...value,
+      }
+    },
+    staleTime: 30 * 1000,
+  })
+}
+
+export function useSaveVerificationSettings() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (settings: VerificationSettings) => {
+      const { user } = await requireAdminPermission('accounts.manage')
+
+      const { error } = await supabase
+        .from('site_settings')
+        .upsert(
+          {
+            setting_group: 'accounts',
+            setting_key: VERIFICATION_SETTINGS_KEY,
+            value_json: settings,
+            updated_by: user.id,
+          },
+          { onConflict: 'setting_key' },
+        )
+
+      if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'verification.settings.update',
+        entityType: 'verification_setting',
+        entityId: VERIFICATION_SETTINGS_KEY,
+        summary: 'Updated verification rules',
+        metadata: settings,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'verification-settings'] })
+    },
+  })
 }
 
 // ============================================================================
