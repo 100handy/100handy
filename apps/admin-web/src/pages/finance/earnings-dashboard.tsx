@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Search, Download, ChevronDown, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useHandyEarnings, type HandyEarningsFilters } from '@/lib/api/earnings'
 
 const statusColors = {
@@ -213,12 +214,12 @@ export default function EarningsDashboardPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <a
-                          href={`/handys/${handy.id}`}
+                        <Link
+                          to={`/handys/${handy.id}`}
                           className="font-medium text-primary hover:underline"
                         >
                           View Details
-                        </a>
+                        </Link>
                       </td>
                     </tr>
                   ))

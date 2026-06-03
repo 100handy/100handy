@@ -1,16 +1,19 @@
 import { useState, type ReactNode } from 'react'
 import { format } from 'date-fns'
-import { Calendar, CreditCard, Loader2, RefreshCcw, X } from 'lucide-react'
+import { Calendar, CreditCard, Loader2, Pencil, X } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import Header from '@/components/header'
 import { useAvailableHandys } from '@/lib/api/handys'
+import { useCategories } from '@/lib/api/categories'
 import { useRefundPayment } from '@/lib/api/finance'
-import { useCancelTask, useRescheduleTask, useTaskManagementDetails, useUpdateTask } from '@/lib/api/tasks'
+import { statusDisplayMap, useCancelTask, useRescheduleTask, useTaskManagementDetails, useUpdateTask } from '@/lib/api/tasks'
+import type { BookingStatus } from '@/lib/database.types'
 
 export default function TaskDetailsPage() {
   const { taskId } = useParams<{ taskId: string }>()
   const { data: task, isLoading, error } = useTaskManagementDetails(taskId)
   const { data: handys = [] } = useAvailableHandys()
+  const { data: categories = [] } = useCategories()
   const updateTask = useUpdateTask()
   const rescheduleTask = useRescheduleTask()
   const cancelTask = useCancelTask()
@@ -19,9 +22,19 @@ export default function TaskDetailsPage() {
   const [selectedHandy, setSelectedHandy] = useState<string>('')
   const [rescheduleDate, setRescheduleDate] = useState('')
   const [rescheduleTime, setRescheduleTime] = useState('')
+  const [showEditModal, setShowEditModal] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showRefundModal, setShowRefundModal] = useState(false)
   const [refundReason, setRefundReason] = useState('')
+  const [editForm, setEditForm] = useState({
+    task_title: '',
+    task_details: '',
+    category_id: '',
+    status: 'pending' as BookingStatus,
+    scheduled_date: '',
+    scheduled_time: '',
+    handy_id: '',
+  })
 
   if (isLoading) {
     return (
@@ -45,6 +58,33 @@ export default function TaskDetailsPage() {
         </main>
       </div>
     )
+  }
+
+  function openEditModal() {
+    setEditForm({
+      task_title: task.task_title || '',
+      task_details: task.task_details || '',
+      category_id: task.category_id || '',
+      status: task.status,
+      scheduled_date: task.scheduled_date || '',
+      scheduled_time: task.scheduled_time || '',
+      handy_id: task.handy?.user_id || '',
+    })
+    setShowEditModal(true)
+  }
+
+  async function handleSaveEdit() {
+    await updateTask.mutateAsync({
+      taskId: String(task.id),
+      task_title: editForm.task_title,
+      task_details: editForm.task_details || undefined,
+      category_id: editForm.category_id || undefined,
+      status: editForm.status,
+      scheduled_date: editForm.scheduled_date,
+      scheduled_time: editForm.scheduled_time,
+      handy_id: editForm.handy_id || undefined,
+    })
+    setShowEditModal(false)
   }
 
   async function handleReassign() {
@@ -187,6 +227,15 @@ export default function TaskDetailsPage() {
                   <div className="flex gap-2">
                     <button
                       type="button"
+                      onClick={openEditModal}
+                      disabled={updateTask.isPending}
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700 disabled:opacity-50"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      Edit booking
+                    </button>
+                    <button
+                      type="button"
                       disabled={cancelTask.isPending || task.status === 'cancelled'}
                       onClick={() => setShowCancelModal(true)}
                       className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 disabled:opacity-50 dark:border-red-900/60"
@@ -243,6 +292,61 @@ export default function TaskDetailsPage() {
           </section>
         </div>
       </main>
+
+      {showEditModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-3xl rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Edit booking</h3>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <Field label="Task title">
+                <input value={editForm.task_title} onChange={(e) => setEditForm((prev) => ({ ...prev, task_title: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
+              </Field>
+              <Field label="Category">
+                <select value={editForm.category_id} onChange={(e) => setEditForm((prev) => ({ ...prev, category_id: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900">
+                  <option value="">Select category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>{category.name}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Status">
+                <select value={editForm.status} onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value as BookingStatus }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900">
+                  {Object.entries(statusDisplayMap).map(([value, meta]) => (
+                    <option key={value} value={value}>{meta.label}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Assigned provider">
+                <select value={editForm.handy_id} onChange={(e) => setEditForm((prev) => ({ ...prev, handy_id: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900">
+                  <option value="">Unassigned</option>
+                  {handys.map((handy) => (
+                    <option key={handy.user_id} value={handy.user_id}>{handy.name}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Scheduled date">
+                <input type="date" value={editForm.scheduled_date} onChange={(e) => setEditForm((prev) => ({ ...prev, scheduled_date: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
+              </Field>
+              <Field label="Scheduled time">
+                <input type="time" value={editForm.scheduled_time} onChange={(e) => setEditForm((prev) => ({ ...prev, scheduled_time: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
+              </Field>
+              <div className="md:col-span-2">
+                <Field label="Description">
+                  <textarea value={editForm.task_details} onChange={(e) => setEditForm((prev) => ({ ...prev, task_details: e.target.value }))} rows={4} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                </Field>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setShowEditModal(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">
+                Cancel
+              </button>
+              <button type="button" onClick={handleSaveEdit} disabled={updateTask.isPending || !editForm.task_title.trim() || !editForm.scheduled_date || !editForm.scheduled_time} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
+                Save changes
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {showCancelModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -327,6 +431,15 @@ function Info({ label, value }: { label: string; value: string }) {
     <div>
       <div className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</div>
       <div className="mt-1 text-sm text-slate-900 dark:text-white">{value}</div>
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>
+      {children}
     </div>
   )
 }
