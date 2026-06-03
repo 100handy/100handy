@@ -167,7 +167,7 @@ export function useHandyApplicants(
         }
 
         const applicationDate = handy.created_at
-          ? new Date(handy.created_at).toLocaleDateString('en-US', {
+          ? new Date(handy.created_at).toLocaleDateString('en-GB', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',

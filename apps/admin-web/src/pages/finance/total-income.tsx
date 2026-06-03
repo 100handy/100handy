@@ -23,12 +23,12 @@ import {
 
 const formatCurrency = (value: number): string => {
   if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`
+    return `£${(value / 1000000).toFixed(1)}M`
   }
   if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}K`
+    return `£${(value / 1000).toFixed(0)}K`
   }
-  return `$${value.toFixed(0)}`
+  return `£${value.toFixed(0)}`
 }
 
 export default function TotalIncome() {
@@ -45,28 +45,28 @@ export default function TotalIncome() {
   const kpiData = [
     {
       label: 'Total Revenue',
-      value: metrics ? formatCurrency(metrics.totalRevenue) : '$0',
+      value: metrics ? formatCurrency(metrics.totalRevenue) : '£0',
       icon: DollarSign,
       change: metrics ? `${metrics.revenueChange > 0 ? '+' : ''}${metrics.revenueChange}%` : '0%',
       isPositive: metrics ? metrics.revenueChange >= 0 : true,
     },
     {
       label: 'Platform Fees',
-      value: metrics ? formatCurrency(metrics.platformFees) : '$0',
+      value: metrics ? formatCurrency(metrics.platformFees) : '£0',
       icon: Receipt,
       change: metrics ? `${metrics.feesChange > 0 ? '+' : ''}${metrics.feesChange}%` : '0%',
       isPositive: metrics ? metrics.feesChange >= 0 : true,
     },
     {
       label: 'Total Payouts to Handys',
-      value: metrics ? formatCurrency(metrics.totalPayouts) : '$0',
+      value: metrics ? formatCurrency(metrics.totalPayouts) : '£0',
       icon: CreditCard,
       change: metrics ? `${metrics.payoutsChange > 0 ? '+' : ''}${metrics.payoutsChange}%` : '0%',
       isPositive: metrics ? metrics.payoutsChange <= 0 : true, // Less payouts relative to revenue is positive
     },
     {
       label: 'Avg. Income per Handy',
-      value: metrics ? formatCurrency(metrics.avgIncomePerHandy) : '$0',
+      value: metrics ? formatCurrency(metrics.avgIncomePerHandy) : '£0',
       icon: User,
       subtitle: metrics ? `Based on ${metrics.activeHandyCount} active Handys` : 'No data',
     },
@@ -144,7 +144,7 @@ export default function TotalIncome() {
                     <XAxis dataKey="month" stroke="#9ca3af" />
                     <YAxis
                       stroke="#9ca3af"
-                      tickFormatter={(value) => `$${value / 1000}K`}
+                      tickFormatter={(value) => `£${value / 1000}K`}
                     />
                     <Tooltip
                       contentStyle={{
@@ -154,7 +154,7 @@ export default function TotalIncome() {
                         color: '#fff',
                       }}
                       formatter={(value: number) =>
-                        `$${value.toLocaleString('en-US', {
+                        `£${value.toLocaleString('en-GB', {
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 0,
                         })}`
@@ -224,7 +224,7 @@ export default function TotalIncome() {
                         color: '#fff',
                       }}
                       formatter={(value: number) =>
-                        `$${value.toLocaleString('en-US', {
+                        `£${value.toLocaleString('en-GB', {
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 0,
                         })}`
@@ -309,8 +309,8 @@ export default function TotalIncome() {
                           transaction.amount > 0 ? 'text-green-500' : 'text-red-500'
                         }`}
                       >
-                        {transaction.amount > 0 ? '+' : ''}$
-                        {Math.abs(transaction.amount).toLocaleString('en-US', {
+                        {transaction.amount > 0 ? '+' : '-'}£
+                        {Math.abs(transaction.amount).toLocaleString('en-GB', {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}

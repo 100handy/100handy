@@ -160,7 +160,7 @@ export default function PaymentMethods() {
                   </select>
                 </Field>
               </div>
-              <Field label="Supported currencies"><input value={form.supported_currencies} onChange={(e) => setForm((prev) => ({ ...prev, supported_currencies: e.target.value }))} placeholder="GBP, USD" className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
+              <Field label="Supported currencies"><input value={form.supported_currencies} onChange={(e) => setForm((prev) => ({ ...prev, supported_currencies: e.target.value }))} placeholder="GBP" className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
               <Field label="Config reference"><input value={form.config_reference} onChange={(e) => setForm((prev) => ({ ...prev, config_reference: e.target.value }))} placeholder="Supabase secrets / Stripe dashboard" className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
               <Field label="Operational notes"><textarea value={form.notes} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} rows={4} className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-slate-900" /></Field>
               <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">

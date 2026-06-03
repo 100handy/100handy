@@ -51,7 +51,7 @@ export default function RescheduleTaskPage() {
   const formatDateTime = (date: string, time: string) => {
     try {
       const dateObj = new Date(`${date}T${time}`)
-      return dateObj.toLocaleDateString('en-US', {
+      return dateObj.toLocaleDateString('en-GB', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

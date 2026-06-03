@@ -59,7 +59,7 @@ export default function EarningsDashboardPage() {
     const rows = handyEarnings.map((h) => [
       h.id,
       h.name,
-      `$${h.totalEarnings.toFixed(2)}`,
+      `£${h.totalEarnings.toFixed(2)}`,
       h.tasksCompleted.toString(),
       h.lastPayoutDate || 'N/A',
       statusLabels[h.payoutStatus],
@@ -200,7 +200,7 @@ export default function EarningsDashboardPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
-                        ${handy.totalEarnings.toFixed(2)}
+                        £{handy.totalEarnings.toFixed(2)}
                       </td>
                       <td className="px-6 py-4">{handy.tasksCompleted}</td>
                       <td className="px-6 py-4">{handy.lastPayoutDate || 'N/A'}</td>

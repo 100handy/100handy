@@ -9,7 +9,12 @@ import {
 } from '@/lib/api/finance-extended';
 
 const formatCurrency = (value: number): string => {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'GBP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 };
 
 const getTypeColor = (type: AccountBalance['type']): string => {
@@ -40,7 +45,7 @@ export default function AccountBalances() {
   const summaryCards = [
     {
       label: 'Handy Payout Balances',
-      value: summary ? formatCurrency(summary.handyPayoutBalances) : '$0.00',
+      value: summary ? formatCurrency(summary.handyPayoutBalances) : '£0.00',
       icon: Wallet,
       iconBg: 'bg-blue-100 dark:bg-blue-900/50',
       iconColor: 'text-blue-600 dark:text-blue-400',
@@ -48,7 +53,7 @@ export default function AccountBalances() {
     },
     {
       label: 'Client Credit Balances',
-      value: summary ? formatCurrency(summary.clientCreditBalances) : '$0.00',
+      value: summary ? formatCurrency(summary.clientCreditBalances) : '£0.00',
       icon: Gift,
       iconBg: 'bg-green-100 dark:bg-green-900/50',
       iconColor: 'text-green-600 dark:text-green-400',
@@ -56,7 +61,7 @@ export default function AccountBalances() {
     },
     {
       label: 'Platform Revenue Account',
-      value: summary ? formatCurrency(summary.platformRevenue) : '$0.00',
+      value: summary ? formatCurrency(summary.platformRevenue) : '£0.00',
       icon: TrendingUp,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',

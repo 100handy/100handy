@@ -10,7 +10,12 @@ import {
 } from '@/lib/api/promotions'
 
 const formatCurrency = (value: number): string => {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'GBP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
 }
 
 export default function PromotionsManagementPage() {
