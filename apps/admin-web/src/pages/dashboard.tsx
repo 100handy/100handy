@@ -1,8 +1,10 @@
 import { format } from 'date-fns'
 import {
   Activity,
+  AlertTriangle,
   CreditCard,
   LifeBuoy,
+  Scale,
   TrendingUp,
   UserRound,
   Wrench,
@@ -38,7 +40,9 @@ const CARD_ICONS = [
   TrendingUp,
   TrendingUp,
   CreditCard,
+  Scale,
   CreditCard,
+  AlertTriangle,
   LifeBuoy,
   CreditCard,
 ]
@@ -106,6 +110,10 @@ export default function DashboardPage() {
             <div className="h-80">
               {isLoading ? (
                 <div className="h-full animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
+              ) : !data?.trends?.length ? (
+                <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                  No booking or revenue trend data yet.
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={data?.trends || []}>
@@ -131,6 +139,10 @@ export default function DashboardPage() {
             <div className="h-80">
               {isLoading ? (
                 <div className="h-full animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
+              ) : !data?.trends?.length ? (
+                <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                  No marketplace growth data yet.
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data?.trends || []}>

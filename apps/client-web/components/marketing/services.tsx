@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useHomeCategory } from "./home-category-context";
 import { useSubcategories, useTopLevelCategories, type Category } from '@shared/query';
 import { getCategoryIcon } from "@/components/icons/category-icons";
+import { resolvePublicAssetUrl } from "@/lib/content-platform";
 
 // Fallback categories for when DB is unavailable
 const fallbackMainCategories = [
@@ -29,11 +30,12 @@ function CategoryBadge({
   active?: boolean
 }) {
   const Icon = getCategoryIcon(category.name);
+  const iconSrc = resolvePublicAssetUrl(category.icon_url);
 
-  if (category.icon_url) {
+  if (iconSrc) {
     return (
       <Image
-        src={category.icon_url}
+        src={iconSrc}
         alt={category.name}
         width={size}
         height={size}

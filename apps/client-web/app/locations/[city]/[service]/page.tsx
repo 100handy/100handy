@@ -9,6 +9,7 @@ import { FAQSection } from "@/components/location-service/faq-section";
 import { getCategoryIcon } from "@/components/icons/category-icons";
 import { getBookingCategoryForCityService } from "@/lib/booking-categories";
 import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
+import { resolvePublicAssetUrl } from "@/lib/content-platform";
 import { getCategoryRouteSlug } from "@/lib/service-routes";
 import { getServiceCategoryByRoute } from "@/lib/supabase/categories";
 
@@ -640,11 +641,12 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers,
             <div className="flex items-center justify-center">
               {(() => {
                 const ServiceIcon = getCategoryIcon(service.name);
+                const iconSrc = resolvePublicAssetUrl(service.icon_url)
                 return (
                   <div className="flex h-52 w-52 items-center justify-center rounded-full bg-white/10">
-                    {service.icon_url ? (
+                    {iconSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={service.icon_url} alt={service.name} className="h-28 w-28 rounded-full object-cover" />
+                      <img src={iconSrc} alt={service.name} className="h-28 w-28 rounded-full object-cover" />
                     ) : (
                       <ServiceIcon className="h-28 w-28 text-white" />
                     )}

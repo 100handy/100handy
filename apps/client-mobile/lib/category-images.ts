@@ -43,6 +43,10 @@ export function getAppCategoryImageUri(
   return imageMap[key] ?? null
 }
 
+export function resolveCategoryIconUri(category: CategoryMediaLike): string | null {
+  return resolvePublicAssetUrl(category.icon_url)
+}
+
 export function resolveCategoryImageUri(
   category: CategoryMediaLike,
   categoryName: string,

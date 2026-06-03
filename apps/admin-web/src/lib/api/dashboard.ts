@@ -37,6 +37,7 @@ export interface DashboardOverview {
     cancelledJobs: DashboardMetricCard
     revenue: DashboardMetricCard
     refunds: DashboardMetricCard
+    openDisputes: DashboardMetricCard
     openSupportTickets: DashboardMetricCard
     failedPayments: DashboardMetricCard
   }
@@ -74,6 +75,7 @@ export function useDashboardOverview() {
         cancelledBookingsResult,
         paidPaymentsResult,
         refundedPaymentsResult,
+        openDisputesResult,
         failedPaymentsResult,
         supportTicketsResult,
         profilesResult,
@@ -85,7 +87,7 @@ export function useDashboardOverview() {
         supabase
           .from('handy_profiles')
           .select('user_id', { count: 'exact', head: true })
-          .in('verification_status', ['pending', 'submitted']),
+          .eq('verified', false),
         supabase
           .from('bookings')
           .select('id', { count: 'exact', head: true })
@@ -94,26 +96,19 @@ export function useDashboardOverview() {
         supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'cancelled'),
         supabase.from('payments').select('amount_cents, created_at').eq('status', 'paid'),
         supabase.from('payments').select('amount_cents').eq('status', 'refunded'),
+        supabase.from('disputes').select('id', { count: 'exact', head: true }).in('status', ['open', 'investigating']),
         supabase.from('payments').select('id', { count: 'exact', head: true }).eq('status', 'failed'),
         supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'pending']),
         supabase.from('profiles').select('role, created_at'),
         supabase.from('bookings').select('status, created_at'),
         supabase
           .from('bookings')
-          .select(`
-            id,
-            task_title,
-            status,
-            scheduled_date,
-            categories(name),
-            customer:profiles!bookings_customer_profile_fkey(first_name, last_name),
-            provider:profiles!bookings_handy_id_fkey(first_name, last_name)
-          `)
+          .select('id, task_title, status, scheduled_date, category_id, customer_id, handy_id')
           .order('created_at', { ascending: false })
           .limit(8),
       ])
 
-      const error =
+      const primaryError =
         customerCountResult.error ||
         providerCountResult.error ||
         pendingApprovalsResult.error ||
@@ -122,18 +117,56 @@ export function useDashboardOverview() {
         cancelledBookingsResult.error ||
         paidPaymentsResult.error ||
         refundedPaymentsResult.error ||
+        openDisputesResult.error ||
         failedPaymentsResult.error ||
         supportTicketsResult.error ||
         profilesResult.error ||
         bookingsResult.error ||
         recentBookingsResult.error
 
-      if (error) throw error
+      if (primaryError) {
+        throw new Error(primaryError.message || 'Failed to load dashboard data.')
+      }
 
       const profiles = profilesResult.data ?? []
       const bookings = bookingsResult.data ?? []
       const paidPayments = paidPaymentsResult.data ?? []
       const refundedPayments = refundedPaymentsResult.data ?? []
+      const recentBookings = recentBookingsResult.data ?? []
+
+      const categoryIds = Array.from(
+        new Set(recentBookings.map((booking) => booking.category_id).filter((value): value is string => Boolean(value))),
+      )
+      const profileIds = Array.from(
+        new Set(
+          recentBookings.flatMap((booking) => [booking.customer_id, booking.handy_id]).filter((value): value is string => Boolean(value)),
+        ),
+      )
+
+      const [categoriesLookupResult, profilesLookupResult] = await Promise.all([
+        categoryIds.length > 0
+          ? supabase.from('categories').select('id, name').in('id', categoryIds)
+          : Promise.resolve({ data: [], error: null }),
+        profileIds.length > 0
+          ? supabase.from('profiles').select('user_id, first_name, last_name').in('user_id', profileIds)
+          : Promise.resolve({ data: [], error: null }),
+      ])
+
+      if (categoriesLookupResult.error || profilesLookupResult.error) {
+        throw new Error(
+          categoriesLookupResult.error?.message ||
+          profilesLookupResult.error?.message ||
+          'Failed to resolve dashboard booking details.',
+        )
+      }
+
+      const categoryMap = new Map((categoriesLookupResult.data ?? []).map((category) => [category.id, category.name]))
+      const profileMap = new Map(
+        (profilesLookupResult.data ?? []).map((profile) => [
+          profile.user_id,
+          `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+        ]),
+      )
 
       const trends = monthBuckets.map((bucket) => {
         const monthlyBookings = bookings.filter(
@@ -178,22 +211,18 @@ export function useDashboardOverview() {
             value: refundedPayments.reduce((sum, payment) => sum + payment.amount_cents, 0) / 100,
             format: 'currency',
           },
+          openDisputes: { label: 'Open Disputes', value: openDisputesResult.count || 0, format: 'number' },
           openSupportTickets: { label: 'Open Support Tickets', value: supportTicketsResult.count || 0, format: 'number' },
           failedPayments: { label: 'Failed Payments', value: failedPaymentsResult.count || 0, format: 'number' },
         },
         trends,
         recentBookings: (recentBookingsResult.data ?? []).map((booking) => {
-          const customer = Array.isArray(booking.customer) ? booking.customer[0] : booking.customer
-          const provider = Array.isArray(booking.provider) ? booking.provider[0] : booking.provider
-          const category = Array.isArray(booking.categories) ? booking.categories[0] : booking.categories
           return {
             id: String(booking.id),
-            customer_name:
-              `${customer?.first_name || ''} ${customer?.last_name || ''}`.trim() || 'Unknown customer',
-            provider_name:
-              `${provider?.first_name || ''} ${provider?.last_name || ''}`.trim() || 'Unassigned',
+            customer_name: booking.customer_id ? profileMap.get(booking.customer_id) || 'Unknown customer' : 'Unknown customer',
+            provider_name: booking.handy_id ? profileMap.get(booking.handy_id) || 'Unassigned' : 'Unassigned',
             task_title: booking.task_title,
-            category_name: category?.name || 'Uncategorised',
+            category_name: booking.category_id ? categoryMap.get(booking.category_id) || 'Uncategorised' : 'Uncategorised',
             status: booking.status,
             scheduled_date: booking.scheduled_date,
           }

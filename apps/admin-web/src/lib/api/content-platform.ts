@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission, requireAdminPermissions } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
@@ -340,6 +341,17 @@ async function createNotificationAuditEvent(
     metadata_json: metadata,
   })
   if (error) throw error
+
+  await createAdminAuditLog({
+    action: `notification.${channel}.${action}`,
+    entityType,
+    entityId,
+    summary: `${channel.toUpperCase()} ${action.replaceAll('_', ' ')}`,
+    metadata: {
+      channel,
+      ...metadata,
+    },
+  })
 }
 
 async function previewNotificationAudienceCount(input: NotificationAudiencePreviewInput) {
@@ -1841,10 +1853,26 @@ export function useSaveAnnouncement() {
         .from('announcements')
         .upsert(row, { onConflict: 'id' })
       if (error) throw error
+
+      await createNotificationAuditEvent(
+        user.id,
+        'announcement',
+        input.id ? 'update_announcement' : 'create_announcement',
+        'announcement',
+        input.id ?? null,
+        {
+          placement: input.placement,
+          audience: input.audience,
+          channelScope: input.channel_scope,
+          active: input.active,
+        },
+      )
     },
     onSuccess: (_, input) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcements', input.placement] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notifications-summary'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
     },
   })
 }
@@ -1853,12 +1881,15 @@ export function useDeleteAnnouncement() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      await requireAdminPermission('notifications.manage')
+      const { user } = await requireAdminPermission('notifications.manage')
       const { error } = await supabase.from('announcements').delete().eq('id', id)
       if (error) throw error
+      await createNotificationAuditEvent(user.id, 'announcement', 'delete_announcement', 'announcement', id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notifications-summary'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
     },
   })
 }
@@ -1931,6 +1962,12 @@ export function useSaveAnnouncementDraft() {
           })
           .eq('id', existingDraft.id)
         if (error) throw error
+        await createNotificationAuditEvent(user.id, 'announcement', 'save_draft', 'announcement_draft', existingDraft.id, {
+          announcementKey,
+          placement: announcement.placement,
+          audience: announcement.audience,
+          channelScope: announcement.channel_scope,
+        })
         return existingDraft.id
       }
 
@@ -1948,11 +1985,18 @@ export function useSaveAnnouncementDraft() {
         .select('id')
         .single()
       if (error) throw error
+      await createNotificationAuditEvent(user.id, 'announcement', 'save_draft', 'announcement_draft', data.id, {
+        announcementKey,
+        placement: announcement.placement,
+        audience: announcement.audience,
+        channelScope: announcement.channel_scope,
+      })
       return data.id
     },
     onSuccess: (_, { announcementKey }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey, 'latest-draft'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
     },
   })
 }
@@ -1979,6 +2023,7 @@ export function usePublishAnnouncementDraft() {
         id: draft.announcement_id ?? announcement.id ?? undefined,
         audience: announcement.audience,
         placement: announcement.placement,
+        channel_scope: announcement.channel_scope,
         title: announcement.title,
         body: announcement.body,
         cta_label: announcement.cta_label || null,
@@ -2006,10 +2051,21 @@ export function usePublishAnnouncementDraft() {
         })
         .eq('id', draft.id)
       if (publishError) throw publishError
+
+      await createNotificationAuditEvent(user.id, 'announcement', 'publish_announcement', 'announcement', data.id, {
+        announcementKey,
+        placement: announcement.placement,
+        audience: announcement.audience,
+        channelScope: announcement.channel_scope,
+        active: announcement.active,
+      })
     },
-    onSuccess: () => {
+    onSuccess: (_, announcementKey) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'notifications-summary'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey, 'latest-draft'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
     },
   })
 }
@@ -2046,6 +2102,10 @@ export function useRestoreAnnouncementRevision() {
           })
           .eq('id', existingDraft.id)
         if (updateError) throw updateError
+        await createNotificationAuditEvent(user.id, 'announcement', 'restore_revision', 'announcement_revision', revisionId, {
+          announcementKey,
+          restoredVersion: revision.version_number,
+        })
         return
       }
 
@@ -2061,10 +2121,15 @@ export function useRestoreAnnouncementRevision() {
           created_by: user.id,
         })
       if (insertError) throw insertError
+      await createNotificationAuditEvent(user.id, 'announcement', 'restore_revision', 'announcement_revision', revisionId, {
+        announcementKey,
+        restoredVersion: revision.version_number,
+      })
     },
     onSuccess: (_, { announcementKey }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'announcement-revisions', announcementKey, 'latest-draft'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'notification-audit-events'] })
     },
   })
 }

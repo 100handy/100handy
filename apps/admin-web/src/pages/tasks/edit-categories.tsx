@@ -64,6 +64,17 @@ const emptyForm: CategoryFormData = {
   faqs: [],
 }
 
+const SITE_ASSET_BASE = (import.meta.env.VITE_SITE_URL || '').replace(/\/$/, '')
+
+function resolvePreviewUrl(src?: string | null) {
+  if (!src) return null
+  if (/^https?:\/\//i.test(src)) return src
+  if (src.startsWith('/')) {
+    return SITE_ASSET_BASE ? `${SITE_ASSET_BASE}${src}` : src
+  }
+  return SITE_ASSET_BASE ? `${SITE_ASSET_BASE}/${src}` : src
+}
+
 function getCategoryDepthLabel(category: CategoryWithStats) {
   if (category.level === 0) return 'Main category'
   if (category.level === 1) return 'Subcategory'
@@ -715,12 +726,16 @@ function MediaThumb({
   alt: string
   label: string
 }) {
-  return src ? (
+  const [failed, setFailed] = useState(false)
+  const resolvedSrc = resolvePreviewUrl(src)
+
+  return resolvedSrc && !failed ? (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       title={label}
       className="h-12 w-12 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+      onError={() => setFailed(true)}
     />
   ) : (
     <div

@@ -8,7 +8,7 @@ import { getCategoryTree } from "@/lib/supabase/categories";
 import type { CategoryWithChildren } from "@/lib/supabase/types";
 import { getCategoryIcon } from "@/components/icons/category-icons";
 import { getCategoryRouteSlug, getServiceRoute } from "@/lib/service-routes";
-import { getServiceWebImageSettings } from "@/lib/content-platform";
+import { getServiceWebImageSettings, resolvePublicAssetUrl } from "@/lib/content-platform";
 
 // Map category names to their card images (includes both DB and fallback names)
 const categoryImages: Record<string, string> = {
@@ -54,6 +54,7 @@ function ServiceCategoryCard({
     category.route_slug ?? getCategoryRouteSlug(category.name) ?? slugify(category.name);
   const subcategories = category.subcategories || [];
   const Icon = getCategoryIcon(category.name);
+  const categoryIconSrc = resolvePublicAssetUrl(category.icon_url)
 
   const cardImage = category.content_image_url ?? imageOverrides[category.name] ?? categoryImages[category.name];
 
@@ -74,9 +75,9 @@ function ServiceCategoryCard({
         </div>
       ) : (
         <div className="flex h-48 items-center justify-center bg-brand-dark-alt">
-          {category.icon_url ? (
+          {categoryIconSrc ? (
             <Image
-              src={category.icon_url}
+              src={categoryIconSrc}
               alt={category.name}
               width={64}
               height={64}
@@ -107,15 +108,16 @@ function ServiceCategoryCard({
                 ? `/services/${route.category}/${route.service}`
                 : `/services/${categorySlug}/${serviceSlug}`;
               const SubIcon = getCategoryIcon(subcategory.name);
+              const subcategoryIconSrc = resolvePublicAssetUrl(subcategory.icon_url)
               return (
                 <li key={subcategory.id}>
                   <Link
                     href={href}
                     className="flex items-center gap-2 text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 hover:underline transition-colors"
                   >
-                    {subcategory.icon_url ? (
+                    {subcategoryIconSrc ? (
                       <Image
-                        src={subcategory.icon_url}
+                        src={subcategoryIconSrc}
                         alt={subcategory.name}
                         width={16}
                         height={16}
