@@ -14,7 +14,6 @@ import BrowseCategoriesPage from '@/pages/tasks/browse-categories'
 import RolloutPlannerPage from '@/pages/tasks/rollout-planner'
 import TaskDetailsPage from '@/pages/tasks/task-details'
 import EditCategoriesPage from '@/pages/tasks/edit-categories'
-import DeleteCategoriesPage from '@/pages/tasks/delete-categories'
 import HandysPage from '@/pages/handys'
 import ProviderProfilePage from '@/pages/handys/provider-profile'
 import EarningsDashboardPage from '@/pages/finance/earnings-dashboard'
@@ -122,7 +121,7 @@ function App() {
             <Route path="/tasks/categories" element={<BrowseCategoriesPage />} />
             <Route path="/tasks/rollouts" element={<RolloutPlannerPage />} />
             <Route path="/tasks/categories/edit" element={<EditCategoriesPage />} />
-            <Route path="/tasks/categories/delete" element={<DeleteCategoriesPage />} />
+            <Route path="/tasks/categories/delete" element={<Navigate to="/tasks/categories/edit" replace />} />
             <Route path="/tasks/list" element={<TaskListPage />} />
             <Route path="/tasks/open" element={<TaskListPage pageTitle="Open Tasks" forcedStatus="pending" />} />
             <Route path="/tasks/scheduled" element={<TaskListPage pageTitle="Scheduled Tasks" forcedStatus="accepted" />} />

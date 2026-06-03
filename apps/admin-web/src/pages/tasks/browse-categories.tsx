@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Search, Plus, Edit, Trash2, Loader2, ArrowUp, ArrowDown, Image as ImageIcon } from 'lucide-react'
+import { Search, Plus, Edit, Loader2, ArrowUp, ArrowDown, Image as ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { useAuth } from '@/contexts/AuthContext'
@@ -164,13 +164,6 @@ export default function BrowseCategoriesPage() {
               >
                 <Edit className="w-5 h-5" />
                 Edit Categories
-              </Link>
-              <Link
-                to="/tasks/categories/delete"
-                className={`bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-red-200 dark:hover:bg-red-900/50 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
-              >
-                <Trash2 className="w-5 h-5" />
-                Delete Categories
               </Link>
             </div>
             <Link
