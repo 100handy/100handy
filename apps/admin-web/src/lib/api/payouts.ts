@@ -115,7 +115,7 @@ export function useProcessAdminPayout() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ bookingId }: { bookingId: string }) => {
-      await requireAdminPermission('finance.view')
+      await requireAdminPermission('finance.manage')
 
       const { data, error } = await supabase.functions.invoke('admin-process-payout', {
         body: { bookingId },
@@ -147,7 +147,7 @@ export function useMarkPayoutFailed() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ bookingId, reason }: { bookingId: string; reason: string }) => {
-      await requireAdminPermission('finance.view')
+      await requireAdminPermission('finance.manage')
       const { error } = await supabase
         .from('bookings')
         .update({ payout_status: 'failed' })

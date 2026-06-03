@@ -94,30 +94,44 @@ export function useRefundPayment() {
 
   return useMutation({
     mutationFn: async ({ paymentId, reason }: { paymentId: string; reason: string }) => {
-      await requireAdminPermission('finance.view')
+      await requireAdminPermission('finance.manage')
 
-      const { data, error } = await supabase
+      const { data: payment, error: paymentError } = await supabase
         .from('payments')
-        .update({ status: 'refunded' })
-        .eq('id', paymentId)
         .select('id, booking_id, amount_cents, status')
+        .eq('id', paymentId)
         .single()
 
-      if (error) throw error
+      if (paymentError) throw paymentError
+      if (!payment.booking_id) throw new Error('Cannot refund a payment that is not linked to a booking.')
 
-      await createAdminAuditLog({
-        action: 'payment.refund',
-        entityType: 'payment',
-        entityId: String(data.id),
-        summary: `Refunded payment ${data.id}`,
-        metadata: {
-          bookingId: data.booking_id,
-          amountCents: data.amount_cents,
+      const { data: refundResult, error: refundError } = await supabase.functions.invoke('refund-payment', {
+        body: {
+          bookingId: payment.booking_id,
           reason,
         },
       })
 
-      return data
+      if (refundError) throw refundError
+      if (refundResult?.error) throw new Error(refundResult.error)
+
+      await createAdminAuditLog({
+        action: 'payment.refund',
+        entityType: 'payment',
+        entityId: String(payment.id),
+        summary: `Refunded payment ${payment.id}`,
+        metadata: {
+          bookingId: payment.booking_id,
+          amountCents: payment.amount_cents,
+          reason,
+          refundId: refundResult?.refundId ?? null,
+        },
+      })
+
+      return {
+        ...payment,
+        refundId: refundResult?.refundId ?? null,
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['finance'] })
