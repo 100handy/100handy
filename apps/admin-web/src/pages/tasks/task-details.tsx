@@ -19,6 +19,9 @@ export default function TaskDetailsPage() {
   const [selectedHandy, setSelectedHandy] = useState<string>('')
   const [rescheduleDate, setRescheduleDate] = useState('')
   const [rescheduleTime, setRescheduleTime] = useState('')
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showRefundModal, setShowRefundModal] = useState(false)
+  const [refundReason, setRefundReason] = useState('')
 
   if (isLoading) {
     return (
@@ -63,15 +66,16 @@ export default function TaskDetailsPage() {
   }
 
   async function handleCancel() {
-    if (!window.confirm('Cancel this booking?')) return
     await cancelTask.mutateAsync(String(task.id))
+    setShowCancelModal(false)
   }
 
   async function handleRefund() {
     if (!task.payment) return
-    const reason = window.prompt('Refund reason')
-    if (!reason) return
-    await refundPayment.mutateAsync({ paymentId: task.payment.id, reason })
+    if (!refundReason.trim()) return
+    await refundPayment.mutateAsync({ paymentId: task.payment.id, reason: refundReason.trim() })
+    setRefundReason('')
+    setShowRefundModal(false)
   }
 
   return (
@@ -184,7 +188,7 @@ export default function TaskDetailsPage() {
                     <button
                       type="button"
                       disabled={cancelTask.isPending || task.status === 'cancelled'}
-                      onClick={handleCancel}
+                      onClick={() => setShowCancelModal(true)}
                       className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 disabled:opacity-50 dark:border-red-900/60"
                     >
                       <X className="h-4 w-4" />
@@ -208,7 +212,7 @@ export default function TaskDetailsPage() {
                     <button
                       type="button"
                       disabled={refundPayment.isPending || task.payment.status !== 'paid'}
-                      onClick={handleRefund}
+                      onClick={() => setShowRefundModal(true)}
                       className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 disabled:opacity-50 dark:border-red-900/60"
                     >
                       <CreditCard className="h-4 w-4" />
@@ -239,6 +243,72 @@ export default function TaskDetailsPage() {
           </section>
         </div>
       </main>
+
+      {showCancelModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Cancel booking</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Cancel <span className="font-medium text-slate-900 dark:text-white">{task.task_title}</span>. This action will update the booking immediately.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowCancelModal(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Keep booking
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={cancelTask.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showRefundModal && task.payment ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Issue refund</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Refund payment for <span className="font-medium text-slate-900 dark:text-white">{task.task_title}</span>. A reason is required for the audit trail.
+            </p>
+            <textarea
+              value={refundReason}
+              onChange={(event) => setRefundReason(event.target.value)}
+              rows={4}
+              className="mt-4 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              placeholder="Refund reason..."
+            />
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRefundModal(false)
+                  setRefundReason('')
+                }}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleRefund}
+                disabled={!refundReason.trim() || refundPayment.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm refund
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

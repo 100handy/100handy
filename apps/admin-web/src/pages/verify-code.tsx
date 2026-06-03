@@ -10,6 +10,7 @@ export default function VerifyCodePage() {
 
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
 
@@ -18,6 +19,7 @@ export default function VerifyCodePage() {
     if (code.length !== 6) return
 
     setError(null)
+    setSuccessMessage(null)
     setLoading(true)
 
     try {
@@ -49,6 +51,7 @@ export default function VerifyCodePage() {
   const handleResendCode = async () => {
     setResending(true)
     setError(null)
+    setSuccessMessage(null)
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -58,9 +61,7 @@ export default function VerifyCodePage() {
       if (error) {
         setError(error.message)
       } else {
-        // Show success message briefly
-        setError(null)
-        alert('Verification code resent to your email!')
+        setSuccessMessage('Verification code resent to your email.')
       }
     } catch {
       setError('Failed to resend code. Please try again.')
@@ -134,6 +135,12 @@ export default function VerifyCodePage() {
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
                 <p className="text-sm text-red-500">{error}</p>
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="mb-6 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
+                <p className="text-sm text-emerald-600 dark:text-emerald-400">{successMessage}</p>
               </div>
             )}
 

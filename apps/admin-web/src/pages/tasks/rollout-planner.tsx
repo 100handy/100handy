@@ -25,6 +25,7 @@ export default function RolloutPlannerPage() {
   const [status, setStatus] = useState<RolloutPresetStatus>('draft')
   const [notes, setNotes] = useState('')
   const [snapshot, setSnapshot] = useState<RolloutSnapshot>(emptySnapshot)
+  const [applyTarget, setApplyTarget] = useState<RolloutPreset | null>(null)
 
   const { data: currentSnapshot, isLoading: currentLoading } = useCurrentRolloutSnapshot()
   const { data: presets = [], isLoading: presetsLoading } = useRolloutPresets()
@@ -83,10 +84,10 @@ export default function RolloutPlannerPage() {
     loadPreset(saved)
   }
 
-  async function handleApply(preset: RolloutPreset) {
-    const confirmed = window.confirm(`Apply rollout preset "${preset.name}" now? This will update live category, area, and area-level rollout states.`)
-    if (!confirmed) return
-    await applyPreset.mutateAsync(preset)
+  async function handleApply() {
+    if (!applyTarget) return
+    await applyPreset.mutateAsync(applyTarget)
+    setApplyTarget(null)
   }
 
   return (
@@ -265,7 +266,7 @@ export default function RolloutPlannerPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleApply(preset)}
+                              onClick={() => setApplyTarget(preset)}
                               disabled={applyPreset.isPending}
                               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                             >
@@ -283,6 +284,38 @@ export default function RolloutPlannerPage() {
           </div>
         </div>
       </div>
+
+      {applyTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Apply rollout preset</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Apply <span className="font-medium text-slate-900 dark:text-white">{applyTarget.name}</span> now. This updates live category, service-area, and area-level rollout states.
+            </p>
+            <div className="mt-4 rounded-lg border border-slate-200 p-4 text-sm dark:border-slate-800">
+              <div className="font-medium text-slate-900 dark:text-white">{formatMonth(applyTarget.rollout_month)}</div>
+              <div className="mt-1 text-slate-500 dark:text-slate-400">{applyTarget.description || 'No description'}</div>
+            </div>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setApplyTarget(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApply}
+                disabled={applyPreset.isPending}
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Apply preset
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 }

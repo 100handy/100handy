@@ -17,6 +17,7 @@ export default function PromotionsManagementPage() {
   const [filter, setFilter] = useState<'all' | 'promotions' | 'referrals'>('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newCode, setNewCode] = useState({ code: '', amount: '', maxUses: '', expiresAt: '' })
+  const [expireTarget, setExpireTarget] = useState<PromoCode | null>(null)
 
   const { data: promoCodes, isLoading: codesLoading } = usePromoCodes(filter)
   const { data: stats, isLoading: statsLoading } = usePromoStats()
@@ -43,9 +44,9 @@ export default function PromotionsManagementPage() {
   }
 
   const handleExpireCode = async (id: string) => {
-    if (!confirm('Are you sure you want to expire this promo code?')) return
     try {
       await expirePromoCode.mutateAsync(id)
+      setExpireTarget(null)
     } catch (error) {
       console.error('Failed to expire promo code:', error)
     }
@@ -57,7 +58,7 @@ export default function PromotionsManagementPage() {
     if (code.status !== 'Expired') {
       actions.push({
         label: 'Expire',
-        action: () => handleExpireCode(code.id),
+        action: () => setExpireTarget(code),
         className: 'text-red-500',
       })
     }
@@ -343,6 +344,34 @@ export default function PromotionsManagementPage() {
           </div>
         </div>
       )}
+
+      {expireTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Expire campaign</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Expire <span className="font-medium text-slate-900 dark:text-white">{expireTarget.code}</span>. This stops further redemptions immediately.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setExpireTarget(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExpireCode(expireTarget.id)}
+                disabled={expirePromoCode.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm expire
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

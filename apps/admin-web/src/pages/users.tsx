@@ -8,6 +8,7 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [accountStatus, setAccountStatus] = useState<'active' | 'paused' | 'deleted' | ''>('')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // Fetch users with search filter
   const { data: users, isLoading, error } = useUsers({
@@ -35,20 +36,12 @@ export default function UsersPage() {
   const handleDeleteSelected = async () => {
     if (selectedUsers.length === 0) return
 
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone.`
-      )
-    ) {
-      return
-    }
-
     try {
       await deleteUsersMutation.mutateAsync(selectedUsers)
       setSelectedUsers([])
+      setShowDeleteConfirm(false)
     } catch (error) {
       console.error('Failed to delete users:', error)
-      alert('Failed to delete some users. Please try again.')
     }
   }
 
@@ -81,7 +74,7 @@ export default function UsersPage() {
                 <span>Add User</span>
               </Link>
               <button
-                onClick={handleDeleteSelected}
+                onClick={() => setShowDeleteConfirm(true)}
                 disabled={selectedUsers.length === 0 || deleteUsersMutation.isPending}
                 className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg border border-primary/30 text-slate-700 dark:text-slate-200 bg-background-light dark:bg-background-dark hover:bg-primary/10 dark:hover:bg-primary/20 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -245,6 +238,41 @@ export default function UsersPage() {
           )}
         </div>
       </div>
+
+      {showDeleteConfirm ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete selected users</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Delete {selectedUsers.length} selected user account{selectedUsers.length === 1 ? '' : 's'}. This removes the auth users and cascades dependent data.
+            </p>
+            {deleteUsersMutation.error ? (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+                {deleteUsersMutation.error instanceof Error
+                  ? deleteUsersMutation.error.message
+                  : 'Failed to delete selected users.'}
+              </div>
+            ) : null}
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteSelected}
+                disabled={deleteUsersMutation.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 }

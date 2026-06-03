@@ -20,6 +20,7 @@ export default function VerificationOptions() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'verified' | 'rejected'>('all')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [settingsDraft, setSettingsDraft] = useState<VerificationSettings | null>(null)
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null)
 
   const { data: verificationSettings, isLoading: settingsLoading } = useVerificationSettings()
   const { data: verificationRequests, isLoading: requestsLoading } = useVerificationRequests(filter)
@@ -50,10 +51,10 @@ export default function VerificationOptions() {
   }
 
   const handleReject = async (userId: string) => {
-    if (!confirm('Are you sure you want to reject this verification?')) return
     try {
       await updateStatus.mutateAsync({ userId, status: 'rejected' })
       setSelectedUserId(null)
+      setRejectTargetId(null)
     } catch (error) {
       console.error('Failed to reject:', error)
     }
@@ -391,7 +392,7 @@ export default function VerificationOptions() {
             {selectedDetail && selectedDetail.status !== 'verified' && (
               <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
                 <button
-                  onClick={() => handleReject(selectedUserId)}
+                  onClick={() => setRejectTargetId(selectedUserId)}
                   disabled={updateStatus.isPending}
                   className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
@@ -419,6 +420,34 @@ export default function VerificationOptions() {
           </div>
         </div>
       )}
+
+      {rejectTargetId ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Reject verification</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This will mark the provider verification as rejected. You can change it again later if needed.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setRejectTargetId(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleReject(rejectTargetId)}
+                disabled={updateStatus.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm reject
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
