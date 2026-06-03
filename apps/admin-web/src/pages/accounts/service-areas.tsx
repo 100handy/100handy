@@ -9,9 +9,7 @@ import {
   useAssignProviderToServiceArea,
   useBulkImportLocationAreas,
   useCoverageDemandInsights,
-  useLocationCoverageSummary,
   useLocationAreas,
-  useLocationMapData,
   useProviderCandidates,
   useRemoveProviderFromServiceArea,
   useSaveLocationArea,
@@ -49,8 +47,6 @@ export default function ServiceAreasPage() {
 
   const { data: areas = [], isLoading, error } = useServiceAreas()
   const { data: locationAreas = [], isLoading: locationAreasLoading, error: locationAreasError } = useLocationAreas()
-  const { data: coverageSummary = [] } = useLocationCoverageSummary()
-  const { data: locationMapData = [] } = useLocationMapData()
   const { data: healthWarnings = [] } = useServiceAreaHealthWarnings()
   const { data: coverageDemand } = useCoverageDemandInsights()
   const { data: categoryMatrix, isLoading: categoryMatrixLoading } = useCategoryAreaCoverageMatrix()
@@ -107,6 +103,19 @@ export default function ServiceAreasPage() {
       rows: categoryMatrix.rows.filter((row) => row.active),
     }
   }, [categoryMatrix])
+  const locationOverview = useMemo(() => {
+    const enabledLocationAreas = locationAreas.filter((area) => area.enabled).length
+    const enabledServiceAreas = areas.filter((area) => area.enabled).length
+    const activeAssignments = areas.reduce((sum, area) => sum + area.activeAssignedProviders, 0)
+    return {
+      locationAreas: locationAreas.length,
+      enabledLocationAreas,
+      serviceAreas: areas.length,
+      enabledServiceAreas,
+      activeAssignments,
+      warnings: healthWarnings.length,
+    }
+  }, [areas, healthWarnings.length, locationAreas])
 
   function startCreate() {
     setSelectedAreaId(null)
@@ -240,45 +249,16 @@ export default function ServiceAreasPage() {
         <section className="space-y-6">
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Coverage map</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Schematic UK coverage view for enabled nations and major regions.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Location overview</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Simple rollout summary for live areas, provider coverage, and warning states.</p>
             </div>
-            <UkCoverageMap
-              nodes={locationMapData}
-              onSelect={(id) => editLocationArea(id)}
-            />
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">UK coverage snapshot</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Quick visual state of enabled coverage across the four nations.</p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {coverageSummary.map((nation) => (
-                <button
-                  key={nation.id}
-                  type="button"
-                  onClick={() => editLocationArea(nation.id)}
-                  className={`rounded-xl border p-5 text-left transition-colors ${
-                    nation.enabled
-                      ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/20'
-                      : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-base font-semibold text-slate-900 dark:text-white">{nation.name}</span>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${nation.enabled ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
-                      {nation.enabled ? 'On' : 'Off'}
-                    </span>
-                  </div>
-                  <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
-                    <CoverageStat label="Areas" value={String(nation.childAreas)} />
-                    <CoverageStat label="Enabled" value={String(nation.enabledChildAreas)} />
-                    <CoverageStat label="Coverage rows" value={String(nation.linkedServiceAreas)} />
-                  </div>
-                </button>
-              ))}
+            <div className="grid gap-4 md:grid-cols-3">
+              <CoverageStat label="UK areas" value={String(locationOverview.locationAreas)} />
+              <CoverageStat label="Areas on" value={String(locationOverview.enabledLocationAreas)} />
+              <CoverageStat label="Service areas" value={String(locationOverview.serviceAreas)} />
+              <CoverageStat label="Service areas on" value={String(locationOverview.enabledServiceAreas)} />
+              <CoverageStat label="Active provider links" value={String(locationOverview.activeAssignments)} />
+              <CoverageStat label="Warnings" value={String(locationOverview.warnings)} />
             </div>
           </div>
 
@@ -960,99 +940,6 @@ function CoverageStat({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg border border-white/60 bg-white/70 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/40">
       <div className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
       <div className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">{value}</div>
-    </div>
-  )
-}
-
-function UkCoverageMap({
-  nodes,
-  onSelect,
-}: {
-  nodes: Array<{
-    id: string
-    name: string
-    areaType: string
-    enabled: boolean
-    serviceAreas: number
-    enabledServiceAreas: number
-  }>
-  onSelect: (id: string) => void
-}) {
-  const byId = new Map(nodes.map((node) => [node.id, node]))
-
-  const shapes = [
-    { id: 'loc_sco', x: 145, y: 16, w: 120, h: 92 },
-    { id: 'loc_ni', x: 18, y: 84, w: 72, h: 48 },
-    { id: 'loc_eng', x: 132, y: 116, w: 178, h: 142 },
-    { id: 'loc_wal', x: 92, y: 168, w: 52, h: 64 },
-    { id: 'loc_london_region', x: 232, y: 212, w: 40, h: 28 },
-    { id: 'loc_nw', x: 136, y: 136, w: 54, h: 38 },
-    { id: 'loc_yh', x: 196, y: 142, w: 54, h: 38 },
-    { id: 'loc_wm', x: 170, y: 182, w: 54, h: 34 },
-    { id: 'loc_se', x: 220, y: 238, w: 70, h: 34 },
-    { id: 'loc_sw', x: 108, y: 220, w: 82, h: 34 },
-  ]
-
-  return (
-    <div className="grid gap-6 xl:grid-cols-[360px,1fr]">
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/40">
-        <svg viewBox="0 0 320 280" className="w-full">
-          {shapes.map((shape) => {
-            const node = byId.get(shape.id)
-            if (!node) return null
-            const fill = node.enabled ? '#1173d4' : '#cbd5e1'
-            const opacity = node.enabled ? 0.85 : 0.7
-            return (
-              <g key={shape.id} onClick={() => onSelect(shape.id)} className="cursor-pointer">
-                <rect
-                  x={shape.x}
-                  y={shape.y}
-                  width={shape.w}
-                  height={shape.h}
-                  rx={shape.id.includes('region') || shape.id === 'loc_london_region' ? 12 : 20}
-                  fill={fill}
-                  opacity={opacity}
-                  stroke="#0f172a"
-                  strokeOpacity="0.12"
-                />
-                <text
-                  x={shape.x + shape.w / 2}
-                  y={shape.y + shape.h / 2}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill={node.enabled ? 'white' : '#334155'}
-                  fontSize={shape.w > 80 ? 12 : 10}
-                  fontWeight="600"
-                >
-                  {node.name}
-                </text>
-              </g>
-            )
-          })}
-        </svg>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2">
-        {nodes.map((node) => (
-          <button
-            key={node.id}
-            type="button"
-            onClick={() => onSelect(node.id)}
-            className="rounded-xl border border-slate-200 bg-white p-4 text-left dark:border-slate-800 dark:bg-slate-950/30"
-          >
-            <div className="flex items-center justify-between">
-              <div className="font-medium text-slate-900 dark:text-white">{node.name}</div>
-              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${node.enabled ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
-                {node.enabled ? 'On' : 'Off'}
-              </span>
-            </div>
-            <div className="mt-1 text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{node.areaType.replace('_', ' ')}</div>
-            <div className="mt-3 flex gap-3 text-sm text-slate-600 dark:text-slate-300">
-              <span>{node.enabledServiceAreas}/{node.serviceAreas} coverage rows enabled</span>
-            </div>
-          </button>
-        ))}
-      </div>
     </div>
   )
 }
