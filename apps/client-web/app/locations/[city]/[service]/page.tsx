@@ -9,6 +9,8 @@ import { FAQSection } from "@/components/location-service/faq-section";
 import { getCategoryIcon } from "@/components/icons/category-icons";
 import { getBookingCategoryForCityService } from "@/lib/booking-categories";
 import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
+import { getCategoryRouteSlug } from "@/lib/service-routes";
+import { getServiceCategoryByRoute } from "@/lib/supabase/categories";
 
 // Service data mapping
 const serviceData: Record<string, { name: string; description: string; category: string }> = {
@@ -518,11 +520,18 @@ export default async function LocationServicePage({ params }: LocationServicePag
 
   const taskers = generateTaskers(serviceInfo.name);
   const c = await getPageContent("locations-city-service");
+  const parentCategorySlug = getCategoryRouteSlug(serviceInfo.category)
+  const resolvedServiceCategory = parentCategorySlug
+    ? await getServiceCategoryByRoute(parentCategorySlug, service)
+    : null
 
   return (
     <LocationServiceContent
       city={cityInfo}
-      service={serviceInfo}
+      service={{
+        ...serviceInfo,
+        icon_url: resolvedServiceCategory?.service.icon_url ?? null,
+      }}
       citySlug={city}
       serviceSlug={service}
       taskers={taskers}
@@ -544,7 +553,7 @@ export async function generateMetadata({ params }: LocationServicePageProps) {
 
 interface LocationServiceContentProps {
   city: { name: string; taskerCount: number; reviewCount: string };
-  service: { name: string; description: string; category: string };
+  service: { name: string; description: string; category: string; icon_url: string | null };
   citySlug: string;
   serviceSlug: string;
   taskers: Array<{
@@ -633,7 +642,12 @@ function LocationServiceContent({ city, service, citySlug, serviceSlug, taskers,
                 const ServiceIcon = getCategoryIcon(service.name);
                 return (
                   <div className="flex h-52 w-52 items-center justify-center rounded-full bg-white/10">
-                    <ServiceIcon className="h-28 w-28 text-white" />
+                    {service.icon_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={service.icon_url} alt={service.name} className="h-28 w-28 rounded-full object-cover" />
+                    ) : (
+                      <ServiceIcon className="h-28 w-28 text-white" />
+                    )}
                   </div>
                 );
               })()}

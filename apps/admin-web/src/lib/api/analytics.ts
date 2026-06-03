@@ -35,12 +35,6 @@ export interface TaskCompletionData {
   [key: string]: unknown
 }
 
-export interface PerformanceReport {
-  name: string
-  description: string
-  lastGenerated: string
-}
-
 // ============================================================================
 // Analytics KPIs Hook
 // ============================================================================
@@ -283,38 +277,4 @@ export function useTaskCompletionRate() {
     staleTime: 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
   })
-}
-
-// ============================================================================
-// Performance Reports Hook (static for now - no reports table exists)
-// ============================================================================
-
-export function usePerformanceReports(): { data: PerformanceReport[]; isLoading: boolean } {
-  // Since there's no reports table, we return static report definitions
-  // These could be generated on-demand in the future
-  const now = new Date()
-  const reports: PerformanceReport[] = [
-    {
-      name: 'Monthly User Acquisition',
-      description: 'Detailed breakdown of new user and handy sign-ups.',
-      lastGenerated: now.toISOString().split('T')[0],
-    },
-    {
-      name: 'Task Category Performance',
-      description: 'Analysis of task volume and revenue per category.',
-      lastGenerated: now.toISOString().split('T')[0],
-    },
-    {
-      name: 'Handy Engagement & Retention',
-      description: 'Metrics on handy activity, earnings, and churn rate.',
-      lastGenerated: now.toISOString().split('T')[0],
-    },
-    {
-      name: 'Platform Fee Analysis',
-      description: 'In-depth report on collected platform fees vs. payouts.',
-      lastGenerated: now.toISOString().split('T')[0],
-    },
-  ]
-
-  return { data: reports, isLoading: false }
 }

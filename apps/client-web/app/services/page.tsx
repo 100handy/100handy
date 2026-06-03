@@ -55,7 +55,7 @@ function ServiceCategoryCard({
   const subcategories = category.subcategories || [];
   const Icon = getCategoryIcon(category.name);
 
-  const cardImage = imageOverrides[category.name] ?? categoryImages[category.name];
+  const cardImage = category.content_image_url ?? imageOverrides[category.name] ?? categoryImages[category.name];
 
   // Get first 6 subcategories to display
   const displayedSubcategories = subcategories.slice(0, 6);
@@ -74,7 +74,17 @@ function ServiceCategoryCard({
         </div>
       ) : (
         <div className="flex h-48 items-center justify-center bg-brand-dark-alt">
-          <Icon className="h-16 w-16 text-brand-cream" />
+          {category.icon_url ? (
+            <Image
+              src={category.icon_url}
+              alt={category.name}
+              width={64}
+              height={64}
+              className="h-16 w-16 rounded-full object-cover"
+            />
+          ) : (
+            <Icon className="h-16 w-16 text-brand-cream" />
+          )}
         </div>
       )}
 
@@ -103,7 +113,17 @@ function ServiceCategoryCard({
                     href={href}
                     className="flex items-center gap-2 text-[14px] text-brand-terracotta hover:text-brand-terracotta/80 hover:underline transition-colors"
                   >
-                    <SubIcon className="h-4 w-4 shrink-0" />
+                    {subcategory.icon_url ? (
+                      <Image
+                        src={subcategory.icon_url}
+                        alt={subcategory.name}
+                        width={16}
+                        height={16}
+                        className="h-4 w-4 shrink-0 rounded-full object-cover"
+                      />
+                    ) : (
+                      <SubIcon className="h-4 w-4 shrink-0" />
+                    )}
                     {subcategory.name}
                   </Link>
                 </li>

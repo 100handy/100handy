@@ -1,5 +1,10 @@
 import { getPublicSiteSetting, resolvePublicAssetUrl } from '@/lib/public-settings'
 
+type CategoryMediaLike = {
+  icon_url?: string | null
+  content_image_url?: string | null
+}
+
 const CATEGORY_IMAGE_KEYWORDS: Array<{ key: string; patterns: string[] }> = [
   { key: 'assembly', patterns: ['assembly', 'ikea', 'crib', 'wardrobe', 'office furniture', 'furniture'] },
   { key: 'mounting', patterns: ['mounting', 'tv', 'shelves', 'artwork', 'light installation', 'curtains', 'blinds'] },
@@ -36,4 +41,17 @@ export function getAppCategoryImageUri(
   const key = getAppCategoryImageKey(categoryName)
   if (!key) return null
   return imageMap[key] ?? null
+}
+
+export function resolveCategoryImageUri(
+  category: CategoryMediaLike,
+  categoryName: string,
+  imageMap: AppCategoryImageMap
+): string | null {
+  const directImage = resolvePublicAssetUrl(category.content_image_url) ?? resolvePublicAssetUrl(category.icon_url)
+  if (directImage) {
+    return directImage
+  }
+
+  return getAppCategoryImageUri(categoryName, imageMap)
 }
