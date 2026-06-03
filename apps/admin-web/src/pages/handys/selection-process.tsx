@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../../components/header';
 import { FileText, Users, ShieldCheck, GraduationCap, Search, Filter, Loader2, ChevronDown } from 'lucide-react';
 import {
@@ -230,9 +231,9 @@ export default function HandySelectionProcess() {
                               </span>
                             </td>
                             <td className="px-4 py-4">
-                              <a className="font-medium text-primary hover:underline" href="#">
+                              <Link className="font-medium text-primary hover:underline" to={`/handys/${applicant.id}`}>
                                 View
-                              </a>
+                              </Link>
                             </td>
                           </tr>
                         ))

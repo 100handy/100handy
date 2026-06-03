@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import Header from '@/components/header'
 import { useFinanceSummary, useFinanceTransactions, useRefundPayment } from '@/lib/api/finance'
 import type { PaymentStatus } from '@/lib/database.types'
+import { Link } from 'react-router-dom'
 
 const STATUS_LABELS: Record<PaymentStatus, string> = {
   pending: 'Pending',
@@ -15,6 +16,8 @@ const STATUS_LABELS: Record<PaymentStatus, string> = {
 export default function TransactionsRefundsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [status, setStatus] = useState<PaymentStatus | 'all'>('all')
+  const [refundTarget, setRefundTarget] = useState<{ paymentId: string; taskTitle: string; amount: number; bookingId: string | null } | null>(null)
+  const [refundReason, setRefundReason] = useState('')
 
   const filters = useMemo(
     () => ({
@@ -56,10 +59,11 @@ export default function TransactionsRefundsPage() {
     URL.revokeObjectURL(url)
   }
 
-  async function handleRefund(paymentId: string) {
-    const reason = window.prompt('Refund reason')
-    if (!reason) return
-    await refundPayment.mutateAsync({ paymentId, reason })
+  async function handleRefund() {
+    if (!refundTarget || !refundReason.trim()) return
+    await refundPayment.mutateAsync({ paymentId: refundTarget.paymentId, reason: refundReason.trim() })
+    setRefundTarget(null)
+    setRefundReason('')
   }
 
   return (
@@ -165,7 +169,14 @@ export default function TransactionsRefundsPage() {
                           <button
                             type="button"
                             disabled={refundPayment.isPending}
-                            onClick={() => handleRefund(transaction.id)}
+                            onClick={() =>
+                              setRefundTarget({
+                                paymentId: transaction.id,
+                                taskTitle: transaction.task_title,
+                                amount: transaction.amount,
+                                bookingId: transaction.booking_id,
+                              })
+                            }
                             className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 dark:border-red-900/60"
                           >
                             Refund
@@ -182,6 +193,56 @@ export default function TransactionsRefundsPage() {
           </div>
         </div>
       </main>
+
+      {refundTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Confirm refund</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              You are refunding <span className="font-medium text-slate-900 dark:text-white">£{refundTarget.amount.toFixed(2)}</span> for {refundTarget.taskTitle}.
+            </p>
+            <textarea
+              value={refundReason}
+              onChange={(event) => setRefundReason(event.target.value)}
+              rows={4}
+              className="mt-4 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              placeholder="Explain why this refund is being issued..."
+            />
+            <div className="mt-4 flex flex-wrap justify-between gap-3">
+              <div className="flex gap-3">
+                {refundTarget.bookingId ? (
+                  <Link
+                    to={`/tasks/details/${refundTarget.bookingId}`}
+                    className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-primary hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                  >
+                    View booking
+                  </Link>
+                ) : null}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRefundTarget(null)
+                    setRefundReason('')
+                  }}
+                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={refundPayment.isPending || !refundReason.trim()}
+                  onClick={handleRefund}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  Confirm refund
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

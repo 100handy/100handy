@@ -17,6 +17,11 @@ export default function DisputesPage() {
   const [selectedDisputeId, setSelectedDisputeId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [internalOnly, setInternalOnly] = useState(false)
+  const [resolveDraft, setResolveDraft] = useState<{
+    status: 'resolved' | 'rejected' | 'refunded'
+    summary: string
+    refundAmount: string
+  } | null>(null)
 
   const filters = useMemo(() => ({ search: search || undefined, status }), [search, status])
 
@@ -38,23 +43,19 @@ export default function DisputesPage() {
     setInternalOnly(false)
   }
 
-  async function handleResolve(statusValue: 'resolved' | 'rejected' | 'refunded') {
-    if (!selectedDisputeId) return
-    const resolutionSummary = window.prompt('Resolution summary')
-    if (!resolutionSummary) return
-
-    let refundAmount: number | undefined
-    if (statusValue === 'refunded') {
-      const value = window.prompt('Refund amount in GBP (leave blank for full refund)')
-      refundAmount = value ? Number(value) : undefined
-    }
+  async function handleResolve() {
+    if (!selectedDisputeId || !resolveDraft || !resolveDraft.summary.trim()) return
 
     await updateStatus.mutateAsync({
       disputeId: selectedDisputeId,
-      status: statusValue,
-      resolutionSummary,
-      refundAmount,
+      status: resolveDraft.status,
+      resolutionSummary: resolveDraft.summary.trim(),
+      refundAmount:
+        resolveDraft.status === 'refunded' && resolveDraft.refundAmount.trim()
+          ? Number(resolveDraft.refundAmount)
+          : undefined,
     })
+    setResolveDraft(null)
   }
 
   return (
@@ -254,7 +255,7 @@ export default function DisputesPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleResolve('resolved')}
+                        onClick={() => setResolveDraft({ status: 'resolved', summary: '', refundAmount: '' })}
                         disabled={updateStatus.isPending}
                         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
                       >
@@ -262,7 +263,7 @@ export default function DisputesPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleResolve('refunded')}
+                        onClick={() => setResolveDraft({ status: 'refunded', summary: '', refundAmount: '' })}
                         disabled={updateStatus.isPending}
                         className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
                       >
@@ -270,7 +271,7 @@ export default function DisputesPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleResolve('rejected')}
+                        onClick={() => setResolveDraft({ status: 'rejected', summary: '', refundAmount: '' })}
                         disabled={updateStatus.isPending}
                         className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-900/60"
                       >
@@ -311,6 +312,51 @@ export default function DisputesPage() {
           </div>
         </div>
       )}
+
+      {selectedDisputeId && resolveDraft ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold capitalize text-slate-900 dark:text-white">
+              {resolveDraft.status.replaceAll('_', ' ')} dispute
+            </h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Record the decision summary before updating the dispute.
+            </p>
+            <textarea
+              value={resolveDraft.summary}
+              onChange={(event) => setResolveDraft((prev) => (prev ? { ...prev, summary: event.target.value } : prev))}
+              rows={4}
+              className="mt-4 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              placeholder="Decision summary..."
+            />
+            {resolveDraft.status === 'refunded' ? (
+              <input
+                value={resolveDraft.refundAmount}
+                onChange={(event) => setResolveDraft((prev) => (prev ? { ...prev, refundAmount: event.target.value } : prev))}
+                className="mt-4 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+                placeholder="Refund amount in GBP (leave blank for full refund)"
+              />
+            ) : null}
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setResolveDraft(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={updateStatus.isPending || !resolveDraft.summary.trim()}
+                onClick={handleResolve}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+              >
+                Save decision
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

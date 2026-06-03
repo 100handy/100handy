@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../../components/header';
 import { Wallet, Gift, TrendingUp, Download, ChevronDown, Loader2 } from 'lucide-react';
 import {
@@ -167,9 +168,17 @@ export default function AccountBalances() {
                       </td>
                       <td className="px-6 py-4 text-center">{account.lastActivity}</td>
                       <td className="px-6 py-4 text-center">
-                        <a className="text-primary hover:underline" href="#">
-                          View Details
-                        </a>
+                        {account.type === 'Handy Payout' ? (
+                          <Link className="text-primary hover:underline" to={`/handys/${account.id}`}>
+                            View Provider
+                          </Link>
+                        ) : account.type === 'Client Credit' ? (
+                          <Link className="text-primary hover:underline" to={`/users/profiles?id=${account.id}`}>
+                            View Customer
+                          </Link>
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-500">Platform account</span>
+                        )}
                       </td>
                     </tr>
                   ))

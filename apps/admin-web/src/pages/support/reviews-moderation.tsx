@@ -12,6 +12,8 @@ export default function ReviewsModerationPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null)
   const [noteReason, setNoteReason] = useState('')
+  const [actionMode, setActionMode] = useState<'flag' | 'remove' | null>(null)
+  const [actionReason, setActionReason] = useState('')
 
   const [debouncedSearch, setDebouncedSearch] = useState('')
   useMemo(() => {
@@ -24,16 +26,11 @@ export default function ReviewsModerationPage() {
   const deleteReview = useDeleteReview()
   const selectedReview = reviews.find((review) => review.id === selectedReviewId) || null
 
-  async function handleFlag(reviewId: string) {
-    const reason = window.prompt('Flag reason')
-    if (!reason) return
+  async function handleFlag(reviewId: string, reason: string) {
     await createModerationEvent.mutateAsync({ reviewId, action: 'flagged', reason })
   }
 
-  async function handleDelete(reviewId: string) {
-    const reason = window.prompt('Removal reason')
-    if (!reason) return
-    if (!window.confirm('Remove this review?')) return
+  async function handleDelete(reviewId: string, reason: string) {
     await deleteReview.mutateAsync({ reviewId, reason })
     setSelectedReviewId(null)
   }
@@ -42,6 +39,17 @@ export default function ReviewsModerationPage() {
     if (!selectedReviewId || !noteReason.trim()) return
     await createModerationEvent.mutateAsync({ reviewId: selectedReviewId, action: 'noted', reason: noteReason.trim() })
     setNoteReason('')
+  }
+
+  async function handleConfirmAction() {
+    if (!selectedReviewId || !actionMode || !actionReason.trim()) return
+    if (actionMode === 'flag') {
+      await handleFlag(selectedReviewId, actionReason.trim())
+    } else {
+      await handleDelete(selectedReviewId, actionReason.trim())
+    }
+    setActionMode(null)
+    setActionReason('')
   }
 
   return (
@@ -113,7 +121,7 @@ export default function ReviewsModerationPage() {
                           <button onClick={() => setSelectedReviewId(review.id)} className="text-primary hover:underline">
                             Inspect
                           </button>
-                          <button onClick={() => handleFlag(review.id)} className="text-amber-600 hover:underline">
+                          <button onClick={() => { setSelectedReviewId(review.id); setActionMode('flag') }} className="text-amber-600 hover:underline">
                             Flag
                           </button>
                         </div>
@@ -168,7 +176,7 @@ export default function ReviewsModerationPage() {
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => handleFlag(selectedReview.id)}
+                    onClick={() => setActionMode('flag')}
                     className="inline-flex items-center gap-2 rounded-lg border border-amber-300 px-4 py-2 text-sm font-medium text-amber-700 dark:border-amber-900/60"
                   >
                     <AlertTriangle className="h-4 w-4" />
@@ -176,7 +184,7 @@ export default function ReviewsModerationPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(selectedReview.id)}
+                    onClick={() => setActionMode('remove')}
                     className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-900/60"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -209,6 +217,50 @@ export default function ReviewsModerationPage() {
           </div>
         </div>
       </main>
+
+      {selectedReview && actionMode ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              {actionMode === 'flag' ? 'Flag review' : 'Remove review'}
+            </h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {actionMode === 'flag'
+                ? 'Record why this review looks suspicious or needs follow-up.'
+                : 'Provide the removal reason before deleting this review.'}
+            </p>
+            <textarea
+              value={actionReason}
+              onChange={(event) => setActionReason(event.target.value)}
+              rows={4}
+              className="mt-4 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              placeholder={actionMode === 'flag' ? 'Reason for flagging...' : 'Reason for removal...'}
+            />
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setActionMode(null)
+                  setActionReason('')
+                }}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!actionReason.trim() || createModerationEvent.isPending || deleteReview.isPending}
+                onClick={handleConfirmAction}
+                className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
+                  actionMode === 'flag' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {actionMode === 'flag' ? 'Save flag' : 'Remove review'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

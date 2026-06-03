@@ -28,6 +28,9 @@ export interface AccountBalance {
 
 export interface Invoice {
   id: string
+  paymentId: string
+  bookingId: string | null
+  billedUserId: string | null
   billedTo: string
   billedType: 'Client' | 'Handy'
   issuedDate: string
@@ -367,6 +370,9 @@ export function useInvoices(
 
         invoices.push({
           id: `#INV-${payment.id.substring(0, 8).toUpperCase()}`,
+          paymentId: payment.id,
+          bookingId: booking?.id ? String(booking.id) : null,
+          billedUserId: booking?.customer_id ? String(booking.customer_id) : null,
           billedTo,
           billedType,
           issuedDate: issuedDate.toISOString().split('T')[0],

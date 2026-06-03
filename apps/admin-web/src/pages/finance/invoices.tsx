@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Header from '../../components/header';
-import { Search, Download, Eye, AlertCircle, ChevronDown, Loader2 } from 'lucide-react';
+import { Search, Download, Eye, AlertCircle, ChevronDown, Loader2, X } from 'lucide-react';
 import { useInvoices, type Invoice } from '@/lib/api/finance-extended';
+import { Link } from 'react-router-dom';
 
 const formatCurrency = (value: number): string => {
   return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -24,6 +25,7 @@ export default function Invoices() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'Paid' | 'Pending' | 'Overdue'>('all');
   const [page, setPage] = useState(1);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const limit = 10;
 
   const { data, isLoading } = useInvoices(
@@ -137,10 +139,41 @@ export default function Invoices() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <button className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                          <button
+                            className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                            onClick={() => setSelectedInvoice(invoice)}
+                            type="button"
+                          >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                          <button
+                            className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                            onClick={() => {
+                              const csv = [
+                                ['Invoice ID', 'Payment ID', 'Booking ID', 'Billed To', 'Billed Type', 'Issued Date', 'Due Date', 'Amount', 'Status'].join(','),
+                                [
+                                  invoice.id,
+                                  invoice.paymentId,
+                                  invoice.bookingId || '',
+                                  `"${invoice.billedTo}"`,
+                                  invoice.billedType,
+                                  invoice.issuedDate,
+                                  invoice.dueDate,
+                                  invoice.amount.toFixed(2),
+                                  invoice.status,
+                                ].join(','),
+                              ].join('\n')
+
+                              const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+                              const url = URL.createObjectURL(blob)
+                              const link = document.createElement('a')
+                              link.href = url
+                              link.download = `${invoice.id.replace('#', '').toLowerCase()}.csv`
+                              link.click()
+                              URL.revokeObjectURL(url)
+                            }}
+                            type="button"
+                          >
                             <Download className="w-4 h-4" />
                           </button>
                           {invoice.status === 'Overdue' && (
@@ -188,6 +221,76 @@ export default function Invoices() {
           </div>
         </div>
       </main>
+
+      {selectedInvoice ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Invoice Details</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{selectedInvoice.id}</p>
+              </div>
+              <button
+                className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+                onClick={() => setSelectedInvoice(null)}
+                type="button"
+              >
+                <X className="h-5 w-5 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <DetailRow label="Payment ID" value={selectedInvoice.paymentId} />
+              <DetailRow label="Booking ID" value={selectedInvoice.bookingId || 'No booking linked'} />
+              <DetailRow label="Billed To" value={selectedInvoice.billedTo} />
+              <DetailRow label="Type" value={selectedInvoice.billedType} />
+              <DetailRow label="Issued Date" value={selectedInvoice.issuedDate} />
+              <DetailRow label="Due Date" value={selectedInvoice.dueDate} />
+              <DetailRow label="Amount" value={formatCurrency(selectedInvoice.amount)} />
+              <DetailRow label="Status" value={selectedInvoice.status} />
+            </div>
+
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              {selectedInvoice.billedUserId ? (
+                <Link
+                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-primary hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                  to={
+                    selectedInvoice.billedType === 'Handy'
+                      ? `/handys/${selectedInvoice.billedUserId}`
+                      : `/users/profiles?id=${selectedInvoice.billedUserId}`
+                  }
+                >
+                  View {selectedInvoice.billedType === 'Handy' ? 'Provider' : 'Customer'}
+                </Link>
+              ) : null}
+              {selectedInvoice.bookingId ? (
+                <Link
+                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-primary hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                  to={`/tasks/details/${selectedInvoice.bookingId}`}
+                >
+                  View Booking
+                </Link>
+              ) : null}
+              <button
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+                onClick={() => setSelectedInvoice(null)}
+                type="button"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+      <div className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="mt-2 text-sm font-medium text-slate-900 dark:text-white">{value}</div>
+    </div>
+  )
 }
