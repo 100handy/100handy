@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/lib/database.types'
 
@@ -231,6 +232,14 @@ export function useCreateCategory() {
 
       if (error) throw error
 
+      await createAdminAuditLog({
+        action: 'category.create',
+        targetType: 'category',
+        targetId: data.id,
+        summary: `Created category ${data.name}`,
+        section: 'tasks',
+      })
+
       return data
     },
     onSuccess: () => {
@@ -285,6 +294,14 @@ export function useUpdateCategory() {
 
       if (error) throw error
 
+      await createAdminAuditLog({
+        action: 'category.update',
+        targetType: 'category',
+        targetId: data.id,
+        summary: `Updated category ${data.name}`,
+        section: 'tasks',
+      })
+
       return data
     },
     onSuccess: (data) => {
@@ -317,6 +334,15 @@ export function useBulkUpdateCategories() {
         .in('id', categoryIds)
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'category.bulk_update',
+        targetType: 'category',
+        targetId: categoryIds.length === 1 ? categoryIds[0] : null,
+        summary: `Updated ${categoryIds.length} categories`,
+        detail: updates.active === undefined ? null : `active=${updates.active}`,
+        section: 'tasks',
+      })
 
       return { categoryIds, updates }
     },
@@ -473,6 +499,15 @@ export function useSaveServiceAreaCategoryOverride() {
 
       if (error) throw error
 
+      await createAdminAuditLog({
+        action: 'category.area_override',
+        targetType: 'category',
+        targetId: categoryId,
+        summary: `${enabled ? 'Enabled' : 'Disabled'} category override for area ${serviceAreaId}`,
+        detail: `category=${categoryId}`,
+        section: 'tasks',
+      })
+
       return { serviceAreaId, categoryId, enabled }
     },
     onSuccess: () => {
@@ -489,9 +524,27 @@ export function useDeleteCategory() {
 
   return useMutation({
     mutationFn: async (categoryId: string) => {
+      await requireAdminPermission('tasks.manage')
+
+      const { data: existing, error: existingError } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('id', categoryId)
+        .single()
+
+      if (existingError) throw existingError
+
       const { error } = await supabase.from('categories').delete().eq('id', categoryId)
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'category.delete',
+        targetType: 'category',
+        targetId: categoryId,
+        summary: `Deleted category ${existing.name}`,
+        section: 'tasks',
+      })
 
       return categoryId
     },
@@ -509,9 +562,19 @@ export function useDeleteCategories() {
 
   return useMutation({
     mutationFn: async (categoryIds: string[]) => {
+      await requireAdminPermission('tasks.manage')
+
       const { error } = await supabase.from('categories').delete().in('id', categoryIds)
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'category.bulk_delete',
+        targetType: 'category',
+        targetId: categoryIds.length === 1 ? categoryIds[0] : null,
+        summary: `Deleted ${categoryIds.length} categories`,
+        section: 'tasks',
+      })
 
       return categoryIds
     },
