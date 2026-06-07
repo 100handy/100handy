@@ -22,6 +22,7 @@ export default function DisputesPage() {
     summary: string
     refundAmount: string
   } | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const filters = useMemo(() => ({ search: search || undefined, status }), [search, status])
 
@@ -34,28 +35,40 @@ export default function DisputesPage() {
 
   async function handleSendMessage() {
     if (!selectedDisputeId || !message.trim()) return
-    await createMessage.mutateAsync({
-      disputeId: selectedDisputeId,
-      message: message.trim(),
-      internalOnly,
-    })
-    setMessage('')
-    setInternalOnly(false)
+    setActionFeedback(null)
+    try {
+      await createMessage.mutateAsync({
+        disputeId: selectedDisputeId,
+        message: message.trim(),
+        internalOnly,
+      })
+      setMessage('')
+      setInternalOnly(false)
+      setActionFeedback({ tone: 'success', message: internalOnly ? 'Internal note saved.' : 'Reply sent.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save dispute message.' })
+    }
   }
 
   async function handleResolve() {
     if (!selectedDisputeId || !resolveDraft || !resolveDraft.summary.trim()) return
 
-    await updateStatus.mutateAsync({
-      disputeId: selectedDisputeId,
-      status: resolveDraft.status,
-      resolutionSummary: resolveDraft.summary.trim(),
-      refundAmount:
-        resolveDraft.status === 'refunded' && resolveDraft.refundAmount.trim()
-          ? Number(resolveDraft.refundAmount)
-          : undefined,
-    })
-    setResolveDraft(null)
+    setActionFeedback(null)
+    try {
+      await updateStatus.mutateAsync({
+        disputeId: selectedDisputeId,
+        status: resolveDraft.status,
+        resolutionSummary: resolveDraft.summary.trim(),
+        refundAmount:
+          resolveDraft.status === 'refunded' && resolveDraft.refundAmount.trim()
+            ? Number(resolveDraft.refundAmount)
+            : undefined,
+      })
+      setResolveDraft(null)
+      setActionFeedback({ tone: 'success', message: `Dispute ${resolveDraft.status.replaceAll('_', ' ')}.` })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update dispute.' })
+    }
   }
 
   return (
@@ -63,6 +76,15 @@ export default function DisputesPage() {
       <Header title="Disputes" />
 
       <main className="flex-1 space-y-6 p-6">
+        {actionFeedback && (
+          <div className={`rounded-xl px-4 py-3 text-sm ${
+            actionFeedback.tone === 'success'
+              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+              : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+          }`}>
+            {actionFeedback.message}
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-4">
           <MetricCard label="Open" value={stats?.open || 0} accent="text-blue-600" icon={Scale} />
           <MetricCard label="Investigating" value={stats?.investigating || 0} accent="text-amber-600" icon={MessageSquare} />
@@ -239,7 +261,15 @@ export default function DisputesPage() {
                     <div className="grid gap-2">
                       <button
                         type="button"
-                        onClick={() => assignToMe.mutate({ disputeId: dispute.id })}
+                        onClick={async () => {
+                          setActionFeedback(null)
+                          try {
+                            await assignToMe.mutateAsync({ disputeId: dispute.id })
+                            setActionFeedback({ tone: 'success', message: 'Dispute assigned to you.' })
+                          } catch (error) {
+                            setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to assign dispute.' })
+                          }
+                        }}
                         disabled={assignToMe.isPending}
                         className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
                       >
@@ -247,7 +277,15 @@ export default function DisputesPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => updateStatus.mutate({ disputeId: dispute.id, status: 'investigating' })}
+                        onClick={async () => {
+                          setActionFeedback(null)
+                          try {
+                            await updateStatus.mutateAsync({ disputeId: dispute.id, status: 'investigating' })
+                            setActionFeedback({ tone: 'success', message: 'Dispute marked investigating.' })
+                          } catch (error) {
+                            setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update dispute.' })
+                          }
+                        }}
                         disabled={updateStatus.isPending}
                         className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
                       >

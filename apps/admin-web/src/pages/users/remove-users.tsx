@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Search, Trash2, AlertTriangle, Loader2, X } from 'lucide-react'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { useUsers, useDeleteUser, type UserWithDetails } from '@/lib/api/users'
 
 export default function RemoveUsersPage() {
@@ -21,8 +22,11 @@ export default function RemoveUsersPage() {
       await deleteUserMutation.mutateAsync(userToDelete.user_id)
       setUserToDelete(null)
     } catch (err) {
-      // Error is handled by mutation state
-      console.error('Failed to delete user:', err)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to delete user',
+        description: err instanceof Error ? err.message : 'Please try again.',
+      })
     }
   }
 

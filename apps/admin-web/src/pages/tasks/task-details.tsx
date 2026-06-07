@@ -26,6 +26,7 @@ export default function TaskDetailsPage() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showRefundModal, setShowRefundModal] = useState(false)
   const [refundReason, setRefundReason] = useState('')
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [editForm, setEditForm] = useState({
     task_title: '',
     task_details: '',
@@ -74,48 +75,78 @@ export default function TaskDetailsPage() {
   }
 
   async function handleSaveEdit() {
-    await updateTask.mutateAsync({
-      taskId: String(task.id),
-      task_title: editForm.task_title,
-      task_details: editForm.task_details || undefined,
-      category_id: editForm.category_id || undefined,
-      status: editForm.status,
-      scheduled_date: editForm.scheduled_date,
-      scheduled_time: editForm.scheduled_time,
-      handy_id: editForm.handy_id || undefined,
-    })
-    setShowEditModal(false)
+    setActionFeedback(null)
+    try {
+      await updateTask.mutateAsync({
+        taskId: String(task.id),
+        task_title: editForm.task_title,
+        task_details: editForm.task_details || undefined,
+        category_id: editForm.category_id || undefined,
+        status: editForm.status,
+        scheduled_date: editForm.scheduled_date,
+        scheduled_time: editForm.scheduled_time,
+        handy_id: editForm.handy_id || undefined,
+      })
+      setShowEditModal(false)
+      setActionFeedback({ tone: 'success', message: 'Booking updated.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update booking.' })
+    }
   }
 
   async function handleReassign() {
     if (!selectedHandy) return
-    await updateTask.mutateAsync({ taskId: String(task.id), handy_id: selectedHandy, status: task.status === 'pending' ? 'accepted' : task.status })
-    setSelectedHandy('')
+    setActionFeedback(null)
+    try {
+      await updateTask.mutateAsync({ taskId: String(task.id), handy_id: selectedHandy, status: task.status === 'pending' ? 'accepted' : task.status })
+      setSelectedHandy('')
+      setActionFeedback({ tone: 'success', message: 'Provider reassigned.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to reassign provider.' })
+    }
   }
 
   async function handleReschedule() {
     if (!rescheduleDate || !rescheduleTime) return
-    await rescheduleTask.mutateAsync({
-      taskId: String(task.id),
-      scheduled_date: rescheduleDate,
-      scheduled_time: rescheduleTime,
-      handy_id: task.handy?.user_id || undefined,
-    })
-    setRescheduleDate('')
-    setRescheduleTime('')
+    setActionFeedback(null)
+    try {
+      await rescheduleTask.mutateAsync({
+        taskId: String(task.id),
+        scheduled_date: rescheduleDate,
+        scheduled_time: rescheduleTime,
+        handy_id: task.handy?.user_id || undefined,
+      })
+      setRescheduleDate('')
+      setRescheduleTime('')
+      setActionFeedback({ tone: 'success', message: 'Booking rescheduled.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to reschedule booking.' })
+    }
   }
 
   async function handleCancel() {
-    await cancelTask.mutateAsync(String(task.id))
-    setShowCancelModal(false)
+    setActionFeedback(null)
+    try {
+      await cancelTask.mutateAsync(String(task.id))
+      setShowCancelModal(false)
+      setActionFeedback({ tone: 'success', message: 'Booking cancelled.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to cancel booking.' })
+    }
   }
 
   async function handleRefund() {
     if (!task.payment) return
     if (!refundReason.trim()) return
-    await refundPayment.mutateAsync({ paymentId: task.payment.id, reason: refundReason.trim() })
-    setRefundReason('')
-    setShowRefundModal(false)
+    setActionFeedback(null)
+    try {
+      await refundPayment.mutateAsync({ paymentId: task.payment.id, reason: refundReason.trim() })
+      setRefundReason('')
+      setShowRefundModal(false)
+      setActionFeedback({ tone: 'success', message: 'Refund completed.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to refund payment.' })
+    }
   }
 
   return (
@@ -123,6 +154,15 @@ export default function TaskDetailsPage() {
       <Header title={`Booking #${String(task.id).slice(0, 8)}`} />
       <main className="flex-1 p-8">
         <div className="mx-auto max-w-7xl space-y-8">
+          {actionFeedback && (
+            <div className={`rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           <div>
             <Link to="/tasks/list" className="text-sm text-primary hover:underline">
               ← Back to bookings

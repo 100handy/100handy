@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { supabase } from '@/lib/supabase'
 
 export default function ForgotPasswordPage() {
@@ -26,7 +27,11 @@ export default function ForgotPasswordPage() {
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
-      console.error('Password reset error:', err)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Password reset failed',
+        description: err instanceof Error ? err.message : 'Please try again.',
+      })
     } finally {
       setLoading(false)
     }

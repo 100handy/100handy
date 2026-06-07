@@ -8,6 +8,7 @@ export default function PayoutOperationsPage() {
   const [status, setStatus] = useState<'all' | 'pending' | 'transferred' | 'failed'>('all')
   const [failedTarget, setFailedTarget] = useState<{ bookingId: string; taskTitle: string } | null>(null)
   const [failureReason, setFailureReason] = useState('')
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const filters = useMemo(() => ({ search: search || undefined, status }), [search, status])
 
@@ -44,9 +45,15 @@ export default function PayoutOperationsPage() {
 
   async function handleConfirmMarkFailed() {
     if (!failedTarget || !failureReason.trim()) return
-    await markFailed.mutateAsync({ bookingId: failedTarget.bookingId, reason: failureReason.trim() })
-    setFailedTarget(null)
-    setFailureReason('')
+    setActionFeedback(null)
+    try {
+      await markFailed.mutateAsync({ bookingId: failedTarget.bookingId, reason: failureReason.trim() })
+      setFailedTarget(null)
+      setFailureReason('')
+      setActionFeedback({ tone: 'success', message: 'Payout marked as failed.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update payout.' })
+    }
   }
 
   return (
@@ -62,6 +69,15 @@ export default function PayoutOperationsPage() {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+          {actionFeedback && (
+            <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Provider payout queue</h3>
@@ -151,7 +167,15 @@ export default function PayoutOperationsPage() {
                           {row.payoutStatus !== 'transferred' && row.paymentStatus === 'captured' && row.connectReady ? (
                             <button
                               type="button"
-                              onClick={() => processPayout.mutate({ bookingId: row.bookingId })}
+                              onClick={async () => {
+                                setActionFeedback(null)
+                                try {
+                                  await processPayout.mutateAsync({ bookingId: row.bookingId })
+                                  setActionFeedback({ tone: 'success', message: 'Payout processed.' })
+                                } catch (error) {
+                                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to process payout.' })
+                                }
+                              }}
                               disabled={processPayout.isPending}
                               className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                             >

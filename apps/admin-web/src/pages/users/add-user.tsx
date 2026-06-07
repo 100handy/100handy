@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { UserPlus, ArrowLeft } from 'lucide-react'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { useCreateUser } from '@/lib/api/users'
 import type { UserRole } from '@/lib/database.types'
 
@@ -64,8 +65,12 @@ export default function AddUserPage() {
         state: { message: 'User created successfully!' },
       })
     } catch (error: unknown) {
-      console.error('Failed to create user:', error)
       const message = error instanceof Error ? error.message : 'Failed to create user. Please try again.'
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to create user',
+        description: message,
+      })
       setErrors({
         submit: message,
       })

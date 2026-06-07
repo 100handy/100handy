@@ -42,7 +42,7 @@ export default function AnnouncementsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draftKey, setDraftKey] = useState<string>(`draft-${crypto.randomUUID()}`)
   const [form, setForm] = useState(emptyAnnouncement)
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const selected = announcements.find((item) => item.id === selectedId) ?? null
   const effectiveAnnouncementKey = selected?.id ?? draftKey
@@ -120,33 +120,39 @@ export default function AnnouncementsPage() {
   const persistDraft = async () => {
     if (!canSaveDraft) return
     setActionFeedback(null)
-    await saveDraft.mutateAsync({
-      announcementKey: effectiveAnnouncementKey,
-      announcementId: selected?.id,
-      announcement: {
-        id: selected?.id,
-        audience: form.audience,
-        placement: form.placement,
-        channel_scope: form.channel_scope,
-        title: form.title,
-        body: form.body,
-        cta_label: form.cta_label,
-        cta_href: form.cta_href,
-        starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
-        ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
-        active: form.active,
-      },
-    })
-    setActionFeedback('Draft saved')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await saveDraft.mutateAsync({
+        announcementKey: effectiveAnnouncementKey,
+        announcementId: selected?.id,
+        announcement: {
+          id: selected?.id,
+          audience: form.audience,
+          placement: form.placement,
+          channel_scope: form.channel_scope,
+          title: form.title,
+          body: form.body,
+          cta_label: form.cta_label,
+          cta_href: form.cta_href,
+          starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
+          ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+          active: form.active,
+        },
+      })
+      setActionFeedback({ tone: 'success', message: 'Draft saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
+    }
   }
 
   const publish = async () => {
     if (!canPublish) return
     setActionFeedback(null)
-    await publishDraft.mutateAsync(effectiveAnnouncementKey)
-    setActionFeedback('Published')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await publishDraft.mutateAsync(effectiveAnnouncementKey)
+      setActionFeedback({ tone: 'success', message: 'Announcement published.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish announcement.' })
+    }
   }
 
   return (
@@ -249,7 +255,11 @@ export default function AnnouncementsPage() {
                 Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
               </div>
             </div>
-            {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
+            {actionFeedback && (
+              <p className={`mt-3 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                {actionFeedback.message}
+              </p>
+            )}
           </div>
 
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
@@ -291,16 +301,16 @@ export default function AnnouncementsPage() {
               disabled={saveDraft.isPending || publishDraft.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+              {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback?.message === 'Draft saved.' ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {actionFeedback?.message === 'Draft saved.' ? 'Draft Saved' : 'Save Draft'}
             </button>
             <button
               onClick={publish}
               disabled={publishDraft.isPending || saveDraft.isPending || !canPublish}
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
             >
-              {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
-              {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+              {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback?.message === 'Announcement published.' ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+              {actionFeedback?.message === 'Announcement published.' ? 'Published' : 'Publish'}
             </button>
           </div>
 

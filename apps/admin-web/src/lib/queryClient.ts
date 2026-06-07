@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
+import { emitAdminToast } from '@/lib/admin-toast'
 
 /**
  * React Query client configuration
@@ -35,8 +36,11 @@ export const queryClient = new QueryClient({
 
       // Show error notifications for mutations by default
       onError: (error) => {
-        console.error('Mutation error:', error)
-        // TODO: Add toast notification here when toast library is added
+        emitAdminToast({
+          tone: 'error',
+          title: 'Action failed',
+          description: error instanceof Error ? error.message : 'Something went wrong while saving this change.',
+        })
       },
     },
   },

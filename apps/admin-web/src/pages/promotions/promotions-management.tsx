@@ -23,6 +23,7 @@ export default function PromotionsManagementPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newCode, setNewCode] = useState({ code: '', amount: '', maxUses: '', expiresAt: '' })
   const [expireTarget, setExpireTarget] = useState<PromoCode | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const { data: promoCodes, isLoading: codesLoading } = usePromoCodes(filter)
   const { data: stats, isLoading: statsLoading } = usePromoStats()
@@ -34,6 +35,7 @@ export default function PromotionsManagementPage() {
   const handleCreateCode = async () => {
     if (!newCode.code || !newCode.amount) return
 
+    setActionFeedback(null)
     try {
       await createPromoCode.mutateAsync({
         code: newCode.code,
@@ -43,17 +45,20 @@ export default function PromotionsManagementPage() {
       })
       setShowCreateModal(false)
       setNewCode({ code: '', amount: '', maxUses: '', expiresAt: '' })
+      setActionFeedback({ tone: 'success', message: 'Promotion code created.' })
     } catch (error) {
-      console.error('Failed to create promo code:', error)
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to create promo code.' })
     }
   }
 
   const handleExpireCode = async (id: string) => {
+    setActionFeedback(null)
     try {
       await expirePromoCode.mutateAsync(id)
       setExpireTarget(null)
+      setActionFeedback({ tone: 'success', message: 'Promotion code expired.' })
     } catch (error) {
-      console.error('Failed to expire promo code:', error)
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to expire promo code.' })
     }
   }
 
@@ -73,6 +78,15 @@ export default function PromotionsManagementPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {actionFeedback && (
+        <div className={`rounded-xl px-4 py-3 text-sm ${
+          actionFeedback.tone === 'success'
+            ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+            : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+        }`}>
+          {actionFeedback.message}
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -296,7 +310,7 @@ export default function PromotionsManagementPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Discount Amount ($) *
+                  Discount Amount (£) *
                 </label>
                 <input
                   type="number"

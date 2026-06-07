@@ -25,6 +25,7 @@ export default function BrowseCategoriesPage() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
   const [levelFilter, setLevelFilter] = useState<'all' | 'main' | 'sub'>('all')
   const [includeChildrenForBulk, setIncludeChildrenForBulk] = useState(true)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -86,16 +87,22 @@ export default function BrowseCategoriesPage() {
     const current = sorted[index]
     const target = sorted[swapIndex]
 
-    await Promise.all([
-      updateCategory.mutateAsync({
-        categoryId: current.id,
-        display_order: target.display_order,
-      }),
-      updateCategory.mutateAsync({
-        categoryId: target.id,
-        display_order: current.display_order,
-      }),
-    ])
+    setActionFeedback(null)
+    try {
+      await Promise.all([
+        updateCategory.mutateAsync({
+          categoryId: current.id,
+          display_order: target.display_order,
+        }),
+        updateCategory.mutateAsync({
+          categoryId: target.id,
+          display_order: current.display_order,
+        }),
+      ])
+      setActionFeedback({ tone: 'success', message: 'Category order updated.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update order.' })
+    }
   }
 
   const levelLabels = {
@@ -139,20 +146,32 @@ export default function BrowseCategoriesPage() {
           ),
         )
       : selectedCategoryIds
-    await bulkUpdateCategories.mutateAsync({
-      categoryIds,
-      updates: { active },
-    })
-    setSelectedCategoryIds([])
+    setActionFeedback(null)
+    try {
+      await bulkUpdateCategories.mutateAsync({
+        categoryIds,
+        updates: { active },
+      })
+      setSelectedCategoryIds([])
+      setActionFeedback({ tone: 'success', message: `${active ? 'Enabled' : 'Disabled'} ${categoryIds.length} categories.` })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update categories.' })
+    }
   }
 
   const handleFamilyToggle = async (categoryId: string, active: boolean) => {
     if (!canManageTasks) return
     const categoryIds = Array.from(new Set([categoryId, ...(categoryChildrenMap.get(categoryId) || [])]))
-    await bulkUpdateCategories.mutateAsync({
-      categoryIds,
-      updates: { active },
-    })
+    setActionFeedback(null)
+    try {
+      await bulkUpdateCategories.mutateAsync({
+        categoryIds,
+        updates: { active },
+      })
+      setActionFeedback({ tone: 'success', message: `${active ? 'Enabled' : 'Disabled'} group.` })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update category group.' })
+    }
   }
 
   return (
@@ -161,6 +180,15 @@ export default function BrowseCategoriesPage() {
 
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="mx-auto w-full max-w-none">
+          {actionFeedback && (
+            <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           {!canManageTasks && (
             <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
               Your admin role can view categories, but it cannot change visibility, order, or catalog data.

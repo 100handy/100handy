@@ -3,6 +3,7 @@ import type { ChangeEvent, ReactNode } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ChevronDown, Save, ExternalLink, Upload, Loader2, Check, Rocket } from 'lucide-react'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
 import { useAuth } from '@/contexts/AuthContext'
@@ -708,7 +709,11 @@ function ImageField({
     try {
       await onUpload(file)
     } catch (err) {
-      console.error('Upload failed:', err)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Upload failed',
+        description: err instanceof Error ? err.message : 'Please try again.',
+      })
     } finally {
       setUploading(false)
     }

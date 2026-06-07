@@ -21,6 +21,7 @@ export default function SupportCentre() {
   const [responseText, setResponseText] = useState('')
   const [internalNote, setInternalNote] = useState('')
   const [showCloseModal, setShowCloseModal] = useState(false)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const [debouncedSearch, setDebouncedSearch] = useState('')
   useMemo(() => {
@@ -50,26 +51,50 @@ export default function SupportCentre() {
 
   async function handleSendResponse() {
     if (!selectedTicketId || !responseText.trim()) return
-    await createResponse.mutateAsync({ ticketId: selectedTicketId, message: responseText.trim() })
-    setResponseText('')
+    setActionFeedback(null)
+    try {
+      await createResponse.mutateAsync({ ticketId: selectedTicketId, message: responseText.trim() })
+      setResponseText('')
+      setActionFeedback({ tone: 'success', message: 'Support response sent.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to send response.' })
+    }
   }
 
   async function handleInternalNote() {
     if (!selectedTicketId || !internalNote.trim()) return
-    await createInternalNote.mutateAsync({ ticketId: selectedTicketId, note: internalNote.trim() })
-    setInternalNote('')
+    setActionFeedback(null)
+    try {
+      await createInternalNote.mutateAsync({ ticketId: selectedTicketId, note: internalNote.trim() })
+      setInternalNote('')
+      setActionFeedback({ tone: 'success', message: 'Internal note saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save internal note.' })
+    }
   }
 
   async function handleCloseTicket() {
     if (!selectedTicketId) return
-    await updateStatus.mutateAsync({ ticketId: selectedTicketId, status: 'closed' })
-    setShowCloseModal(false)
-    setSelectedTicketId(null)
+    setActionFeedback(null)
+    try {
+      await updateStatus.mutateAsync({ ticketId: selectedTicketId, status: 'closed' })
+      setShowCloseModal(false)
+      setSelectedTicketId(null)
+      setActionFeedback({ tone: 'success', message: 'Ticket closed.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to close ticket.' })
+    }
   }
 
   async function handleAssignToMe() {
     if (!selectedTicketId || !user?.id) return
-    await updateStatus.mutateAsync({ ticketId: selectedTicketId, assignedTo: user.id, status: 'in_progress' })
+    setActionFeedback(null)
+    try {
+      await updateStatus.mutateAsync({ ticketId: selectedTicketId, assignedTo: user.id, status: 'in_progress' })
+      setActionFeedback({ tone: 'success', message: 'Ticket assigned to you.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to assign ticket.' })
+    }
   }
 
   return (
@@ -77,6 +102,15 @@ export default function SupportCentre() {
       <Header title="Support Centre" />
 
       <main className="flex-1 p-6 space-y-6">
+        {actionFeedback && (
+          <div className={`rounded-xl px-4 py-3 text-sm ${
+            actionFeedback.tone === 'success'
+              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+              : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+          }`}>
+            {actionFeedback.message}
+          </div>
+        )}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <StatCard label="Open Tickets" value={stats?.openTickets || 0} accent="text-blue-600" />
           <StatCard label="In Progress" value={stats?.inProgressTickets || 0} accent="text-purple-600" />

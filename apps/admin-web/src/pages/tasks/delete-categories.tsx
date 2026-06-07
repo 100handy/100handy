@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Trash2, AlertTriangle, Loader2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { useCategories, useDeleteCategories } from '@/lib/api/categories'
 
 export default function DeleteCategoriesPage() {
@@ -41,7 +42,11 @@ export default function DeleteCategoriesPage() {
       await deleteCategories.mutateAsync(selectedCategories)
       navigate('/tasks/categories')
     } catch (error) {
-      console.error('Failed to delete categories:', error)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to delete categories',
+        description: error instanceof Error ? error.message : 'Please try again.',
+      })
     }
   }
 

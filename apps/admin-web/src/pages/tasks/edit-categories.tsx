@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ExternalLink, Plus, Edit, Trash2, Loader2, X, Save, Image as ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
 import { useAuth } from '@/contexts/AuthContext'
@@ -181,7 +182,11 @@ export default function EditCategoriesPage() {
       }
       resetForm()
     } catch (saveError) {
-      console.error('Failed to save category:', saveError)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to save category',
+        description: saveError instanceof Error ? saveError.message : 'Please try again.',
+      })
     }
   }
 
@@ -195,7 +200,11 @@ export default function EditCategoriesPage() {
       }
       setDeleteTarget(null)
     } catch (deleteError) {
-      console.error('Failed to delete category:', deleteError)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to delete category',
+        description: deleteError instanceof Error ? deleteError.message : 'Please try again.',
+      })
     }
   }
 

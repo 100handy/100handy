@@ -13,6 +13,7 @@ export default function UsersPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(searchParams.get('mode') === 'add')
   const [createErrors, setCreateErrors] = useState<Record<string, string>>({})
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [createForm, setCreateForm] = useState({
     firstName: '',
     lastName: '',
@@ -74,14 +75,17 @@ export default function UsersPage() {
 
   async function handleCreateUser() {
     if (!validateCreateForm()) return
+    setActionFeedback(null)
     try {
       await createUserMutation.mutateAsync(createForm)
       resetCreateForm()
       setShowCreateModal(false)
       updateRouteMode(null)
+      setActionFeedback({ tone: 'success', message: 'User created.' })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create user.'
       setCreateErrors({ submit: message })
+      setActionFeedback({ tone: 'error', message })
     }
   }
 
@@ -113,12 +117,14 @@ export default function UsersPage() {
   const handleDeleteSelected = async () => {
     if (selectedUsers.length === 0) return
 
+    setActionFeedback(null)
     try {
       await deleteUsersMutation.mutateAsync(selectedUsers)
       setSelectedUsers([])
       setShowDeleteConfirm(false)
+      setActionFeedback({ tone: 'success', message: 'Selected users deleted.' })
     } catch (error) {
-      console.error('Failed to delete users:', error)
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete users.' })
     }
   }
 
@@ -128,6 +134,15 @@ export default function UsersPage() {
 
       <div className="flex-1 p-6 lg:p-10">
         <div className="max-w-7xl mx-auto">
+          {actionFeedback && (
+            <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           {/* Error State */}
           {error && (
             <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-lg p-4">
