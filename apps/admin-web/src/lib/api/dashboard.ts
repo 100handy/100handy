@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { subMonths, startOfMonth, endOfMonth, format } from 'date-fns'
-import { requireAdminPermission } from '@/lib/api/admin-auth'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
+import { requireActiveAdmin, requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
 export interface DashboardMetricCard {
@@ -28,34 +28,66 @@ export interface DashboardRecentBooking {
 }
 
 export interface DashboardOverview {
-  metrics: {
-    totalCustomers: DashboardMetricCard
-    totalProviders: DashboardMetricCard
-    pendingProviderApprovals: DashboardMetricCard
-    activeJobs: DashboardMetricCard
-    completedJobs: DashboardMetricCard
-    cancelledJobs: DashboardMetricCard
-    revenue: DashboardMetricCard
-    refunds: DashboardMetricCard
-    openDisputes: DashboardMetricCard
-    openSupportTickets: DashboardMetricCard
-    failedPayments: DashboardMetricCard
-  }
+  metrics: Record<string, DashboardMetricCard>
   trends: DashboardTrendPoint[]
   recentBookings: DashboardRecentBooking[]
 }
 
-function buildMonthBuckets() {
-  const now = new Date()
-  return Array.from({ length: 6 }).map((_, index) => {
-    const date = subMonths(now, 5 - index)
-    return {
-      key: format(date, 'yyyy-MM'),
-      label: format(date, 'MMM'),
-      start: startOfMonth(date).toISOString(),
-      end: endOfMonth(date).toISOString(),
-    }
-  })
+export interface DashboardPreferences {
+  visibleMetricLabels: string[]
+  metricOrder: string[]
+}
+
+const DEFAULT_DASHBOARD_METRIC_LABELS = [
+  'Customers',
+  'Providers',
+  'Pending Provider Approvals',
+  'Active Jobs',
+  'Completed Jobs',
+  'Cancelled Jobs',
+  'Revenue',
+  'Refunds',
+  'Open Disputes',
+  'Open Support Tickets',
+  'Failed Payments',
+]
+
+export const DASHBOARD_METRIC_LIBRARY = [
+  ...DEFAULT_DASHBOARD_METRIC_LABELS,
+  'New Customers This Month',
+  'New Providers This Month',
+  'Jobs This Week',
+  'Jobs Awaiting Assignment',
+  'Payout Queue',
+  'Paused Accounts',
+  'Disabled Categories',
+  'Enabled Service Areas',
+]
+
+function getDashboardPreferencesSettingKey(userId: string) {
+  return `dashboard.preferences.${userId}`
+}
+
+function normalizeDashboardPreferences(valueJson: unknown): DashboardPreferences {
+  const input = (valueJson && typeof valueJson === 'object' ? valueJson : {}) as Partial<DashboardPreferences>
+  const ordered = Array.isArray(input.metricOrder) ? input.metricOrder.filter((label): label is string => typeof label === 'string') : []
+  const visible = Array.isArray(input.visibleMetricLabels)
+    ? input.visibleMetricLabels.filter((label): label is string => typeof label === 'string')
+    : []
+
+  const metricOrder = [
+    ...ordered.filter((label) => DASHBOARD_METRIC_LIBRARY.includes(label)),
+    ...DASHBOARD_METRIC_LIBRARY.filter((label) => !ordered.includes(label)),
+  ]
+
+  const visibleMetricLabels = visible.length > 0
+    ? visible.filter((label) => metricOrder.includes(label))
+    : [...DEFAULT_DASHBOARD_METRIC_LABELS]
+
+  return {
+    metricOrder,
+    visibleMetricLabels,
+  }
 }
 
 export function useDashboardOverview() {
@@ -64,172 +96,74 @@ export function useDashboardOverview() {
     queryFn: async (): Promise<DashboardOverview> => {
       await requireAdminPermission('dashboard.view')
 
-      const monthBuckets = buildMonthBuckets()
+      const { data, error } = await supabase.rpc('get_admin_dashboard_overview')
 
-      const [
-        customerCountResult,
-        providerCountResult,
-        pendingApprovalsResult,
-        activeBookingsResult,
-        completedBookingsResult,
-        cancelledBookingsResult,
-        paidPaymentsResult,
-        refundedPaymentsResult,
-        openDisputesResult,
-        failedPaymentsResult,
-        supportTicketsResult,
-        profilesResult,
-        bookingsResult,
-        recentBookingsResult,
-      ] = await Promise.all([
-        supabase.from('profiles').select('user_id', { count: 'exact', head: true }).eq('role', 'customer'),
-        supabase.from('profiles').select('user_id', { count: 'exact', head: true }).eq('role', 'handy'),
-        supabase
-          .from('handy_profiles')
-          .select('user_id', { count: 'exact', head: true })
-          .eq('verified', false),
-        supabase
-          .from('bookings')
-          .select('id', { count: 'exact', head: true })
-          .in('status', ['pending', 'accepted', 'in_progress']),
-        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
-        supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'cancelled'),
-        supabase.from('payments').select('amount_cents, created_at').eq('status', 'paid'),
-        supabase.from('payments').select('amount_cents').eq('status', 'refunded'),
-        supabase.from('disputes').select('id', { count: 'exact', head: true }).in('status', ['open', 'investigating']),
-        supabase.from('payments').select('id', { count: 'exact', head: true }).eq('status', 'failed'),
-        supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'pending']),
-        supabase.from('profiles').select('role, created_at'),
-        supabase.from('bookings').select('status, created_at'),
-        supabase
-          .from('bookings')
-          .select('id, task_title, status, scheduled_date, category_id, customer_id, handy_id')
-          .order('created_at', { ascending: false })
-          .limit(8),
-      ])
-
-      const primaryError =
-        customerCountResult.error ||
-        providerCountResult.error ||
-        pendingApprovalsResult.error ||
-        activeBookingsResult.error ||
-        completedBookingsResult.error ||
-        cancelledBookingsResult.error ||
-        paidPaymentsResult.error ||
-        refundedPaymentsResult.error ||
-        openDisputesResult.error ||
-        failedPaymentsResult.error ||
-        supportTicketsResult.error ||
-        profilesResult.error ||
-        bookingsResult.error ||
-        recentBookingsResult.error
-
-      if (primaryError) {
-        throw new Error(primaryError.message || 'Failed to load dashboard data.')
+      if (error) {
+        throw new Error(error.message || 'Failed to load dashboard data.')
       }
 
-      const profiles = profilesResult.data ?? []
-      const bookings = bookingsResult.data ?? []
-      const paidPayments = paidPaymentsResult.data ?? []
-      const refundedPayments = refundedPaymentsResult.data ?? []
-      const recentBookings = recentBookingsResult.data ?? []
-
-      const categoryIds = Array.from(
-        new Set(recentBookings.map((booking) => booking.category_id).filter((value): value is string => Boolean(value))),
-      )
-      const profileIds = Array.from(
-        new Set(
-          recentBookings.flatMap((booking) => [booking.customer_id, booking.handy_id]).filter((value): value is string => Boolean(value)),
-        ),
-      )
-
-      const [categoriesLookupResult, profilesLookupResult] = await Promise.all([
-        categoryIds.length > 0
-          ? supabase.from('categories').select('id, name').in('id', categoryIds)
-          : Promise.resolve({ data: [], error: null }),
-        profileIds.length > 0
-          ? supabase.from('profiles').select('user_id, first_name, last_name').in('user_id', profileIds)
-          : Promise.resolve({ data: [], error: null }),
-      ])
-
-      if (categoriesLookupResult.error || profilesLookupResult.error) {
-        throw new Error(
-          categoriesLookupResult.error?.message ||
-          profilesLookupResult.error?.message ||
-          'Failed to resolve dashboard booking details.',
-        )
-      }
-
-      const categoryMap = new Map((categoriesLookupResult.data ?? []).map((category) => [category.id, category.name]))
-      const profileMap = new Map(
-        (profilesLookupResult.data ?? []).map((profile) => [
-          profile.user_id,
-          `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
-        ]),
-      )
-
-      const trends = monthBuckets.map((bucket) => {
-        const monthlyBookings = bookings.filter(
-          (booking) => booking.created_at >= bucket.start && booking.created_at <= bucket.end,
-        )
-        const monthlyRevenue = paidPayments
-          .filter((payment) => payment.created_at >= bucket.start && payment.created_at <= bucket.end)
-          .reduce((sum, payment) => sum + payment.amount_cents, 0)
-        const providerGrowth = profiles.filter(
-          (profile) =>
-            profile.role === 'handy' && profile.created_at >= bucket.start && profile.created_at <= bucket.end,
-        ).length
-        const customerGrowth = profiles.filter(
-          (profile) =>
-            profile.role === 'customer' && profile.created_at >= bucket.start && profile.created_at <= bucket.end,
-        ).length
-
-        return {
-          label: bucket.label,
-          bookings: monthlyBookings.length,
-          revenue: monthlyRevenue / 100,
-          providerGrowth,
-          customerGrowth,
-        }
-      })
-
-      return {
-        metrics: {
-          totalCustomers: { label: 'Customers', value: customerCountResult.count || 0, format: 'number' },
-          totalProviders: { label: 'Providers', value: providerCountResult.count || 0, format: 'number' },
-          pendingProviderApprovals: { label: 'Pending Provider Approvals', value: pendingApprovalsResult.count || 0, format: 'number' },
-          activeJobs: { label: 'Active Jobs', value: activeBookingsResult.count || 0, format: 'number' },
-          completedJobs: { label: 'Completed Jobs', value: completedBookingsResult.count || 0, format: 'number' },
-          cancelledJobs: { label: 'Cancelled Jobs', value: cancelledBookingsResult.count || 0, format: 'number' },
-          revenue: {
-            label: 'Revenue',
-            value: paidPayments.reduce((sum, payment) => sum + payment.amount_cents, 0) / 100,
-            format: 'currency',
-          },
-          refunds: {
-            label: 'Refunds',
-            value: refundedPayments.reduce((sum, payment) => sum + payment.amount_cents, 0) / 100,
-            format: 'currency',
-          },
-          openDisputes: { label: 'Open Disputes', value: openDisputesResult.count || 0, format: 'number' },
-          openSupportTickets: { label: 'Open Support Tickets', value: supportTicketsResult.count || 0, format: 'number' },
-          failedPayments: { label: 'Failed Payments', value: failedPaymentsResult.count || 0, format: 'number' },
-        },
-        trends,
-        recentBookings: (recentBookingsResult.data ?? []).map((booking) => {
-          return {
-            id: String(booking.id),
-            customer_name: booking.customer_id ? profileMap.get(booking.customer_id) || 'Unknown customer' : 'Unknown customer',
-            provider_name: booking.handy_id ? profileMap.get(booking.handy_id) || 'Unassigned' : 'Unassigned',
-            task_title: booking.task_title,
-            category_name: booking.category_id ? categoryMap.get(booking.category_id) || 'Uncategorised' : 'Uncategorised',
-            status: booking.status,
-            scheduled_date: booking.scheduled_date,
-          }
-        }),
-      }
+      return data as DashboardOverview
     },
     staleTime: 30 * 1000,
     refetchInterval: 60 * 1000,
+  })
+}
+
+export function useDashboardPreferences() {
+  return useQuery({
+    queryKey: ['dashboard', 'preferences'],
+    queryFn: async (): Promise<DashboardPreferences> => {
+      const { user } = await requireActiveAdmin()
+      const settingKey = getDashboardPreferencesSettingKey(user.id)
+
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value_json')
+        .eq('setting_key', settingKey)
+        .maybeSingle()
+
+      if (error) throw error
+
+      return normalizeDashboardPreferences(data?.value_json)
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useSaveDashboardPreferences() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (preferences: DashboardPreferences) => {
+      const { user } = await requireActiveAdmin()
+      const settingKey = getDashboardPreferencesSettingKey(user.id)
+      const normalized = normalizeDashboardPreferences(preferences)
+
+      const { error } = await supabase
+        .from('site_settings')
+        .upsert(
+          {
+            setting_group: 'dashboard',
+            setting_key: settingKey,
+            value_json: normalized,
+            updated_by: user.id,
+          },
+          { onConflict: 'setting_key' },
+        )
+      if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'dashboard.preferences.save',
+        entityType: 'dashboard_preference',
+        entityId: settingKey,
+        summary: 'Saved dashboard KPI preferences',
+        metadata: normalized,
+      })
+
+      return normalized
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'preferences'] })
+    },
   })
 }

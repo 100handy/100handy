@@ -236,9 +236,10 @@ export function useTask(taskId: string | undefined) {
         `
         )
         .eq('id', taskId)
-        .single()
+        .maybeSingle()
 
       if (error) throw error
+      if (!data) return null
 
       return {
         ...data,
@@ -293,9 +294,10 @@ export function useTaskManagementDetails(taskId: string | undefined) {
         `,
         )
         .eq('id', taskId)
-        .single()
+        .maybeSingle()
 
       if (task.error) throw task.error
+      if (!task.data) return null
 
       const [paymentResult, reviewResult] = await Promise.all([
         supabase

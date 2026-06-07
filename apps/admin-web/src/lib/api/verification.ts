@@ -347,7 +347,7 @@ export function useVerificationDetail(userId: string) {
           )
         `)
         .eq('user_id', userId)
-        .single()
+        .maybeSingle()
 
       if (error) throw error
       if (!data) return null

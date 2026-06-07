@@ -175,9 +175,10 @@ export function useHandy(userId: string | undefined) {
         )
         .eq('user_id', userId)
         .eq('role', 'handy')
-        .single()
+        .maybeSingle()
 
       if (profileError) throw profileError
+      if (!profile) return null
 
       // Try to fetch email from auth (admin only)
       const emailMap = await fetchAdminAuthUsersByIds([userId])
@@ -222,9 +223,10 @@ export function useHandyManagementDetails(userId: string | undefined) {
         )
         .eq('user_id', userId)
         .eq('role', 'handy')
-        .single()
+        .maybeSingle()
 
       if (profileError) throw profileError
+      if (!profile) return null
 
       const emailMap = await fetchAdminAuthUsersByIds([userId])
 

@@ -1,0 +1,3 @@
+-- Placeholder for a migration version that already exists in the remote project.
+-- This branch does not carry the original file content, but the version must
+-- exist locally so later migrations can be applied without migration-history drift.

@@ -41,7 +41,7 @@ export function useSavePaymentMethodConfig() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: PaymentMethodInsert) => {
-      await requireAdminPermission('finance.view')
+      await requireAdminPermission('finance.manage')
       const payload: PaymentMethodInsert = {
         ...input,
         supported_currencies: input.supported_currencies ?? ['GBP'],
@@ -68,7 +68,7 @@ export function useDeletePaymentMethodConfig() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (method: PaymentMethodConfig) => {
-      await requireAdminPermission('finance.view')
+      await requireAdminPermission('finance.manage')
       const { error } = await supabase.from('payment_method_configs').delete().eq('id', method.id)
       if (error) throw error
       await createAdminAuditLog({
@@ -137,7 +137,7 @@ export function useSavePricingRule() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: PricingRuleInsert) => {
-      await requireAdminPermission('finance.view')
+      await requireAdminPermission('finance.manage')
       const query = input.id
         ? supabase.from('service_pricing_rules').update(input).eq('id', input.id)
         : supabase.from('service_pricing_rules').insert(input)
@@ -167,7 +167,7 @@ export function useDeletePricingRule() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (rule: PricingRule) => {
-      await requireAdminPermission('finance.view')
+      await requireAdminPermission('finance.manage')
       const { error } = await supabase.from('service_pricing_rules').delete().eq('id', rule.id)
       if (error) throw error
       await createAdminAuditLog({

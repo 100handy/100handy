@@ -84,6 +84,7 @@ export function useUsersWithLocation() {
   return useQuery({
     queryKey: ['accounts', 'users-with-location'],
     queryFn: async (): Promise<UserWithLocation[]> => {
+      await requireAdminPermission('accounts.manage')
       // Fetch all users who have at least one address
       const { data: addresses, error: addressError } = await supabase
         .from('addresses')
@@ -165,6 +166,7 @@ export function useAccountsSummary() {
   return useQuery({
     queryKey: ['accounts', 'summary'],
     queryFn: async (): Promise<AccountsSummary> => {
+      await requireAdminPermission('accounts.manage')
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, role, account_status')
@@ -201,6 +203,7 @@ export function useAccountStatusUsers(status: AccountLifecycleStatus) {
   return useQuery({
     queryKey: ['accounts', 'status-users', status],
     queryFn: async (): Promise<AccountStatusUser[]> => {
+      await requireAdminPermission('accounts.manage')
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select(
@@ -226,6 +229,7 @@ export function useAdminAccessUsers() {
   return useQuery({
     queryKey: ['accounts', 'admin-access-users'],
     queryFn: async (): Promise<AdminAccessUser[]> => {
+      await requireAdminPermission('accounts.manage')
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('user_id, first_name, last_name, account_status, admin_role, status_reason, created_at')

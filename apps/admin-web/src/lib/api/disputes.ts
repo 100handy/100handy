@@ -128,9 +128,10 @@ export function useDispute(id: string | null) {
           booking:bookings(task_title, status)
         `)
         .eq('id', id)
-        .single()
+        .maybeSingle()
 
       if (error) throw error
+      if (!dispute) return null
 
       const { data: messages, error: messagesError } = await supabase
         .from('dispute_messages')

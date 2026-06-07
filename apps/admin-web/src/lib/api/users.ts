@@ -166,9 +166,10 @@ export function useUser(userId: string | undefined) {
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single()
+        .maybeSingle()
 
       if (profileError) throw profileError
+      if (!profile) return null
 
       const emailMap = await fetchAdminAuthUsersByIds([userId])
 

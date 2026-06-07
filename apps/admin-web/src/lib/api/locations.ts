@@ -333,12 +333,13 @@ export function useProviderCandidates(serviceAreaId: string | null) {
       await requireAdminPermission('locations.manage')
 
       const [{ data: area, error: areaError }, { data: assigned, error: assignedError }] = await Promise.all([
-        supabase.from('service_areas').select('postcode_prefix').eq('id', serviceAreaId).single(),
+        supabase.from('service_areas').select('postcode_prefix').eq('id', serviceAreaId).maybeSingle(),
         supabase.from('provider_service_areas').select('provider_id').eq('service_area_id', serviceAreaId),
       ])
 
       if (areaError) throw areaError
       if (assignedError) throw assignedError
+      if (!area) return []
 
       const assignedIds = new Set((assigned ?? []).map((row) => row.provider_id))
 

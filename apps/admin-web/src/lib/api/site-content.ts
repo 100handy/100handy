@@ -76,6 +76,7 @@ export function usePageContent(pageKey: string) {
   return useQuery({
     queryKey: ['admin', 'site-content', pageKey],
     queryFn: async (): Promise<Record<string, string>> => {
+      await requireAdminPermissions(['content.manage'])
       const { data, error } = await supabase
         .from('site_content')
         .select('section_key, field_key, value')
@@ -97,6 +98,7 @@ export function usePageRecord(pageKey: string) {
   return useQuery({
     queryKey: ['admin', 'site-pages', pageKey],
     queryFn: async (): Promise<SitePageRecord | null> => {
+      await requireAdminPermissions(['content.manage'])
       const { data, error } = await supabase
         .from('site_pages')
         .select('*')
@@ -114,6 +116,7 @@ export function usePageSeo(pageKey: string) {
   return useQuery({
     queryKey: ['admin', 'seo-metadata', 'page', pageKey],
     queryFn: async (): Promise<SeoMetadataRecord | null> => {
+      await requireAdminPermissions(['content.manage', 'seo.manage'])
       const { data, error } = await supabase
         .from('seo_metadata')
         .select('*')
@@ -132,6 +135,7 @@ export function useLatestPageDraft(pageKey: string) {
   return useQuery({
     queryKey: ['admin', 'page-revisions', pageKey, 'latest-draft'],
     queryFn: async (): Promise<PageRevisionRecord | null> => {
+      await requireAdminPermissions(['content.manage', 'seo.manage'])
       const { data, error } = await supabase
         .from('page_content_revisions')
         .select('*')
@@ -152,6 +156,7 @@ export function usePageRevisions(pageKey: string) {
   return useQuery({
     queryKey: ['admin', 'page-revisions', pageKey],
     queryFn: async (): Promise<PageRevisionRecord[]> => {
+      await requireAdminPermissions(['content.manage', 'seo.manage'])
       const { data, error } = await supabase
         .from('page_content_revisions')
         .select('*')
@@ -172,6 +177,7 @@ export function useAllPagesLastUpdated() {
   return useQuery({
     queryKey: ['admin', 'site-content', 'last-updated'],
     queryFn: async (): Promise<Record<string, string>> => {
+      await requireAdminPermissions(['content.manage'])
       const { data, error } = await supabase
         .from('site_content')
         .select('page_key, updated_at')
@@ -629,8 +635,9 @@ export function useRestorePageRevision() {
         .from('page_content_revisions')
         .select('*')
         .eq('id', revisionId)
-        .single()
+        .maybeSingle()
       if (error) throw error
+      if (!revision) throw new Error('Page revision not found')
 
       const { data: existingDraft, error: existingDraftError } = await supabase
         .from('page_content_revisions')

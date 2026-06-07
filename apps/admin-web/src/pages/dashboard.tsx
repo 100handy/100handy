@@ -1,13 +1,19 @@
+import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
+import { Link } from 'react-router-dom'
 import {
   Activity,
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
   CreditCard,
   LifeBuoy,
   Scale,
+  Settings2,
   TrendingUp,
   UserRound,
   Wrench,
+  X,
 } from 'lucide-react'
 import {
   Bar,
@@ -22,7 +28,8 @@ import {
   YAxis,
 } from 'recharts'
 import Header from '@/components/header'
-import { useDashboardOverview } from '@/lib/api/dashboard'
+import { emitAdminToast } from '@/lib/admin-toast'
+import { DASHBOARD_METRIC_LIBRARY, useDashboardOverview, useDashboardPreferences, useSaveDashboardPreferences, type DashboardPreferences } from '@/lib/api/dashboard'
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
@@ -32,20 +39,63 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
 }
 
-const CARD_ICONS = [
-  UserRound,
-  Wrench,
-  Activity,
-  Activity,
-  TrendingUp,
-  TrendingUp,
-  CreditCard,
-  Scale,
-  CreditCard,
-  AlertTriangle,
-  LifeBuoy,
-  CreditCard,
+const METRIC_ICONS: Record<string, typeof Activity> = {
+  Customers: UserRound,
+  Providers: Wrench,
+  'Pending Provider Approvals': AlertTriangle,
+  'Active Jobs': Activity,
+  'Completed Jobs': TrendingUp,
+  'Cancelled Jobs': TrendingUp,
+  Revenue: CreditCard,
+  Refunds: Scale,
+  'Open Disputes': Scale,
+  'Open Support Tickets': LifeBuoy,
+  'Failed Payments': CreditCard,
+  'New Customers This Month': UserRound,
+  'New Providers This Month': Wrench,
+  'Jobs This Week': Activity,
+  'Jobs Awaiting Assignment': AlertTriangle,
+  'Payout Queue': CreditCard,
+  'Paused Accounts': AlertTriangle,
+  'Disabled Categories': X,
+  'Enabled Service Areas': Activity,
+}
+
+const METRIC_CARD_SKELETONS = [
+  'Customers',
+  'Providers',
+  'Pending Provider Approvals',
+  'Active Jobs',
+  'Completed Jobs',
+  'Cancelled Jobs',
+  'Revenue',
+  'Refunds',
+  'Open Disputes',
+  'Open Support Tickets',
+  'Failed Payments',
 ]
+
+const METRIC_ROUTES: Record<string, string> = {
+  Customers: '/users',
+  Providers: '/handys',
+  'Pending Provider Approvals': '/handys/selection-process',
+  'Active Jobs': '/tasks/list',
+  'Completed Jobs': '/tasks/completed',
+  'Cancelled Jobs': '/tasks/cancelled',
+  Revenue: '/finance/income',
+  Refunds: '/finance/transactions',
+  'Open Disputes': '/support/disputes',
+  'Open Support Tickets': '/support/centre',
+  'Failed Payments': '/finance/transactions',
+  'New Customers This Month': '/users',
+  'New Providers This Month': '/handys',
+  'Jobs This Week': '/tasks/list',
+  'Jobs Awaiting Assignment': '/tasks/open',
+  'Payout Queue': '/finance/payouts',
+  'Paused Accounts': '/accounts/paused',
+  'Disabled Categories': '/tasks/categories',
+  'Enabled Service Areas': '/accounts/service-areas',
+}
 
 function formatMetric(value: number, formatType: 'number' | 'currency') {
   if (formatType === 'currency') {
@@ -61,14 +111,168 @@ function formatMetric(value: number, formatType: 'number' | 'currency') {
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboardOverview()
+  const { data: preferences } = useDashboardPreferences()
+  const savePreferences = useSaveDashboardPreferences()
+  const [isCustomizing, setIsCustomizing] = useState(false)
+  const [draftPreferences, setDraftPreferences] = useState<DashboardPreferences>({
+    visibleMetricLabels: [...METRIC_CARD_SKELETONS],
+    metricOrder: [...DASHBOARD_METRIC_LIBRARY],
+  })
 
   const metricCards = data ? Object.values(data.metrics) : []
+  const effectivePreferences = preferences ?? draftPreferences
+
+  useEffect(() => {
+    if (preferences) {
+      setDraftPreferences(preferences)
+    }
+  }, [preferences])
+
+  const orderedMetricCards = useMemo(() => {
+    if (metricCards.length === 0) return []
+    const cardMap = new Map(metricCards.map((metric) => [metric.label, metric]))
+    return effectivePreferences.metricOrder
+      .map((label) => cardMap.get(label))
+      .filter((metric): metric is NonNullable<typeof metric> => Boolean(metric))
+      .filter((metric) => effectivePreferences.visibleMetricLabels.includes(metric.label))
+  }, [metricCards, effectivePreferences])
+
+  const metricShells = isLoading
+    ? effectivePreferences.metricOrder.filter((label) => effectivePreferences.visibleMetricLabels.includes(label))
+    : orderedMetricCards.map((metric) => metric.label)
+
+  const moveMetric = (label: string, direction: -1 | 1) => {
+    setDraftPreferences((current) => {
+      const nextOrder = [...current.metricOrder]
+      const index = nextOrder.indexOf(label)
+      const targetIndex = index + direction
+      if (index < 0 || targetIndex < 0 || targetIndex >= nextOrder.length) return current
+      ;[nextOrder[index], nextOrder[targetIndex]] = [nextOrder[targetIndex], nextOrder[index]]
+      return { ...current, metricOrder: nextOrder }
+    })
+  }
+
+  const toggleMetricVisibility = (label: string) => {
+    setDraftPreferences((current) => {
+      const isVisible = current.visibleMetricLabels.includes(label)
+      return {
+        ...current,
+        visibleMetricLabels: isVisible
+          ? current.visibleMetricLabels.filter((item) => item !== label)
+          : [...current.visibleMetricLabels, label],
+      }
+    })
+  }
+
+  const resetPreferences = () => {
+    setDraftPreferences({
+      visibleMetricLabels: [...METRIC_CARD_SKELETONS],
+      metricOrder: [...DASHBOARD_METRIC_LIBRARY],
+    })
+  }
+
+  const handleSavePreferences = async () => {
+    try {
+      await savePreferences.mutateAsync(draftPreferences)
+      setIsCustomizing(false)
+      emitAdminToast({
+        tone: 'success',
+        title: 'Dashboard updated',
+        description: 'Your KPI layout has been saved.',
+      })
+    } catch (saveError) {
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to save dashboard',
+        description: saveError instanceof Error ? saveError.message : 'Please try again.',
+      })
+    }
+  }
 
   return (
     <main className="flex-1">
       <Header title="Admin Dashboard" />
 
       <div className="space-y-8 p-6">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setIsCustomizing((current) => !current)}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-primary/40 hover:text-primary dark:border-slate-800 dark:bg-gray-900/50 dark:text-slate-200"
+          >
+            {isCustomizing ? <X className="h-4 w-4" /> : <Settings2 className="h-4 w-4" />}
+            {isCustomizing ? 'Close dashboard settings' : 'Customize dashboard'}
+          </button>
+        </div>
+
+        {isCustomizing && (
+          <section className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Dashboard settings</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Choose which KPI cards appear and change their order.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={resetPreferences}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSavePreferences}
+                  disabled={savePreferences.isPending}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {savePreferences.isPending ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              {draftPreferences.metricOrder.map((label, index) => {
+                const isVisible = draftPreferences.visibleMetricLabels.includes(label)
+                return (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-800"
+                  >
+                    <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
+                      <input
+                        type="checkbox"
+                        checked={isVisible}
+                        onChange={() => toggleMetricVisibility(label)}
+                        className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                      />
+                      <span>{label}</span>
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => moveMetric(label, -1)}
+                        disabled={index === 0}
+                        className="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 dark:hover:bg-slate-800 dark:hover:text-white"
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveMetric(label, 1)}
+                        disabled={index === draftPreferences.metricOrder.length - 1}
+                        className="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 dark:hover:bg-slate-800 dark:hover:text-white"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
             {error instanceof Error ? error.message : 'Failed to load dashboard data.'}
@@ -76,15 +280,18 @@ export default function DashboardPage() {
         )}
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {metricCards.map((metric, index) => {
-            const Icon = CARD_ICONS[index] || Activity
+          {metricShells.map((label, index) => {
+            const Icon = METRIC_ICONS[label] || Activity
+            const metric = orderedMetricCards[index]
+            const href = METRIC_ROUTES[label]
             return (
-              <div
-                key={metric.label}
-                className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50"
+              <Link
+                key={label}
+                to={href || '/dashboard'}
+                className="rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-primary/40 hover:bg-slate-50 dark:border-slate-800 dark:bg-gray-900/50 dark:hover:border-primary/40 dark:hover:bg-slate-900/80"
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{metric.label}</p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
                   <div className="rounded-lg bg-primary/10 p-2 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
@@ -93,10 +300,10 @@ export default function DashboardPage() {
                   <div className="mt-4 h-8 w-28 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
                 ) : (
                   <p className="mt-4 text-3xl font-semibold text-slate-900 dark:text-white">
-                    {formatMetric(metric.value, metric.format)}
+                    {metric ? formatMetric(metric.value, metric.format) : '—'}
                   </p>
                 )}
-              </div>
+              </Link>
             )
           })}
         </section>

@@ -190,7 +190,7 @@ export function useSupportTicket(ticketId: string) {
           )
         `)
         .eq('id', ticketId)
-        .single()
+        .maybeSingle()
 
       if (ticketError) throw ticketError
       if (!ticket) return null
@@ -212,7 +212,7 @@ export function useSupportTicket(ticketId: string) {
               .from('profiles')
               .select('first_name, last_name')
               .eq('user_id', ticket.assigned_to)
-              .single()
+              .maybeSingle()
           : Promise.resolve({ data: null, error: null }),
       ])
 

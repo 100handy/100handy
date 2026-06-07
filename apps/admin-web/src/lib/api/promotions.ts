@@ -54,6 +54,7 @@ export function usePromoCodes(filter?: 'all' | 'promotions' | 'referrals') {
   return useQuery({
     queryKey: ['admin', 'promo-codes', filter],
     queryFn: async (): Promise<PromoCode[]> => {
+      await requireAdminPermission('promotions.manage')
       const { data: promoCodes, error } = await supabase
         .from('promo_codes')
         .select('*')
@@ -129,6 +130,7 @@ export function usePromoStats() {
   return useQuery({
     queryKey: ['admin', 'promo-stats'],
     queryFn: async (): Promise<PromoStats> => {
+      await requireAdminPermission('promotions.manage')
       const now = new Date()
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
@@ -173,6 +175,7 @@ export function useTopCodes(limit = 5) {
   return useQuery({
     queryKey: ['admin', 'top-codes', limit],
     queryFn: async (): Promise<TopCode[]> => {
+      await requireAdminPermission('promotions.manage')
       const { data: promoCodes, error } = await supabase
         .from('promo_codes')
         .select('code, current_uses, max_uses')

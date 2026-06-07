@@ -416,6 +416,7 @@ export function useBlogPosts() {
   return useQuery({
     queryKey: ['admin', 'blog-posts'],
     queryFn: async () => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('blog_posts')
         .select('*')
@@ -492,6 +493,7 @@ export function useBlogPostRevisions(slug: string) {
   return useQuery({
     queryKey: ['admin', 'blog-post-revisions', slug],
     queryFn: async (): Promise<BlogPostRevisionRecord[]> => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('blog_post_revisions')
         .select('*')
@@ -671,8 +673,9 @@ export function useRestoreBlogPostRevision() {
         .from('blog_post_revisions')
         .select('*')
         .eq('id', revisionId)
-        .single()
+        .maybeSingle()
       if (error) throw error
+      if (!revision) throw new Error('Blog post revision not found')
 
       const { data: existingDraft, error: existingDraftError } = await supabase
         .from('blog_post_revisions')
@@ -720,6 +723,7 @@ export function useNavigationItems() {
   return useQuery({
     queryKey: ['admin', 'navigation-items'],
     queryFn: async () => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('navigation_items')
         .select('*')
@@ -786,6 +790,7 @@ export function useNavigationConfigRevisions(configKey: string) {
   return useQuery({
     queryKey: ['admin', 'navigation-config-revisions', configKey],
     queryFn: async (): Promise<NavigationConfigRevisionRecord[]> => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('navigation_config_revisions')
         .select('*')
@@ -932,8 +937,9 @@ export function useRestoreNavigationConfigRevision() {
         .from('navigation_config_revisions')
         .select('*')
         .eq('id', revisionId)
-        .single()
+        .maybeSingle()
       if (error) throw error
+      if (!revision) throw new Error('Navigation revision not found')
 
       const { data: existingDraft, error: existingDraftError } = await supabase
         .from('navigation_config_revisions')
@@ -981,6 +987,7 @@ export function useSiteSettings(settingKeys?: string[]) {
   return useQuery({
     queryKey: ['admin', 'site-settings', settingKeys?.join(',') ?? 'all'],
     queryFn: async () => {
+      await requireAdminPermissions(['content.manage', 'seo.manage'])
       let query = supabase.from('site_settings').select('*').order('setting_key', { ascending: true })
       if (settingKeys && settingKeys.length > 0) {
         query = query.in('setting_key', settingKeys)
@@ -1032,6 +1039,7 @@ export function useSiteSettingsRevisions(settingsKey: string) {
   return useQuery({
     queryKey: ['admin', 'site-settings-revisions', settingsKey],
     queryFn: async (): Promise<SiteSettingsRevisionRecord[]> => {
+      await requireAdminPermissions(['content.manage', 'seo.manage'])
       const { data, error } = await supabase
         .from('site_settings_revisions')
         .select('*')
@@ -1156,8 +1164,9 @@ export function useRestoreSiteSettingsRevision() {
         .from('site_settings_revisions')
         .select('*')
         .eq('id', revisionId)
-        .single()
+        .maybeSingle()
       if (error) throw error
+      if (!revision) throw new Error('Site settings revision not found')
 
       const { data: existingDraft, error: existingDraftError } = await supabase
         .from('site_settings_revisions')
@@ -1201,6 +1210,7 @@ export function useMediaAssets() {
   return useQuery({
     queryKey: ['admin', 'media-assets'],
     queryFn: async () => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('media_assets')
         .select('*')
@@ -1215,6 +1225,7 @@ export function useFaqItems() {
   return useQuery({
     queryKey: ['admin', 'faq-items'],
     queryFn: async () => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('faq_items')
         .select('*')
@@ -1375,6 +1386,7 @@ export function useEmailTemplates() {
   return useQuery({
     queryKey: ['admin', 'email-templates'],
     queryFn: async () => {
+      await requireAdminPermission('notifications.manage')
       const { data, error } = await supabase
         .from('email_templates')
         .select('*')
@@ -1434,6 +1446,7 @@ export function useEmailDeliveryJobs() {
   return useQuery({
     queryKey: ['admin', 'email-delivery-jobs'],
     queryFn: async (): Promise<EmailDeliveryJobRecord[]> => {
+      await requireAdminPermission('notifications.manage')
       const { data, error } = await supabase
         .from('email_delivery_jobs')
         .select('*')
@@ -1457,6 +1470,7 @@ export function useNotificationAuditEvents(channel?: NotificationAuditEventRecor
   return useQuery({
     queryKey: ['admin', 'notification-audit-events', channel ?? 'all'],
     queryFn: async (): Promise<NotificationAuditEventRecord[]> => {
+      await requireAdminPermission('notifications.manage')
       let query = supabase
         .from('notification_audit_events')
         .select('*')
@@ -1474,6 +1488,7 @@ export function usePushNotificationCampaigns() {
   return useQuery({
     queryKey: ['admin', 'push-notification-campaigns'],
     queryFn: async () => {
+      await requireAdminPermission('notifications.manage')
       const { data, error } = await supabase
         .from('push_notification_campaigns')
         .select('*')
@@ -1535,6 +1550,7 @@ export function usePushDeliveryJobs() {
   return useQuery({
     queryKey: ['admin', 'push-delivery-jobs'],
     queryFn: async (): Promise<PushDeliveryJobRecord[]> => {
+      await requireAdminPermission('notifications.manage')
       const { data, error } = await supabase
         .from('push_delivery_jobs')
         .select('*')
@@ -1767,6 +1783,7 @@ export function useAnnouncements(placement?: AnnouncementInput['placement']) {
   return useQuery({
     queryKey: ['admin', 'announcements', placement ?? 'all'],
     queryFn: async () => {
+      await requireAdminPermission('notifications.manage')
       let query = supabase
         .from('announcements')
         .select('*')
@@ -1785,6 +1802,7 @@ export function useNotificationsSummary() {
   return useQuery({
     queryKey: ['admin', 'notifications-summary'],
     queryFn: async () => {
+      await requireAdminPermission('notifications.manage')
       const [
         { data: templates, error: templatesError },
         { data: announcements, error: announcementsError },
@@ -1898,6 +1916,7 @@ export function useLatestAnnouncementDraft(announcementKey: string) {
   return useQuery({
     queryKey: ['admin', 'announcement-revisions', announcementKey, 'latest-draft'],
     queryFn: async (): Promise<AnnouncementRevisionRecord | null> => {
+      await requireAdminPermission('notifications.manage')
       const { data, error } = await supabase
         .from('announcement_revisions')
         .select('*')
@@ -1917,6 +1936,7 @@ export function useAnnouncementRevisions(announcementKey: string) {
   return useQuery({
     queryKey: ['admin', 'announcement-revisions', announcementKey],
     queryFn: async (): Promise<AnnouncementRevisionRecord[]> => {
+      await requireAdminPermission('notifications.manage')
       const { data, error } = await supabase
         .from('announcement_revisions')
         .select('*')
@@ -2080,8 +2100,9 @@ export function useRestoreAnnouncementRevision() {
         .from('announcement_revisions')
         .select('*')
         .eq('id', revisionId)
-        .single()
+        .maybeSingle()
       if (error) throw error
+      if (!revision) throw new Error('Announcement revision not found')
 
       const { data: existingDraft, error: existingDraftError } = await supabase
         .from('announcement_revisions')
@@ -2138,6 +2159,7 @@ export function useAppContentEntries(platform?: AppContentInput['platform'], scr
   return useQuery({
     queryKey: ['admin', 'app-content', platform ?? 'all', screenKey ?? 'all'],
     queryFn: async () => {
+      await requireAdminPermission('content.manage')
       let query = supabase
         .from('app_content')
         .select('*')
@@ -2185,6 +2207,7 @@ export function useLatestAppContentScreenDraft(platform: AppContentInput['platfo
   return useQuery({
     queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey, 'latest-draft'],
     queryFn: async (): Promise<AppContentScreenRevisionRecord | null> => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('app_content_screen_revisions')
         .select('*')
@@ -2205,6 +2228,7 @@ export function useAppContentScreenRevisions(platform: AppContentInput['platform
   return useQuery({
     queryKey: ['admin', 'app-content-screen-revisions', platform, screenKey],
     queryFn: async (): Promise<AppContentScreenRevisionRecord[]> => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('app_content_screen_revisions')
         .select('*')
@@ -2381,8 +2405,9 @@ export function useRestoreAppContentScreenRevision() {
         .from('app_content_screen_revisions')
         .select('*')
         .eq('id', revisionId)
-        .single()
+        .maybeSingle()
       if (error) throw error
+      if (!revision) throw new Error('App content revision not found')
 
       const { data: existingDraft, error: existingDraftError } = await supabase
         .from('app_content_screen_revisions')
@@ -2428,6 +2453,7 @@ export function useHelpArticles() {
   return useQuery({
     queryKey: ['admin', 'help-articles'],
     queryFn: async () => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('help_articles')
         .select('*')
@@ -2498,6 +2524,7 @@ export function useHelpArticleRevisions(articleKey: string) {
   return useQuery({
     queryKey: ['admin', 'help-article-revisions', articleKey],
     queryFn: async (): Promise<HelpArticleRevisionRecord[]> => {
+      await requireAdminPermission('content.manage')
       const { data, error } = await supabase
         .from('help_article_revisions')
         .select('*')
@@ -2620,8 +2647,9 @@ export function useRestoreHelpArticleRevision() {
         .from('help_article_revisions')
         .select('*')
         .eq('id', revisionId)
-        .single()
+        .maybeSingle()
       if (error) throw error
+      if (!revision) throw new Error('Help article revision not found')
 
       const { data: existingDraft, error: existingDraftError } = await supabase
         .from('help_article_revisions')
