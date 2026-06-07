@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
 import Header from '@/components/header'
+import { useAuth } from '@/contexts/AuthContext'
 import { useMarkPayoutFailed, usePayoutQueue, usePayoutSummary, useProcessAdminPayout } from '@/lib/api/payouts'
 
 export default function PayoutOperationsPage() {
+  const { hasPermission } = useAuth()
+  const canManageFinance = hasPermission('finance.manage')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<'all' | 'pending' | 'transferred' | 'failed'>('all')
   const [failedTarget, setFailedTarget] = useState<{ bookingId: string; taskTitle: string } | null>(null)
@@ -61,6 +64,11 @@ export default function PayoutOperationsPage() {
       <Header title="Payout Operations" />
 
       <main className="flex-1 space-y-6 p-6">
+        {!canManageFinance && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            Your admin role can view payout operations, but it cannot process or fail payouts.
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-4">
           <SummaryCard label="Pending payouts" value={summaryLoading ? '...' : String(summary?.pendingCount || 0)} />
           <SummaryCard label="Transferred" value={summaryLoading ? '...' : String(summary?.transferredCount || 0)} />
@@ -176,7 +184,7 @@ export default function PayoutOperationsPage() {
                                   setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to process payout.' })
                                 }
                               }}
-                              disabled={processPayout.isPending}
+                              disabled={processPayout.isPending || !canManageFinance}
                               className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                             >
                               Process
@@ -186,7 +194,7 @@ export default function PayoutOperationsPage() {
                             <button
                               type="button"
                               onClick={() => setFailedTarget({ bookingId: row.bookingId, taskTitle: row.taskTitle })}
-                              disabled={markFailed.isPending}
+                              disabled={markFailed.isPending || !canManageFinance}
                               className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 dark:border-red-900/60"
                             >
                               Mark failed

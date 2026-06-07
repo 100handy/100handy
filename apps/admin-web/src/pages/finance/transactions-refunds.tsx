@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Download, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import Header from '@/components/header'
+import { useAuth } from '@/contexts/AuthContext'
 import { useFinanceSummary, useFinanceTransactions, useRefundPayment } from '@/lib/api/finance'
 import type { PaymentStatus } from '@/lib/database.types'
 import { Link } from 'react-router-dom'
@@ -14,6 +15,8 @@ const STATUS_LABELS: Record<PaymentStatus, string> = {
 }
 
 export default function TransactionsRefundsPage() {
+  const { hasPermission } = useAuth()
+  const canManageFinance = hasPermission('finance.manage')
   const [searchQuery, setSearchQuery] = useState('')
   const [status, setStatus] = useState<PaymentStatus | 'all'>('all')
   const [refundTarget, setRefundTarget] = useState<{ paymentId: string; taskTitle: string; amount: number; bookingId: string | null } | null>(null)
@@ -78,6 +81,11 @@ export default function TransactionsRefundsPage() {
       <Header title="Transactions & Refunds" />
 
       <main className="flex-1 p-6 space-y-6">
+        {!canManageFinance && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            Your admin role can view transactions, but it cannot issue refunds.
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-4">
           <SummaryCard title="Paid Revenue" value={summary ? `£${summary.paid.toFixed(0)}` : '—'} loading={summaryLoading} />
           <SummaryCard title="Refunded" value={summary ? `£${summary.refunded.toFixed(0)}` : '—'} loading={summaryLoading} />
@@ -194,6 +202,7 @@ export default function TransactionsRefundsPage() {
                               })
                             }
                             className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 dark:border-red-900/60"
+                            disabled={!canManageFinance}
                           >
                             Refund
                           </button>

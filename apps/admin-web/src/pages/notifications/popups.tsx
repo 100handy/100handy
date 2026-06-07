@@ -45,6 +45,7 @@ export default function PopupsPage() {
   const [draftKey, setDraftKey] = useState<string>(`draft-${crypto.randomUUID()}`)
   const [form, setForm] = useState(emptyPopup)
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const popupRows = useMemo(
     () => popups.filter((item) => item.placement === 'modal' || item.placement === 'banner'),
@@ -238,7 +239,7 @@ export default function PopupsPage() {
                       <button className="mr-4 text-primary hover:underline" onClick={() => setSelectedId(popup.id)}>
                         Edit
                       </button>
-                      <button className="text-red-600 hover:underline" onClick={() => deletePopup.mutate(popup.id)}>
+                      <button className="text-red-600 hover:underline" onClick={() => setDeleteTargetId(popup.id)}>
                         <Trash2 className="inline h-4 w-4" />
                       </button>
                     </td>
@@ -347,6 +348,32 @@ export default function PopupsPage() {
           </div>
         </div>
       </main>
+
+      {deleteTargetId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete pop-up</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This will remove the selected pop-up announcement.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setDeleteTargetId(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await deletePopup.mutateAsync(deleteTargetId)
+                  setDeleteTargetId(null)
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Loader2, Save, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   useDeletePricingRule,
   usePricingRuleOptions,
@@ -20,7 +21,10 @@ const emptyForm = {
 }
 
 export default function RatesAdjustments() {
+  const { hasPermission } = useAuth()
+  const canManageFinance = hasPermission('finance.manage')
   const [form, setForm] = useState(emptyForm)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const { data: rules = [], isLoading } = usePricingRules()
   const { data: options, isLoading: optionsLoading } = usePricingRuleOptions()
   const saveRule = useSavePricingRule()
@@ -67,6 +71,11 @@ export default function RatesAdjustments() {
       <Header title="Rates & Adjustments" />
 
       <main className="flex-1 p-6 space-y-6">
+        {!canManageFinance && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            Your admin role can view pricing rules, but it cannot change them.
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-3">
           <MetricCard label="Pricing rules" value={rules.length} />
           <MetricCard label="Active rules" value={activeRules} />
@@ -106,8 +115,8 @@ export default function RatesAdjustments() {
                         <td className="px-4 py-3">{rule.active ? 'Active' : 'Inactive'}</td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => editRule(rule)} className="rounded-lg px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10">Edit</button>
-                            <button onClick={() => deleteRule.mutate(rule)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"><Trash2 className="h-4 w-4" /></button>
+                            <button disabled={!canManageFinance} onClick={() => editRule(rule)} className="rounded-lg px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50">Edit</button>
+                            <button disabled={!canManageFinance} onClick={() => setDeleteTargetId(rule.id)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/20"><Trash2 className="h-4 w-4" /></button>
                           </div>
                         </td>
                       </tr>
@@ -158,7 +167,7 @@ export default function RatesAdjustments() {
                   Active pricing rule
                 </label>
                 <div className="flex gap-3">
-                  <button type="submit" disabled={saveRule.isPending || !form.category_id || !form.base_rate.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
+                  <button type="submit" disabled={!canManageFinance || saveRule.isPending || !form.category_id || !form.base_rate.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
                     <Save className="h-4 w-4" />
                     Save rule
                   </button>
@@ -169,6 +178,34 @@ export default function RatesAdjustments() {
           </section>
         </div>
       </main>
+
+      {deleteTargetId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete pricing rule</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This will remove the selected pricing rule from admin configuration.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setDeleteTargetId(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const target = rules.find((rule) => rule.id === deleteTargetId)
+                  if (!target) return
+                  await deleteRule.mutateAsync(target)
+                  setDeleteTargetId(null)
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

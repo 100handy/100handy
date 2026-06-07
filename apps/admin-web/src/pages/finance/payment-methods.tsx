@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Edit2, Loader2, Plus, Save, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   useDeletePaymentMethodConfig,
   usePaymentMethodConfigs,
@@ -22,7 +23,10 @@ const emptyForm = {
 }
 
 export default function PaymentMethods() {
+  const { hasPermission } = useAuth()
+  const canManageFinance = hasPermission('finance.manage')
   const [form, setForm] = useState(emptyForm)
+  const [deleteTarget, setDeleteTarget] = useState<PaymentMethodConfig | null>(null)
   const { data: methods = [], isLoading } = usePaymentMethodConfigs()
   const saveMethod = useSavePaymentMethodConfig()
   const deleteMethod = useDeletePaymentMethodConfig()
@@ -76,6 +80,11 @@ export default function PaymentMethods() {
       <Header title="Payment Methods" />
 
       <main className="flex-1 p-6 space-y-6">
+        {!canManageFinance && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            Your admin role can view payment method settings, but it cannot change them.
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-3">
           <MetricCard label="Configured methods" value={methods.length} />
           <MetricCard label="Active methods" value={activeCount} />
@@ -89,7 +98,7 @@ export default function PaymentMethods() {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Configured payment methods</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Operational payment and payout methods used by web and mobile flows.</p>
               </div>
-              <button onClick={resetForm} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium dark:border-gray-700">
+              <button disabled={!canManageFinance} onClick={resetForm} className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium disabled:opacity-50 dark:border-gray-700">
                 <Plus className="h-4 w-4" />
                 New method
               </button>
@@ -122,8 +131,8 @@ export default function PaymentMethods() {
                         <td className="px-4 py-3">{method.public_enabled ? 'Yes' : 'No'}</td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
-                            <button onClick={() => startEdit(method)} className="rounded-lg p-2 text-primary hover:bg-primary/10"><Edit2 className="h-4 w-4" /></button>
-                            <button onClick={() => deleteMethod.mutate(method)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"><Trash2 className="h-4 w-4" /></button>
+                            <button disabled={!canManageFinance} onClick={() => startEdit(method)} className="rounded-lg p-2 text-primary hover:bg-primary/10 disabled:opacity-50"><Edit2 className="h-4 w-4" /></button>
+                            <button disabled={!canManageFinance} onClick={() => setDeleteTarget(method)} className="rounded-lg p-2 text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/20"><Trash2 className="h-4 w-4" /></button>
                           </div>
                         </td>
                       </tr>
@@ -168,7 +177,7 @@ export default function PaymentMethods() {
                 Enabled in public checkout
               </label>
               <div className="flex gap-3">
-                <button type="submit" disabled={saveMethod.isPending || !form.display_name.trim() || !form.provider_key.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
+                <button type="submit" disabled={!canManageFinance || saveMethod.isPending || !form.display_name.trim() || !form.provider_key.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
                   <Save className="h-4 w-4" />
                   Save method
                 </button>
@@ -178,6 +187,32 @@ export default function PaymentMethods() {
           </section>
         </div>
       </main>
+
+      {deleteTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete payment method</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Delete <span className="font-medium text-slate-900 dark:text-white">{deleteTarget.display_name}</span> from admin configuration.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setDeleteTarget(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await deleteMethod.mutateAsync(deleteTarget)
+                  setDeleteTarget(null)
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

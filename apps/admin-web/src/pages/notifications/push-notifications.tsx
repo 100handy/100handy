@@ -60,6 +60,7 @@ export default function PushNotificationsPage() {
   })
   const [scheduledFor, setScheduledFor] = useState('')
   const [testRecipientEmail, setTestRecipientEmail] = useState('')
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const { data: audiencePreview, isLoading: previewLoading } = useNotificationAudiencePreview({
     channel: 'push',
@@ -218,7 +219,7 @@ export default function PushNotificationsPage() {
                         <button className="mr-4 text-primary hover:underline" onClick={() => setSelectedId(campaign.id)}>
                           Edit
                         </button>
-                        <button className="text-red-600 hover:underline" onClick={() => deleteCampaign.mutate(campaign.id)}>
+                        <button className="text-red-600 hover:underline" onClick={() => setDeleteTargetId(campaign.id)}>
                           <Trash2 className="inline h-4 w-4" />
                         </button>
                       </td>
@@ -396,7 +397,7 @@ export default function PushNotificationsPage() {
                     >
                       Load
                     </button>
-                    <button className="text-red-600 hover:underline" onClick={() => deleteCampaign.mutate(draft.id)}>
+                    <button className="text-red-600 hover:underline" onClick={() => setDeleteTargetId(draft.id)}>
                       Delete
                     </button>
                   </div>
@@ -563,6 +564,32 @@ export default function PushNotificationsPage() {
           </div>
         </section>
       </main>
+
+      {deleteTargetId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete push item</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This will remove the selected push template or campaign draft.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setDeleteTargetId(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await deleteCampaign.mutateAsync(deleteTargetId)
+                  setDeleteTargetId(null)
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
