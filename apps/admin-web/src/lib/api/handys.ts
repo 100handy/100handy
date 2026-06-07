@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
+import { fetchAdminAuthUsersByIds } from '@/lib/api/admin-user-management'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/lib/database.types'
 
@@ -179,17 +180,11 @@ export function useHandy(userId: string | undefined) {
       if (profileError) throw profileError
 
       // Try to fetch email from auth (admin only)
-      let email: string | undefined
-      try {
-        const { data: authData } = await supabase.auth.admin.getUserById(userId)
-        email = authData?.user?.email
-      } catch {
-        // Ignore auth errors - email is optional
-      }
+      const emailMap = await fetchAdminAuthUsersByIds([userId])
 
       return {
         ...profile,
-        email,
+        email: emailMap.get(userId),
         handy_profile: Array.isArray(profile.handy_profile)
           ? profile.handy_profile[0] || null
           : profile.handy_profile,
@@ -231,13 +226,7 @@ export function useHandyManagementDetails(userId: string | undefined) {
 
       if (profileError) throw profileError
 
-      let email: string | undefined
-      try {
-        const { data: authData } = await supabase.auth.admin.getUserById(userId)
-        email = authData?.user?.email
-      } catch {
-        // non-critical
-      }
+      const emailMap = await fetchAdminAuthUsersByIds([userId])
 
       const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
@@ -328,7 +317,7 @@ export function useHandyManagementDetails(userId: string | undefined) {
 
       return {
         ...profile,
-        email,
+        email: emailMap.get(userId),
         handy_profile: handyProfile,
         verification_status: handyProfile?.verification_status ?? null,
         onboarding_completed: handyProfile?.onboarding_completed ?? null,

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ExternalLink, Plus, Edit, Trash2, Loader2, X, Save, Image as ImageIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
 import { useAuth } from '@/contexts/AuthContext'
@@ -64,6 +65,17 @@ const emptyForm: CategoryFormData = {
   faqs: [],
 }
 
+const SITE_ASSET_BASE = (import.meta.env.VITE_SITE_URL || '').replace(/\/$/, '')
+
+function resolvePreviewUrl(src?: string | null) {
+  if (!src) return null
+  if (/^https?:\/\//i.test(src)) return src
+  if (src.startsWith('/')) {
+    return SITE_ASSET_BASE ? `${SITE_ASSET_BASE}${src}` : src
+  }
+  return SITE_ASSET_BASE ? `${SITE_ASSET_BASE}/${src}` : src
+}
+
 function getCategoryDepthLabel(category: CategoryWithStats) {
   if (category.level === 0) return 'Main category'
   if (category.level === 1) return 'Subcategory'
@@ -82,6 +94,7 @@ export default function EditCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<CategoryFormData>(emptyForm)
   const [isCreating, setIsCreating] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<CategoryWithStats | null>(null)
 
   const parentOptions = useMemo(
     () => (categories || []).filter((category) => category.level === 0),
@@ -169,21 +182,29 @@ export default function EditCategoriesPage() {
       }
       resetForm()
     } catch (saveError) {
-      console.error('Failed to save category:', saveError)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to save category',
+        description: saveError instanceof Error ? saveError.message : 'Please try again.',
+      })
     }
   }
 
   const handleDelete = async (id: string) => {
     if (!canManageTasks) return
-    if (!confirm('Are you sure you want to delete this category?')) return
 
     try {
       await deleteCategory.mutateAsync(id)
       if (editingId === id) {
         resetForm()
       }
+      setDeleteTarget(null)
     } catch (deleteError) {
-      console.error('Failed to delete category:', deleteError)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to delete category',
+        description: deleteError instanceof Error ? deleteError.message : 'Please try again.',
+      })
     }
   }
 
@@ -349,7 +370,7 @@ export default function EditCategoriesPage() {
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => handleDelete(category.id)}
+                                onClick={() => setDeleteTarget(category)}
                                 disabled={deleteCategory.isPending || !canManageTasks}
                                 className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-500 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
                               >
@@ -673,6 +694,34 @@ export default function EditCategoriesPage() {
           )}
         </div>
       </div>
+
+      {deleteTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete category</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Delete <span className="font-medium text-slate-900 dark:text-white">{deleteTarget.name}</span> from the service catalog.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(deleteTarget.id)}
+                disabled={deleteCategory.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -686,12 +735,16 @@ function MediaThumb({
   alt: string
   label: string
 }) {
-  return src ? (
+  const [failed, setFailed] = useState(false)
+  const resolvedSrc = resolvePreviewUrl(src)
+
+  return resolvedSrc && !failed ? (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       title={label}
       className="h-12 w-12 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+      onError={() => setFailed(true)}
     />
   ) : (
     <div

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X, Loader2 } from 'lucide-react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { useTask, useCancelTask } from '@/lib/api/tasks'
 
 const cancellationReasons = [
@@ -46,7 +47,11 @@ export default function CancelTaskPage() {
       await cancelTask.mutateAsync(taskId)
       navigate('/tasks')
     } catch (error) {
-      console.error('Failed to cancel task:', error)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to cancel booking',
+        description: error instanceof Error ? error.message : 'Please try again.',
+      })
     }
   }
 

@@ -10,13 +10,20 @@ import {
 } from '@/lib/api/promotions'
 
 const formatCurrency = (value: number): string => {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'GBP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
 }
 
 export default function PromotionsManagementPage() {
   const [filter, setFilter] = useState<'all' | 'promotions' | 'referrals'>('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newCode, setNewCode] = useState({ code: '', amount: '', maxUses: '', expiresAt: '' })
+  const [expireTarget, setExpireTarget] = useState<PromoCode | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const { data: promoCodes, isLoading: codesLoading } = usePromoCodes(filter)
   const { data: stats, isLoading: statsLoading } = usePromoStats()
@@ -28,6 +35,7 @@ export default function PromotionsManagementPage() {
   const handleCreateCode = async () => {
     if (!newCode.code || !newCode.amount) return
 
+    setActionFeedback(null)
     try {
       await createPromoCode.mutateAsync({
         code: newCode.code,
@@ -37,17 +45,20 @@ export default function PromotionsManagementPage() {
       })
       setShowCreateModal(false)
       setNewCode({ code: '', amount: '', maxUses: '', expiresAt: '' })
+      setActionFeedback({ tone: 'success', message: 'Promotion code created.' })
     } catch (error) {
-      console.error('Failed to create promo code:', error)
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to create promo code.' })
     }
   }
 
   const handleExpireCode = async (id: string) => {
-    if (!confirm('Are you sure you want to expire this promo code?')) return
+    setActionFeedback(null)
     try {
       await expirePromoCode.mutateAsync(id)
+      setExpireTarget(null)
+      setActionFeedback({ tone: 'success', message: 'Promotion code expired.' })
     } catch (error) {
-      console.error('Failed to expire promo code:', error)
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to expire promo code.' })
     }
   }
 
@@ -57,7 +68,7 @@ export default function PromotionsManagementPage() {
     if (code.status !== 'Expired') {
       actions.push({
         label: 'Expire',
-        action: () => handleExpireCode(code.id),
+        action: () => setExpireTarget(code),
         className: 'text-red-500',
       })
     }
@@ -67,6 +78,15 @@ export default function PromotionsManagementPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {actionFeedback && (
+        <div className={`rounded-xl px-4 py-3 text-sm ${
+          actionFeedback.tone === 'success'
+            ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+            : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+        }`}>
+          {actionFeedback.message}
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -290,7 +310,7 @@ export default function PromotionsManagementPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Discount Amount ($) *
+                  Discount Amount (£) *
                 </label>
                 <input
                   type="number"
@@ -343,6 +363,34 @@ export default function PromotionsManagementPage() {
           </div>
         </div>
       )}
+
+      {expireTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Expire campaign</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Expire <span className="font-medium text-slate-900 dark:text-white">{expireTarget.code}</span>. This stops further redemptions immediately.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setExpireTarget(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExpireCode(expireTarget.id)}
+                disabled={expirePromoCode.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm expire
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
+import { fetchAdminAuthUsersByIds } from '@/lib/api/admin-user-management'
 import { supabase } from '@/lib/supabase'
 
 /**
@@ -130,17 +131,7 @@ export function useUsersWithLocation() {
       }
 
       // Try to get emails for users (admin only)
-      const emailMap = new Map<string, string>()
-      try {
-        for (const userId of userIds) {
-          const { data: authData } = await supabase.auth.admin.getUserById(userId)
-          if (authData?.user?.email) {
-            emailMap.set(userId, authData.user.email)
-          }
-        }
-      } catch {
-        // Ignore auth errors - emails are optional
-      }
+      const emailMap = await fetchAdminAuthUsersByIds(userIds)
 
       // Combine data
       return addresses
@@ -220,17 +211,7 @@ export function useAccountStatusUsers(status: AccountLifecycleStatus) {
 
       if (error) throw error
 
-      const emailMap = new Map<string, string>()
-      for (const profile of profiles ?? []) {
-        try {
-          const { data: authData } = await supabase.auth.admin.getUserById(profile.user_id)
-          if (authData?.user?.email) {
-            emailMap.set(profile.user_id, authData.user.email)
-          }
-        } catch {
-          // optional
-        }
-      }
+      const emailMap = await fetchAdminAuthUsersByIds((profiles ?? []).map((profile) => profile.user_id))
 
       return (profiles ?? []).map((profile) => ({
         ...profile,
@@ -253,17 +234,7 @@ export function useAdminAccessUsers() {
 
       if (error) throw error
 
-      const emailMap = new Map<string, string>()
-      for (const profile of profiles ?? []) {
-        try {
-          const { data: authData } = await supabase.auth.admin.getUserById(profile.user_id)
-          if (authData?.user?.email) {
-            emailMap.set(profile.user_id, authData.user.email)
-          }
-        } catch {
-          // optional
-        }
-      }
+      const emailMap = await fetchAdminAuthUsersByIds((profiles ?? []).map((profile) => profile.user_id))
 
       return (profiles ?? []).map((profile) => ({
         ...profile,

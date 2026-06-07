@@ -1,11 +1,21 @@
 import { useState, useMemo } from 'react'
-import { Search, Plus, Edit, Trash2, Loader2, ArrowUp, ArrowDown, Image as ImageIcon } from 'lucide-react'
+import { Search, Plus, Edit, Loader2, ArrowUp, ArrowDown, Image as ImageIcon, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { useAuth } from '@/contexts/AuthContext'
 import { useBulkUpdateCategories, useCategories, useCategoryAreaCoverageMatrix, useUpdateCategory } from '@/lib/api/categories'
 
 const ITEMS_PER_PAGE = 10
+const SITE_ASSET_BASE = (import.meta.env.VITE_SITE_URL || '').replace(/\/$/, '')
+
+function resolvePreviewUrl(src?: string | null) {
+  if (!src) return null
+  if (/^https?:\/\//i.test(src)) return src
+  if (src.startsWith('/')) {
+    return SITE_ASSET_BASE ? `${SITE_ASSET_BASE}${src}` : src
+  }
+  return SITE_ASSET_BASE ? `${SITE_ASSET_BASE}/${src}` : src
+}
 
 export default function BrowseCategoriesPage() {
   const { hasPermission } = useAuth()
@@ -15,6 +25,7 @@ export default function BrowseCategoriesPage() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([])
   const [levelFilter, setLevelFilter] = useState<'all' | 'main' | 'sub'>('all')
   const [includeChildrenForBulk, setIncludeChildrenForBulk] = useState(true)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -76,16 +87,22 @@ export default function BrowseCategoriesPage() {
     const current = sorted[index]
     const target = sorted[swapIndex]
 
-    await Promise.all([
-      updateCategory.mutateAsync({
-        categoryId: current.id,
-        display_order: target.display_order,
-      }),
-      updateCategory.mutateAsync({
-        categoryId: target.id,
-        display_order: current.display_order,
-      }),
-    ])
+    setActionFeedback(null)
+    try {
+      await Promise.all([
+        updateCategory.mutateAsync({
+          categoryId: current.id,
+          display_order: target.display_order,
+        }),
+        updateCategory.mutateAsync({
+          categoryId: target.id,
+          display_order: current.display_order,
+        }),
+      ])
+      setActionFeedback({ tone: 'success', message: 'Category order updated.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update order.' })
+    }
   }
 
   const levelLabels = {
@@ -129,20 +146,32 @@ export default function BrowseCategoriesPage() {
           ),
         )
       : selectedCategoryIds
-    await bulkUpdateCategories.mutateAsync({
-      categoryIds,
-      updates: { active },
-    })
-    setSelectedCategoryIds([])
+    setActionFeedback(null)
+    try {
+      await bulkUpdateCategories.mutateAsync({
+        categoryIds,
+        updates: { active },
+      })
+      setSelectedCategoryIds([])
+      setActionFeedback({ tone: 'success', message: `${active ? 'Enabled' : 'Disabled'} ${categoryIds.length} categories.` })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update categories.' })
+    }
   }
 
   const handleFamilyToggle = async (categoryId: string, active: boolean) => {
     if (!canManageTasks) return
     const categoryIds = Array.from(new Set([categoryId, ...(categoryChildrenMap.get(categoryId) || [])]))
-    await bulkUpdateCategories.mutateAsync({
-      categoryIds,
-      updates: { active },
-    })
+    setActionFeedback(null)
+    try {
+      await bulkUpdateCategories.mutateAsync({
+        categoryIds,
+        updates: { active },
+      })
+      setActionFeedback({ tone: 'success', message: `${active ? 'Enabled' : 'Disabled'} group.` })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update category group.' })
+    }
   }
 
   return (
@@ -150,7 +179,16 @@ export default function BrowseCategoriesPage() {
       <Header title="Browse Categories" />
 
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto w-full max-w-none">
+          {actionFeedback && (
+            <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           {!canManageTasks && (
             <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
               Your admin role can view categories, but it cannot change visibility, order, or catalog data.
@@ -164,13 +202,6 @@ export default function BrowseCategoriesPage() {
               >
                 <Edit className="w-5 h-5" />
                 Edit Categories
-              </Link>
-              <Link
-                to="/tasks/categories/delete"
-                className={`bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-red-200 dark:hover:bg-red-900/50 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
-              >
-                <Trash2 className="w-5 h-5" />
-                Delete Categories
               </Link>
             </div>
             <Link
@@ -326,8 +357,16 @@ export default function BrowseCategoriesPage() {
 
           {/* Categories table */}
           {!isLoading && !error && categories && categories.length > 0 && (
-            <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm overflow-hidden border border-gray-200 dark:border-gray-800">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-800/50">
+              <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+                <colgroup>
+                  <col className="w-12" />
+                  <col className="w-[28%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[24%]" />
+                </colgroup>
                 <thead className="bg-gray-50 dark:bg-gray-900/50">
                   <tr>
                     <th className="px-6 py-3">
@@ -349,19 +388,13 @@ export default function BrowseCategoriesPage() {
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
-                      Public Routing
+                      Availability
                     </th>
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                     >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                    >
-                      Total Tasks
+                      Usage
                     </th>
                     <th scope="col" className="relative px-6 py-3">
                       <span className="sr-only">Actions</span>
@@ -382,6 +415,12 @@ export default function BrowseCategoriesPage() {
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                         <div className="flex flex-col gap-1">
                           <span>{category.name}</span>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {category.route_slug ? `/services/${category.route_slug}` : 'No route slug'}
+                          </div>
+                          <div className="truncate text-xs text-gray-500 dark:text-gray-400">
+                            {category.marketing_title || category.marketing_description || category.description || 'No public copy'}
+                          </div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs rounded-full px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                               {levelLabels[category.level as 0 | 1] ?? `Level ${category.level}`}
@@ -397,100 +436,107 @@ export default function BrowseCategoriesPage() {
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-2">
                           <MediaThumb src={category.icon_url} alt={`${category.name} icon`} label="Icon" />
-                          <MediaThumb src={category.hero_image_url} alt={`${category.name} hero`} label="Hero" />
                           <MediaThumb src={category.content_image_url} alt={`${category.name} content`} label="Content" />
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                                category.active
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                              }`}
+                            >
+                              {category.active ? 'Live' : 'Hidden'}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={updateCategory.isPending || !canManageTasks}
+                              onClick={() =>
+                                updateCategory.mutate({
+                                  categoryId: category.id,
+                                  active: !category.active,
+                                })
+                              }
+                              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                category.active
+                                  ? 'bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300'
+                                  : 'bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300'
+                              } disabled:opacity-50`}
+                            >
+                              {category.active ? 'Turn off' : 'Turn on'}
+                            </button>
+                          </div>
+                          {category.level === 0 && (categoryChildrenMap.get(category.id)?.length ?? 0) > 0 && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              Group action affects this main category and its subcategories.
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="space-y-1">
-                          <div>{category.route_slug ? `/services/${category.route_slug}` : 'No route slug'}</div>
-                          <div className="truncate">
-                            {category.marketing_title || category.marketing_description || category.description || 'No public copy'}
+                          <div className="font-medium text-gray-900 dark:text-white">{category.tasks_count}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {category.tasks_count === 1 ? 'linked task' : 'linked tasks'}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                              category.active
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                            }`}
-                          >
-                            {category.active ? 'Live' : 'Hidden'}
-                          </span>
+                      <td className="px-6 py-4 text-right text-sm font-medium">
+                        <div className="ml-auto flex max-w-[300px] flex-wrap items-center justify-end gap-x-3 gap-y-2">
+                          {category.level === 0 && (categoryChildrenMap.get(category.id)?.length ?? 0) > 0 && (
+                            <>
+                              <button
+                                type="button"
+                                disabled={!canManageTasks || bulkUpdateCategories.isPending}
+                                onClick={() => handleFamilyToggle(category.id, true)}
+                                className="text-green-700 hover:text-green-900 disabled:opacity-50"
+                              >
+                                Enable group
+                              </button>
+                              <button
+                                type="button"
+                                disabled={!canManageTasks || bulkUpdateCategories.isPending}
+                                onClick={() => handleFamilyToggle(category.id, false)}
+                                className="text-red-700 hover:text-red-900 disabled:opacity-50"
+                              >
+                                Disable group
+                              </button>
+                            </>
+                          )}
                           <button
                             type="button"
-                            disabled={updateCategory.isPending || !canManageTasks}
-                            onClick={() =>
-                              updateCategory.mutate({
-                                categoryId: category.id,
-                                active: !category.active,
-                              })
-                            }
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${
-                              category.active
-                                ? 'bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300'
-                                : 'bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300'
-                            } disabled:opacity-50`}
+                            disabled={!canManageTasks}
+                            onClick={() => moveCategory(category.id, 'up')}
+                            className="text-gray-600 hover:text-gray-900 disabled:opacity-50"
+                            title="Move up"
                           >
-                            {category.active ? 'Turn off' : 'Turn on'}
+                            <ArrowUp className="inline h-4 w-4" />
                           </button>
+                          <button
+                            type="button"
+                            disabled={!canManageTasks}
+                            onClick={() => moveCategory(category.id, 'down')}
+                            className="text-gray-600 hover:text-gray-900 disabled:opacity-50"
+                            title="Move down"
+                          >
+                            <ArrowDown className="inline h-4 w-4" />
+                          </button>
+                          <Link
+                            to="/tasks/categories/edit"
+                            className={`text-primary hover:text-primary/80 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
+                          >
+                            Edit
+                          </Link>
+                          <Link
+                            to="/tasks/categories/delete"
+                            className={`text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-500 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
+                          >
+                            Delete
+                          </Link>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {category.tasks_count}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {category.level === 0 && (
-                          <>
-                            <button
-                              type="button"
-                              disabled={!canManageTasks || bulkUpdateCategories.isPending}
-                              onClick={() => handleFamilyToggle(category.id, true)}
-                              className="text-green-700 hover:text-green-900 mr-3 disabled:opacity-50"
-                            >
-                              Turn on family
-                            </button>
-                            <button
-                              type="button"
-                              disabled={!canManageTasks || bulkUpdateCategories.isPending}
-                              onClick={() => handleFamilyToggle(category.id, false)}
-                              className="text-red-700 hover:text-red-900 mr-3 disabled:opacity-50"
-                            >
-                              Turn off family
-                            </button>
-                          </>
-                        )}
-                        <button
-                          type="button"
-                          disabled={!canManageTasks}
-                          onClick={() => moveCategory(category.id, 'up')}
-                          className="text-gray-600 hover:text-gray-900 mr-2 disabled:opacity-50"
-                        >
-                          <ArrowUp className="w-4 h-4 inline" />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={!canManageTasks}
-                          onClick={() => moveCategory(category.id, 'down')}
-                          className="text-gray-600 hover:text-gray-900 mr-4 disabled:opacity-50"
-                        >
-                          <ArrowDown className="w-4 h-4 inline" />
-                        </button>
-                        <Link
-                          to="/tasks/categories/edit"
-                          className={`text-primary hover:text-primary/80 mr-4 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
-                        >
-                          Edit Media
-                        </Link>
-                        <Link
-                          to="/tasks/categories/delete"
-                          className={`text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-500 ${!canManageTasks ? 'pointer-events-none opacity-50' : ''}`}
-                        >
-                          Delete
-                        </Link>
                       </td>
                     </tr>
                   ))}
@@ -602,7 +648,10 @@ function MediaThumb({
   alt: string
   label: string
 }) {
-  if (!src) {
+  const [failed, setFailed] = useState(false)
+  const resolvedSrc = resolvePreviewUrl(src)
+
+  if (!resolvedSrc || failed) {
     return (
       <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-500" title={`${label}: not set`}>
         <ImageIcon className="h-4 w-4" />
@@ -611,11 +660,17 @@ function MediaThumb({
   }
 
   return (
-    <img
-      src={src}
-      alt={alt}
-      title={label}
-      className="h-12 w-12 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
-    />
+    <a href={resolvedSrc} target="_blank" rel="noreferrer" className="group relative block">
+      <img
+        src={resolvedSrc}
+        alt={alt}
+        title={label}
+        className="h-12 w-12 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+        onError={() => setFailed(true)}
+      />
+      <span className="pointer-events-none absolute inset-0 hidden items-center justify-center rounded-lg bg-black/45 text-white group-hover:flex">
+        <ExternalLink className="h-3.5 w-3.5" />
+      </span>
+    </a>
   )
 }

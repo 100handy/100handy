@@ -16,6 +16,29 @@ interface SeoDefaults {
   robotsFollow?: boolean
 }
 
+const PUBLIC_WEB_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.100handy.com'
+
+export function resolvePublicAssetUrl(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return null
+  }
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
+
+  if (trimmed.startsWith('/')) {
+    return `${PUBLIC_WEB_BASE_URL.replace(/\/$/, '')}${trimmed}`
+  }
+
+  return `${PUBLIC_WEB_BASE_URL.replace(/\/$/, '')}/${trimmed.replace(/^\//, '')}`
+}
+
 async function getSeoDefaults(): Promise<SeoDefaults> {
   try {
     const supabase = createPublicClient()

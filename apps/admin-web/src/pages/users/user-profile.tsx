@@ -17,6 +17,7 @@ export default function UserProfilePage() {
   const deleteUser = useDeleteUser()
 
   const [isEditing, setIsEditing] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -64,10 +65,6 @@ export default function UserProfilePage() {
 
   async function handleDelete() {
     if (!userId) return
-    if (!window.confirm('Delete this user account? This removes the auth user and cascades dependent data.')) {
-      return
-    }
-
     await deleteUser.mutateAsync(userId)
     navigate('/users', { replace: true })
   }
@@ -223,7 +220,7 @@ export default function UserProfilePage() {
                         <button
                           type="button"
                           disabled={deleteUser.isPending}
-                          onClick={handleDelete}
+                          onClick={() => setShowDeleteConfirm(true)}
                           className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
                         >
                           Delete auth user
@@ -299,6 +296,39 @@ export default function UserProfilePage() {
           )}
         </div>
       </main>
+
+      {showDeleteConfirm ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete auth user</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This removes the auth user and cascades dependent data for {[user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'this customer'}.
+            </p>
+            {deleteUser.error ? (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+                {deleteUser.error instanceof Error ? deleteUser.error.message : 'Failed to delete user.'}
+              </div>
+            ) : null}
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleteUser.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -44,7 +44,7 @@ export default function PopupsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draftKey, setDraftKey] = useState<string>(`draft-${crypto.randomUUID()}`)
   const [form, setForm] = useState(emptyPopup)
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const popupRows = useMemo(
     () => popups.filter((item) => item.placement === 'modal' || item.placement === 'banner'),
@@ -126,33 +126,39 @@ export default function PopupsPage() {
   const persistDraft = async () => {
     if (!canSaveDraft) return
     setActionFeedback(null)
-    await saveDraft.mutateAsync({
-      announcementKey: effectiveAnnouncementKey,
-      announcementId: selected?.id,
-      announcement: {
-        id: selected?.id,
-        audience: form.audience,
-        placement: form.placement,
-        channel_scope: form.channel_scope,
-        title: form.title,
-        body: form.body,
-        cta_label: form.cta_label,
-        cta_href: form.cta_href,
-        starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
-        ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
-        active: form.active,
-      },
-    })
-    setActionFeedback('Draft saved')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await saveDraft.mutateAsync({
+        announcementKey: effectiveAnnouncementKey,
+        announcementId: selected?.id,
+        announcement: {
+          id: selected?.id,
+          audience: form.audience,
+          placement: form.placement,
+          channel_scope: form.channel_scope,
+          title: form.title,
+          body: form.body,
+          cta_label: form.cta_label,
+          cta_href: form.cta_href,
+          starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
+          ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+          active: form.active,
+        },
+      })
+      setActionFeedback({ tone: 'success', message: 'Draft saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
+    }
   }
 
   const publish = async () => {
     if (!canPublish) return
     setActionFeedback(null)
-    await publishDraft.mutateAsync(effectiveAnnouncementKey)
-    setActionFeedback('Published')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await publishDraft.mutateAsync(effectiveAnnouncementKey)
+      setActionFeedback({ tone: 'success', message: 'Pop-up published.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish pop-up.' })
+    }
   }
 
   return (
@@ -259,7 +265,11 @@ export default function PopupsPage() {
                 Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
               </div>
             </div>
-            {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
+            {actionFeedback && (
+              <p className={`mt-3 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                {actionFeedback.message}
+              </p>
+            )}
           </div>
 
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">

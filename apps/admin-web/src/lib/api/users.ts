@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
+import { bulkDeleteAdminAuthUsers, createAdminAuthUser, deleteAdminAuthUser, fetchAdminAuthUsersByIds } from '@/lib/api/admin-user-management'
 import { supabase } from '@/lib/supabase'
 import type { Database, UserRole } from '@/lib/database.types'
 
@@ -169,8 +170,7 @@ export function useUser(userId: string | undefined) {
 
       if (profileError) throw profileError
 
-      // Fetch email from auth.users (admin only)
-      const { data: authData } = await supabase.auth.admin.getUserById(userId)
+      const emailMap = await fetchAdminAuthUsersByIds([userId])
 
       // Fetch booking stats and history
       const { data: bookings } = await supabase
@@ -244,7 +244,7 @@ export function useUser(userId: string | undefined) {
 
       return {
         ...profile,
-        email: authData?.user?.email,
+        email: emailMap.get(userId),
         bookings_count: bookings?.length || 0,
         total_spent: totalSpent / 100, // Convert cents to dollars
         booking_history: bookingHistory,
@@ -318,24 +318,15 @@ export function useCreateUser() {
     mutationFn: async (input: CreateUserInput) => {
       await requireAdminPermission('users.manage')
       // 1. Create auth user
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      const authUser = await createAdminAuthUser({
         email: input.email,
         password: input.password,
-        email_confirm: true,
-        app_metadata: {
-          role: input.role || 'customer',
-        },
-        user_metadata: {
-          firstName: input.firstName,
-          lastName: input.lastName,
-          phone: input.phone,
-          postcode: input.postcode,
-          role: input.role || 'customer',
-        },
+        first_name: input.firstName,
+        last_name: input.lastName,
+        phone: input.phone,
+        postcode: input.postcode,
+        role: input.role || 'customer',
       })
-
-      if (authError) throw authError
-      if (!authData.user) throw new Error('Failed to create user')
 
       // Profile should be created automatically via trigger
       // Wait a moment for trigger to complete
@@ -345,13 +336,13 @@ export function useCreateUser() {
       const { error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', authData.user.id)
+        .eq('user_id', authUser.id)
         .single()
 
       if (profileError) {
         // If profile wasn't created by trigger, create it manually
         const { error: insertError } = await supabase.from('profiles').insert({
-          user_id: authData.user.id,
+          user_id: authUser.id,
           role: input.role || 'customer',
           admin_role: input.role === 'admin' ? 'super_admin' : null,
           first_name: input.firstName,
@@ -365,7 +356,7 @@ export function useCreateUser() {
         const { error: adminRoleError } = await supabase
           .from('profiles')
           .update({ admin_role: 'super_admin' })
-          .eq('user_id', authData.user.id)
+          .eq('user_id', authUser.id)
           .is('admin_role', null)
 
         if (adminRoleError) throw adminRoleError
@@ -374,7 +365,7 @@ export function useCreateUser() {
       await createAdminAuditLog({
         action: 'user.create',
         entityType: 'user',
-        entityId: authData.user.id,
+        entityId: authUser.id,
         summary: `Created ${input.role || 'customer'} account for ${input.firstName} ${input.lastName}`,
         metadata: {
           role: input.role || 'customer',
@@ -382,7 +373,7 @@ export function useCreateUser() {
         },
       })
 
-      return authData.user
+      return authUser
     },
     onSuccess: () => {
       // Invalidate users list queries
@@ -455,9 +446,7 @@ export function useDeleteUser() {
         .single()
 
       // Delete auth user (cascade will handle profile via ON DELETE CASCADE)
-      const { error } = await supabase.auth.admin.deleteUser(userId)
-
-      if (error) throw error
+      await deleteAdminAuthUser(userId)
 
       await createAdminAuditLog({
         action: 'user.delete',
@@ -485,14 +474,7 @@ export function useDeleteUsers() {
     mutationFn: async (userIds: string[]) => {
       await requireAdminPermission('users.manage')
       // Delete users one by one (Supabase doesn't support batch delete)
-      const results = await Promise.allSettled(
-        userIds.map((userId) => supabase.auth.admin.deleteUser(userId))
-      )
-
-      const failed = results.filter((r) => r.status === 'rejected')
-      if (failed.length > 0) {
-        throw new Error(`Failed to delete ${failed.length} user(s)`)
-      }
+      await bulkDeleteAdminAuthUsers(userIds)
 
       await createAdminAuditLog({
         action: 'user.bulk_delete',

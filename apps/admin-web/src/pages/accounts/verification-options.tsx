@@ -20,6 +20,8 @@ export default function VerificationOptions() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'verified' | 'rejected'>('all')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [settingsDraft, setSettingsDraft] = useState<VerificationSettings | null>(null)
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const { data: verificationSettings, isLoading: settingsLoading } = useVerificationSettings()
   const { data: verificationRequests, isLoading: requestsLoading } = useVerificationRequests(filter)
@@ -41,30 +43,36 @@ export default function VerificationOptions() {
   }
 
   const handleApprove = async (userId: string) => {
+    setActionFeedback(null)
     try {
       await updateStatus.mutateAsync({ userId, status: 'verified' })
       setSelectedUserId(null)
+      setActionFeedback({ tone: 'success', message: 'Verification approved.' })
     } catch (error) {
-      console.error('Failed to approve:', error)
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to approve verification.' })
     }
   }
 
   const handleReject = async (userId: string) => {
-    if (!confirm('Are you sure you want to reject this verification?')) return
+    setActionFeedback(null)
     try {
       await updateStatus.mutateAsync({ userId, status: 'rejected' })
       setSelectedUserId(null)
+      setRejectTargetId(null)
+      setActionFeedback({ tone: 'success', message: 'Verification rejected.' })
     } catch (error) {
-      console.error('Failed to reject:', error)
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to reject verification.' })
     }
   }
 
   const handleSaveSettings = async () => {
     if (!settingsDraft || !canManageSettings) return
+    setActionFeedback(null)
     try {
       await saveSettings.mutateAsync(settingsDraft)
+      setActionFeedback({ tone: 'success', message: 'Verification rules saved.' })
     } catch (error) {
-      console.error('Failed to save verification settings:', error)
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save verification rules.' })
     }
   }
 
@@ -88,6 +96,15 @@ export default function VerificationOptions() {
 
       <main className="flex-1 p-8">
         <div className="max-w-5xl mx-auto">
+          {actionFeedback && (
+            <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           {/* Breadcrumb */}
           <div className="flex items-center text-sm mb-4">
             <Link className="text-slate-500 dark:text-slate-400 hover:text-primary" to="/accounts">
@@ -345,7 +362,7 @@ export default function VerificationOptions() {
                     <div>
                       <p className="text-gray-500 dark:text-gray-400">Hourly Rate</p>
                       <p className="font-medium text-gray-900 dark:text-white">
-                        ${(selectedDetail.hourlyRateCents / 100).toFixed(2)}
+                        £{(selectedDetail.hourlyRateCents / 100).toFixed(2)}
                       </p>
                     </div>
                     {selectedDetail.submittedAt && (
@@ -391,7 +408,7 @@ export default function VerificationOptions() {
             {selectedDetail && selectedDetail.status !== 'verified' && (
               <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
                 <button
-                  onClick={() => handleReject(selectedUserId)}
+                  onClick={() => setRejectTargetId(selectedUserId)}
                   disabled={updateStatus.isPending}
                   className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
@@ -419,6 +436,34 @@ export default function VerificationOptions() {
           </div>
         </div>
       )}
+
+      {rejectTargetId ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Reject verification</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This will mark the provider verification as rejected. You can change it again later if needed.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setRejectTargetId(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleReject(rejectTargetId)}
+                disabled={updateStatus.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm reject
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

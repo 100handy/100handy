@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { fetchAdminAuthUsersByIds } from '@/lib/api/admin-user-management'
 import { requireActiveAdmin, requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Database, Json } from '@/lib/database.types'
@@ -38,11 +39,26 @@ export interface AdminTimelineSummary {
 }
 
 function getAuditSection(entityType: string) {
-  if (['page', 'blog', 'help_article', 'faq', 'navigation', 'site_setting', 'announcement', 'app_content'].includes(entityType)) return 'content'
-  if (['task', 'category', 'pricing_rule'].includes(entityType)) return 'tasks'
+  if (['page', 'blog', 'help_article', 'faq', 'navigation', 'site_setting', 'app_content'].includes(entityType)) return 'content'
+  if (['task', 'category', 'pricing_rule', 'rollout_preset'].includes(entityType)) return 'tasks'
   if (['service_area', 'location_area', 'payment_method'].includes(entityType)) return 'operations'
   if (['user', 'admin', 'provider', 'provider_availability'].includes(entityType)) return 'accounts'
-  if (['email_campaign', 'push_campaign', 'popup'].includes(entityType)) return 'notifications'
+  if ([
+    'announcement',
+    'announcement_draft',
+    'announcement_revision',
+    'email_campaign',
+    'email_template',
+    'email_delivery_job',
+    'email_delivery_jobs',
+    'email_test',
+    'push_campaign',
+    'push_template',
+    'push_delivery_job',
+    'push_delivery_jobs',
+    'push_test',
+    'popup',
+  ].includes(entityType)) return 'notifications'
   if (['refund', 'payout', 'payment'].includes(entityType)) return 'finance'
   return 'other'
 }
@@ -116,17 +132,7 @@ export function useAdminAuditLogs(filters: AdminAuditLogFilters = {}) {
         ]),
       )
 
-      const emailMap = new Map<string, string>()
-      for (const actorId of actorIds) {
-        try {
-          const { data: authData } = await supabase.auth.admin.getUserById(actorId)
-          if (authData?.user?.email) {
-            emailMap.set(actorId, authData.user.email)
-          }
-        } catch {
-          // Email is a non-critical enhancement for the audit stream.
-        }
-      }
+      const emailMap = await fetchAdminAuthUsersByIds(actorIds)
 
       return rows
         .map((row) => ({

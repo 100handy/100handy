@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Save, Loader2 } from 'lucide-react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { useTask, useUpdateTask } from '@/lib/api/tasks'
 import { useCategories } from '@/lib/api/categories'
 import { useAvailableHandys } from '@/lib/api/handys'
@@ -67,7 +68,11 @@ export default function EditTaskPage() {
       })
       navigate(`/tasks/details/${taskId}`)
     } catch (error) {
-      console.error('Failed to update task:', error)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to update booking',
+        description: error instanceof Error ? error.message : 'Please try again.',
+      })
     }
   }
 

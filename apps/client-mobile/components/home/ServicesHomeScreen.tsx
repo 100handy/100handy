@@ -1,9 +1,9 @@
 import React, { useMemo, useCallback, useEffect, useState } from 'react';
 import { useGroupedSubcategories, type Category } from '@shared/query';
-import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable, ImageBackground } from 'react-native'; import AuthLogo from '@/components/auth/AuthLogo'; import {   MapPin, Search, ChevronRight, } from 'lucide-react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { useLocationStore } from '@shared/store';
+import { ScrollView, TouchableOpacity, ActivityIndicator, View, Text, Pressable, ImageBackground, Image } from 'react-native'; import AuthLogo from '@/components/auth/AuthLogo'; import {   MapPin, Search, ChevronRight, } from 'lucide-react-native'; import { SafeAreaView } from 'react-native-safe-area-context'; import { useRouter } from 'expo-router'; import { useLocationStore } from '@shared/store';
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { getCategoryIcon } from '@/lib/category-icons';
-import { getAppCategoryImageMap, getAppCategoryImageUri, type AppCategoryImageMap } from '@/lib/category-images';
+import { getAppCategoryImageMap, resolveCategoryIconUri, resolveCategoryImageUri, type AppCategoryImageMap } from '@/lib/category-images';
 import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 const DEFAULT_CONTENT = {
@@ -25,11 +25,20 @@ const SubcategoryCard = React.memo(function SubcategoryCard({ category, index, o
   const Icon = getCategoryIcon(category.name);
   // Alternating colors matching original design
   const bgColor = index % 2 === 0 ? '#30352d' : '#BFA28D';
-  const imageUri = getAppCategoryImageUri(category.name, imageMap);
+  const imageUri = resolveCategoryImageUri(category, category.name, imageMap);
+  const iconUri = resolveCategoryIconUri(category)
 
   const content = (
     <>
-      <Icon size={32} color="white" strokeWidth={1.5} />
+      {iconUri ? (
+        <Image
+          source={{ uri: iconUri }}
+          style={{ width: 32, height: 32, borderRadius: 16 }}
+          resizeMode="cover"
+        />
+      ) : (
+        <Icon size={32} color="white" strokeWidth={1.5} />
+      )}
       <Text
         className="text-xs text-center text-white mt-2"
         style={{ fontWeight: '500' }}

@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useHomeCategory } from "./home-category-context";
 import { useSubcategories, useTopLevelCategories, type Category } from '@shared/query';
 import { getCategoryIcon } from "@/components/icons/category-icons";
+import { resolvePublicAssetUrl } from "@/lib/content-platform";
 
 // Fallback categories for when DB is unavailable
 const fallbackMainCategories = [
@@ -17,6 +19,35 @@ const fallbackMainCategories = [
   { name: "Packing & Moving", slug: "packing-moving", description: "Moving doesn't have to be chaos. Get help packing, lifting, loading, and shifting—so you can move faster with less effort and fewer backaches." },
   { name: "The Great Outdoors", slug: "outdoor", description: "From quick tidy-ups to full garden care, our outdoor pros help you keep things clean, trimmed, and looking their best—season after season." },
 ];
+
+function CategoryBadge({
+  category,
+  size = 40,
+  active = false,
+}: {
+  category: Pick<Category, "name" | "icon_url">
+  size?: number
+  active?: boolean
+}) {
+  const Icon = getCategoryIcon(category.name);
+  const iconSrc = resolvePublicAssetUrl(category.icon_url);
+
+  if (iconSrc) {
+    return (
+      <Image
+        src={iconSrc}
+        alt={category.name}
+        width={size}
+        height={size}
+        className="rounded-full object-cover"
+      />
+    );
+  }
+
+  return (
+    <Icon className={`h-6 w-6 sm:h-10 sm:w-10 ${active ? "text-brand-terracotta" : "text-gray-500"}`} />
+  );
+}
 
 export function Services() {
   const router = useRouter();
@@ -116,7 +147,6 @@ export function Services() {
               >
                 {/* Category Icon */}
                 {(() => {
-                  const Icon = getCategoryIcon(category.name);
                   return (
                     <div
                       className={`flex h-14 w-14 items-center justify-center rounded-full transition-all sm:h-20 sm:w-20 ${
@@ -125,11 +155,7 @@ export function Services() {
                           : "bg-gray-100 hover:bg-gray-200"
                       }`}
                     >
-                      <Icon
-                        className={`h-6 w-6 sm:h-10 sm:w-10 ${
-                          activeCategory === category.name ? "text-brand-terracotta" : "text-gray-500"
-                        }`}
-                      />
+                      <CategoryBadge category={category as Category} size={40} active={activeCategory === category.name} />
                     </div>
                   );
                 })()}
@@ -166,14 +192,13 @@ export function Services() {
             </>
           ) : displaySubCategories.length > 0 ? (
             displaySubCategories.map((subCategory) => {
-              const SubIcon = getCategoryIcon(subCategory.name);
               return (
                 <button
                   key={subCategory.id}
                   onClick={() => handleSubCategoryClick(subCategory)}
                   className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
                 >
-                  <SubIcon className="h-5 w-5 shrink-0" />
+                  <CategoryBadge category={subCategory} size={20} />
                   {subCategory.name}
                 </button>
               );

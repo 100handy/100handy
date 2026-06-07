@@ -6,6 +6,9 @@ import { useMarkPayoutFailed, usePayoutQueue, usePayoutSummary, useProcessAdminP
 export default function PayoutOperationsPage() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<'all' | 'pending' | 'transferred' | 'failed'>('all')
+  const [failedTarget, setFailedTarget] = useState<{ bookingId: string; taskTitle: string } | null>(null)
+  const [failureReason, setFailureReason] = useState('')
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const filters = useMemo(() => ({ search: search || undefined, status }), [search, status])
 
@@ -40,10 +43,17 @@ export default function PayoutOperationsPage() {
     URL.revokeObjectURL(url)
   }
 
-  async function handleMarkFailed(bookingId: string) {
-    const reason = window.prompt('Why is this payout being marked failed?')
-    if (!reason) return
-    await markFailed.mutateAsync({ bookingId, reason })
+  async function handleConfirmMarkFailed() {
+    if (!failedTarget || !failureReason.trim()) return
+    setActionFeedback(null)
+    try {
+      await markFailed.mutateAsync({ bookingId: failedTarget.bookingId, reason: failureReason.trim() })
+      setFailedTarget(null)
+      setFailureReason('')
+      setActionFeedback({ tone: 'success', message: 'Payout marked as failed.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update payout.' })
+    }
   }
 
   return (
@@ -59,6 +69,15 @@ export default function PayoutOperationsPage() {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+          {actionFeedback && (
+            <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Provider payout queue</h3>
@@ -148,7 +167,15 @@ export default function PayoutOperationsPage() {
                           {row.payoutStatus !== 'transferred' && row.paymentStatus === 'captured' && row.connectReady ? (
                             <button
                               type="button"
-                              onClick={() => processPayout.mutate({ bookingId: row.bookingId })}
+                              onClick={async () => {
+                                setActionFeedback(null)
+                                try {
+                                  await processPayout.mutateAsync({ bookingId: row.bookingId })
+                                  setActionFeedback({ tone: 'success', message: 'Payout processed.' })
+                                } catch (error) {
+                                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to process payout.' })
+                                }
+                              }}
                               disabled={processPayout.isPending}
                               className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                             >
@@ -158,7 +185,7 @@ export default function PayoutOperationsPage() {
                           {row.payoutStatus !== 'transferred' ? (
                             <button
                               type="button"
-                              onClick={() => handleMarkFailed(row.bookingId)}
+                              onClick={() => setFailedTarget({ bookingId: row.bookingId, taskTitle: row.taskTitle })}
                               disabled={markFailed.isPending}
                               className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 dark:border-red-900/60"
                             >
@@ -177,6 +204,44 @@ export default function PayoutOperationsPage() {
           </div>
         </div>
       </main>
+
+      {failedTarget ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Mark payout as failed</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Record why the payout for <span className="font-medium text-slate-900 dark:text-white">{failedTarget.taskTitle}</span> cannot be transferred.
+            </p>
+            <textarea
+              value={failureReason}
+              onChange={(event) => setFailureReason(event.target.value)}
+              rows={4}
+              className="mt-4 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              placeholder="Failure reason..."
+            />
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setFailedTarget(null)
+                  setFailureReason('')
+                }}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!failureReason.trim() || markFailed.isPending}
+                onClick={handleConfirmMarkFailed}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Mark failed
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

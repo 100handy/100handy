@@ -18,6 +18,7 @@ export default function TransactionsRefundsPage() {
   const [status, setStatus] = useState<PaymentStatus | 'all'>('all')
   const [refundTarget, setRefundTarget] = useState<{ paymentId: string; taskTitle: string; amount: number; bookingId: string | null } | null>(null)
   const [refundReason, setRefundReason] = useState('')
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const filters = useMemo(
     () => ({
@@ -61,9 +62,15 @@ export default function TransactionsRefundsPage() {
 
   async function handleRefund() {
     if (!refundTarget || !refundReason.trim()) return
-    await refundPayment.mutateAsync({ paymentId: refundTarget.paymentId, reason: refundReason.trim() })
-    setRefundTarget(null)
-    setRefundReason('')
+    setActionFeedback(null)
+    try {
+      await refundPayment.mutateAsync({ paymentId: refundTarget.paymentId, reason: refundReason.trim() })
+      setRefundTarget(null)
+      setRefundReason('')
+      setActionFeedback({ tone: 'success', message: 'Refund completed.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Refund failed.' })
+    }
   }
 
   return (
@@ -79,6 +86,15 @@ export default function TransactionsRefundsPage() {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+          {actionFeedback && (
+            <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Transaction ledger</h3>

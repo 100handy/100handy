@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Save, Calendar, Clock, UserSearch, Loader2 } from 'lucide-react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import Header from '@/components/header'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { useTask, useRescheduleTask } from '@/lib/api/tasks'
 import { useAvailableHandys } from '@/lib/api/handys'
 
@@ -44,14 +45,18 @@ export default function RescheduleTaskPage() {
       })
       navigate(`/tasks/details/${taskId}`)
     } catch (error) {
-      console.error('Failed to reschedule task:', error)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to reschedule booking',
+        description: error instanceof Error ? error.message : 'Please try again.',
+      })
     }
   }
 
   const formatDateTime = (date: string, time: string) => {
     try {
       const dateObj = new Date(`${date}T${time}`)
-      return dateObj.toLocaleDateString('en-US', {
+      return dateObj.toLocaleDateString('en-GB', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

@@ -16,17 +16,79 @@ import {
   useAnalyticsKPIs,
   useUserGrowthData,
   useTaskCompletionRate,
-  usePerformanceReports,
 } from '@/lib/api/analytics'
 
 export default function DataAnalyticsPage() {
   const { data: kpis, isLoading: kpisLoading } = useAnalyticsKPIs()
   const { data: userGrowthData, isLoading: growthLoading } = useUserGrowthData(7)
   const { data: completionData, isLoading: completionLoading } = useTaskCompletionRate()
-  const { data: reports } = usePerformanceReports()
 
   // Calculate completion rate percentage for display
   const completionRate = completionData?.find((d) => d.name === 'Completed')?.value || 0
+  const generatedOn = new Date().toISOString().slice(0, 10)
+
+  function downloadCsv(filename: string, rows: string[][]) {
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const analyticsReports = [
+    {
+      name: 'Marketplace KPI Snapshot',
+      description: 'Totals for users, providers, completed jobs, and rating trends.',
+      lastGenerated: generatedOn,
+      download: () =>
+        downloadCsv(`analytics-kpis-${generatedOn}.csv`, [
+          ['Metric', 'Value'],
+          ['Total Users', kpis?.totalUsers ?? 0],
+          ['Active Handys', kpis?.activeHandys ?? 0],
+          ['Completed Tasks', kpis?.completedTasks ?? 0],
+          ['Average Rating', kpis?.averageRating ?? 0],
+          ['Users Change %', kpis?.usersChange ?? 0],
+          ['Handys Change %', kpis?.handysChange ?? 0],
+          ['Tasks Change %', kpis?.tasksChange ?? 0],
+        ]),
+    },
+    {
+      name: 'User Growth Trend',
+      description: 'Monthly new-customer and new-provider growth over the selected window.',
+      lastGenerated: generatedOn,
+      download: () =>
+        downloadCsv(`analytics-user-growth-${generatedOn}.csv`, [
+          ['Month', 'Users', 'Handys'],
+          ...(userGrowthData ?? []).map((row) => [row.month, row.users, row.handys]),
+        ]),
+    },
+    {
+      name: 'Task Completion Mix',
+      description: 'Completed, cancelled, and pending share across bookings.',
+      lastGenerated: generatedOn,
+      download: () =>
+        downloadCsv(`analytics-completion-${generatedOn}.csv`, [
+          ['Status', 'Percentage'],
+          ...(completionData ?? []).map((row) => [row.name, row.value]),
+        ]),
+    },
+  ]
+
+  function exportAllData() {
+    downloadCsv(`analytics-overview-${generatedOn}.csv`, [
+      ['Section', 'Key', 'Value'],
+      ['KPI', 'Total Users', kpis?.totalUsers ?? 0],
+      ['KPI', 'Active Handys', kpis?.activeHandys ?? 0],
+      ['KPI', 'Completed Tasks', kpis?.completedTasks ?? 0],
+      ['KPI', 'Average Rating', kpis?.averageRating ?? 0],
+      ['Growth', 'Generated On', generatedOn],
+      ...((userGrowthData ?? []).map((row) => ['Growth', row.month, `${row.users} users / ${row.handys} handys`])),
+      ...((completionData ?? []).map((row) => ['Completion', row.name, row.value])),
+    ])
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -43,7 +105,11 @@ export default function DataAnalyticsPage() {
               <option>All time</option>
             </select>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm">
+          <button
+            type="button"
+            onClick={exportAllData}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm"
+          >
             <Download className="w-4 h-4" />
             <span>Export All Data</span>
           </button>
@@ -242,25 +308,25 @@ export default function DataAnalyticsPage() {
         </div>
       </div>
 
-      {/* Performance Reports Table */}
+      {/* Data Exports */}
       <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Performance Reports
+          Data Exports
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-sm text-left">
             <thead className="text-xs text-gray-700 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-800/50">
               <tr>
-                <th className="px-6 py-3">Report Name</th>
+                <th className="px-6 py-3">Export</th>
                 <th className="px-6 py-3">Description</th>
                 <th className="px-6 py-3">Last Generated</th>
                 <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {reports?.map((report, index) => (
+              {analyticsReports.map((report) => (
                 <tr
-                  key={index}
+                  key={report.name}
                   className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/20"
                 >
                   <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
@@ -269,8 +335,9 @@ export default function DataAnalyticsPage() {
                   <td className="px-6 py-4">{report.description}</td>
                   <td className="px-6 py-4">{report.lastGenerated}</td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-primary hover:underline">View</button>
-                    <button className="ml-4 text-primary hover:underline">Download</button>
+                    <button type="button" onClick={report.download} className="text-primary hover:underline">
+                      Download
+                    </button>
                   </td>
                 </tr>
               ))}

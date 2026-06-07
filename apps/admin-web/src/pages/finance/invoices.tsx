@@ -5,7 +5,12 @@ import { useInvoices, type Invoice } from '@/lib/api/finance-extended';
 import { Link } from 'react-router-dom';
 
 const formatCurrency = (value: number): string => {
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: 'GBP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 };
 
 const getStatusColor = (status: Invoice['status']): string => {

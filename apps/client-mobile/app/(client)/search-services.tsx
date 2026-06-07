@@ -3,7 +3,7 @@ import { ScrollView, ActivityIndicator, View, Text, Pressable, Image } from 'rea
 import LocationSelectionSheet from '@/components/tasker/LocationSelectionSheet';
 import { goBackOrReplace } from '@/lib/navigation';
 import { getCategoryIcon } from '@/lib/category-icons';
-import { getAppCategoryImageMap, getAppCategoryImageUri, type AppCategoryImageMap } from '@/lib/category-images';
+import { getAppCategoryImageMap, resolveCategoryImageUri, type AppCategoryImageMap } from '@/lib/category-images';
 import { getAppContentValue, useAppContent } from '@/lib/app-content';
 
 const DEFAULT_CONTENT = {
@@ -107,7 +107,7 @@ export default function SearchServicesScreen() {
           <View className="flex-col py-2">
             {filteredCategories.map((category) => {
               const Icon = category.icon;
-              const imageUri = getAppCategoryImageUri(category.name, categoryImages);
+              const imageUri = resolveCategoryImageUri(category, category.name, categoryImages);
               return (
                 <Pressable
                   key={category.id}

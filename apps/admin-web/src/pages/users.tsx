@@ -1,13 +1,28 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Search, Plus, Trash2, User } from 'lucide-react'
 import Header from '@/components/header'
-import { useUsers, useDeleteUsers } from '@/lib/api/users'
+import { useCreateUser, useUsers, useDeleteUsers } from '@/lib/api/users'
+import type { UserRole } from '@/lib/database.types'
 
 export default function UsersPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [accountStatus, setAccountStatus] = useState<'active' | 'paused' | 'deleted' | ''>('')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(searchParams.get('mode') === 'add')
+  const [createErrors, setCreateErrors] = useState<Record<string, string>>({})
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [createForm, setCreateForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phone: '',
+    postcode: '',
+    role: 'customer' as UserRole,
+  })
 
   // Fetch users with search filter
   const { data: users, isLoading, error } = useUsers({
@@ -17,6 +32,73 @@ export default function UsersPage() {
   })
 
   const deleteUsersMutation = useDeleteUsers()
+  const createUserMutation = useCreateUser()
+
+  useEffect(() => {
+    const wantsAdd = searchParams.get('mode') === 'add'
+    if (wantsAdd !== showCreateModal) {
+      setShowCreateModal(wantsAdd)
+    }
+  }, [searchParams, showCreateModal])
+
+  function updateRouteMode(mode: 'add' | null) {
+    const next = new URLSearchParams(searchParams)
+    if (mode) next.set('mode', mode)
+    else next.delete('mode')
+    setSearchParams(next, { replace: true })
+  }
+
+  const resetCreateForm = () => {
+    setCreateForm({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      phone: '',
+      postcode: '',
+      role: 'customer',
+    })
+    setCreateErrors({})
+  }
+
+  const validateCreateForm = () => {
+    const newErrors: Record<string, string> = {}
+    if (!createForm.firstName.trim()) newErrors.firstName = 'First name is required'
+    if (!createForm.lastName.trim()) newErrors.lastName = 'Last name is required'
+    if (!createForm.email.trim()) newErrors.email = 'Email is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) newErrors.email = 'Invalid email format'
+    if (!createForm.password) newErrors.password = 'Password is required'
+    else if (createForm.password.length < 6) newErrors.password = 'Password must be at least 6 characters'
+    setCreateErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  async function handleCreateUser() {
+    if (!validateCreateForm()) return
+    setActionFeedback(null)
+    try {
+      await createUserMutation.mutateAsync(createForm)
+      resetCreateForm()
+      setShowCreateModal(false)
+      updateRouteMode(null)
+      setActionFeedback({ tone: 'success', message: 'User created.' })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to create user.'
+      setCreateErrors({ submit: message })
+      setActionFeedback({ tone: 'error', message })
+    }
+  }
+
+  function openCreateModal() {
+    setShowCreateModal(true)
+    updateRouteMode('add')
+  }
+
+  function closeCreateModal() {
+    setShowCreateModal(false)
+    updateRouteMode(null)
+    resetCreateForm()
+  }
 
   const handleSelectUser = (userId: string) => {
     setSelectedUsers((prev) =>
@@ -35,20 +117,14 @@ export default function UsersPage() {
   const handleDeleteSelected = async () => {
     if (selectedUsers.length === 0) return
 
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone.`
-      )
-    ) {
-      return
-    }
-
+    setActionFeedback(null)
     try {
       await deleteUsersMutation.mutateAsync(selectedUsers)
       setSelectedUsers([])
+      setShowDeleteConfirm(false)
+      setActionFeedback({ tone: 'success', message: 'Selected users deleted.' })
     } catch (error) {
-      console.error('Failed to delete users:', error)
-      alert('Failed to delete some users. Please try again.')
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete users.' })
     }
   }
 
@@ -58,6 +134,15 @@ export default function UsersPage() {
 
       <div className="flex-1 p-6 lg:p-10">
         <div className="max-w-7xl mx-auto">
+          {actionFeedback && (
+            <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           {/* Error State */}
           {error && (
             <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-lg p-4">
@@ -73,15 +158,16 @@ export default function UsersPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Link
-                to="/users/add"
+              <button
+                type="button"
+                onClick={openCreateModal}
                 className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-primary text-white text-sm font-medium shadow-sm hover:bg-primary/90 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add User</span>
-              </Link>
+              </button>
               <button
-                onClick={handleDeleteSelected}
+                onClick={() => setShowDeleteConfirm(true)}
                 disabled={selectedUsers.length === 0 || deleteUsersMutation.isPending}
                 className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg border border-primary/30 text-slate-700 dark:text-slate-200 bg-background-light dark:bg-background-dark hover:bg-primary/10 dark:hover:bg-primary/20 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -225,12 +311,13 @@ export default function UsersPage() {
                 <p className="text-slate-500 dark:text-slate-400">
                   {searchQuery ? 'No users found matching your search.' : 'No users yet.'}
                 </p>
-                <Link
-                  to="/users/add"
+                <button
+                  type="button"
+                  onClick={openCreateModal}
                   className="inline-block mt-4 text-primary hover:underline font-medium"
                 >
                   Add your first user
-                </Link>
+                </button>
               </div>
             )}
           </div>
@@ -245,6 +332,120 @@ export default function UsersPage() {
           )}
         </div>
       </div>
+
+      {showDeleteConfirm ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete selected users</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Delete {selectedUsers.length} selected user account{selectedUsers.length === 1 ? '' : 's'}. This removes the auth users and cascades dependent data.
+            </p>
+            {deleteUsersMutation.error ? (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+                {deleteUsersMutation.error instanceof Error
+                  ? deleteUsersMutation.error.message
+                  : 'Failed to delete selected users.'}
+              </div>
+            ) : null}
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteSelected}
+                disabled={deleteUsersMutation.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Confirm delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showCreateModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Create user</h3>
+              <button
+                type="button"
+                onClick={closeCreateModal}
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium dark:border-slate-700"
+              >
+                Close
+              </button>
+            </div>
+
+            {createErrors.submit ? (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+                {createErrors.submit}
+              </div>
+            ) : null}
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <Field label="First name" error={createErrors.firstName}>
+                <input value={createForm.firstName} onChange={(e) => setCreateForm((prev) => ({ ...prev, firstName: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="John" />
+              </Field>
+              <Field label="Last name" error={createErrors.lastName}>
+                <input value={createForm.lastName} onChange={(e) => setCreateForm((prev) => ({ ...prev, lastName: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="Doe" />
+              </Field>
+              <Field label="Email" error={createErrors.email}>
+                <input value={createForm.email} onChange={(e) => setCreateForm((prev) => ({ ...prev, email: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="john@example.com" />
+              </Field>
+              <Field label="Password" error={createErrors.password}>
+                <input type="password" value={createForm.password} onChange={(e) => setCreateForm((prev) => ({ ...prev, password: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="Minimum 6 characters" />
+              </Field>
+              <Field label="Phone">
+                <input value={createForm.phone} onChange={(e) => setCreateForm((prev) => ({ ...prev, phone: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="+44..." />
+              </Field>
+              <Field label="Postcode">
+                <input value={createForm.postcode} onChange={(e) => setCreateForm((prev) => ({ ...prev, postcode: e.target.value }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="SW1A 1AA" />
+              </Field>
+              <Field label="Role">
+                <select value={createForm.role} onChange={(e) => setCreateForm((prev) => ({ ...prev, role: e.target.value as UserRole }))} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900">
+                  <option value="customer">Customer</option>
+                  <option value="handy">Handy</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </Field>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeCreateModal}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateUser}
+                disabled={createUserMutation.isPending}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+              >
+                {createUserMutation.isPending ? 'Creating...' : 'Create user'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
+  )
+}
+
+function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>
+      {children}
+      {error ? <p className="mt-1 text-sm text-red-500">{error}</p> : null}
+    </div>
   )
 }

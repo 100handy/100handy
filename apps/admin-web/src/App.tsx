@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { resolveInitialRoute } from '@/contexts/auth-routing'
@@ -13,11 +13,7 @@ import TaskListPage from '@/pages/tasks/task-list'
 import BrowseCategoriesPage from '@/pages/tasks/browse-categories'
 import RolloutPlannerPage from '@/pages/tasks/rollout-planner'
 import TaskDetailsPage from '@/pages/tasks/task-details'
-import EditTaskPage from '@/pages/tasks/edit-task'
-import RescheduleTaskPage from '@/pages/tasks/reschedule-task'
-import CancelTaskPage from '@/pages/tasks/cancel-task'
 import EditCategoriesPage from '@/pages/tasks/edit-categories'
-import DeleteCategoriesPage from '@/pages/tasks/delete-categories'
 import HandysPage from '@/pages/handys'
 import ProviderProfilePage from '@/pages/handys/provider-profile'
 import EarningsDashboardPage from '@/pages/finance/earnings-dashboard'
@@ -37,8 +33,6 @@ import MediaPage from '@/pages/content/media'
 import FAQsPage from '@/pages/content/faqs'
 import NavigationPage from '@/pages/content/navigation'
 import AppContentPage from '@/pages/content/app-content'
-import AddUserPage from '@/pages/users/add-user'
-import RemoveUsersPage from '@/pages/users/remove-users'
 import UserProfilePage from '@/pages/users/user-profile'
 import HandySelectionProcess from '@/pages/handys/selection-process'
 import AvailabilityManagement from '@/pages/handys/availability-management'
@@ -95,6 +89,11 @@ function RootRedirect() {
   return <Navigate to={destination} replace />
 }
 
+function TaskDetailsRedirect() {
+  const { id } = useParams<{ id: string }>()
+  return id ? <Navigate to={`/tasks/details/${id}`} replace /> : <Navigate to="/tasks/list" replace />
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -106,28 +105,29 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
+          <Route path="/users/add" element={<Navigate to="/users?mode=add" replace />} />
+          <Route path="/users/remove" element={<Navigate to="/users" replace />} />
+          <Route path="/tasks/reschedule/:id" element={<TaskDetailsRedirect />} />
+          <Route path="/tasks/cancel/:id" element={<TaskDetailsRedirect />} />
+          <Route path="/accounts/location" element={<Navigate to="/accounts/service-areas" replace />} />
           <Route element={<ProtectedRoute permissions={['dashboard.view']} />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/announcements" element={<AnnouncementsPage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['users.manage']} />}>
             <Route path="/users" element={<UsersPage />} />
-            <Route path="/users/add" element={<AddUserPage />} />
-            <Route path="/users/remove" element={<RemoveUsersPage />} />
             <Route path="/users/profiles" element={<UserProfilePage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['tasks.manage']} />}>
             <Route path="/tasks/categories" element={<BrowseCategoriesPage />} />
             <Route path="/tasks/rollouts" element={<RolloutPlannerPage />} />
             <Route path="/tasks/categories/edit" element={<EditCategoriesPage />} />
-            <Route path="/tasks/categories/delete" element={<DeleteCategoriesPage />} />
+            <Route path="/tasks/categories/delete" element={<Navigate to="/tasks/categories/edit" replace />} />
             <Route path="/tasks/list" element={<TaskListPage />} />
             <Route path="/tasks/open" element={<TaskListPage pageTitle="Open Tasks" forcedStatus="pending" />} />
             <Route path="/tasks/scheduled" element={<TaskListPage pageTitle="Scheduled Tasks" forcedStatus="accepted" />} />
             <Route path="/tasks/details/:taskId" element={<TaskDetailsPage />} />
-            <Route path="/tasks/edit/:id" element={<EditTaskPage />} />
-            <Route path="/tasks/reschedule/:id" element={<RescheduleTaskPage />} />
-            <Route path="/tasks/cancel/:id" element={<CancelTaskPage />} />
+            <Route path="/tasks/edit/:id" element={<TaskDetailsRedirect />} />
             <Route path="/tasks/completed" element={<TaskListPage pageTitle="Completed Tasks" forcedStatus="completed" />} />
             <Route path="/tasks/cancelled" element={<TaskListPage pageTitle="Cancelled Tasks" forcedStatus="cancelled" />} />
             <Route path="/tasks/questions" element={<TaskQuestionsPage />} />
@@ -181,7 +181,6 @@ function App() {
             <Route path="/accounts/paused" element={<AccountStatus />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['locations.manage']} />}>
-            <Route path="/accounts/location" element={<ServiceAreasPage />} />
             <Route path="/accounts/service-areas" element={<ServiceAreasPage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['audit.view']} />}>

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Database, Json } from '@/lib/database.types'
@@ -155,6 +156,20 @@ export function useSaveRolloutPreset() {
       const { data, error } = await query.select('*').single()
       if (error) throw error
 
+      await createAdminAuditLog({
+        action: input.id ? 'rollout.update_preset' : 'rollout.create_preset',
+        entityType: 'rollout_preset',
+        entityId: data.id,
+        summary: `${input.id ? 'Updated' : 'Created'} rollout preset ${data.name}`,
+        metadata: {
+          rolloutMonth: data.rollout_month,
+          status: data.status,
+          categoryCount: input.snapshot.categoryStates.length,
+          areaCount: input.snapshot.serviceAreaStates.length,
+          overrideCount: input.snapshot.areaCategoryStates.length,
+        },
+      })
+
       return parseRolloutPreset(data)
     },
     onSuccess: () => {
@@ -222,6 +237,19 @@ export function useApplyRolloutPreset() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'rollout.apply_preset',
+        entityType: 'rollout_preset',
+        entityId: data.id,
+        summary: `Applied rollout preset ${data.name}`,
+        metadata: {
+          rolloutMonth: data.rollout_month,
+          categoryCount: preset.categoryStates.length,
+          areaCount: preset.serviceAreaStates.length,
+          overrideCount: preset.areaCategoryStates.length,
+        },
+      })
 
       return parseRolloutPreset(data)
     },
