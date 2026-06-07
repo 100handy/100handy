@@ -18,6 +18,7 @@ import {
   useSiteSettings,
   type NavigationItemInput,
 } from '@/lib/api/content-platform'
+import type { Json } from '@/lib/database.types'
 
 const emptyItem = {
   nav_key: '',
@@ -81,7 +82,7 @@ export default function NavigationPage() {
   }, [selectedItem, selectedId])
 
   useEffect(() => {
-    const draftSettings = (latestDraft?.settings_json ?? {}) as Record<string, any>
+    const draftSettings = (latestDraft?.settings_json ?? {}) as Record<string, Json | undefined>
     const social = draftSettings['footer.social_links'] ?? settings.find((setting) => setting.setting_key === 'footer.social_links')?.value_json ?? {}
     const app = draftSettings['footer.app_downloads'] ?? settings.find((setting) => setting.setting_key === 'footer.app_downloads')?.value_json ?? {}
     const follow = draftSettings['footer.follow_text'] ?? settings.find((setting) => setting.setting_key === 'footer.follow_text')?.value_json ?? {}

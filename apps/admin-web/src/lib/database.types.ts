@@ -81,6 +81,260 @@ export interface Database {
           created_at?: string
         }
       }
+      outreach_sources: {
+        Row: {
+          id: string
+          source_key: string
+          name: string
+          platform: string
+          source_type: 'customer_finder' | 'worker_finder' | 'mixed'
+          url: string | null
+          location: string | null
+          service_type: string | null
+          active: boolean
+          notes: string | null
+          created_at: string
+          updated_at: string
+          created_by: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          source_key: string
+          name: string
+          platform: string
+          source_type: 'customer_finder' | 'worker_finder' | 'mixed'
+          url?: string | null
+          location?: string | null
+          service_type?: string | null
+          active?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          source_key?: string
+          name?: string
+          platform?: string
+          source_type?: 'customer_finder' | 'worker_finder' | 'mixed'
+          url?: string | null
+          location?: string | null
+          service_type?: string | null
+          active?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+          updated_by?: string | null
+        }
+      }
+      outreach_leads: {
+        Row: {
+          id: string
+          source_id: string | null
+          lead_type: 'customer' | 'worker'
+          source_platform: string
+          source_url: string | null
+          source_posted_at: string | null
+          profile_name: string | null
+          profile_url: string | null
+          business_name: string | null
+          location: string | null
+          coverage_area: string | null
+          service_type: string
+          urgency: 'low' | 'medium' | 'high' | null
+          intent_strength: 'low' | 'medium' | 'high' | null
+          source_confidence: 'low' | 'medium' | 'high' | null
+          raw_text: string
+          evidence_text: string | null
+          public_contact_method: 'website' | 'email' | 'phone' | 'social_profile' | 'profile_only' | 'unknown' | null
+          contact_detail: string | null
+          contact_allowed: 'yes' | 'no' | 'unknown'
+          ai_score: number | null
+          ai_summary: string | null
+          status: 'new' | 'reviewed' | 'approved' | 'contacted' | 'replied' | 'rejected' | 'closed'
+          approval_status: 'pending' | 'approved' | 'rejected'
+          do_not_contact_reason: string | null
+          duplicate_check_key: string | null
+          converted_user_id: string | null
+          converted_booking_id: string | null
+          metadata: Json
+          created_at: string
+          updated_at: string
+          created_by: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          source_id?: string | null
+          lead_type: 'customer' | 'worker'
+          source_platform: string
+          source_url?: string | null
+          source_posted_at?: string | null
+          profile_name?: string | null
+          profile_url?: string | null
+          business_name?: string | null
+          location?: string | null
+          coverage_area?: string | null
+          service_type: string
+          urgency?: 'low' | 'medium' | 'high' | null
+          intent_strength?: 'low' | 'medium' | 'high' | null
+          source_confidence?: 'low' | 'medium' | 'high' | null
+          raw_text: string
+          evidence_text?: string | null
+          public_contact_method?: 'website' | 'email' | 'phone' | 'social_profile' | 'profile_only' | 'unknown' | null
+          contact_detail?: string | null
+          contact_allowed?: 'yes' | 'no' | 'unknown'
+          ai_score?: number | null
+          ai_summary?: string | null
+          status?: 'new' | 'reviewed' | 'approved' | 'contacted' | 'replied' | 'rejected' | 'closed'
+          approval_status?: 'pending' | 'approved' | 'rejected'
+          do_not_contact_reason?: string | null
+          duplicate_check_key?: string | null
+          converted_user_id?: string | null
+          converted_booking_id?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          source_id?: string | null
+          lead_type?: 'customer' | 'worker'
+          source_platform?: string
+          source_url?: string | null
+          source_posted_at?: string | null
+          profile_name?: string | null
+          profile_url?: string | null
+          business_name?: string | null
+          location?: string | null
+          coverage_area?: string | null
+          service_type?: string
+          urgency?: 'low' | 'medium' | 'high' | null
+          intent_strength?: 'low' | 'medium' | 'high' | null
+          source_confidence?: 'low' | 'medium' | 'high' | null
+          raw_text?: string
+          evidence_text?: string | null
+          public_contact_method?: 'website' | 'email' | 'phone' | 'social_profile' | 'profile_only' | 'unknown' | null
+          contact_detail?: string | null
+          contact_allowed?: 'yes' | 'no' | 'unknown'
+          ai_score?: number | null
+          ai_summary?: string | null
+          status?: 'new' | 'reviewed' | 'approved' | 'contacted' | 'replied' | 'rejected' | 'closed'
+          approval_status?: 'pending' | 'approved' | 'rejected'
+          do_not_contact_reason?: string | null
+          duplicate_check_key?: string | null
+          converted_user_id?: string | null
+          converted_booking_id?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+          updated_by?: string | null
+        }
+      }
+      outreach_messages: {
+        Row: {
+          id: string
+          lead_id: string
+          message_type: 'initial' | 'follow_up' | 'reply_note'
+          channel: 'manual' | 'email' | 'phone' | 'website_form' | 'social_dm' | 'comment' | 'other'
+          draft_text: string
+          personalised_reason: string | null
+          approval_status: 'pending' | 'approved' | 'rejected'
+          delivery_status: 'not_sent' | 'queued' | 'sent' | 'failed' | 'replied'
+          approved_by: string | null
+          approved_at: string | null
+          sent_by: string | null
+          sent_at: string | null
+          external_message_url: string | null
+          failure_reason: string | null
+          metadata: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          message_type?: 'initial' | 'follow_up' | 'reply_note'
+          channel?: 'manual' | 'email' | 'phone' | 'website_form' | 'social_dm' | 'comment' | 'other'
+          draft_text: string
+          personalised_reason?: string | null
+          approval_status?: 'pending' | 'approved' | 'rejected'
+          delivery_status?: 'not_sent' | 'queued' | 'sent' | 'failed' | 'replied'
+          approved_by?: string | null
+          approved_at?: string | null
+          sent_by?: string | null
+          sent_at?: string | null
+          external_message_url?: string | null
+          failure_reason?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          message_type?: 'initial' | 'follow_up' | 'reply_note'
+          channel?: 'manual' | 'email' | 'phone' | 'website_form' | 'social_dm' | 'comment' | 'other'
+          draft_text?: string
+          personalised_reason?: string | null
+          approval_status?: 'pending' | 'approved' | 'rejected'
+          delivery_status?: 'not_sent' | 'queued' | 'sent' | 'failed' | 'replied'
+          approved_by?: string | null
+          approved_at?: string | null
+          sent_by?: string | null
+          sent_at?: string | null
+          external_message_url?: string | null
+          failure_reason?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      outreach_follow_ups: {
+        Row: {
+          id: string
+          lead_id: string
+          message_id: string | null
+          due_at: string
+          status: 'pending' | 'completed' | 'skipped' | 'cancelled'
+          notes: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          message_id?: string | null
+          due_at: string
+          status?: 'pending' | 'completed' | 'skipped' | 'cancelled'
+          notes?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          message_id?: string | null
+          due_at?: string
+          status?: 'pending' | 'completed' | 'skipped' | 'cancelled'
+          notes?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       profiles: {
         Row: {
           user_id: string

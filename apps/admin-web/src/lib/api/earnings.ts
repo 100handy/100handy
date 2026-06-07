@@ -46,7 +46,7 @@ export function useHandyEarnings(filters: HandyEarningsFilters = {}) {
     queryKey: ['admin', 'handy-earnings', { search, sortBy, page, limit }],
     queryFn: async (): Promise<HandyEarningsResult> => {
       // Step 1: Fetch all handy profiles with their user profiles
-      let query = supabase
+      const query = supabase
         .from('handy_profiles')
         .select(`
           user_id,

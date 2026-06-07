@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
-import type { Database } from '@/lib/database.types'
+import type { Database, Json } from '@/lib/database.types'
 
 type RolloutPresetRow = Database['public']['Tables']['rollout_presets']['Row']
 type RolloutPresetInsert = Database['public']['Tables']['rollout_presets']['Insert']
@@ -39,9 +39,9 @@ export interface RolloutPreset extends Omit<RolloutPresetRow, 'category_states' 
 function parseRolloutPreset(row: RolloutPresetRow): RolloutPreset {
   return {
     ...row,
-    categoryStates: (row.category_states as RolloutCategoryState[]) ?? [],
-    serviceAreaStates: (row.service_area_states as RolloutServiceAreaState[]) ?? [],
-    areaCategoryStates: (row.area_category_states as RolloutAreaCategoryState[]) ?? [],
+    categoryStates: (row.category_states as unknown as RolloutCategoryState[]) ?? [],
+    serviceAreaStates: (row.service_area_states as unknown as RolloutServiceAreaState[]) ?? [],
+    areaCategoryStates: (row.area_category_states as unknown as RolloutAreaCategoryState[]) ?? [],
   }
 }
 
@@ -143,9 +143,9 @@ export function useSaveRolloutPreset() {
         rollout_month: input.rolloutMonth,
         status: input.status,
         notes: input.notes ?? null,
-        category_states: input.snapshot.categoryStates,
-        service_area_states: input.snapshot.serviceAreaStates,
-        area_category_states: input.snapshot.areaCategoryStates,
+        category_states: input.snapshot.categoryStates as unknown as Json,
+        service_area_states: input.snapshot.serviceAreaStates as unknown as Json,
+        area_category_states: input.snapshot.areaCategoryStates as unknown as Json,
       }
 
       const query = input.id

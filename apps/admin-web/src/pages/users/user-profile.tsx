@@ -50,6 +50,7 @@ export default function UserProfilePage() {
   }
 
   async function handleSave() {
+    if (!userId) return
     await updateUser.mutateAsync({
       userId,
       firstName: formData.firstName,
@@ -62,6 +63,7 @@ export default function UserProfilePage() {
   }
 
   async function handleDelete() {
+    if (!userId) return
     if (!window.confirm('Delete this user account? This removes the auth user and cascades dependent data.')) {
       return
     }

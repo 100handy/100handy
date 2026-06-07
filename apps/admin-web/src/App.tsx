@@ -26,6 +26,7 @@ import PayoutOperationsPage from '@/pages/finance/payout-operations'
 import DataAnalyticsPage from '@/pages/insights/data-analytics'
 import MarketplaceReportsPage from '@/pages/insights/marketplace-reports'
 import PromotionsManagementPage from '@/pages/promotions/promotions-management'
+import OutreachLeadsPage from '@/pages/outreach/leads'
 import ContentPagesPage from '@/pages/content/pages'
 import CreatePagePage from '@/pages/content/create-page'
 import PageEditorPage from '@/pages/content/page-editor'
@@ -156,6 +157,9 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute permissions={['promotions.manage']} />}>
             <Route path="/promotions/management" element={<PromotionsManagementPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={['outreach.manage']} />}>
+            <Route path="/outreach/leads" element={<OutreachLeadsPage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['content.manage', 'seo.manage']} />}>
             <Route path="/content/pages" element={<ContentPagesPage />} />

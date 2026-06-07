@@ -7,6 +7,7 @@ export type AdminPermission =
   | 'tasks.manage'
   | 'disputes.manage'
   | 'locations.manage'
+  | 'outreach.manage'
   | 'content.manage'
   | 'seo.manage'
   | 'accounts.manage'
@@ -35,6 +36,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
     'tasks.manage',
     'disputes.manage',
     'locations.manage',
+    'outreach.manage',
     'content.manage',
     'seo.manage',
     'accounts.manage',
@@ -60,6 +62,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
     'tasks.manage',
     'disputes.manage',
     'locations.manage',
+    'outreach.manage',
     'support.view',
     'notifications.manage',
   ],

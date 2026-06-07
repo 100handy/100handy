@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
-import type { Database, PaymentStatus } from '@/lib/database.types'
+import type { PaymentStatus } from '@/lib/database.types'
 
 export interface FinanceTransaction {
   id: string

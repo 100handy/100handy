@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
+import type { Json } from '@/lib/database.types'
 
 /**
  * Verification API Hooks
@@ -95,7 +96,7 @@ export function useSaveVerificationSettings() {
           {
             setting_group: 'accounts',
             setting_key: VERIFICATION_SETTINGS_KEY,
-            value_json: settings,
+            value_json: settings as unknown as Json,
             updated_by: user.id,
           },
           { onConflict: 'setting_key' },
@@ -108,7 +109,7 @@ export function useSaveVerificationSettings() {
         entityType: 'verification_setting',
         entityId: VERIFICATION_SETTINGS_KEY,
         summary: 'Updated verification rules',
-        metadata: settings,
+        metadata: settings as unknown as Json,
       })
     },
     onSuccess: () => {

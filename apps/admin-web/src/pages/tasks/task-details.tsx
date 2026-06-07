@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { format } from 'date-fns'
-import { Calendar, CreditCard, Loader2, RefreshCcw, X } from 'lucide-react'
+import { Calendar, CreditCard, Loader2, X } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import Header from '@/components/header'
 import { useAvailableHandys } from '@/lib/api/handys'
@@ -45,12 +45,14 @@ export default function TaskDetailsPage() {
   }
 
   async function handleReassign() {
+    if (!task) return
     if (!selectedHandy) return
     await updateTask.mutateAsync({ taskId: String(task.id), handy_id: selectedHandy, status: task.status === 'pending' ? 'accepted' : task.status })
     setSelectedHandy('')
   }
 
   async function handleReschedule() {
+    if (!task) return
     if (!rescheduleDate || !rescheduleTime) return
     await rescheduleTask.mutateAsync({
       taskId: String(task.id),
@@ -63,11 +65,13 @@ export default function TaskDetailsPage() {
   }
 
   async function handleCancel() {
+    if (!task) return
     if (!window.confirm('Cancel this booking?')) return
     await cancelTask.mutateAsync(String(task.id))
   }
 
   async function handleRefund() {
+    if (!task) return
     if (!task.payment) return
     const reason = window.prompt('Refund reason')
     if (!reason) return

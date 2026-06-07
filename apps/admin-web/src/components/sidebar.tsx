@@ -9,6 +9,7 @@ import {
   LifeBuoy,
   MapPinned,
   Megaphone,
+  Radar,
   Settings2,
   Shield,
   Users,
@@ -167,6 +168,17 @@ const groups = [
     defaultExpanded: false,
     items: [{ label: 'Management', path: '/promotions/management', permissions: ['promotions.manage'] as AdminPermission[] }],
     permissions: ['promotions.manage'] as AdminPermission[],
+  },
+  {
+    key: 'outreach',
+    label: 'Outreach',
+    icon: Radar,
+    basePath: '/outreach',
+    defaultExpanded: false,
+    items: [
+      { label: 'Lead Queue', path: '/outreach/leads', permissions: ['outreach.manage'] as AdminPermission[] },
+    ],
+    permissions: ['outreach.manage'] as AdminPermission[],
   },
   {
     key: 'locations',

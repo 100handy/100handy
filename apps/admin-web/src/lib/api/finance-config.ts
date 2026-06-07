@@ -8,6 +8,11 @@ type PaymentMethodRow = Database['public']['Tables']['payment_method_configs']['
 type PaymentMethodInsert = Database['public']['Tables']['payment_method_configs']['Insert']
 type PricingRuleRow = Database['public']['Tables']['service_pricing_rules']['Row']
 type PricingRuleInsert = Database['public']['Tables']['service_pricing_rules']['Insert']
+type JoinedName = { name?: string | null }
+type PricingRuleQueryRow = PricingRuleRow & {
+  categories?: JoinedName | JoinedName[] | null
+  location_areas?: JoinedName | JoinedName[] | null
+}
 
 export type PaymentMethodConfig = PaymentMethodRow
 export type PricingRule = PricingRuleRow & {
@@ -93,11 +98,16 @@ export function usePricingRules() {
         `)
         .order('created_at', { ascending: false })
       if (error) throw error
-      return (data ?? []).map((row) => ({
-        ...(row as PricingRuleRow),
-        category_name: Array.isArray((row as any).categories) ? (row as any).categories[0]?.name ?? 'Unknown' : (row as any).categories?.name ?? 'Unknown',
-        location_area_name: Array.isArray((row as any).location_areas) ? (row as any).location_areas[0]?.name ?? null : (row as any).location_areas?.name ?? null,
-      }))
+      return ((data ?? []) as PricingRuleQueryRow[]).map((row) => {
+        const category = Array.isArray(row.categories) ? row.categories[0] : row.categories
+        const locationArea = Array.isArray(row.location_areas) ? row.location_areas[0] : row.location_areas
+
+        return {
+          ...row,
+          category_name: category?.name ?? 'Unknown',
+          location_area_name: locationArea?.name ?? null,
+        }
+      })
     },
     staleTime: 30 * 1000,
   })

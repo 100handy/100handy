@@ -13,6 +13,7 @@ import {
   useSiteSettings,
   useSiteSettingsRevisions,
 } from '@/lib/api/content-platform'
+import type { Json } from '@/lib/database.types'
 
 export default function PageSettingsPage() {
   const SETTINGS_KEY = 'global_page_settings'
@@ -37,7 +38,7 @@ export default function PageSettingsPage() {
   const [actionFeedback, setActionFeedback] = useState<string | null>(null)
 
   useEffect(() => {
-    const draftSettings = (latestDraft?.settings_json ?? {}) as Record<string, any>
+    const draftSettings = (latestDraft?.settings_json ?? {}) as Record<string, Json | undefined>
     const seoDefaults = draftSettings['seo.defaults'] ?? settings.find((setting) => setting.setting_key === 'seo.defaults')?.value_json ?? {}
     const organization = draftSettings['seo.organization'] ?? settings.find((setting) => setting.setting_key === 'seo.organization')?.value_json ?? {}
     const helpUi = draftSettings['help.ui'] ?? settings.find((setting) => setting.setting_key === 'help.ui')?.value_json ?? {}

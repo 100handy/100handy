@@ -12,6 +12,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
   },
+  "devDependencies": {
+    "@100handy/eslint": "workspace:*"
+  },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.11",
     "postcss": "^8.5.6",
