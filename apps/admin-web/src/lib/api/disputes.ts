@@ -288,9 +288,10 @@ export function useUpdateDisputeStatus() {
         .from('disputes')
         .select('id, booking_id')
         .eq('id', disputeId)
-        .single()
+        .maybeSingle()
 
       if (loadError) throw loadError
+      if (!dispute) throw new Error('Dispute not found.')
 
       if (status === 'refunded' && dispute.booking_id) {
         const { error: refundError } = await supabase.functions.invoke('refund-payment', {

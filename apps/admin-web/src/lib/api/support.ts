@@ -120,10 +120,11 @@ export function useSupportTickets(filters: SupportFilters = {}) {
       const assignedMap = new Map<string, string>()
 
       if (assignedIds.length > 0) {
-        const { data: assignedProfiles } = await supabase
+        const { data: assignedProfiles, error: assignedProfilesError } = await supabase
           .from('profiles')
           .select('user_id, first_name, last_name')
           .in('user_id', assignedIds)
+        if (assignedProfilesError) throw assignedProfilesError
 
         for (const profile of assignedProfiles ?? []) {
           assignedMap.set(

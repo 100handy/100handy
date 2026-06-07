@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
 /**
@@ -45,6 +46,7 @@ export function useHandyEarnings(filters: HandyEarningsFilters = {}) {
   return useQuery({
     queryKey: ['admin', 'handy-earnings', { search, sortBy, page, limit }],
     queryFn: async (): Promise<HandyEarningsResult> => {
+      await requireAdminPermission('finance.view')
       // Step 1: Fetch all handy profiles with their user profiles
       const query = supabase
         .from('handy_profiles')
@@ -192,6 +194,7 @@ export function useEarningsSummary() {
   return useQuery({
     queryKey: ['admin', 'earnings-summary'],
     queryFn: async (): Promise<EarningsSummary> => {
+      await requireAdminPermission('finance.view')
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('handy_id, payout_amount_cents, payout_status')

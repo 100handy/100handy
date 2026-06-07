@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
 /**
@@ -47,6 +48,7 @@ export function useAccountBalancesSummary() {
   return useQuery({
     queryKey: ['admin', 'account-balances-summary'],
     queryFn: async (): Promise<AccountBalanceSummary> => {
+      await requireAdminPermission('finance.view')
       // Fetch completed bookings to calculate platform revenue
       const { data: completedBookings, error: bookingsError } = await supabase
         .from('bookings')
@@ -100,6 +102,7 @@ export function useAccountBalances(filter?: 'all' | 'Handy Payout' | 'Client Cre
   return useQuery({
     queryKey: ['admin', 'account-balances', filter],
     queryFn: async (): Promise<AccountBalance[]> => {
+      await requireAdminPermission('finance.view')
       const accounts: AccountBalance[] = []
 
       // Platform Revenue account
@@ -295,6 +298,7 @@ export function useInvoices(
   return useQuery({
     queryKey: ['admin', 'invoices', statusFilter, searchQuery, limit],
     queryFn: async (): Promise<{ invoices: Invoice[]; total: number }> => {
+      await requireAdminPermission('finance.view')
       // Derive invoices from payments + bookings
       const { data: payments, error } = await supabase
         .from('payments')

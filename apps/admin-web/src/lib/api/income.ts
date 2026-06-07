@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 
 /**
@@ -50,6 +51,7 @@ export function useIncomeMetrics() {
   return useQuery({
     queryKey: ['admin', 'income-metrics'],
     queryFn: async (): Promise<IncomeMetrics> => {
+      await requireAdminPermission('finance.view')
       const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
@@ -139,6 +141,7 @@ export function useMonthlyIncome(monthsBack = 7) {
   return useQuery({
     queryKey: ['admin', 'monthly-income', monthsBack],
     queryFn: async (): Promise<MonthlyIncomeData[]> => {
+      await requireAdminPermission('finance.view')
       // Calculate date range
       const now = new Date()
       const startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack + 1, 1)
@@ -213,6 +216,7 @@ export function useIncomeByCategory() {
   return useQuery({
     queryKey: ['admin', 'income-by-category'],
     queryFn: async (): Promise<CategoryIncomeData[]> => {
+      await requireAdminPermission('finance.view')
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select(`
@@ -263,6 +267,7 @@ export function useRecentTransactions(limit = 10, type?: 'Payout' | 'Fee' | 'All
   return useQuery({
     queryKey: ['admin', 'recent-transactions', limit, type],
     queryFn: async (): Promise<Transaction[]> => {
+      await requireAdminPermission('finance.view')
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select(`

@@ -1460,7 +1460,10 @@ export function useEmailDeliveryJobs() {
 export function useNotificationAudiencePreview(input: NotificationAudiencePreviewInput) {
   return useQuery({
     queryKey: ['admin', 'notification-audience-preview', input.channel, input.recipientGroup, input.filters ?? {}],
-    queryFn: async () => previewNotificationAudienceCount(input),
+    queryFn: async () => {
+      await requireAdminPermission('notifications.manage')
+      return previewNotificationAudienceCount(input)
+    },
     enabled: !!input.recipientGroup,
     staleTime: 15 * 1000,
   })

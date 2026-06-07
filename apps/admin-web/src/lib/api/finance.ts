@@ -100,9 +100,10 @@ export function useRefundPayment() {
         .from('payments')
         .select('id, booking_id, amount_cents, status')
         .eq('id', paymentId)
-        .single()
+        .maybeSingle()
 
       if (paymentError) throw paymentError
+      if (!payment) throw new Error('Payment not found.')
       if (!payment.booking_id) throw new Error('Cannot refund a payment that is not linked to a booking.')
 
       const { data: refundResult, error: refundError } = await supabase.functions.invoke('refund-payment', {
