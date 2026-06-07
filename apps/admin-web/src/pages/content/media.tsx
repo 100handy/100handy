@@ -155,6 +155,7 @@ export default function MediaPage() {
   const [appWelcomeImages, setAppWelcomeImages] = useState<AppWelcomeState>(defaultAppWelcome)
   const [appOnboardingImages, setAppOnboardingImages] = useState<AppOnboardingState>(defaultAppOnboarding)
   const [appCategoryImages, setAppCategoryImages] = useState<AppCategoryState>(defaultAppCategories)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const selected = media.find((item) => item.id === selectedId) ?? null
 
@@ -255,6 +256,17 @@ export default function MediaPage() {
               Your admin role can view media and image mappings, but it cannot change them.
             </div>
           )}
+          {actionFeedback && (
+            <div
+              className={`rounded-xl border px-4 py-3 text-sm ${
+                actionFeedback.tone === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+                  : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+              }`}
+            >
+              {actionFeedback.message}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="relative w-72">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -298,7 +310,23 @@ export default function MediaPage() {
                       <button onClick={() => setSelectedId(item.id)} className="underline">
                         Edit
                       </button>
-                      <button onClick={() => deleteMedia.mutate(item.id)} className="text-red-300 underline">
+                      <button
+                        onClick={() =>
+                          deleteMedia.mutate(item.id, {
+                            onSuccess: () =>
+                              setActionFeedback({
+                                tone: 'success',
+                                message: `Deleted media asset "${item.asset_key}".`,
+                              }),
+                            onError: (error) =>
+                              setActionFeedback({
+                                tone: 'error',
+                                message: error instanceof Error ? error.message : 'Failed to delete media asset.',
+                              }),
+                          })
+                        }
+                        className="text-red-300 underline"
+                      >
                         Delete
                       </button>
                     </div>
@@ -345,17 +373,31 @@ export default function MediaPage() {
               )}
               <button
                 onClick={() =>
-                  saveMedia.mutate({
-                    id: selected?.id,
-                    asset_key: assetForm.asset_key,
-                    asset_type: assetForm.asset_type,
-                    url: assetForm.url,
-                    title: assetForm.title,
-                    alt_text: assetForm.alt_text,
-                    tags: assetForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
-                    usage_scope: assetForm.usage_scope,
-                    active: assetForm.active,
-                  })
+                  saveMedia.mutate(
+                    {
+                      id: selected?.id,
+                      asset_key: assetForm.asset_key,
+                      asset_type: assetForm.asset_type,
+                      url: assetForm.url,
+                      title: assetForm.title,
+                      alt_text: assetForm.alt_text,
+                      tags: assetForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+                      usage_scope: assetForm.usage_scope,
+                      active: assetForm.active,
+                    },
+                    {
+                      onSuccess: () =>
+                        setActionFeedback({
+                          tone: 'success',
+                          message: selected ? `Updated media asset "${assetForm.asset_key}".` : `Created media asset "${assetForm.asset_key}".`,
+                        }),
+                      onError: (error) =>
+                        setActionFeedback({
+                          tone: 'error',
+                          message: error instanceof Error ? error.message : 'Failed to save media asset.',
+                        }),
+                    },
+                  )
                 }
                 disabled={saveMedia.isPending || !canSaveAsset}
                 className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
@@ -377,11 +419,21 @@ export default function MediaPage() {
               isPending={saveSetting.isPending}
               disabled={!canManageContent}
               onClick={() =>
-                saveSetting.mutate({
-                  setting_group: 'brand',
-                  setting_key: 'brand.logos',
-                  value_json: brandLogos,
-                })
+                saveSetting.mutate(
+                  {
+                    setting_group: 'brand',
+                    setting_key: 'brand.logos',
+                    value_json: brandLogos,
+                  },
+                  {
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved brand logo settings.' }),
+                    onError: (error) =>
+                      setActionFeedback({
+                        tone: 'error',
+                        message: error instanceof Error ? error.message : 'Failed to save brand logo settings.',
+                      }),
+                  },
+                )
               }
             />
           </Panel>
@@ -418,11 +470,21 @@ export default function MediaPage() {
               isPending={saveSetting.isPending}
               disabled={!canManageContent}
               onClick={() =>
-                saveSetting.mutate({
-                  setting_group: 'services',
-                  setting_key: 'services.web_images',
-                  value_json: serviceImages,
-                })
+                saveSetting.mutate(
+                  {
+                    setting_group: 'services',
+                    setting_key: 'services.web_images',
+                    value_json: serviceImages,
+                  },
+                  {
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved web service image settings.' }),
+                    onError: (error) =>
+                      setActionFeedback({
+                        tone: 'error',
+                        message: error instanceof Error ? error.message : 'Failed to save web service image settings.',
+                      }),
+                  },
+                )
               }
             />
           </Panel>
@@ -436,11 +498,21 @@ export default function MediaPage() {
               isPending={saveSetting.isPending}
               disabled={!canManageContent}
               onClick={() =>
-                saveSetting.mutate({
-                  setting_group: 'app_images',
-                  setting_key: 'app.images.brand',
-                  value_json: appBrandImages,
-                })
+                saveSetting.mutate(
+                  {
+                    setting_group: 'app_images',
+                    setting_key: 'app.images.brand',
+                    value_json: appBrandImages,
+                  },
+                  {
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app brand image settings.' }),
+                    onError: (error) =>
+                      setActionFeedback({
+                        tone: 'error',
+                        message: error instanceof Error ? error.message : 'Failed to save app brand image settings.',
+                      }),
+                  },
+                )
               }
             />
           </Panel>
@@ -454,11 +526,21 @@ export default function MediaPage() {
               isPending={saveSetting.isPending}
               disabled={!canManageContent}
               onClick={() =>
-                saveSetting.mutate({
-                  setting_group: 'app_images',
-                  setting_key: 'app.images.welcome',
-                  value_json: appWelcomeImages,
-                })
+                saveSetting.mutate(
+                  {
+                    setting_group: 'app_images',
+                    setting_key: 'app.images.welcome',
+                    value_json: appWelcomeImages,
+                  },
+                  {
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app welcome image settings.' }),
+                    onError: (error) =>
+                      setActionFeedback({
+                        tone: 'error',
+                        message: error instanceof Error ? error.message : 'Failed to save app welcome image settings.',
+                      }),
+                  },
+                )
               }
             />
           </Panel>
@@ -472,11 +554,21 @@ export default function MediaPage() {
               isPending={saveSetting.isPending}
               disabled={!canManageContent}
               onClick={() =>
-                saveSetting.mutate({
-                  setting_group: 'app_images',
-                  setting_key: 'app.images.onboarding',
-                  value_json: appOnboardingImages,
-                })
+                saveSetting.mutate(
+                  {
+                    setting_group: 'app_images',
+                    setting_key: 'app.images.onboarding',
+                    value_json: appOnboardingImages,
+                  },
+                  {
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app onboarding image settings.' }),
+                    onError: (error) =>
+                      setActionFeedback({
+                        tone: 'error',
+                        message: error instanceof Error ? error.message : 'Failed to save app onboarding image settings.',
+                      }),
+                  },
+                )
               }
             />
           </Panel>
@@ -489,17 +581,27 @@ export default function MediaPage() {
               onChange={(key, value) => setAppCategoryImages((prev) => ({ ...prev, [key]: value }))}
             />
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              These are stored separately for the app and do not affect the website. The mobile category surfaces still need to consume this setting to make them visible in the app UI.
+              These are stored separately for the app and do not affect the website. Client home and service discovery screens read this mapping for mobile category imagery.
             </p>
             <SaveButton
               isPending={saveSetting.isPending}
               disabled={!canManageContent}
               onClick={() =>
-                saveSetting.mutate({
-                  setting_group: 'app_images',
-                  setting_key: 'app.images.categories',
-                  value_json: appCategoryImages,
-                })
+                saveSetting.mutate(
+                  {
+                    setting_group: 'app_images',
+                    setting_key: 'app.images.categories',
+                    value_json: appCategoryImages,
+                  },
+                  {
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app category image settings.' }),
+                    onError: (error) =>
+                      setActionFeedback({
+                        tone: 'error',
+                        message: error instanceof Error ? error.message : 'Failed to save app category image settings.',
+                      }),
+                  },
+                )
               }
             />
           </Panel>

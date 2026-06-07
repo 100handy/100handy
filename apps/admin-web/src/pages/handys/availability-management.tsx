@@ -29,6 +29,7 @@ export default function AvailabilityManagement() {
   const { data: selectedSlots = [], isLoading: slotsLoading } = useAdminAvailabilitySlots(selectedHandyId)
   const saveSlot = useSaveAdminAvailabilitySlot()
   const deleteSlot = useDeleteAdminAvailabilitySlot()
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null)
   const [form, setForm] = useState({
     day_of_week: 1,
@@ -86,23 +87,27 @@ export default function AvailabilityManagement() {
 
   const saveCurrentSlot = async () => {
     if (!selectedHandyId) return
-
-    await saveSlot.mutateAsync({
-      id: editingSlotId ?? `avail_admin_${crypto.randomUUID()}`,
-      user_id: selectedHandyId,
-      day_of_week: form.day_of_week,
-      start_time: form.start_time.length === 5 ? `${form.start_time}:00` : form.start_time,
-      end_time: form.end_time.length === 5 ? `${form.end_time}:00` : form.end_time,
-      recurrence_type: form.recurrence_type,
-      starts_on: form.starts_on,
-      ends_on: form.ends_on || null,
-      ends_after_occurrences: null,
-      day_of_month: form.recurrence_type === 'monthly' ? Number(form.starts_on.slice(8, 10)) : null,
-      timezone: form.timezone,
-      is_active: form.is_active,
-    })
-
-    setEditingSlotId(null)
+    setActionFeedback(null)
+    try {
+      await saveSlot.mutateAsync({
+        id: editingSlotId ?? `avail_admin_${crypto.randomUUID()}`,
+        user_id: selectedHandyId,
+        day_of_week: form.day_of_week,
+        start_time: form.start_time.length === 5 ? `${form.start_time}:00` : form.start_time,
+        end_time: form.end_time.length === 5 ? `${form.end_time}:00` : form.end_time,
+        recurrence_type: form.recurrence_type,
+        starts_on: form.starts_on,
+        ends_on: form.ends_on || null,
+        ends_after_occurrences: null,
+        day_of_month: form.recurrence_type === 'monthly' ? Number(form.starts_on.slice(8, 10)) : null,
+        timezone: form.timezone,
+        is_active: form.is_active,
+      })
+      setEditingSlotId(null)
+      setActionFeedback({ tone: 'success', message: 'Availability slot saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save availability slot.' })
+    }
   }
 
   return (
@@ -111,6 +116,15 @@ export default function AvailabilityManagement() {
 
       <main className="flex-1 overflow-y-auto p-6 lg:p-10">
         <div className="mx-auto max-w-7xl space-y-8">
+          {actionFeedback && (
+            <div className={`rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           <div>
             <p className="mt-1 text-gray-600 dark:text-gray-400">
               Monitor real Handy availability coverage, spot missing setup, and review weekly capacity without relying on static calendar mocks.
@@ -444,7 +458,13 @@ export default function AvailabilityManagement() {
                               Edit
                             </button>
                             <button
-                              onClick={() => deleteSlot.mutate({ id: slot.id, userId: slot.user_id })}
+                              onClick={() => {
+                                setActionFeedback(null)
+                                deleteSlot.mutate({ id: slot.id, userId: slot.user_id }, {
+                                  onSuccess: () => setActionFeedback({ tone: 'success', message: 'Availability slot deleted.' }),
+                                  onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete availability slot.' }),
+                                })
+                              }}
                               className="text-sm font-medium text-red-600 hover:underline"
                             >
                               <Trash2 className="inline h-4 w-4" />

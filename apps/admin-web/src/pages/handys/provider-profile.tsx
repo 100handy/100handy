@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { useState } from 'react'
 import { ArrowLeft, BadgeCheck, Clock3, FileText, MapPin, Shield, Star } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import Header from '@/components/header'
@@ -33,6 +34,7 @@ export default function ProviderProfilePage() {
   const { data: provider, isLoading, error } = useHandyManagementDetails(userId)
   const updateVerification = useUpdateVerificationStatus()
   const updateAccountStatus = useUpdateAccountLifecycleStatus()
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   if (!userId) {
     return (
@@ -64,6 +66,18 @@ export default function ProviderProfilePage() {
           {error && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
               {error instanceof Error ? error.message : 'Failed to load provider details.'}
+            </div>
+          )}
+
+          {actionFeedback && (
+            <div
+              className={`mb-6 rounded-xl border px-4 py-3 text-sm ${
+                actionFeedback.tone === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+                  : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+              }`}
+            >
+              {actionFeedback.message}
             </div>
           )}
 
@@ -106,7 +120,19 @@ export default function ProviderProfilePage() {
                     <button
                       type="button"
                       disabled={updateVerification.isPending}
-                      onClick={() => updateVerification.mutate({ userId, status: 'verified' })}
+                      onClick={() =>
+                        updateVerification.mutate(
+                          { userId, status: 'verified' },
+                          {
+                            onSuccess: () => setActionFeedback({ tone: 'success', message: 'Provider approved successfully.' }),
+                            onError: (error) =>
+                              setActionFeedback({
+                                tone: 'error',
+                                message: error instanceof Error ? error.message : 'Failed to approve provider.',
+                              }),
+                          },
+                        )
+                      }
                       className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
                     >
                       Approve provider
@@ -114,7 +140,19 @@ export default function ProviderProfilePage() {
                     <button
                       type="button"
                       disabled={updateVerification.isPending}
-                      onClick={() => updateVerification.mutate({ userId, status: 'rejected' })}
+                      onClick={() =>
+                        updateVerification.mutate(
+                          { userId, status: 'rejected' },
+                          {
+                            onSuccess: () => setActionFeedback({ tone: 'success', message: 'Provider rejected successfully.' }),
+                            onError: (error) =>
+                              setActionFeedback({
+                                tone: 'error',
+                                message: error instanceof Error ? error.message : 'Failed to reject provider.',
+                              }),
+                          },
+                        )
+                      }
                       className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
                     >
                       Reject provider
@@ -122,7 +160,19 @@ export default function ProviderProfilePage() {
                     <button
                       type="button"
                       disabled={updateAccountStatus.isPending}
-                      onClick={() => updateAccountStatus.mutate({ userId, status: 'paused', reason: 'Paused by admin from provider profile' })}
+                      onClick={() =>
+                        updateAccountStatus.mutate(
+                          { userId, status: 'paused', reason: 'Paused by admin from provider profile' },
+                          {
+                            onSuccess: () => setActionFeedback({ tone: 'success', message: 'Provider access suspended successfully.' }),
+                            onError: (error) =>
+                              setActionFeedback({
+                                tone: 'error',
+                                message: error instanceof Error ? error.message : 'Failed to suspend provider access.',
+                              }),
+                          },
+                        )
+                      }
                       className="rounded-lg border border-amber-300 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50 dark:border-amber-900/60"
                     >
                       Suspend access
@@ -130,7 +180,19 @@ export default function ProviderProfilePage() {
                     <button
                       type="button"
                       disabled={updateAccountStatus.isPending}
-                      onClick={() => updateAccountStatus.mutate({ userId, status: 'deleted', reason: 'Soft deleted by admin from provider profile' })}
+                      onClick={() =>
+                        updateAccountStatus.mutate(
+                          { userId, status: 'deleted', reason: 'Soft deleted by admin from provider profile' },
+                          {
+                            onSuccess: () => setActionFeedback({ tone: 'success', message: 'Provider soft-deleted successfully.' }),
+                            onError: (error) =>
+                              setActionFeedback({
+                                tone: 'error',
+                                message: error instanceof Error ? error.message : 'Failed to soft-delete provider.',
+                              }),
+                          },
+                        )
+                      }
                       className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-900/60"
                     >
                       Ban / soft delete

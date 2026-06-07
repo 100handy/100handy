@@ -817,7 +817,7 @@ export default function AppContentPage() {
   const publishDraft = usePublishAppContentScreenDraft()
   const restoreRevision = useRestoreAppContentScreenRevision()
   const [values, setValues] = useState<Record<string, string>>({})
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const screenDefinition = SCREEN_DEFINITIONS.find((screen) => screen.key === screenKey) ?? SCREEN_DEFINITIONS[0]
 
@@ -839,9 +839,12 @@ export default function AppContentPage() {
   const saveAll = async () => {
     if (!canSaveDraft) return
     setActionFeedback(null)
-    await saveDraft.mutateAsync({ platform, screenKey: screenDefinition.key, content: values })
-    setActionFeedback('Draft saved')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await saveDraft.mutateAsync({ platform, screenKey: screenDefinition.key, content: values })
+      setActionFeedback({ tone: 'success', message: 'Draft saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
+    }
   }
 
   const baselineValues = Object.fromEntries(
@@ -882,13 +885,18 @@ export default function AppContentPage() {
 
   const canSaveDraft = canManageContent && validationErrors.length === 0
   const canPublish = canManageContent && validationErrors.length === 0 && !!latestDraft
+  const draftSaved = actionFeedback?.tone === 'success' && actionFeedback.message === 'Draft saved.'
+  const appContentPublished = actionFeedback?.tone === 'success' && actionFeedback.message === 'Published.'
 
   const publish = async () => {
     if (!canPublish) return
     setActionFeedback(null)
-    await publishDraft.mutateAsync({ platform, screenKey: screenDefinition.key })
-    setActionFeedback('Published')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await publishDraft.mutateAsync({ platform, screenKey: screenDefinition.key })
+      setActionFeedback({ tone: 'success', message: 'Published.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish app content.' })
+    }
   }
 
   return (
@@ -931,16 +939,16 @@ export default function AppContentPage() {
                   disabled={saveDraft.isPending || publishDraft.isPending || !canSaveDraft}
                   className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50"
                 >
-                  {saveDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                  {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+                  {saveDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : draftSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                  {draftSaved ? 'Draft Saved' : 'Save Draft'}
                 </button>
                 <button
                   onClick={publish}
                   disabled={publishDraft.isPending || saveDraft.isPending || !canPublish}
                   className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50"
                 >
-                  {publishDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
-                  {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+                  {publishDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : appContentPublished ? <Check className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
+                  {appContentPublished ? 'Published' : 'Publish'}
                 </button>
               </div>
             </div>
@@ -955,7 +963,11 @@ export default function AppContentPage() {
                 Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
               </div>
             </div>
-            {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
+            {actionFeedback && (
+              <p className={`mt-3 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                {actionFeedback.message}
+              </p>
+            )}
           </div>
 
           <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
@@ -1021,7 +1033,15 @@ export default function AppContentPage() {
                   </div>
                   {revision.revision_state === 'published' ? (
                     <button
-                      onClick={() => restoreRevision.mutate({ platform, screenKey, revisionId: revision.id })}
+                      onClick={async () => {
+                        setActionFeedback(null)
+                        try {
+                          await restoreRevision.mutateAsync({ platform, screenKey, revisionId: revision.id })
+                          setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                        } catch (error) {
+                          setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                        }
+                      }}
                       disabled={restoreRevision.isPending}
                       className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
                     >

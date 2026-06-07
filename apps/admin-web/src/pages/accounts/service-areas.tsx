@@ -44,6 +44,7 @@ export default function ServiceAreasPage() {
   const [locationStatusFilter, setLocationStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all')
   const [serviceAreaSearch, setServiceAreaSearch] = useState('')
   const [serviceAreaStatusFilter, setServiceAreaStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all')
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const { data: areas = [], isLoading, error } = useServiceAreas()
   const { data: locationAreas = [], isLoading: locationAreasLoading, error: locationAreasError } = useLocationAreas()
@@ -163,30 +164,46 @@ export default function ServiceAreasPage() {
 
   async function handleSave() {
     if (!city.trim() || !postcodePrefix.trim()) return
-    const id = await saveArea.mutateAsync({
-      id: selectedAreaId || undefined,
-      city: city.trim(),
-      postcodePrefix: postcodePrefix.trim(),
-      enabled,
-      notes,
-      locationAreaId: selectedLocationAreaId,
-    })
-    setSelectedAreaId(id)
+    try {
+      const id = await saveArea.mutateAsync({
+        id: selectedAreaId || undefined,
+        city: city.trim(),
+        postcodePrefix: postcodePrefix.trim(),
+        enabled,
+        notes,
+        locationAreaId: selectedLocationAreaId,
+      })
+      setSelectedAreaId(id)
+      setActionFeedback({ tone: 'success', message: `Saved service area ${city.trim()} (${postcodePrefix.trim()}).` })
+    } catch (error) {
+      setActionFeedback({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Failed to save service area.',
+      })
+    }
   }
 
   async function handleSaveLocationArea() {
     if (!locationName.trim() || !locationSlug.trim()) return
-    const id = await saveLocationArea.mutateAsync({
-      id: selectedLocationAreaId || undefined,
-      name: locationName,
-      slug: locationSlug,
-      areaType: locationAreaType,
-      parentId: locationParentId,
-      enabled: locationEnabled,
-      sortOrder: locationSortOrder,
-      notes: locationNotes,
-    })
-    setSelectedLocationAreaId(id)
+    try {
+      const id = await saveLocationArea.mutateAsync({
+        id: selectedLocationAreaId || undefined,
+        name: locationName,
+        slug: locationSlug,
+        areaType: locationAreaType,
+        parentId: locationParentId,
+        enabled: locationEnabled,
+        sortOrder: locationSortOrder,
+        notes: locationNotes,
+      })
+      setSelectedLocationAreaId(id)
+      setActionFeedback({ tone: 'success', message: `Saved location area ${locationName.trim()}.` })
+    } catch (error) {
+      setActionFeedback({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Failed to save location area.',
+      })
+    }
   }
 
   async function handleBulkImport() {
@@ -207,13 +224,23 @@ export default function ServiceAreasPage() {
         }
       })
 
-    await bulkImportLocationAreas.mutateAsync({
-      parentId: bulkImportParentId,
-      areaType: bulkImportAreaType,
-      rows,
-    })
-
-    setBulkImportText('')
+    try {
+      await bulkImportLocationAreas.mutateAsync({
+        parentId: bulkImportParentId,
+        areaType: bulkImportAreaType,
+        rows,
+      })
+      setBulkImportText('')
+      setActionFeedback({
+        tone: 'success',
+        message: `Imported ${rows.length} location area${rows.length === 1 ? '' : 's'} successfully.`,
+      })
+    } catch (error) {
+      setActionFeedback({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Failed to bulk import location areas.',
+      })
+    }
   }
 
   const selectedImportParent = useMemo(
@@ -247,6 +274,17 @@ export default function ServiceAreasPage() {
 
       <main className="grid flex-1 gap-6 p-6 xl:grid-cols-[1.1fr,1fr]">
         <section className="space-y-6">
+          {actionFeedback && (
+            <div
+              className={`rounded-xl border px-4 py-3 text-sm ${
+                actionFeedback.tone === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+                  : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+              }`}
+            >
+              {actionFeedback.message}
+            </div>
+          )}
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Location overview</h3>
@@ -446,7 +484,23 @@ export default function ServiceAreasPage() {
                       startCreateLocationArea(parentId)
                       setLocationAreaType(nextType)
                     }}
-                    onToggle={(id, nextEnabled) => toggleLocationArea.mutate({ id, enabled: nextEnabled })}
+                    onToggle={(id, nextEnabled) =>
+                      toggleLocationArea.mutate(
+                        { id, enabled: nextEnabled },
+                        {
+                          onSuccess: () =>
+                            setActionFeedback({
+                              tone: 'success',
+                              message: `Location area turned ${nextEnabled ? 'on' : 'off'} successfully.`,
+                            }),
+                          onError: (error) =>
+                            setActionFeedback({
+                              tone: 'error',
+                              message: error instanceof Error ? error.message : 'Failed to update location area state.',
+                            }),
+                        },
+                      )
+                    }
                   />
                 ))
               )}
@@ -811,11 +865,25 @@ export default function ServiceAreasPage() {
                             <button
                               type="button"
                               onClick={() =>
-                                saveCategoryOverride.mutate({
-                                  serviceAreaId: cell.serviceAreaId,
-                                  categoryId: row.categoryId,
-                                  enabled: !cell.enabledInArea,
-                                })
+                                saveCategoryOverride.mutate(
+                                  {
+                                    serviceAreaId: cell.serviceAreaId,
+                                    categoryId: row.categoryId,
+                                    enabled: !cell.enabledInArea,
+                                  },
+                                  {
+                                    onSuccess: () =>
+                                      setActionFeedback({
+                                        tone: 'success',
+                                        message: `${row.categoryName} was turned ${!cell.enabledInArea ? 'on' : 'off'} for ${rolloutMatrix.serviceAreas.find((area) => area.id === cell.serviceAreaId)?.city ?? 'that area'}.`,
+                                      }),
+                                    onError: (error) =>
+                                      setActionFeedback({
+                                        tone: 'error',
+                                        message: error instanceof Error ? error.message : 'Failed to update area rollout override.',
+                                      }),
+                                  },
+                                )
                               }
                               disabled={saveCategoryOverride.isPending}
                               className={`inline-flex min-w-[6.5rem] flex-col items-center rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
@@ -873,7 +941,23 @@ export default function ServiceAreasPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeProvider.mutate({ assignmentId: assignment.id, serviceAreaId: selectedArea.id, providerId: assignment.providerId })}
+                        onClick={() =>
+                          removeProvider.mutate(
+                            { assignmentId: assignment.id, serviceAreaId: selectedArea.id, providerId: assignment.providerId },
+                            {
+                              onSuccess: () =>
+                                setActionFeedback({
+                                  tone: 'success',
+                                  message: `Removed ${assignment.providerName} from ${selectedArea.city}.`,
+                                }),
+                              onError: (error) =>
+                                setActionFeedback({
+                                  tone: 'error',
+                                  message: error instanceof Error ? error.message : 'Failed to remove provider from service area.',
+                                }),
+                            },
+                          )
+                        }
                         disabled={removeProvider.isPending}
                         className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 dark:border-red-900/60"
                       >
@@ -908,7 +992,23 @@ export default function ServiceAreasPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => assignProvider.mutate({ serviceAreaId: selectedArea.id, providerId: candidate.providerId })}
+                        onClick={() =>
+                          assignProvider.mutate(
+                            { serviceAreaId: selectedArea.id, providerId: candidate.providerId },
+                            {
+                              onSuccess: () =>
+                                setActionFeedback({
+                                  tone: 'success',
+                                  message: `Assigned ${candidate.providerName} to ${selectedArea.city}.`,
+                                }),
+                              onError: (error) =>
+                                setActionFeedback({
+                                  tone: 'error',
+                                  message: error instanceof Error ? error.message : 'Failed to assign provider to service area.',
+                                }),
+                            },
+                          )
+                        }
                         disabled={assignProvider.isPending}
                         className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                       >

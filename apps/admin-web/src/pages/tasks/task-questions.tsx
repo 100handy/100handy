@@ -37,6 +37,7 @@ export default function TaskQuestionsPage() {
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyField)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
     if (!categoryId && categories.length > 0) {
@@ -87,6 +88,15 @@ export default function TaskQuestionsPage() {
       <Header title="Task Questions" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="mx-auto max-w-7xl space-y-8">
+          {actionFeedback && (
+            <div className={`rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-[320px,1fr,auto] md:items-end">
               <div>
@@ -169,7 +179,13 @@ export default function TaskQuestionsPage() {
                         </button>
                         <button
                           className="text-red-600 hover:underline"
-                          onClick={() => deleteField.mutate({ id: field.id, categoryId: field.category_id })}
+                          onClick={() => {
+                            setActionFeedback(null)
+                            deleteField.mutate({ id: field.id, categoryId: field.category_id }, {
+                              onSuccess: () => setActionFeedback({ tone: 'success', message: 'Task question deleted.' }),
+                              onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete task question.' }),
+                            })
+                          }}
                         >
                           <Trash2 className="inline h-4 w-4" />
                         </button>
@@ -217,7 +233,8 @@ export default function TaskQuestionsPage() {
 
             <div className="mt-6 flex justify-end">
               <button
-                onClick={() =>
+                onClick={() => {
+                  setActionFeedback(null)
                   saveField.mutate({
                     id: selected?.id,
                     category_id: categoryId,
@@ -236,8 +253,11 @@ export default function TaskQuestionsPage() {
                     show_if: parseJsonObject(form.show_if_json),
                     display_order: Number(form.display_order) || 0,
                     section: form.section,
+                  }, {
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Task question saved.' }),
+                    onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save task question.' }),
                   })
-                }
+                }}
                 disabled={saveField.isPending || !categoryId}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
               >

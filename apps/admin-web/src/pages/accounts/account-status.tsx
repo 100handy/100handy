@@ -39,6 +39,7 @@ export default function AccountStatus() {
   const { data: locationUsers, isLoading: locationLoading, error: locationError } = useUsersWithLocation()
   const updateStatus = useUpdateAccountLifecycleStatus()
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({})
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
     setActiveFilter(getInitialFilter(location.pathname))
@@ -69,11 +70,28 @@ export default function AccountStatus() {
     nextStatus: AccountLifecycleStatus,
   ) => {
     const reason = reasonDrafts[user.user_id] || user.status_reason || ''
-    await updateStatus.mutateAsync({
-      userId: user.user_id,
-      status: nextStatus,
-      reason,
-    })
+    try {
+      await updateStatus.mutateAsync({
+        userId: user.user_id,
+        status: nextStatus,
+        reason,
+      })
+      const label =
+        nextStatus === 'active'
+          ? 'restored'
+          : nextStatus === 'paused'
+            ? 'paused'
+            : 'soft-deleted'
+      setActionFeedback({
+        tone: 'success',
+        message: `${getUserName(user)} was ${label} successfully.`,
+      })
+    } catch (error) {
+      setActionFeedback({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Failed to update account status.',
+      })
+    }
   }
 
   return (
@@ -87,6 +105,18 @@ export default function AccountStatus() {
               View and manage lifecycle status and default-location coverage for platform accounts.
             </p>
           </header>
+
+          {actionFeedback && (
+            <div
+              className={`mb-6 rounded-lg border px-4 py-3 text-sm ${
+                actionFeedback.tone === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+                  : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+              }`}
+            >
+              {actionFeedback.message}
+            </div>
+          )}
 
           <div className="bg-background-light/50 dark:bg-background-dark/50 p-4 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
             <div className="flex items-center gap-4">

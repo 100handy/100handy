@@ -27,6 +27,7 @@ export default function PaymentMethods() {
   const canManageFinance = hasPermission('finance.manage')
   const [form, setForm] = useState(emptyForm)
   const [deleteTarget, setDeleteTarget] = useState<PaymentMethodConfig | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const { data: methods = [], isLoading } = usePaymentMethodConfigs()
   const saveMethod = useSavePaymentMethodConfig()
   const deleteMethod = useDeletePaymentMethodConfig()
@@ -55,24 +56,28 @@ export default function PaymentMethods() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!form.display_name.trim() || !form.provider_key.trim()) return
-
-    await saveMethod.mutateAsync({
-      id: form.id || undefined,
-      display_name: form.display_name.trim(),
-      provider_key: form.provider_key.trim(),
-      method_type: form.method_type,
-      status: form.status,
-      public_enabled: form.public_enabled,
-      supported_currencies: form.supported_currencies
-        .split(',')
-        .map((value) => value.trim().toUpperCase())
-        .filter(Boolean),
-      config_reference: form.config_reference.trim() || null,
-      notes: form.notes.trim() || null,
-      sort_order: form.sort_order,
-    })
-
-    resetForm()
+    setActionFeedback(null)
+    try {
+      await saveMethod.mutateAsync({
+        id: form.id || undefined,
+        display_name: form.display_name.trim(),
+        provider_key: form.provider_key.trim(),
+        method_type: form.method_type,
+        status: form.status,
+        public_enabled: form.public_enabled,
+        supported_currencies: form.supported_currencies
+          .split(',')
+          .map((value) => value.trim().toUpperCase())
+          .filter(Boolean),
+        config_reference: form.config_reference.trim() || null,
+        notes: form.notes.trim() || null,
+        sort_order: form.sort_order,
+      })
+      resetForm()
+      setActionFeedback({ tone: 'success', message: 'Payment method saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save payment method.' })
+    }
   }
 
   return (
@@ -80,6 +85,15 @@ export default function PaymentMethods() {
       <Header title="Payment Methods" />
 
       <main className="flex-1 p-6 space-y-6">
+        {actionFeedback && (
+          <div className={`rounded-xl px-4 py-3 text-sm ${
+            actionFeedback.tone === 'success'
+              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+              : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+          }`}>
+            {actionFeedback.message}
+          </div>
+        )}
         {!canManageFinance && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
             Your admin role can view payment method settings, but it cannot change them.
@@ -202,8 +216,17 @@ export default function PaymentMethods() {
               <button
                 type="button"
                 onClick={async () => {
-                  await deleteMethod.mutateAsync(deleteTarget)
-                  setDeleteTarget(null)
+                  setActionFeedback(null)
+                  try {
+                    await deleteMethod.mutateAsync(deleteTarget)
+                    setDeleteTarget(null)
+                    if (form.id === deleteTarget.id) {
+                      resetForm()
+                    }
+                    setActionFeedback({ tone: 'success', message: 'Payment method deleted.' })
+                  } catch (error) {
+                    setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete payment method.' })
+                  }
                 }}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
               >

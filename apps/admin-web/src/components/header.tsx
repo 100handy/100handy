@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Bell, LogOut, User as UserIcon, ChevronDown } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { emitAdminToast } from '@/lib/admin-toast'
 import { cn } from '@/lib/utils'
 
 interface HeaderProps {
@@ -138,7 +139,11 @@ export default function Header({ title }: HeaderProps) {
     try {
       await signOut()
     } catch (error) {
-      console.error('Failed to sign out:', error)
+      emitAdminToast({
+        tone: 'error',
+        title: 'Sign out failed',
+        description: error instanceof Error ? error.message : 'Failed to sign out of the admin panel.',
+      })
     }
   }
 

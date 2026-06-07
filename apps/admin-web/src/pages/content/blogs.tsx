@@ -43,7 +43,8 @@ export default function BlogsPage() {
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyPost)
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const selectedPost = posts.find((post) => post.id === selectedId) ?? null
   const effectiveSlug = selectedPost?.slug ?? form.slug.trim()
   const { data: seo } = useSurfaceSeo('blog_post', effectiveSlug)
@@ -160,6 +161,8 @@ export default function BlogsPage() {
 
   const canSaveDraft = canManageContent && validationErrors.length === 0
   const canPublish = canManageContent && validationErrors.length === 0 && !!latestDraft
+  const draftSaved = actionFeedback?.tone === 'success' && actionFeedback.message === 'Draft saved.'
+  const blogPublished = actionFeedback?.tone === 'success' && actionFeedback.message === 'Published.'
   const fieldErrors = {
     slug: !form.slug.trim()
       ? 'Slug is required.'
@@ -180,38 +183,36 @@ export default function BlogsPage() {
     if (!canSaveDraft) return
 
     setActionFeedback(null)
-    await saveDraft.mutateAsync({
-      post: {
-        id: selectedPost?.id,
-        slug,
-        title: form.title,
-        excerpt: form.excerpt,
-        body: form.body,
-        cover_image_url: form.cover_image_url,
-        category: form.category,
-        author_name: form.author_name,
-        status: form.status,
-        published_at: form.published_at ? new Date(form.published_at).toISOString() : null,
-      },
-      seo: seoForm,
-    })
-    setActionFeedback('Draft saved')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await saveDraft.mutateAsync({
+        post: {
+          id: selectedPost?.id,
+          slug,
+          title: form.title,
+          excerpt: form.excerpt,
+          body: form.body,
+          cover_image_url: form.cover_image_url,
+          category: form.category,
+          author_name: form.author_name,
+          status: form.status,
+          published_at: form.published_at ? new Date(form.published_at).toISOString() : null,
+        },
+        seo: seoForm,
+      })
+      setActionFeedback({ tone: 'success', message: 'Draft saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
+    }
   }
 
   const handlePublish = async () => {
     if (!effectiveSlug || !canPublish) return
     setActionFeedback(null)
-    await publishDraft.mutateAsync(effectiveSlug)
-    setActionFeedback('Published')
-    setTimeout(() => setActionFeedback(null), 3000)
-  }
-
-  const handleDelete = async (id: string) => {
-    await deletePost.mutateAsync(id)
-    if (selectedId === id) {
-      setSelectedId(null)
-      setForm(emptyPost)
+    try {
+      await publishDraft.mutateAsync(effectiveSlug)
+      setActionFeedback({ tone: 'success', message: 'Published.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish blog post.' })
     }
   }
 
@@ -277,7 +278,7 @@ export default function BlogsPage() {
                       <button className="font-medium text-primary hover:underline" onClick={() => setSelectedId(post.id)}>
                         Edit
                       </button>
-                      <button className="font-medium text-red-600 hover:underline" onClick={() => handleDelete(post.id)}>
+                      <button className="font-medium text-red-600 hover:underline" onClick={() => setDeleteTargetId(post.id)}>
                         Delete
                       </button>
                     </td>
@@ -419,7 +420,15 @@ export default function BlogsPage() {
                     <div className="flex items-center gap-2">
                       {revision.revision_state === 'published' ? (
                         <button
-                          onClick={() => restoreRevision.mutate({ slug: effectiveSlug, revisionId: revision.id })}
+                          onClick={async () => {
+                            setActionFeedback(null)
+                            try {
+                              await restoreRevision.mutateAsync({ slug: effectiveSlug, revisionId: revision.id })
+                              setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                            } catch (error) {
+                              setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                            }
+                          }}
                           disabled={restoreRevision.isPending}
                           className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
                         >
@@ -436,28 +445,66 @@ export default function BlogsPage() {
 
             <div className="flex justify-end gap-3">
               {actionFeedback && (
-                <span className="self-center text-sm font-medium text-emerald-600">{actionFeedback}</span>
+                <span className={`self-center text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                  {actionFeedback.message}
+                </span>
               )}
               <button
                 onClick={handleSaveDraft}
                 disabled={saveDraft.isPending || publishDraft.isPending || !canSaveDraft}
                 className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50"
               >
-                {saveDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+                {saveDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : draftSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                {draftSaved ? 'Draft Saved' : 'Save Draft'}
               </button>
               <button
                 onClick={handlePublish}
                 disabled={publishDraft.isPending || saveDraft.isPending || !canPublish}
                 className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50"
               >
-                {publishDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
-                {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+                {publishDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : blogPublished ? <Check className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
+                {blogPublished ? 'Published' : 'Publish'}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {deleteTargetId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete blog post</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This will remove the selected blog post and its admin-managed content entry.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setDeleteTargetId(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setActionFeedback(null)
+                  try {
+                    await deletePost.mutateAsync(deleteTargetId)
+                    if (selectedId === deleteTargetId) {
+                      setSelectedId(null)
+                      setForm(emptyPost)
+                    }
+                    setDeleteTargetId(null)
+                    setActionFeedback({ tone: 'success', message: 'Blog post deleted.' })
+                  } catch (error) {
+                    setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete blog post.' })
+                  }
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

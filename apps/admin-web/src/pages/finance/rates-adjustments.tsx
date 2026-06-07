@@ -25,6 +25,7 @@ export default function RatesAdjustments() {
   const canManageFinance = hasPermission('finance.manage')
   const [form, setForm] = useState(emptyForm)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const { data: rules = [], isLoading } = usePricingRules()
   const { data: options, isLoading: optionsLoading } = usePricingRuleOptions()
   const saveRule = useSavePricingRule()
@@ -53,17 +54,23 @@ export default function RatesAdjustments() {
     e.preventDefault()
     const amount = Number(form.base_rate)
     if (!form.category_id || !Number.isFinite(amount)) return
-    await saveRule.mutateAsync({
-      id: form.id || undefined,
-      category_id: form.category_id,
-      location_area_id: form.location_area_id || null,
-      currency_code: form.currency_code,
-      rate_kind: form.rate_kind,
-      base_rate_cents: Math.round(amount * 100),
-      active: form.active,
-      notes: form.notes.trim() || null,
-    })
-    resetForm()
+    setActionFeedback(null)
+    try {
+      await saveRule.mutateAsync({
+        id: form.id || undefined,
+        category_id: form.category_id,
+        location_area_id: form.location_area_id || null,
+        currency_code: form.currency_code,
+        rate_kind: form.rate_kind,
+        base_rate_cents: Math.round(amount * 100),
+        active: form.active,
+        notes: form.notes.trim() || null,
+      })
+      resetForm()
+      setActionFeedback({ tone: 'success', message: 'Pricing rule saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save pricing rule.' })
+    }
   }
 
   return (
@@ -71,6 +78,15 @@ export default function RatesAdjustments() {
       <Header title="Rates & Adjustments" />
 
       <main className="flex-1 p-6 space-y-6">
+        {actionFeedback && (
+          <div className={`rounded-xl px-4 py-3 text-sm ${
+            actionFeedback.tone === 'success'
+              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+              : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+          }`}>
+            {actionFeedback.message}
+          </div>
+        )}
         {!canManageFinance && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
             Your admin role can view pricing rules, but it cannot change them.
@@ -195,8 +211,17 @@ export default function RatesAdjustments() {
                 onClick={async () => {
                   const target = rules.find((rule) => rule.id === deleteTargetId)
                   if (!target) return
-                  await deleteRule.mutateAsync(target)
-                  setDeleteTargetId(null)
+                  setActionFeedback(null)
+                  try {
+                    await deleteRule.mutateAsync(target)
+                    setDeleteTargetId(null)
+                    if (form.id === target.id) {
+                      resetForm()
+                    }
+                    setActionFeedback({ tone: 'success', message: 'Pricing rule deleted.' })
+                  } catch (error) {
+                    setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete pricing rule.' })
+                  }
                 }}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
               >

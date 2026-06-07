@@ -24,6 +24,7 @@ export default function FAQsPage() {
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyFaq)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const selected = faqItems.find((item) => item.id === selectedId) ?? null
 
@@ -89,24 +90,30 @@ export default function FAQsPage() {
     const current = sorted[index]
     const target = sorted[swapIndex]
 
-    await Promise.all([
-      saveFaq.mutateAsync({
-        id: current.id,
-        faq_group: current.faq_group,
-        question: current.question,
-        answer: current.answer,
-        sort_order: target.sort_order,
-        visible: current.visible,
-      }),
-      saveFaq.mutateAsync({
-        id: target.id,
-        faq_group: target.faq_group,
-        question: target.question,
-        answer: target.answer,
-        sort_order: current.sort_order,
-        visible: target.visible,
-      }),
-    ])
+    setActionFeedback(null)
+    try {
+      await Promise.all([
+        saveFaq.mutateAsync({
+          id: current.id,
+          faq_group: current.faq_group,
+          question: current.question,
+          answer: current.answer,
+          sort_order: target.sort_order,
+          visible: current.visible,
+        }),
+        saveFaq.mutateAsync({
+          id: target.id,
+          faq_group: target.faq_group,
+          question: target.question,
+          answer: target.answer,
+          sort_order: current.sort_order,
+          visible: target.visible,
+        }),
+      ])
+      setActionFeedback({ tone: 'success', message: 'FAQ order updated.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to reorder FAQs.' })
+    }
   }
 
   return (
@@ -114,6 +121,15 @@ export default function FAQsPage() {
       <Header title="FAQs Management" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-6xl mx-auto space-y-8">
+          {actionFeedback && (
+            <div className={`rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
           <UnsavedChangesBanner show={isDirty} />
           {!canManageContent && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
@@ -192,7 +208,13 @@ export default function FAQsPage() {
                       <button onClick={() => setSelectedId(faq.id)} disabled={!canManageContent} className="font-medium text-primary hover:underline mr-4 disabled:opacity-50">
                         <Edit className="w-4 h-4 inline" />
                       </button>
-                      <button onClick={() => deleteFaq.mutate(faq.id)} disabled={!canManageContent} className="font-medium text-red-600 dark:text-red-500 hover:underline disabled:opacity-50">
+                      <button onClick={() => {
+                        setActionFeedback(null)
+                        deleteFaq.mutate(faq.id, {
+                          onSuccess: () => setActionFeedback({ tone: 'success', message: 'FAQ deleted.' }),
+                          onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete FAQ.' }),
+                        })
+                      }} disabled={!canManageContent} className="font-medium text-red-600 dark:text-red-500 hover:underline disabled:opacity-50">
                         <Trash2 className="w-4 h-4 inline" />
                       </button>
                     </td>
@@ -254,14 +276,20 @@ export default function FAQsPage() {
               </button>
               <button
                 type="button"
-                onClick={() => saveFaq.mutate({
-                  id: selected?.id,
-                  faq_group: form.faq_group,
-                  question: form.question,
-                  answer: form.answer,
-                  sort_order: form.sort_order,
-                  visible: form.visible,
-                })}
+                onClick={() => {
+                  setActionFeedback(null)
+                  saveFaq.mutate({
+                    id: selected?.id,
+                    faq_group: form.faq_group,
+                    question: form.question,
+                    answer: form.answer,
+                    sort_order: form.sort_order,
+                    visible: form.visible,
+                  }, {
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'FAQ saved.' }),
+                    onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save FAQ.' }),
+                  })
+                }}
                 disabled={saveFaq.isPending || !canSaveFaq}
                 className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50"
               >

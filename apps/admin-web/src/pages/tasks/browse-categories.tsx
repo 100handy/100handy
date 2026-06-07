@@ -455,10 +455,24 @@ export default function BrowseCategoriesPage() {
                               type="button"
                               disabled={updateCategory.isPending || !canManageTasks}
                               onClick={() =>
-                                updateCategory.mutate({
-                                  categoryId: category.id,
-                                  active: !category.active,
-                                })
+                                updateCategory.mutate(
+                                  {
+                                    categoryId: category.id,
+                                    active: !category.active,
+                                  },
+                                  {
+                                    onSuccess: () =>
+                                      setActionFeedback({
+                                        tone: 'success',
+                                        message: `${category.name} was turned ${category.active ? 'off' : 'on'} successfully.`,
+                                      }),
+                                    onError: (error) =>
+                                      setActionFeedback({
+                                        tone: 'error',
+                                        message: error instanceof Error ? error.message : 'Failed to update category visibility.',
+                                      }),
+                                  },
+                                )
                               }
                               className={`rounded-full px-3 py-1 text-xs font-medium ${
                                 category.active

@@ -51,7 +51,7 @@ export default function NavigationPage() {
   const [appJson, setAppJson] = useState('[]')
   const [followText, setFollowText] = useState("Follow us we're friendly")
   const [proCtaJson, setProCtaJson] = useState(JSON.stringify({ href: '/become-100-handy-pro', label: 'Become a Pro' }, null, 2))
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const { data: latestDraft } = useLatestNavigationConfigDraft(CONFIG_KEY)
   const { data: revisions = [] } = useNavigationConfigRevisions(CONFIG_KEY)
 
@@ -151,6 +151,8 @@ export default function NavigationPage() {
   const canSaveSettings = canManageContent && settingsErrors.length === 0
   const canSaveDraft = canManageContent && settingsErrors.length === 0
   const canPublish = canManageContent && settingsErrors.length === 0 && !!latestDraft
+  const draftSaved = actionFeedback?.tone === 'success' && actionFeedback.message === 'Draft saved.'
+  const navigationPublished = actionFeedback?.tone === 'success' && actionFeedback.message === 'Published.'
 
   const handleSaveItem = async () => {
     if (!canSaveItem) return
@@ -180,54 +182,72 @@ export default function NavigationPage() {
       return
     }
 
-    await saveItem.mutateAsync(nextItem)
+    setActionFeedback(null)
+    try {
+      await saveItem.mutateAsync(nextItem)
+      setActionFeedback({ tone: 'success', message: 'Navigation item saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save navigation item.' })
+    }
   }
 
   const handleSaveSettings = async () => {
     if (!canSaveSettings) return
     if (latestDraft) return
-    await Promise.all([
-      saveSetting.mutateAsync({
-        setting_group: 'footer',
-        setting_key: 'footer.social_links',
-        value_json: { items: JSON.parse(socialJson) },
-      }),
-      saveSetting.mutateAsync({
-        setting_group: 'footer',
-        setting_key: 'footer.app_downloads',
-        value_json: { items: JSON.parse(appJson) },
-      }),
-      saveSetting.mutateAsync({
-        setting_group: 'footer',
-        setting_key: 'footer.follow_text',
-        value_json: { text: followText },
-      }),
-      saveSetting.mutateAsync({
-        setting_group: 'header',
-        setting_key: 'header.pro_cta',
-        value_json: JSON.parse(proCtaJson),
-      }),
-    ])
+    setActionFeedback(null)
+    try {
+      await Promise.all([
+        saveSetting.mutateAsync({
+          setting_group: 'footer',
+          setting_key: 'footer.social_links',
+          value_json: { items: JSON.parse(socialJson) },
+        }),
+        saveSetting.mutateAsync({
+          setting_group: 'footer',
+          setting_key: 'footer.app_downloads',
+          value_json: { items: JSON.parse(appJson) },
+        }),
+        saveSetting.mutateAsync({
+          setting_group: 'footer',
+          setting_key: 'footer.follow_text',
+          value_json: { text: followText },
+        }),
+        saveSetting.mutateAsync({
+          setting_group: 'header',
+          setting_key: 'header.pro_cta',
+          value_json: JSON.parse(proCtaJson),
+        }),
+      ])
+      setActionFeedback({ tone: 'success', message: 'Navigation settings saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save navigation settings.' })
+    }
   }
 
   const handleSaveDraft = async () => {
     if (!canSaveDraft) return
     setActionFeedback(null)
-    await saveDraft.mutateAsync({
-      configKey: CONFIG_KEY,
-      items: draftItems,
-      settings: navigationSettings,
-    })
-    setActionFeedback('Draft saved')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await saveDraft.mutateAsync({
+        configKey: CONFIG_KEY,
+        items: draftItems,
+        settings: navigationSettings,
+      })
+      setActionFeedback({ tone: 'success', message: 'Draft saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
+    }
   }
 
   const handlePublish = async () => {
     if (!canPublish) return
     setActionFeedback(null)
-    await publishDraft.mutateAsync(CONFIG_KEY)
-    setActionFeedback('Published')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await publishDraft.mutateAsync(CONFIG_KEY)
+      setActionFeedback({ tone: 'success', message: 'Published.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish navigation.' })
+    }
   }
 
   const moveItem = async (itemId: string, direction: 'up' | 'down') => {
@@ -251,10 +271,16 @@ export default function NavigationPage() {
       return
     }
 
-    await Promise.all([
-      saveItem.mutateAsync({ ...current, sort_order: target.sort_order }),
-      saveItem.mutateAsync({ ...target, sort_order: current.sort_order }),
-    ])
+    setActionFeedback(null)
+    try {
+      await Promise.all([
+        saveItem.mutateAsync({ ...current, sort_order: target.sort_order }),
+        saveItem.mutateAsync({ ...target, sort_order: current.sort_order }),
+      ])
+      setActionFeedback({ tone: 'success', message: 'Navigation order updated.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to reorder navigation.' })
+    }
   }
 
   return (
@@ -279,7 +305,11 @@ export default function NavigationPage() {
                 Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
               </div>
             </div>
-            {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
+            {actionFeedback && (
+              <p className={`mt-3 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                {actionFeedback.message}
+              </p>
+            )}
           </div>
 
           <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
@@ -337,7 +367,11 @@ export default function NavigationPage() {
                           }
                           return
                         }
-                        deleteItem.mutate(item.id)
+                        setActionFeedback(null)
+                        deleteItem.mutate(item.id, {
+                          onSuccess: () => setActionFeedback({ tone: 'success', message: 'Navigation item deleted.' }),
+                          onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete navigation item.' }),
+                        })
                       }}
                     >
                       Delete
@@ -425,16 +459,16 @@ export default function NavigationPage() {
                 disabled={saveDraft.isPending || publishDraft.isPending || !canSaveDraft}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
-                {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-                {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+                {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : draftSaved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+                {draftSaved ? 'Draft Saved' : 'Save Draft'}
               </button>
               <button
                 onClick={handlePublish}
                 disabled={publishDraft.isPending || saveDraft.isPending || !canPublish}
                 className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
-                {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
-                {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+                {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : navigationPublished ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+                {navigationPublished ? 'Published' : 'Publish'}
               </button>
             </div>
 
@@ -455,7 +489,15 @@ export default function NavigationPage() {
                     </div>
                     {revision.revision_state === 'published' && (
                       <button
-                        onClick={() => restoreRevision.mutate({ configKey: CONFIG_KEY, revisionId: revision.id })}
+                        onClick={async () => {
+                          setActionFeedback(null)
+                          try {
+                            await restoreRevision.mutateAsync({ configKey: CONFIG_KEY, revisionId: revision.id })
+                            setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                          } catch (error) {
+                            setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                          }
+                        }}
                         className="text-sm font-medium text-primary hover:underline"
                       >
                         Restore to Draft

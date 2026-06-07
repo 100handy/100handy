@@ -43,6 +43,9 @@ export default function AnnouncementsPage() {
   const [draftKey, setDraftKey] = useState<string>(`draft-${crypto.randomUUID()}`)
   const [form, setForm] = useState(emptyAnnouncement)
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const draftSaved = actionFeedback?.tone === 'success' && actionFeedback.message === 'Draft saved.'
+  const announcementPublished = actionFeedback?.tone === 'success' && actionFeedback.message === 'Announcement published.'
 
   const selected = announcements.find((item) => item.id === selectedId) ?? null
   const effectiveAnnouncementKey = selected?.id ?? draftKey
@@ -228,7 +231,7 @@ export default function AnnouncementsPage() {
                       <button className="mr-4 text-primary hover:underline" onClick={() => setSelectedId(item.id)}>
                         Edit
                       </button>
-                      <button className="text-red-600 hover:underline" onClick={() => deleteAnnouncement.mutate(item.id)}>
+                      <button className="text-red-600 hover:underline" onClick={() => setDeleteTargetId(item.id)}>
                         <Trash2 className="inline h-4 w-4" />
                       </button>
                     </td>
@@ -301,16 +304,16 @@ export default function AnnouncementsPage() {
               disabled={saveDraft.isPending || publishDraft.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback?.message === 'Draft saved.' ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {actionFeedback?.message === 'Draft saved.' ? 'Draft Saved' : 'Save Draft'}
+              {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : draftSaved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {draftSaved ? 'Draft Saved' : 'Save Draft'}
             </button>
             <button
               onClick={publish}
               disabled={publishDraft.isPending || saveDraft.isPending || !canPublish}
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
             >
-              {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback?.message === 'Announcement published.' ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
-              {actionFeedback?.message === 'Announcement published.' ? 'Published' : 'Publish'}
+              {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : announcementPublished ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+              {announcementPublished ? 'Published' : 'Publish'}
             </button>
           </div>
 
@@ -326,7 +329,15 @@ export default function AnnouncementsPage() {
                 </div>
                 {revision.revision_state === 'published' && (
                   <button
-                    onClick={() => restoreRevision.mutate({ announcementKey: effectiveAnnouncementKey, revisionId: revision.id })}
+                    onClick={async () => {
+                      setActionFeedback(null)
+                      try {
+                        await restoreRevision.mutateAsync({ announcementKey: effectiveAnnouncementKey, revisionId: revision.id })
+                        setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                      } catch (error) {
+                        setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                      }
+                    }}
                     className="text-sm font-medium text-primary hover:underline"
                   >
                     Restore to Draft
@@ -337,6 +348,43 @@ export default function AnnouncementsPage() {
           </div>
         </div>
       </main>
+
+      {deleteTargetId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete announcement</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This will remove the selected announcement from admin-managed content.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setDeleteTargetId(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setActionFeedback(null)
+                  try {
+                    await deleteAnnouncement.mutateAsync(deleteTargetId)
+                    if (selectedId === deleteTargetId) {
+                      setSelectedId(null)
+                      setDraftKey(`draft-${crypto.randomUUID()}`)
+                      setForm(emptyAnnouncement)
+                    }
+                    setDeleteTargetId(null)
+                    setActionFeedback({ tone: 'success', message: 'Announcement deleted.' })
+                  } catch (error) {
+                    setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete announcement.' })
+                  }
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

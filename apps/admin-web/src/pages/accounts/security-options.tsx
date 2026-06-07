@@ -31,6 +31,7 @@ export default function SecurityOptions() {
   const updateAdminRole = useUpdateAdminRole()
   const updateAccountStatus = useUpdateAccountLifecycleStatus()
   const [reasonDrafts, setReasonDrafts] = useState<Record<string, string>>({})
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const summary = useMemo(() => {
     const rows = admins ?? []
@@ -50,12 +51,65 @@ export default function SecurityOptions() {
     return null
   }
 
+  const handleRoleChange = async (userId: string, adminRole: AdminRole) => {
+    try {
+      await updateAdminRole.mutateAsync({ userId, adminRole })
+      const label = ADMIN_ROLE_OPTIONS.find((option) => option.value === adminRole)?.label ?? adminRole
+      setActionFeedback({
+        tone: 'success',
+        message: `Admin scope updated to ${label}.`,
+      })
+    } catch (error) {
+      setActionFeedback({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Failed to update admin role.',
+      })
+    }
+  }
+
+  const handleAccountStatusChange = async (
+    userId: string,
+    status: 'active' | 'paused' | 'deleted',
+    reason: string | null | undefined,
+    userName: string,
+  ) => {
+    try {
+      await updateAccountStatus.mutateAsync({ userId, status, reason })
+      const label =
+        status === 'active'
+          ? 'restored'
+          : status === 'paused'
+            ? 'paused'
+            : 'soft-deleted'
+      setActionFeedback({
+        tone: 'success',
+        message: `${userName} was ${label} successfully.`,
+      })
+    } catch (error) {
+      setActionFeedback({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'Failed to update admin access.',
+      })
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col">
       <Header title="Admin Access & Security" />
 
       <main className="flex-1 p-8">
         <div className="mx-auto max-w-6xl">
+          {actionFeedback && (
+            <div
+              className={`mb-6 rounded-xl border px-4 py-3 text-sm ${
+                actionFeedback.tone === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+                  : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+              }`}
+            >
+              {actionFeedback.message}
+            </div>
+          )}
           {!canManageAccounts && (
             <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
               Your admin role can view access controls, but it cannot change admin roles or account lifecycle state.
@@ -133,12 +187,7 @@ export default function SecurityOptions() {
                             <select
                               value={admin.admin_role ?? 'super_admin'}
                               disabled={isSelf || updateAdminRole.isPending || !canManageAccounts}
-                              onChange={(event) =>
-                                updateAdminRole.mutate({
-                                  userId: admin.user_id,
-                                  adminRole: event.target.value as AdminRole,
-                                })
-                              }
+                              onChange={(event) => handleRoleChange(admin.user_id, event.target.value as AdminRole)}
                               className="w-full min-w-[220px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                             >
                               {ADMIN_ROLE_OPTIONS.map((option) => (
@@ -177,11 +226,12 @@ export default function SecurityOptions() {
                                   type="button"
                                   disabled={isSelf || updateAccountStatus.isPending || !canManageAccounts}
                                   onClick={() =>
-                                    updateAccountStatus.mutate({
-                                      userId: admin.user_id,
-                                      status: 'active',
-                                      reason: reasonDrafts[admin.user_id] ?? admin.status_reason,
-                                    })
+                                    handleAccountStatusChange(
+                                      admin.user_id,
+                                      'active',
+                                      reasonDrafts[admin.user_id] ?? admin.status_reason,
+                                      getUserName(admin.first_name, admin.last_name),
+                                    )
                                   }
                                   className="rounded-lg border border-slate-200 px-3 py-2 text-left text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50 dark:border-slate-700"
                                 >
@@ -193,11 +243,12 @@ export default function SecurityOptions() {
                                   type="button"
                                   disabled={isSelf || updateAccountStatus.isPending || !canManageAccounts || !!getReasonError('paused', admin.user_id, admin.status_reason)}
                                   onClick={() =>
-                                    updateAccountStatus.mutate({
-                                      userId: admin.user_id,
-                                      status: 'paused',
-                                      reason: reasonDrafts[admin.user_id] ?? admin.status_reason,
-                                    })
+                                    handleAccountStatusChange(
+                                      admin.user_id,
+                                      'paused',
+                                      reasonDrafts[admin.user_id] ?? admin.status_reason,
+                                      getUserName(admin.first_name, admin.last_name),
+                                    )
                                   }
                                   className="rounded-lg border border-amber-200 px-3 py-2 text-left text-sm font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50 dark:border-amber-900/60 dark:hover:bg-amber-950/20"
                                 >
@@ -209,11 +260,12 @@ export default function SecurityOptions() {
                                   type="button"
                                   disabled={isSelf || updateAccountStatus.isPending || !canManageAccounts || !!getReasonError('deleted', admin.user_id, admin.status_reason)}
                                   onClick={() =>
-                                    updateAccountStatus.mutate({
-                                      userId: admin.user_id,
-                                      status: 'deleted',
-                                      reason: reasonDrafts[admin.user_id] ?? admin.status_reason,
-                                    })
+                                    handleAccountStatusChange(
+                                      admin.user_id,
+                                      'deleted',
+                                      reasonDrafts[admin.user_id] ?? admin.status_reason,
+                                      getUserName(admin.first_name, admin.last_name),
+                                    )
                                   }
                                   className="rounded-lg border border-red-200 px-3 py-2 text-left text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-900/60 dark:hover:bg-red-950/20"
                                 >

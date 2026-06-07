@@ -21,6 +21,7 @@ import {
   deriveBootstrapAuthState,
   getSessionRole,
 } from "./auth-state";
+import { emitAdminToast } from "@/lib/admin-toast";
 
 interface Profile {
   user_id: string;
@@ -234,6 +235,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await supabase.auth.signOut();
     } catch (error) {
       console.error("[Auth] Sign out error:", error);
+      emitAdminToast({
+        tone: "error",
+        title: "Sign out failed",
+        description: error instanceof Error ? error.message : "Failed to sign out of the admin panel.",
+      });
     } finally {
       clearAuthState();
     }
@@ -261,6 +267,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error("[Auth] Session refresh error:", error);
+      emitAdminToast({
+        tone: "error",
+        title: "Session refresh failed",
+        description: error instanceof Error ? error.message : "Your admin session could not be refreshed.",
+      });
       clearAuthState();
     }
   }, [applyBootstrapState, clearAuthState, reconcileAdminAccess]);
@@ -300,6 +311,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (error) {
           console.error("[Auth] Session check error:", error);
+          emitAdminToast({
+            tone: "error",
+            title: "Session check failed",
+            description: error.message,
+          });
           clearAuthState();
           return;
         }
@@ -317,6 +333,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (error) {
         console.error("[Auth] Periodic session check failed:", error);
+        emitAdminToast({
+          tone: "error",
+          title: "Session check failed",
+          description: error instanceof Error ? error.message : "The admin session check failed.",
+        });
       }
     }, SESSION_CHECK_INTERVAL_MS);
 

@@ -35,7 +35,7 @@ export default function PageSettingsPage() {
   const [helpUiJson, setHelpUiJson] = useState('{}')
   const [helpSearchJson, setHelpSearchJson] = useState('{}')
   const [bookingCopyJson, setBookingCopyJson] = useState('{}')
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
     const draftSettings = (latestDraft?.settings_json ?? {}) as Record<string, Json | undefined>
@@ -90,24 +90,32 @@ export default function PageSettingsPage() {
   const isSaving = saveDraft.isPending || publishDraft.isPending
   const canSaveDraft = canManageSettings && validationErrors.length === 0
   const canPublish = canManageSettings && validationErrors.length === 0 && !!latestDraft
+  const draftSaved = actionFeedback?.tone === 'success' && actionFeedback.message === 'Draft saved.'
+  const settingsPublished = actionFeedback?.tone === 'success' && actionFeedback.message === 'Published.'
 
   const saveAll = async () => {
     if (!canSaveDraft) return
     setActionFeedback(null)
-    await saveDraft.mutateAsync({
-      settingsKey: SETTINGS_KEY,
-      settings: currentSettings,
-    })
-    setActionFeedback('Draft saved')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await saveDraft.mutateAsync({
+        settingsKey: SETTINGS_KEY,
+        settings: currentSettings,
+      })
+      setActionFeedback({ tone: 'success', message: 'Draft saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
+    }
   }
 
   const publishAll = async () => {
     if (!canPublish) return
     setActionFeedback(null)
-    await publishDraft.mutateAsync(SETTINGS_KEY)
-    setActionFeedback('Published')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await publishDraft.mutateAsync(SETTINGS_KEY)
+      setActionFeedback({ tone: 'success', message: 'Published.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish settings.' })
+    }
   }
 
   return (
@@ -158,7 +166,11 @@ export default function PageSettingsPage() {
                 />
               </div>
             </div>
-            {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
+            {actionFeedback && (
+              <p className={`mt-3 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                {actionFeedback.message}
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end gap-3">
@@ -167,16 +179,16 @@ export default function PageSettingsPage() {
               disabled={isSaving || !canSaveDraft}
               className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 flex items-center gap-2 disabled:opacity-50"
             >
-              {saveDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-              {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+              {saveDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : draftSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+              {draftSaved ? 'Draft Saved' : 'Save Draft'}
             </button>
             <button
               onClick={publishAll}
               disabled={isSaving || !canPublish}
               className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-500 flex items-center gap-2 disabled:opacity-50"
             >
-              {publishDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
-              {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+              {publishDraft.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : settingsPublished ? <Check className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
+              {settingsPublished ? 'Published' : 'Publish'}
             </button>
           </div>
 
@@ -245,7 +257,15 @@ export default function PageSettingsPage() {
                   </div>
                   {revision.revision_state === 'published' && (
                     <button
-                      onClick={() => restoreRevision.mutate({ settingsKey: SETTINGS_KEY, revisionId: revision.id })}
+                      onClick={async () => {
+                        setActionFeedback(null)
+                        try {
+                          await restoreRevision.mutateAsync({ settingsKey: SETTINGS_KEY, revisionId: revision.id })
+                          setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                        } catch (error) {
+                          setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                        }
+                      }}
                       className="text-sm font-medium text-primary hover:underline"
                     >
                       Restore to Draft

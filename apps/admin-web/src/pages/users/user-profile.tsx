@@ -193,11 +193,25 @@ export default function UserProfilePage() {
                           type="button"
                           disabled={updateUserStatus.isPending}
                           onClick={() =>
-                            updateUserStatus.mutate({
-                              userId,
-                              status: user.account_status === 'active' ? 'paused' : 'active',
-                              reason: user.account_status === 'active' ? 'Paused from customer profile' : 'Restored from customer profile',
-                            })
+                            updateUserStatus.mutate(
+                              {
+                                userId,
+                                status: user.account_status === 'active' ? 'paused' : 'active',
+                                reason: user.account_status === 'active' ? 'Paused from customer profile' : 'Restored from customer profile',
+                              },
+                              {
+                                onSuccess: () =>
+                                  setActionFeedback({
+                                    tone: 'success',
+                                    message: user.account_status === 'active' ? 'Account suspended.' : 'Account restored.',
+                                  }),
+                                onError: (error) =>
+                                  setActionFeedback({
+                                    tone: 'error',
+                                    message: error instanceof Error ? error.message : 'Failed to update account status.',
+                                  }),
+                              },
+                            )
                           }
                           className="rounded-lg border border-amber-300 px-4 py-2 text-sm font-medium text-amber-700 dark:border-amber-900/60"
                         >
@@ -207,11 +221,25 @@ export default function UserProfilePage() {
                           type="button"
                           disabled={updateUserStatus.isPending}
                           onClick={() =>
-                            updateUserStatus.mutate({
-                              userId,
-                              status: 'deleted',
-                              reason: 'Soft deleted from customer profile',
-                            })
+                            updateUserStatus.mutate(
+                              {
+                                userId,
+                                status: 'deleted',
+                                reason: 'Soft deleted from customer profile',
+                              },
+                              {
+                                onSuccess: () =>
+                                  setActionFeedback({
+                                    tone: 'success',
+                                    message: 'Account anonymised / soft-deleted.',
+                                  }),
+                                onError: (error) =>
+                                  setActionFeedback({
+                                    tone: 'error',
+                                    message: error instanceof Error ? error.message : 'Failed to soft-delete account.',
+                                  }),
+                              },
+                            )
                           }
                           className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-900/60"
                         >

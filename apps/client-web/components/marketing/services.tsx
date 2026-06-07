@@ -196,10 +196,12 @@ export function Services() {
                 <button
                   key={subCategory.id}
                   onClick={() => handleSubCategoryClick(subCategory)}
-                  className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+                  className="flex min-h-[56px] w-full max-w-[280px] items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-3 text-center text-[16px] font-medium leading-snug text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta sm:w-auto sm:min-w-[220px]"
                 >
-                  <CategoryBadge category={subCategory} size={20} />
-                  {subCategory.name}
+                  <span className="shrink-0">
+                    <CategoryBadge category={subCategory} size={20} />
+                  </span>
+                  <span className="line-clamp-2">{subCategory.name}</span>
                 </button>
               );
             })

@@ -51,7 +51,7 @@ export default function PageEditorPage() {
 
   const [formValues, setFormValues] = useState<Record<string, string>>({})
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [pageTitle, setPageTitle] = useState('')
   const [pageSlug, setPageSlug] = useState('')
   const [templateKey, setTemplateKey] = useState('standard')
@@ -140,47 +140,56 @@ export default function PageEditorPage() {
     if (!pageKey || !pageDef || !canSaveDraft) return
     setActionFeedback(null)
 
-    await saveDraftMutation.mutateAsync({
-      pageKey,
-      page: {
-        title: pageTitle || pageDef.label,
-        slug: pageSlug || pageDef.slug,
-        template_key: templateKey || 'standard',
-        status: pageStatus,
-      },
-      seo: {
-        meta_title: metaTitle,
-        meta_description: metaDescription,
-        og_title: ogTitle,
-        og_description: ogDescription,
-        og_image_url: ogImageUrl,
-        twitter_title: twitterTitle,
-        twitter_description: twitterDescription,
-        twitter_image_url: twitterImageUrl,
-        canonical_url: canonicalUrl,
-        robots_index: robotsIndex,
-        robots_follow: robotsFollow,
-      },
-      fields: collectFields(),
-    })
-    setActionFeedback('Draft saved')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await saveDraftMutation.mutateAsync({
+        pageKey,
+        page: {
+          title: pageTitle || pageDef.label,
+          slug: pageSlug || pageDef.slug,
+          template_key: templateKey || 'standard',
+          status: pageStatus,
+        },
+        seo: {
+          meta_title: metaTitle,
+          meta_description: metaDescription,
+          og_title: ogTitle,
+          og_description: ogDescription,
+          og_image_url: ogImageUrl,
+          twitter_title: twitterTitle,
+          twitter_description: twitterDescription,
+          twitter_image_url: twitterImageUrl,
+          canonical_url: canonicalUrl,
+          robots_index: robotsIndex,
+          robots_follow: robotsFollow,
+        },
+        fields: collectFields(),
+      })
+      setActionFeedback({ tone: 'success', message: 'Draft saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
+    }
   }
 
   const handlePublish = async () => {
     if (!pageKey || !canPublish) return
     setActionFeedback(null)
-    await publishDraftMutation.mutateAsync(pageKey)
-    setActionFeedback('Published')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await publishDraftMutation.mutateAsync(pageKey)
+      setActionFeedback({ tone: 'success', message: 'Published.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish page.' })
+    }
   }
 
   const handleRestoreRevision = async (revisionId: string) => {
     if (!pageKey) return
     setActionFeedback(null)
-    await restoreRevisionMutation.mutateAsync({ pageKey, revisionId })
-    setActionFeedback('Revision restored to draft')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await restoreRevisionMutation.mutateAsync({ pageKey, revisionId })
+      setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+    }
   }
 
   const toggleSection = (sectionKey: string) => {
@@ -245,6 +254,8 @@ export default function PageEditorPage() {
 
   const canSaveDraft = canManagePage && validationErrors.length === 0
   const canPublish = canManagePage && validationErrors.length === 0 && !!latestDraft
+  const draftSaved = actionFeedback?.tone === 'success' && actionFeedback.message === 'Draft saved.'
+  const pagePublished = actionFeedback?.tone === 'success' && actionFeedback.message === 'Published.'
 
   if (!pageKey || !pageDef) {
     return (
@@ -309,12 +320,12 @@ export default function PageEditorPage() {
               >
                 {saveDraftMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
-                ) : actionFeedback === 'Draft saved' ? (
+                ) : draftSaved ? (
                   <Check className="w-4 h-4" />
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+                {draftSaved ? 'Draft Saved' : 'Save Draft'}
               </button>
               <button
                 onClick={handlePublish}
@@ -323,12 +334,12 @@ export default function PageEditorPage() {
               >
                 {publishDraftMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
-                ) : actionFeedback === 'Published' ? (
+                ) : pagePublished ? (
                   <Check className="w-4 h-4" />
                 ) : (
                   <Rocket className="w-4 h-4" />
                 )}
-                {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+                {pagePublished ? 'Published' : 'Publish'}
               </button>
             </div>
           </div>
@@ -348,7 +359,9 @@ export default function PageEditorPage() {
               </div>
             </div>
             {actionFeedback && (
-              <p className="mt-4 text-sm font-medium text-emerald-600">{actionFeedback}</p>
+              <p className={`mt-4 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                {actionFeedback.message}
+              </p>
             )}
           </div>
 

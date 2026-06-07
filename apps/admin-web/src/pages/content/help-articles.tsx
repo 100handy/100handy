@@ -41,7 +41,8 @@ export default function HelpArticlesPage() {
   const [draft, setDraft] = useState<HelpArticleInput>(EMPTY_ARTICLE)
   const [sidebarJson, setSidebarJson] = useState('[]')
   const [relatedJson, setRelatedJson] = useState('[]')
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const selected = useMemo(
     () => articles?.find((article) => article.id === selectedId) ?? null,
@@ -131,6 +132,8 @@ export default function HelpArticlesPage() {
 
   const canSaveDraft = canManageContent && validationErrors.length === 0
   const canPublish = canManageContent && validationErrors.length === 0 && !!latestDraft
+  const draftSaved = actionFeedback?.tone === 'success' && actionFeedback.message === 'Draft saved.'
+  const articlePublished = actionFeedback?.tone === 'success' && actionFeedback.message === 'Published.'
 
   const handleSaveDraft = async () => {
     if (!canSaveDraft) return
@@ -140,17 +143,23 @@ export default function HelpArticlesPage() {
       related_links_json: relatedResult.value ?? [],
     }
     setActionFeedback(null)
-    await saveDraft.mutateAsync(payload)
-    setActionFeedback('Draft saved')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await saveDraft.mutateAsync(payload)
+      setActionFeedback({ tone: 'success', message: 'Draft saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
+    }
   }
 
   const handlePublish = async () => {
     if (!effectiveArticleKey || !canPublish) return
     setActionFeedback(null)
-    await publishDraft.mutateAsync(effectiveArticleKey)
-    setActionFeedback('Published')
-    setTimeout(() => setActionFeedback(null), 3000)
+    try {
+      await publishDraft.mutateAsync(effectiveArticleKey)
+      setActionFeedback({ tone: 'success', message: 'Published.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish article.' })
+    }
   }
 
   return (
@@ -209,17 +218,17 @@ export default function HelpArticlesPage() {
                 {validationErrors.map((error) => <div key={error}>{error}</div>)}
               </div>
             )}
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Editor</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Manage article metadata, navigation, and HTML body content.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                {draft.id && (
-                  <button
-                    onClick={() => draft.id && deleteArticle.mutate(draft.id)}
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Editor</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Manage article metadata, navigation, and HTML body content.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  {draft.id && (
+                    <button
+                    onClick={() => setDeleteTargetId(draft.id ?? null)}
                     className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -231,16 +240,16 @@ export default function HelpArticlesPage() {
                   disabled={saveDraft.isPending || publishDraft.isPending || !canSaveDraft}
                   className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
                 >
-                  {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-                  {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+                  {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : draftSaved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+                  {draftSaved ? 'Draft Saved' : 'Save Draft'}
                 </button>
                 <button
                   onClick={handlePublish}
                   disabled={publishDraft.isPending || saveDraft.isPending || !canPublish}
                   className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
                 >
-                  {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
-                  {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+                  {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : articlePublished ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+                  {articlePublished ? 'Published' : 'Publish'}
                 </button>
               </div>
             </div>
@@ -256,7 +265,11 @@ export default function HelpArticlesPage() {
                   Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
                 </div>
               </div>
-              {actionFeedback && <p className="mt-3 text-sm font-medium text-emerald-600">{actionFeedback}</p>}
+              {actionFeedback && (
+                <p className={`mt-3 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                  {actionFeedback.message}
+                </p>
+              )}
             </div>
 
             <div className="mb-4 flex justify-end">
@@ -346,7 +359,15 @@ export default function HelpArticlesPage() {
                     </div>
                     {revision.revision_state === 'published' ? (
                       <button
-                        onClick={() => restoreRevision.mutate({ articleKey: effectiveArticleKey, revisionId: revision.id })}
+                        onClick={async () => {
+                          setActionFeedback(null)
+                          try {
+                            await restoreRevision.mutateAsync({ articleKey: effectiveArticleKey, revisionId: revision.id })
+                            setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                          } catch (error) {
+                            setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                          }
+                        }}
                         disabled={restoreRevision.isPending}
                         className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 disabled:opacity-50"
                       >
@@ -362,6 +383,44 @@ export default function HelpArticlesPage() {
           </div>
         </div>
       </main>
+
+      {deleteTargetId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Delete help article</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              This will remove the selected help article.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setDeleteTargetId(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setActionFeedback(null)
+                  try {
+                    await deleteArticle.mutateAsync(deleteTargetId)
+                    if (selectedId === deleteTargetId) {
+                      setSelectedId(null)
+                      setDraft(EMPTY_ARTICLE)
+                      setSidebarJson('[]')
+                      setRelatedJson('[]')
+                    }
+                    setDeleteTargetId(null)
+                    setActionFeedback({ tone: 'success', message: 'Help article deleted.' })
+                  } catch (error) {
+                    setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete help article.' })
+                  }
+                }}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
