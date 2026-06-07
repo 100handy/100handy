@@ -54,7 +54,6 @@ export default function NotificationsOverviewPage() {
             return (
               <Link
                 key={card.title}
-                href={card.href}
                 to={card.href}
                 className="rounded-xl border border-gray-200 bg-white p-6 transition hover:border-primary/40 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900/50"
               >

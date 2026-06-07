@@ -106,13 +106,6 @@ const groups = [
     permissions: ['outreach.manage'] as AdminPermission[],
   },
   {
-    key: 'locations',
-    label: 'Locations',
-    icon: MapPinned,
-    path: '/accounts/service-areas',
-    permissions: ['locations.manage'] as AdminPermission[],
-  },
-  {
     key: 'support',
     label: 'Support',
     icon: LifeBuoy,

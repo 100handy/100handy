@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Search, Plus, Loader2 } from 'lucide-react'
+import { Search, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { useHandys } from '@/lib/api/handys'
@@ -53,10 +53,12 @@ export default function HandysPage() {
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
               All Handys
             </h2>
-            <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90">
-              <Plus className="w-5 h-5" />
-              <span>Add Handy</span>
-            </button>
+            <Link
+              to="/handys/selection-process"
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
+            >
+              Review Applicants
+            </Link>
           </div>
 
           <div className="mb-6">

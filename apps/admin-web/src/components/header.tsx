@@ -59,7 +59,7 @@ const sectionTabs = [
       { label: 'Verification', to: '/accounts/verification' },
       { label: 'Deleted', to: '/accounts/deleted' },
       { label: 'Paused', to: '/accounts/paused' },
-      { label: 'Locations', to: '/accounts/location' },
+      { label: 'Locations', to: '/accounts/service-areas' },
     ],
   },
   {
@@ -86,8 +86,6 @@ const sectionTabs = [
     match: (pathname: string) => pathname.startsWith('/users'),
     items: [
       { label: 'All Users', to: '/users' },
-      { label: 'Add User', to: '/users/add' },
-      { label: 'Remove Users', to: '/users/remove' },
       { label: 'Profiles', to: '/users/profiles' },
     ],
   },
@@ -97,7 +95,6 @@ const sectionTabs = [
       { label: 'All Handys', to: '/handys' },
       { label: 'Selection', to: '/handys/selection-process' },
       { label: 'Availability', to: '/handys/availability' },
-      { label: 'Calendar', to: '/handys/calendar-settings' },
     ],
   },
   {

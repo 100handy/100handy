@@ -1,5 +1,6 @@
 import Header from '@/components/header'
 import { Shield, UserX, PauseCircle, MapPin, Users, Wrench, Loader2, History } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useAccountsSummary } from '@/lib/api/accounts'
 
 export default function AccountsOverviewPage() {
@@ -38,7 +39,7 @@ export default function AccountsOverviewPage() {
     {
       title: 'Location Status',
       description: 'Review users who have configured their default address and location records.',
-      href: '/accounts/location',
+      href: '/accounts/service-areas',
       icon: MapPin,
     },
   ]
@@ -59,9 +60,9 @@ export default function AccountsOverviewPage() {
           {cards.map((card) => {
             const Icon = card.icon
             return (
-              <a
+              <Link
                 key={card.title}
-                href={card.href}
+                to={card.href}
                 className="rounded-xl border border-gray-200 bg-white p-6 transition hover:border-primary/40 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900/50"
               >
                 <div className="mb-4 inline-flex rounded-lg bg-primary/10 p-3 text-primary">
@@ -69,7 +70,7 @@ export default function AccountsOverviewPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{card.title}</h3>
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{card.description}</p>
-              </a>
+              </Link>
             )
           })}
         </div>

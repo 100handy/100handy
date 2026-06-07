@@ -24,7 +24,6 @@ import MarketplaceReportsPage from '@/pages/insights/marketplace-reports'
 import PromotionsManagementPage from '@/pages/promotions/promotions-management'
 import OutreachLeadsPage from '@/pages/outreach/leads'
 import ContentPagesPage from '@/pages/content/pages'
-import CreatePagePage from '@/pages/content/create-page'
 import PageEditorPage from '@/pages/content/page-editor'
 import PageSettingsPage from '@/pages/content/page-settings'
 import HelpArticlesPage from '@/pages/content/help-articles'
@@ -36,7 +35,6 @@ import AppContentPage from '@/pages/content/app-content'
 import UserProfilePage from '@/pages/users/user-profile'
 import HandySelectionProcess from '@/pages/handys/selection-process'
 import AvailabilityManagement from '@/pages/handys/availability-management'
-import CalendarSettings from '@/pages/handys/calendar-settings'
 import TotalIncome from '@/pages/finance/total-income'
 import RatesAdjustments from '@/pages/finance/rates-adjustments'
 import PaymentMethods from '@/pages/finance/payment-methods'
@@ -136,8 +134,8 @@ function App() {
             <Route path="/handys" element={<HandysPage />} />
             <Route path="/handys/:userId" element={<ProviderProfilePage />} />
             <Route path="/handys/selection-process" element={<HandySelectionProcess />} />
-            <Route path="/handys/availability" element={<AvailabilityManagement />} />
-            <Route path="/handys/calendar-settings" element={<CalendarSettings />} />
+          <Route path="/handys/availability" element={<AvailabilityManagement />} />
+          <Route path="/handys/calendar-settings" element={<Navigate to="/handys/availability" replace />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['finance.view']} />}>
             <Route path="/finance/earnings" element={<EarningsDashboardPage />} />
@@ -163,7 +161,7 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute permissions={['content.manage', 'seo.manage']} />}>
             <Route path="/content/pages" element={<ContentPagesPage />} />
-            <Route path="/content/pages/create" element={<CreatePagePage />} />
+            <Route path="/content/pages/create" element={<Navigate to="/content/pages" replace />} />
             <Route path="/content/pages/:pageKey" element={<PageEditorPage />} />
             <Route path="/content/page-settings" element={<PageSettingsPage />} />
             <Route path="/content/help-articles" element={<HelpArticlesPage />} />

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Search, Plus, Loader2 } from 'lucide-react'
+import { Search, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { useTasks, useTaskStatusCounts, statusDisplayMap } from '@/lib/api/tasks'
@@ -93,13 +93,6 @@ export default function TaskListPage({
       <Header title={pageTitle} />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <button className="bg-primary text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-primary/90">
-              <Plus className="w-5 h-5" />
-              Create Task
-            </button>
-          </div>
-
           <div className="mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
