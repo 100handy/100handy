@@ -14,6 +14,7 @@ export default function ReviewsModerationPage() {
   const [noteReason, setNoteReason] = useState('')
   const [actionMode, setActionMode] = useState<'flag' | 'remove' | null>(null)
   const [actionReason, setActionReason] = useState('')
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const [debouncedSearch, setDebouncedSearch] = useState('')
   useMemo(() => {
@@ -37,19 +38,32 @@ export default function ReviewsModerationPage() {
 
   async function handleNote() {
     if (!selectedReviewId || !noteReason.trim()) return
-    await createModerationEvent.mutateAsync({ reviewId: selectedReviewId, action: 'noted', reason: noteReason.trim() })
-    setNoteReason('')
+    setActionFeedback(null)
+    try {
+      await createModerationEvent.mutateAsync({ reviewId: selectedReviewId, action: 'noted', reason: noteReason.trim() })
+      setNoteReason('')
+      setActionFeedback({ tone: 'success', message: 'Moderation note saved.' })
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save moderation note.' })
+    }
   }
 
   async function handleConfirmAction() {
     if (!selectedReviewId || !actionMode || !actionReason.trim()) return
-    if (actionMode === 'flag') {
-      await handleFlag(selectedReviewId, actionReason.trim())
-    } else {
-      await handleDelete(selectedReviewId, actionReason.trim())
+    setActionFeedback(null)
+    try {
+      if (actionMode === 'flag') {
+        await handleFlag(selectedReviewId, actionReason.trim())
+        setActionFeedback({ tone: 'success', message: 'Review flagged for moderation.' })
+      } else {
+        await handleDelete(selectedReviewId, actionReason.trim())
+        setActionFeedback({ tone: 'success', message: 'Review removed.' })
+      }
+      setActionMode(null)
+      setActionReason('')
+    } catch (error) {
+      setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update review moderation.' })
     }
-    setActionMode(null)
-    setActionReason('')
   }
 
   return (
@@ -75,6 +89,15 @@ export default function ReviewsModerationPage() {
         {error && (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
             {error instanceof Error ? error.message : 'Failed to load reviews.'}
+          </div>
+        )}
+        {actionFeedback && (
+          <div className={`mb-4 rounded-xl px-4 py-3 text-sm ${
+            actionFeedback.tone === 'success'
+              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+              : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+          }`}>
+            {actionFeedback.message}
           </div>
         )}
 

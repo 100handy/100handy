@@ -292,7 +292,15 @@ export default function SupportCentre() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => updateStatus.mutate({ ticketId: selectedTicket.id, status: 'resolved' })}
+                        onClick={async () => {
+                          setActionFeedback(null)
+                          try {
+                            await updateStatus.mutateAsync({ ticketId: selectedTicket.id, status: 'resolved' })
+                            setActionFeedback({ tone: 'success', message: 'Ticket marked resolved.' })
+                          } catch (error) {
+                            setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to resolve ticket.' })
+                          }
+                        }}
                         disabled={updateStatus.isPending}
                         className="rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 dark:border-emerald-900/60"
                       >

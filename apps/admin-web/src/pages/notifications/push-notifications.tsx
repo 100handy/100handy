@@ -61,6 +61,7 @@ export default function PushNotificationsPage() {
   const [scheduledFor, setScheduledFor] = useState('')
   const [testRecipientEmail, setTestRecipientEmail] = useState('')
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const { data: audiencePreview, isLoading: previewLoading } = useNotificationAudiencePreview({
     channel: 'push',
@@ -146,6 +147,15 @@ export default function PushNotificationsPage() {
       <Header title="Push Notifications" />
 
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        {actionFeedback && (
+          <div className={`rounded-xl px-4 py-3 text-sm ${
+            actionFeedback.tone === 'success'
+              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
+              : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200'
+          }`}>
+            {actionFeedback.message}
+          </div>
+        )}
         {!canManageNotifications && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
             Your admin role can view push campaigns and delivery history, but it cannot change or send them.
@@ -242,7 +252,15 @@ export default function PushNotificationsPage() {
             <div className="mb-3 flex items-center justify-between gap-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delivery Jobs</h3>
               <button
-                onClick={() => runScheduledJobs.mutate()}
+                onClick={async () => {
+                  setActionFeedback(null)
+                  try {
+                    await runScheduledJobs.mutateAsync()
+                    setActionFeedback({ tone: 'success', message: 'Due push jobs processed.' })
+                  } catch (error) {
+                    setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to run due push jobs.' })
+                  }
+                }}
                 disabled={runScheduledJobs.isPending || !canManageNotifications}
                 className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
               >
@@ -281,8 +299,10 @@ export default function PushNotificationsPage() {
                           <td className="py-3 pr-4 text-xs text-gray-500 dark:text-gray-400">{job.scheduled_for ? format(new Date(job.scheduled_for), 'MMM d, yyyy HH:mm') : 'Now'}</td>
                           <td className="py-3 text-right">
                             <button
-                              onClick={() =>
-                                sendCampaign.mutate({
+                              onClick={async () => {
+                                setActionFeedback(null)
+                                try {
+                                  await sendCampaign.mutateAsync({
                                   campaignId: job.campaign_id ?? undefined,
                                   campaignKey: job.campaign_key,
                                   title: job.title,
@@ -291,8 +311,12 @@ export default function PushNotificationsPage() {
                                   messageBody: job.message_body,
                                   route: job.route ?? '/',
                                   audienceFilters: (job.audience_filters as Record<string, unknown>) ?? {},
-                                })
-                              }
+                                  })
+                                  setActionFeedback({ tone: 'success', message: 'Push job retried.' })
+                                } catch (error) {
+                                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to retry push job.' })
+                                }
+                              }}
                               disabled={sendCampaign.isPending || !canManageNotifications}
                               className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
                             >
@@ -343,8 +367,10 @@ export default function PushNotificationsPage() {
 
           <div className="mt-6 flex justify-end">
             <button
-              onClick={() =>
-                saveCampaign.mutate({
+              onClick={async () => {
+                setActionFeedback(null)
+                try {
+                  await saveCampaign.mutateAsync({
                   id: selected?.id,
                   campaign_key: form.campaign_key,
                   title: form.title,
@@ -354,8 +380,12 @@ export default function PushNotificationsPage() {
                   message_body: form.message_body,
                   route: form.route,
                   active: form.active,
-                })
-              }
+                  })
+                  setActionFeedback({ tone: 'success', message: 'Push template saved.' })
+                } catch (error) {
+                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save push template.' })
+                }
+              }}
               disabled={saveCampaign.isPending || !canSaveTemplate}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
@@ -459,14 +489,20 @@ export default function PushNotificationsPage() {
 
           <div className="mt-6 flex justify-end gap-3">
             <button
-              onClick={() =>
-                sendTestPush.mutate({
+              onClick={async () => {
+                setActionFeedback(null)
+                try {
+                  await sendTestPush.mutateAsync({
                   recipientEmail: testRecipientEmail,
                   title: draftForm.message_title,
                   body: draftForm.message_body,
                   route: draftForm.route || '/',
-                })
-              }
+                  })
+                  setActionFeedback({ tone: 'success', message: 'Test push sent.' })
+                } catch (error) {
+                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to send test push.' })
+                }
+              }}
               disabled={sendTestPush.isPending || !testRecipientEmail.trim() || !draftForm.message_title.trim() || !draftForm.message_body.trim() || !canManageNotifications}
               className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-900/60 dark:text-indigo-300 dark:hover:bg-indigo-950/20"
             >
@@ -474,8 +510,10 @@ export default function PushNotificationsPage() {
               Send Test
             </button>
             <button
-              onClick={() =>
-                sendCampaign.mutate({
+              onClick={async () => {
+                setActionFeedback(null)
+                try {
+                  await sendCampaign.mutateAsync({
                   campaignKey: draftForm.campaign_key,
                   title: draftForm.title,
                   recipientGroup: draftForm.recipient_group,
@@ -488,8 +526,12 @@ export default function PushNotificationsPage() {
                     require_device_token: draftFilters.require_device_token,
                   },
                   scheduledFor: scheduledFor || null,
-                })
-              }
+                  })
+                  setActionFeedback({ tone: 'success', message: isScheduled ? 'Push draft scheduled.' : 'Push draft sent.' })
+                } catch (error) {
+                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to send push draft.' })
+                }
+              }}
               disabled={sendCampaign.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-900/60 dark:text-emerald-300 dark:hover:bg-emerald-950/20"
             >
@@ -497,8 +539,10 @@ export default function PushNotificationsPage() {
               {isScheduled ? 'Schedule Draft' : 'Send Draft'}
             </button>
             <button
-              onClick={() =>
-                saveCampaign.mutate({
+              onClick={async () => {
+                setActionFeedback(null)
+                try {
+                  await saveCampaign.mutateAsync({
                   campaign_key: draftForm.campaign_key,
                   title: draftForm.title,
                   campaign_kind: 'campaign_draft',
@@ -507,8 +551,12 @@ export default function PushNotificationsPage() {
                   message_body: draftForm.message_body,
                   route: draftForm.route,
                   active: false,
-                })
-              }
+                  })
+                  setActionFeedback({ tone: 'success', message: 'Push draft saved.' })
+                } catch (error) {
+                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save push draft.' })
+                }
+              }}
               disabled={saveCampaign.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
@@ -579,7 +627,13 @@ export default function PushNotificationsPage() {
               <button
                 type="button"
                 onClick={async () => {
-                  await deleteCampaign.mutateAsync(deleteTargetId)
+                  try {
+                    await deleteCampaign.mutateAsync(deleteTargetId)
+                    setActionFeedback({ tone: 'success', message: 'Push item deleted.' })
+                  } catch (error) {
+                    setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete push item.' })
+                    return
+                  }
                   setDeleteTargetId(null)
                 }}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"

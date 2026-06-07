@@ -123,6 +123,8 @@ export default function PopupsPage() {
 
   const canSaveDraft = canManageNotifications && validationErrors.length === 0
   const canPublish = canManageNotifications && validationErrors.length === 0 && !!latestDraft
+  const draftSaved = actionFeedback?.tone === 'success' && actionFeedback.message === 'Draft saved.'
+  const popupPublished = actionFeedback?.tone === 'success' && actionFeedback.message === 'Pop-up published.'
 
   const persistDraft = async () => {
     if (!canSaveDraft) return
@@ -312,16 +314,16 @@ export default function PopupsPage() {
               disabled={saveDraft.isPending || publishDraft.isPending || !canSaveDraft}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Draft saved' ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {actionFeedback === 'Draft saved' ? 'Draft Saved' : 'Save Draft'}
+              {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : draftSaved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {draftSaved ? 'Draft Saved' : 'Save Draft'}
             </button>
             <button
               onClick={publish}
               disabled={publishDraft.isPending || saveDraft.isPending || !canPublish}
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
             >
-              {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : actionFeedback === 'Published' ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
-              {actionFeedback === 'Published' ? 'Published' : 'Publish'}
+              {publishDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : popupPublished ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+              {popupPublished ? 'Published' : 'Publish'}
             </button>
           </div>
 
@@ -337,7 +339,15 @@ export default function PopupsPage() {
                 </div>
                 {revision.revision_state === 'published' && (
                   <button
-                    onClick={() => restoreRevision.mutate({ announcementKey: effectiveAnnouncementKey, revisionId: revision.id })}
+                    onClick={async () => {
+                      setActionFeedback(null)
+                      try {
+                        await restoreRevision.mutateAsync({ announcementKey: effectiveAnnouncementKey, revisionId: revision.id })
+                        setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                      } catch (error) {
+                        setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                      }
+                    }}
                     className="text-sm font-medium text-primary hover:underline"
                   >
                     Restore to Draft
@@ -363,8 +373,14 @@ export default function PopupsPage() {
               <button
                 type="button"
                 onClick={async () => {
-                  await deletePopup.mutateAsync(deleteTargetId)
-                  setDeleteTargetId(null)
+                  setActionFeedback(null)
+                  try {
+                    await deletePopup.mutateAsync(deleteTargetId)
+                    setDeleteTargetId(null)
+                    setActionFeedback({ tone: 'success', message: 'Pop-up deleted.' })
+                  } catch (error) {
+                    setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete pop-up.' })
+                  }
                 }}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
               >
