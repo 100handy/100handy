@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Header from '@/components/header'
 import { Bell, Mail, MonitorSmartphone, Loader2, FileText, Smartphone, TriangleAlert } from 'lucide-react'
 import { useNotificationsSummary } from '@/lib/api/content-platform'
@@ -5,6 +6,7 @@ import { Link } from 'react-router-dom'
 
 export default function NotificationsOverviewPage() {
   const { data: summary, isLoading } = useNotificationsSummary()
+  const [activeView, setActiveView] = useState<'sections' | 'overview'>('sections')
   const cards = [
     {
       title: 'Email Notifications',
@@ -36,6 +38,26 @@ export default function NotificationsOverviewPage() {
     <div className="flex-1 flex flex-col">
       <Header title="Notifications" />
       <main className="flex-1 overflow-y-auto p-6">
+        <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'sections', label: 'Sections' },
+            { id: 'overview', label: 'Overview' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+        {activeView === 'overview' ? (
         <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard title="Email Templates" value={summary?.emailTemplates ?? 0} icon={Mail} loading={isLoading} />
           <SummaryCard title="Active Email Templates" value={summary?.activeEmailTemplates ?? 0} icon={Mail} loading={isLoading} />
@@ -48,6 +70,8 @@ export default function NotificationsOverviewPage() {
           <SummaryCard title="Active Announcements" value={summary?.activeAnnouncements ?? 0} icon={Bell} loading={isLoading} />
           <SummaryCard title="Active Banners/Modals" value={summary?.activeBannersAndModals ?? 0} icon={MonitorSmartphone} loading={isLoading} />
         </div>
+        ) : null}
+        {activeView === 'sections' ? (
         <div className="grid gap-6 md:grid-cols-4">
           {cards.map((card) => {
             const Icon = card.icon
@@ -66,6 +90,7 @@ export default function NotificationsOverviewPage() {
             )
           })}
         </div>
+        ) : null}
       </main>
     </div>
   )
