@@ -23,6 +23,7 @@ import {
 } from '@/lib/api/site-content'
 import { useMediaAssets } from '@/lib/api/content-platform'
 import type { FieldType } from '@/lib/cms/page-registry'
+import { trackAdminEvent } from '@/lib/analytics'
 
 function isMediaField(fieldKey: string, fieldDef: { type: FieldType }) {
   const normalized = fieldKey.toLowerCase()
@@ -51,6 +52,8 @@ export default function PageEditorPage() {
 
   const [formValues, setFormValues] = useState<Record<string, string>>({})
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
+  const [editorTab, setEditorTab] = useState<'content' | 'details' | 'seo' | 'history'>('content')
+  const [activeContentSection, setActiveContentSection] = useState<string>('')
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [pageTitle, setPageTitle] = useState('')
   const [pageSlug, setPageSlug] = useState('')
@@ -83,6 +86,7 @@ export default function PageEditorPage() {
     }
     setFormValues(initial)
     setExpandedSections(expanded)
+    setActiveContentSection((current) => current || Object.keys(pageDef.sections)[0] || '')
   }, [pageDef, savedContent, latestDraft])
 
   useEffect(() => {
@@ -164,6 +168,10 @@ export default function PageEditorPage() {
         },
         fields: collectFields(),
       })
+      trackAdminEvent('admin_page_draft_saved', {
+        page_key: pageKey,
+        page_slug: pageSlug || pageDef.slug,
+      })
       setActionFeedback({ tone: 'success', message: 'Draft saved.' })
     } catch (error) {
       setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
@@ -175,6 +183,10 @@ export default function PageEditorPage() {
     setActionFeedback(null)
     try {
       await publishDraftMutation.mutateAsync(pageKey)
+      trackAdminEvent('admin_page_published', {
+        page_key: pageKey,
+        page_slug: pageSlug || pageDef.slug,
+      })
       setActionFeedback({ tone: 'success', message: 'Published.' })
     } catch (error) {
       setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish page.' })
@@ -243,10 +255,12 @@ export default function PageEditorPage() {
 
   useUnsavedChangesWarning(isDirty)
 
+  const isPageSlugValid = (value: string) => value === '/' || isValidSlug(value)
+
   const validationErrors = [
     !pageTitle.trim() ? 'Page title is required.' : null,
     !pageSlug.trim() ? 'Slug is required.' : null,
-    pageSlug.trim() && !isValidSlug(pageSlug.trim()) ? 'Slug must use lowercase letters, numbers, and hyphens only.' : null,
+    pageSlug.trim() && !isPageSlugValid(pageSlug.trim()) ? 'Slug must use lowercase letters, numbers, and hyphens only.' : null,
     canonicalUrl.trim() && !isValidUrl(canonicalUrl) && !canonicalUrl.startsWith('/') ? 'Canonical URL must be a site path or a valid absolute URL.' : null,
     ogImageUrl.trim() && !isValidUrl(ogImageUrl) ? 'Open Graph image URL must be a valid absolute URL.' : null,
     twitterImageUrl.trim() && !isValidUrl(twitterImageUrl) ? 'Twitter image URL must be a valid absolute URL.' : null,
@@ -274,7 +288,7 @@ export default function PageEditorPage() {
   if (isLoading || isPageLoading || isSeoLoading || isDraftLoading || isRevisionsLoading) {
     return (
       <div className="flex-1 flex flex-col">
-        <Header title={`Edit: ${pageDef.label}`} />
+        <Header title={`Edit Page: ${pageDef.label}`} />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -284,7 +298,7 @@ export default function PageEditorPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title={`Edit: ${pageDef.label}`} />
+        <Header title={`Edit Page: ${pageDef.label}`} />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-3xl mx-auto">
           <UnsavedChangesBanner show={isDirty} />
@@ -344,12 +358,34 @@ export default function PageEditorPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 mb-6">
+          <div className="mb-6 flex flex-wrap gap-2">
+            {[
+              { id: 'content', label: 'Page content' },
+              { id: 'details', label: 'Page details' },
+              { id: 'seo', label: 'SEO' },
+              { id: 'history', label: 'History' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setEditorTab(tab.id as typeof editorTab)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  editorTab === tab.id
+                    ? 'bg-primary text-white'
+                    : 'border border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-5 mb-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Workflow</h3>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Editing workflow</h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Work is saved to a draft first. Nothing changes on the live site until you publish.
+                  Edit the text and images here, save a draft, and publish when you are ready for the live site to update.
                 </p>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -363,23 +399,27 @@ export default function PageEditorPage() {
                 {actionFeedback.message}
               </p>
             )}
-          </div>
-
-          <div className="mb-6 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-            <div className="border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
-              Preview
+            <div className="mt-4 flex justify-end">
+              <a
+                href={`${import.meta.env.VITE_SITE_URL || ''}${pageSlug || pageDef.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Open live page
+              </a>
             </div>
-            <iframe
-              title="Page preview"
-              src={`${import.meta.env.VITE_SITE_URL || ''}${pageSlug || pageDef.slug}`}
-              className="h-[560px] w-full bg-white"
-            />
           </div>
 
+          {editorTab === 'details' && (
           <div className="space-y-4 mb-6">
             <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Page Settings</h3>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Page details</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Basic page details. Most editors only need the title and page address.
+                </p>
               </div>
               <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField label="Page Title">
@@ -398,9 +438,9 @@ export default function PageEditorPage() {
                     onChange={(e) => setPageSlug(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
-                  <FieldErrorText error={!pageSlug.trim() ? 'Slug is required.' : !isValidSlug(pageSlug.trim()) ? 'Use lowercase letters, numbers, and hyphens only.' : null} />
+                  <FieldErrorText error={!pageSlug.trim() ? 'Slug is required.' : !isPageSlugValid(pageSlug.trim()) ? 'Use lowercase letters, numbers, and hyphens only.' : null} />
                 </FormField>
-                <FormField label="Template Key">
+                <FormField label="Layout template">
                   <input
                     type="text"
                     value={templateKey}
@@ -421,10 +461,17 @@ export default function PageEditorPage() {
                 </FormField>
               </div>
             </div>
+          </div>
+          )}
 
+          {editorTab === 'seo' && (
+          <div className="space-y-4 mb-6">
             <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">SEO</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Search and social sharing settings for this page.
+                </p>
               </div>
               <div className="px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField label="Meta Title">
@@ -522,10 +569,14 @@ export default function PageEditorPage() {
                 </div>
               </div>
             </div>
+          </div>
+          )}
 
+          {editorTab === 'history' && (
+          <div className="space-y-4 mb-6">
             <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Revision History</h3>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Revision history</h3>
               </div>
               <div className="px-6 py-4">
                 {revisions.length === 0 ? (
@@ -567,10 +618,38 @@ export default function PageEditorPage() {
               </div>
             </div>
           </div>
+          )}
 
-          {/* Sections */}
-          <div className="space-y-4">
+          {editorTab === 'content' && (
+          <>
+          <div className="mb-4 rounded-xl border border-gray-200 bg-white px-5 py-4 dark:border-gray-800 dark:bg-gray-800/50">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Page content</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Update the text and images section by section. No code changes are needed here.
+            </p>
+          </div>
+
+          <div className="mb-4 flex flex-wrap gap-2">
             {Object.entries(pageDef.sections).map(([sectionKey, section]) => (
+              <button
+                key={sectionKey}
+                type="button"
+                onClick={() => setActiveContentSection(sectionKey)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  activeContentSection === sectionKey
+                    ? 'bg-primary text-white'
+                    : 'border border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                }`}
+              >
+                {section.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            {Object.entries(pageDef.sections)
+              .filter(([sectionKey]) => !activeContentSection || sectionKey === activeContentSection)
+              .map(([sectionKey, section]) => (
               <div
                 key={sectionKey}
                 className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden"
@@ -619,7 +698,7 @@ export default function PageEditorPage() {
                                 value={value}
                                 onChange={(e) => handleFieldChange(compositeKey, e.target.value)}
                                 placeholder={fieldDef.placeholder}
-                                rows={4}
+                                rows={6}
                                 className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-y"
                               />
                             ) : (
@@ -664,6 +743,8 @@ export default function PageEditorPage() {
               </div>
             ))}
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

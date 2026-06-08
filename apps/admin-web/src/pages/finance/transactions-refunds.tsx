@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import Header from '@/components/header'
 import { useAuth } from '@/contexts/AuthContext'
 import { useFinanceSummary, useFinanceTransactions, useRefundPayment } from '@/lib/api/finance'
+import { trackAdminEvent } from '@/lib/analytics'
 import type { PaymentStatus } from '@/lib/database.types'
 import { Link } from 'react-router-dom'
 
@@ -17,6 +18,7 @@ const STATUS_LABELS: Record<PaymentStatus, string> = {
 export default function TransactionsRefundsPage() {
   const { hasPermission } = useAuth()
   const canManageFinance = hasPermission('finance.manage')
+  const [activeView, setActiveView] = useState<'ledger' | 'performance'>('ledger')
   const [searchQuery, setSearchQuery] = useState('')
   const [status, setStatus] = useState<PaymentStatus | 'all'>('all')
   const [refundTarget, setRefundTarget] = useState<{ paymentId: string; taskTitle: string; amount: number; bookingId: string | null } | null>(null)
@@ -68,6 +70,11 @@ export default function TransactionsRefundsPage() {
     setActionFeedback(null)
     try {
       await refundPayment.mutateAsync({ paymentId: refundTarget.paymentId, reason: refundReason.trim() })
+      trackAdminEvent('admin_refund_completed', {
+        payment_id: refundTarget.paymentId,
+        booking_id: refundTarget.bookingId,
+        amount: refundTarget.amount,
+      })
       setRefundTarget(null)
       setRefundReason('')
       setActionFeedback({ tone: 'success', message: 'Refund completed.' })
@@ -80,20 +87,42 @@ export default function TransactionsRefundsPage() {
     <div className="flex-1 flex flex-col">
       <Header title="Transactions & Refunds" />
 
-      <main className="flex-1 p-6 space-y-6">
+      <main className="flex-1 p-6 space-y-5">
         {!canManageFinance && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
             Your admin role can view transactions, but it cannot issue refunds.
           </div>
         )}
-        <div className="grid gap-4 md:grid-cols-4">
-          <SummaryCard title="Paid Revenue" value={summary ? `£${summary.paid.toFixed(0)}` : '—'} loading={summaryLoading} />
-          <SummaryCard title="Refunded" value={summary ? `£${summary.refunded.toFixed(0)}` : '—'} loading={summaryLoading} />
-          <SummaryCard title="Pending" value={summary ? `£${summary.pending.toFixed(0)}` : '—'} loading={summaryLoading} />
-          <SummaryCard title="Failed Payments" value={summary ? String(summary.failedCount) : '—'} loading={summaryLoading} />
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'ledger', label: 'Ledger' },
+            { id: 'performance', label: 'Performance' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+        {activeView === 'performance' ? (
+          <div className="grid gap-4 md:grid-cols-4">
+            <SummaryCard title="Paid revenue" value={summary ? `£${summary.paid.toFixed(0)}` : '—'} loading={summaryLoading} />
+            <SummaryCard title="Refunded" value={summary ? `£${summary.refunded.toFixed(0)}` : '—'} loading={summaryLoading} />
+            <SummaryCard title="Pending" value={summary ? `£${summary.pending.toFixed(0)}` : '—'} loading={summaryLoading} />
+            <SummaryCard title="Failed payments" value={summary ? String(summary.failedCount) : '—'} loading={summaryLoading} />
+          </div>
+        ) : null}
+
+        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
           {actionFeedback && (
             <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${
               actionFeedback.tone === 'success'
@@ -106,7 +135,9 @@ export default function TransactionsRefundsPage() {
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Transaction ledger</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Filter payments, investigate failures, and refund transactions.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Search payments, inspect failed charges, and refund completed transactions when needed.
+              </p>
             </div>
             <button
               type="button"
@@ -119,28 +150,34 @@ export default function TransactionsRefundsPage() {
             </button>
           </div>
 
-          <div className="mb-4 flex flex-col gap-3 lg:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search by payment, customer, provider, or task..."
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm dark:border-slate-700 dark:bg-slate-900"
-              />
+          {activeView === 'ledger' ? (
+            <div className="mb-4 flex flex-col gap-3 lg:flex-row">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search by payment, customer, provider, or task..."
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+                />
+              </div>
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value as PaymentStatus | 'all')}
+                className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900 lg:w-52"
+              >
+                <option value="all">All payment states</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+                <option value="refunded">Refunded</option>
+              </select>
             </div>
-            <select
-              value={status}
-              onChange={(event) => setStatus(event.target.value as PaymentStatus | 'all')}
-              className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900 lg:w-52"
-            >
-              <option value="all">All payment states</option>
-              <option value="paid">Paid</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-              <option value="refunded">Refunded</option>
-            </select>
-          </div>
+          ) : (
+            <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+              Switch back to <span className="font-medium">Ledger</span> to search, refund, or inspect individual payments.
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
@@ -149,7 +186,7 @@ export default function TransactionsRefundsPage() {
           )}
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+            <table className="w-full min-w-[920px] text-left text-sm text-slate-600 dark:text-slate-300">
               <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
                 <tr>
                   <th className="px-5 py-3">Payment</th>
@@ -192,7 +229,7 @@ export default function TransactionsRefundsPage() {
                         {transaction.status === 'paid' ? (
                           <button
                             type="button"
-                            disabled={refundPayment.isPending}
+                            disabled={refundPayment.isPending || !canManageFinance}
                             onClick={() =>
                               setRefundTarget({
                                 paymentId: transaction.id,
@@ -202,7 +239,6 @@ export default function TransactionsRefundsPage() {
                               })
                             }
                             className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 dark:border-red-900/60"
-                            disabled={!canManageFinance}
                           >
                             Refund
                           </button>
@@ -221,7 +257,7 @@ export default function TransactionsRefundsPage() {
 
       {refundTarget ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+          <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl dark:bg-slate-900">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Confirm refund</h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               You are refunding <span className="font-medium text-slate-900 dark:text-white">£{refundTarget.amount.toFixed(2)}</span> for {refundTarget.taskTitle}.

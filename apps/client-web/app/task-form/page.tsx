@@ -24,6 +24,7 @@ import type { FormResponse } from "@shared/supabase";
 import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store';
 import { getServiceAreaCoverage, logServiceAreaCoverageAttempt } from '@shared/supabase';
 import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, useServiceAreaCoverage, type Category, type HandymanProfile, type AvailabilitySlot } from '@shared/query';
+import { trackAnalyticsEvent } from '@/lib/analytics';
 
 // Sort options type
 type SortOption = 'recommended' | 'price_low' | 'price_high' | 'rating' | 'reviews';
@@ -229,8 +230,19 @@ function TaskFormContent() {
   const [paymentIntentClientSecret, setPaymentIntentClientSecret] = useState<string>("");
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
   const [paymentAuthorized, setPaymentAuthorized] = useState(false);
+  const bookingStartTrackedRef = useRef(false);
 
   const hasCategoryQuery = Boolean(categoryFromUrl?.trim());
+
+  useEffect(() => {
+    if (!category || bookingStartTrackedRef.current) return;
+    bookingStartTrackedRef.current = true;
+    trackAnalyticsEvent('booking_flow_started', {
+      category_id: category.id,
+      category_name: category.name,
+      source: 'task_form',
+    });
+  }, [category]);
 
   if (!categoryLoading && hasCategoryQuery && !category) {
     return (
@@ -593,6 +605,13 @@ function TaskFormContent() {
       });
 
       if (booking) {
+        trackAnalyticsEvent('booking_created', {
+          booking_id: booking.id,
+          category_id: category.id,
+          category_name: category.name,
+          provider_id: selectedHandyman.user_id,
+          scheduled_date: selectedDate,
+        });
         // Clear sessionStorage on successful booking
         sessionStorage.removeItem('taskForm_location');
         sessionStorage.removeItem('taskForm_responses');

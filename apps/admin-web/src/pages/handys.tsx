@@ -12,6 +12,7 @@ const statusColors = {
 const ITEMS_PER_PAGE = 10
 
 export default function HandysPage() {
+  const [activeView, setActiveView] = useState<'providers' | 'applicants'>('providers')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -45,13 +46,33 @@ export default function HandysPage() {
 
   return (
     <main className="flex-1 flex flex-col overflow-hidden">
-      <Header title="Handys Management" />
+      <Header title="Providers" />
 
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-7xl mx-auto">
+          <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+            {[
+              { id: 'providers', label: 'Provider list' },
+              { id: 'applicants', label: 'Review applicants' },
+            ].map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id as typeof activeView)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  activeView === view.id
+                    ? 'bg-primary text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              All Handys
+              Providers
             </h2>
             <Link
               to="/handys/selection-process"
@@ -59,7 +80,28 @@ export default function HandysPage() {
             >
               Review Applicants
             </Link>
+            <Link
+              to="/handys/stars"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              100 Handy Stars
+            </Link>
           </div>
+
+          {activeView === 'applicants' ? (
+            <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Provider application review</h3>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Open the applicant review queue to approve, reject, and manage onboarding readiness.
+              </p>
+              <Link
+                to="/handys/selection-process"
+                className="mt-4 inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+              >
+                Open applicant queue
+              </Link>
+            </div>
+          ) : null}
 
           <div className="mb-6">
             <div className="relative">
@@ -102,7 +144,7 @@ export default function HandysPage() {
           )}
 
           {/* Handys table */}
-          {!isLoading && !error && handys && handys.length > 0 && (
+          {activeView === 'providers' && !isLoading && !error && handys && handys.length > 0 && (
             <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-800/50">
@@ -208,7 +250,7 @@ export default function HandysPage() {
           )}
 
           {/* Pagination */}
-          {!isLoading && !error && handys && handys.length > 0 && (
+          {activeView === 'providers' && !isLoading && !error && handys && handys.length > 0 && (
             <div className="mt-6 flex items-center justify-between">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Showing <span className="font-medium">{handys.length}</span> results

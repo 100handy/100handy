@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
+import { trackAnalyticsEvent } from '@/lib/analytics';
 import {
   getPublicAnnouncements,
   type PublicAnnouncementAudience,
@@ -55,9 +56,11 @@ function useWebAnnouncements() {
 function AnnouncementLink({
   announcement,
   className,
+  onClick,
 }: {
   announcement: PublicAnnouncementRecord;
   className?: string;
+  onClick?: () => void;
 }) {
   if (!announcement.cta_href || !announcement.cta_label) {
     return null;
@@ -72,6 +75,7 @@ function AnnouncementLink({
         target="_blank"
         rel="noreferrer"
         className={className}
+        onClick={onClick}
       >
         {announcement.cta_label}
       </a>
@@ -79,7 +83,7 @@ function AnnouncementLink({
   }
 
   return (
-    <Link href={announcement.cta_href} className={className}>
+    <Link href={announcement.cta_href} className={className} onClick={onClick}>
       {announcement.cta_label}
     </Link>
   );
@@ -121,6 +125,14 @@ export function GlobalAnnouncementsHost() {
                 <AnnouncementLink
                   announcement={announcement}
                   className="text-sm font-semibold text-brand-terracotta hover:underline"
+                  onClick={() =>
+                    trackAnalyticsEvent('announcement_cta_clicked', {
+                      announcement_id: announcement.id,
+                      placement: announcement.placement,
+                      audience: announcement.audience,
+                      channel: 'web',
+                    })
+                  }
                 />
               </div>
             ))}
@@ -164,6 +176,14 @@ export function GlobalAnnouncementsHost() {
               <AnnouncementLink
                 announcement={activeModal}
                 className="rounded-lg bg-brand-terracotta px-4 py-2 text-sm font-semibold text-white"
+                onClick={() =>
+                  trackAnalyticsEvent('announcement_cta_clicked', {
+                    announcement_id: activeModal.id,
+                    placement: activeModal.placement,
+                    audience: activeModal.audience,
+                    channel: 'web',
+                  })
+                }
               />
             </div>
           </div>
@@ -206,6 +226,14 @@ export function InlineAnnouncements({
             <AnnouncementLink
               announcement={announcement}
               className="text-sm font-semibold text-brand-terracotta hover:underline"
+              onClick={() =>
+                trackAnalyticsEvent('announcement_cta_clicked', {
+                  announcement_id: announcement.id,
+                  placement: announcement.placement,
+                  audience: announcement.audience,
+                  channel: 'web',
+                })
+              }
             />
           </div>
         </div>

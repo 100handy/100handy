@@ -4,6 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
+import {
+  formatMonthLabel,
+  formatWinnerDisplayName,
+  getMonthlyHandyStar,
+} from "@/lib/handy-stars";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function EliteTaskersPage() {
   const c = await getPageContent("100-handy-star");
+  const monthlyWinner = await getMonthlyHandyStar().catch(() => null);
   const benefits = [
     {
       title: c("benefits.benefit_1_title", "Consistently high ratings"),
@@ -74,6 +80,71 @@ export default async function EliteTaskersPage() {
             </div>
           </div>
         </section>
+
+        {monthlyWinner ? (
+          <section className="bg-white py-16">
+            <div className="mx-auto max-w-[1920px] px-8">
+              <div className="mx-auto max-w-5xl rounded-[32px] border border-[#ead9ca] bg-[#fff8f3] p-8 lg:p-10">
+                <div className="grid gap-8 lg:grid-cols-[1.2fr,0.8fr] lg:items-center">
+                  <div>
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-terracotta px-4 py-2 text-sm font-semibold text-white">
+                      <Star className="h-4 w-4 fill-white text-white" />
+                      {formatMonthLabel(monthlyWinner.month)} winner
+                    </div>
+                    <h2 className="text-[36px] font-bold leading-tight text-brand-dark-alt">
+                      {formatWinnerDisplayName(monthlyWinner.first_name, monthlyWinner.last_name)}
+                    </h2>
+                    <p className="mt-4 max-w-2xl text-[18px] leading-relaxed text-brand-dark-alt/80">
+                      This month&apos;s 100 Handy Star earned the highest number of customer 5-star reviews on the platform.
+                    </p>
+                    <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                      <WinnerMetric
+                        label="5-star reviews"
+                        value={String(monthlyWinner.five_star_reviews)}
+                      />
+                      <WinnerMetric
+                        label="Average rating"
+                        value={monthlyWinner.average_rating.toFixed(1)}
+                      />
+                      <WinnerMetric
+                        label="Completed jobs"
+                        value={String(monthlyWinner.jobs_completed)}
+                      />
+                    </div>
+                    <div className="mt-6 flex flex-wrap gap-3 text-sm text-brand-dark-alt/70">
+                      <span>{monthlyWinner.postcode || "London"}</span>
+                      <span>•</span>
+                      <span>{monthlyWinner.total_reviews} total customer reviews this month</span>
+                      {monthlyWinner.verified ? (
+                        <>
+                          <span>•</span>
+                          <span>Verified 100 Handy Pro</span>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[28px] bg-white p-6 shadow-sm">
+                    <h3 className="text-[22px] font-bold text-brand-dark-alt">
+                      Book this month&apos;s featured pro
+                    </h3>
+                    <p className="mt-3 text-[16px] leading-relaxed text-brand-dark-alt/80">
+                      Compare reviews, view availability, and book directly from the provider profile.
+                    </p>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <Button variant="terracotta" size="lg" asChild>
+                        <Link href={`/professionals/${monthlyWinner.user_id}`}>View provider profile</Link>
+                      </Button>
+                      <Button variant="secondary" size="lg" asChild>
+                        <Link href={`/task-form?handyman=${monthlyWinner.user_id}`}>Book this pro</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {/* Benefits Section */}
         <section className="bg-white py-20">
@@ -185,6 +256,17 @@ export default async function EliteTaskersPage() {
         </section>
       </main>
       <Footer />
+    </div>
+  );
+}
+
+function WinnerMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[#ead9ca] bg-white px-5 py-4">
+      <div className="text-[13px] font-medium uppercase tracking-[0.08em] text-brand-dark-alt/60">
+        {label}
+      </div>
+      <div className="mt-2 text-[28px] font-bold text-brand-dark-alt">{value}</div>
     </div>
   );
 }

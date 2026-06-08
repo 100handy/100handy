@@ -7,6 +7,7 @@ import { useHomeCategory } from "./home-category-context";
 import { useSubcategories, useTopLevelCategories, type Category } from '@shared/query';
 import { getCategoryIcon } from "@/components/icons/category-icons";
 import { resolvePublicAssetUrl } from "@/lib/content-platform";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 // Fallback categories for when DB is unavailable
 const fallbackMainCategories = [
@@ -77,6 +78,11 @@ export function Services() {
 
   const handleMainCategoryClick = (category: Category) => {
     const name = category.name;
+    trackAnalyticsEvent('service_category_selected', {
+      category_id: category.id,
+      category_name: category.name,
+      source: 'homepage_services',
+    });
     // Sync to Stats section immediately
     homeCategory?.setActiveCategory(name);
     // Avoid querying subcategories when we're using fallback IDs
@@ -91,11 +97,17 @@ export function Services() {
   };
 
   const handleSubCategoryClick = (subCategory: Category) => {
+    trackAnalyticsEvent('service_subcategory_selected', {
+      category_id: subCategory.id,
+      category_name: subCategory.name,
+      source: 'homepage_services',
+    });
     // Navigate to task form with sub-category
     router.push(`/task-form?category=${encodeURIComponent(subCategory.name)}`);
   };
 
   const handleSeeAllServices = () => {
+    trackAnalyticsEvent('services_directory_opened', { source: 'homepage_services' });
     router.push('/services');
   };
 

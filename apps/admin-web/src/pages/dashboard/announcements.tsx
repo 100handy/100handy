@@ -15,6 +15,7 @@ import {
   useRestoreAnnouncementRevision,
   useSaveAnnouncementDraft,
 } from '@/lib/api/content-platform'
+import { trackAdminEvent } from '@/lib/analytics'
 
 const emptyAnnouncement = {
   audience: 'all' as const,
@@ -32,6 +33,7 @@ const emptyAnnouncement = {
 export default function AnnouncementsPage() {
   const { hasPermission } = useAuth()
   const canManageNotifications = hasPermission('notifications.manage')
+  const [activeView, setActiveView] = useState<'library' | 'editor' | 'history'>('library')
   const { data: announcements = [], isLoading } = useAnnouncements()
   const saveDraft = useSaveAnnouncementDraft()
   const publishDraft = usePublishAnnouncementDraft()
@@ -141,6 +143,12 @@ export default function AnnouncementsPage() {
           active: form.active,
         },
       })
+      trackAdminEvent('admin_announcement_draft_saved', {
+        announcement_key: effectiveAnnouncementKey,
+        placement: form.placement,
+        audience: form.audience,
+        channel_scope: form.channel_scope,
+      })
       setActionFeedback({ tone: 'success', message: 'Draft saved.' })
     } catch (error) {
       setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save draft.' })
@@ -152,6 +160,12 @@ export default function AnnouncementsPage() {
     setActionFeedback(null)
     try {
       await publishDraft.mutateAsync(effectiveAnnouncementKey)
+      trackAdminEvent('admin_announcement_published', {
+        announcement_key: effectiveAnnouncementKey,
+        placement: form.placement,
+        audience: form.audience,
+        channel_scope: form.channel_scope,
+      })
       setActionFeedback({ tone: 'success', message: 'Announcement published.' })
     } catch (error) {
       setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to publish announcement.' })
@@ -192,6 +206,28 @@ export default function AnnouncementsPage() {
           </button>
         </div>
 
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'library', label: 'Announcement list' },
+            { id: 'editor', label: 'Editor' },
+            { id: 'history', label: 'History' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+
+        {activeView === 'library' ? (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
@@ -241,7 +277,9 @@ export default function AnnouncementsPage() {
             </tbody>
           </table>
         </div>
+        ) : null}
 
+        {activeView === 'editor' ? (
         <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
           <UnsavedChangesBanner show={isDirty} />
           {validationErrors.length > 0 && (
@@ -317,8 +355,16 @@ export default function AnnouncementsPage() {
             </button>
           </div>
 
+        </div>
+        ) : null}
+
+        {activeView === 'history' ? (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Revision history</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Review previous announcement versions and restore one back to draft when needed.
+          </p>
           <div className="mt-6 space-y-3">
-            <h4 className="font-semibold text-gray-900 dark:text-white">Revision History</h4>
             {revisions.length === 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">No revisions yet.</p>
             ) : revisions.map((revision) => (
@@ -347,6 +393,7 @@ export default function AnnouncementsPage() {
             ))}
           </div>
         </div>
+        ) : null}
       </main>
 
       {deleteTargetId ? (

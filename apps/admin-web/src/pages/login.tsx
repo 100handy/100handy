@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { isAuthPending } from "@/contexts/auth-routing";
+import { trackAdminEvent } from "@/lib/analytics";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function LoginPage() {
             "Failed to sign in. Please check your credentials.",
         );
       } else {
+        trackAdminEvent('admin_login_success', { destination: from });
         // Redirect to the page they were trying to access, or dashboard
         navigate(from, { replace: true });
       }
@@ -108,7 +110,7 @@ export default function LoginPage() {
 
           <div className="bg-white/5 dark:bg-black/10 rounded-lg p-8 shadow-2xl shadow-black/10">
             <h2 className="text-2xl font-bold text-center mb-6">
-              Administrator Login
+              Sign in to admin
             </h2>
 
             {/* Session expiry or redirect message */}
@@ -185,7 +187,7 @@ export default function LoginPage() {
                       <span>Signing in...</span>
                     </>
                   ) : (
-                    "Login"
+                    "Sign in"
                   )}
                 </button>
               </div>

@@ -93,6 +93,7 @@ const sectionTabs = [
     match: (pathname: string) => pathname.startsWith('/handys'),
     items: [
       { label: 'All Handys', to: '/handys' },
+      { label: '100 Handy Stars', to: '/handys/stars' },
       { label: 'Selection', to: '/handys/selection-process' },
       { label: 'Availability', to: '/handys/availability' },
     ],
@@ -110,6 +111,18 @@ const sectionTabs = [
     items: [
       { label: 'Analytics', to: '/insights/analytics' },
       { label: 'Reports', to: '/insights/reports' },
+    ],
+  },
+  {
+    match: (pathname: string) => pathname.startsWith('/promotions'),
+    items: [
+      { label: 'Promotions', to: '/promotions/management' },
+    ],
+  },
+  {
+    match: (pathname: string) => pathname.startsWith('/outreach'),
+    items: [
+      { label: 'Outreach', to: '/outreach/leads' },
     ],
   },
 ]

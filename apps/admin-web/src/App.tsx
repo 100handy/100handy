@@ -15,6 +15,7 @@ import RolloutPlannerPage from '@/pages/tasks/rollout-planner'
 import TaskDetailsPage from '@/pages/tasks/task-details'
 import EditCategoriesPage from '@/pages/tasks/edit-categories'
 import HandysPage from '@/pages/handys'
+import HandyStarsPage from '@/pages/handys/stars'
 import ProviderProfilePage from '@/pages/handys/provider-profile'
 import EarningsDashboardPage from '@/pages/finance/earnings-dashboard'
 import TransactionsRefundsPage from '@/pages/finance/transactions-refunds'
@@ -56,6 +57,7 @@ import ReviewsModerationPage from '@/pages/support/reviews-moderation'
 import DisputesPage from '@/pages/support/disputes'
 import AnnouncementsPage from '@/pages/dashboard/announcements'
 import TaskQuestionsPage from '@/pages/tasks/task-questions'
+import AdminAnalyticsProvider from '@/components/analytics/AdminAnalyticsProvider'
 
 function AuthBootstrapScreen() {
   return (
@@ -95,6 +97,7 @@ function TaskDetailsRedirect() {
 function App() {
   return (
     <BrowserRouter>
+      <AdminAnalyticsProvider>
       <Routes>
         <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
@@ -132,6 +135,7 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute permissions={['handys.manage']} />}>
             <Route path="/handys" element={<HandysPage />} />
+            <Route path="/handys/stars" element={<HandyStarsPage />} />
             <Route path="/handys/:userId" element={<ProviderProfilePage />} />
             <Route path="/handys/selection-process" element={<HandySelectionProcess />} />
           <Route path="/handys/availability" element={<AvailabilityManagement />} />
@@ -201,6 +205,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
+      </AdminAnalyticsProvider>
     </BrowserRouter>
   )
 }
