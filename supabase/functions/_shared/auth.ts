@@ -57,3 +57,49 @@ export async function getStripeConnectAccountIdForUser(serviceClient: any, userI
 
   return data?.stripe_connect_account_id ?? null;
 }
+
+type AdminRole =
+  | 'super_admin'
+  | 'content_admin'
+  | 'ops_admin'
+  | 'support_admin'
+  | 'finance_admin'
+  | 'seo_admin';
+
+type AdminPermission = 'finance.manage';
+
+const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
+  super_admin: ['finance.manage'],
+  content_admin: [],
+  ops_admin: [],
+  support_admin: [],
+  finance_admin: ['finance.manage'],
+  seo_admin: [],
+};
+
+function roleHasPermission(role: AdminRole | null | undefined, permission: AdminPermission): boolean {
+  if (!role) return false;
+  return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
+}
+
+export async function requireAdminPermission(req: Request, permission: AdminPermission) {
+  const auth = await requireAuthenticatedUser(req);
+  if ('error' in auth) return auth;
+
+  const { user, serviceClient } = auth;
+  const { data: profile, error } = await serviceClient
+    .from('profiles')
+    .select('role, admin_role, account_status')
+    .eq('user_id', user.id)
+    .single();
+
+  if (error || !profile || profile.role !== 'admin' || profile.account_status !== 'active') {
+    return { error: jsonResponse({ error: 'Forbidden' }, 403) };
+  }
+
+  if (!roleHasPermission(profile.admin_role as AdminRole | null, permission)) {
+    return { error: jsonResponse({ error: 'Forbidden' }, 403) };
+  }
+
+  return auth;
+}

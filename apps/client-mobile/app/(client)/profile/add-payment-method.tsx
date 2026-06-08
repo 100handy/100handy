@@ -1,19 +1,72 @@
-import React from 'react';
-import { Alert, View, Text, Pressable, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, Platform, View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
-import { getUnsupportedNativeFeatureMessage, supportsStripeNative } from '@/lib/native-feature-support';
+import { useToast } from '@/components/ui/toast';
+import { createSetupIntent } from '@shared/supabase';
+import {
+  getUnsupportedNativeFeatureMessage,
+  initStripePaymentSheet,
+  presentStripePaymentSheet,
+  supportsStripeNative,
+} from '@/lib/native-feature-support';
 import { goBackOrReplace } from '@/lib/navigation';
 
 export default function AddPaymentMethodScreen() {
   const router = useRouter();
+  const toast = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+  const isStripeSupported = supportsStripeNative();
 
   const handleSaveCard = async () => {
-    Alert.alert('Unavailable in Expo Go', getUnsupportedNativeFeatureMessage('Adding a card'));
-  };
+    if (!isStripeSupported) {
+      Alert.alert('Unavailable in Expo Go', getUnsupportedNativeFeatureMessage('Adding a card'));
+      return;
+    }
 
-  const isStripeSupported = supportsStripeNative();
+    if (isSaving) return;
+
+    setIsSaving(true);
+    try {
+      const setupIntent = await createSetupIntent();
+      if (!setupIntent) {
+        Alert.alert('Payment Error', 'Failed to initialize card entry. Please try again.');
+        return;
+      }
+
+      const { error: initError } = await initStripePaymentSheet({
+        setupIntentClientSecret: setupIntent.clientSecret,
+        merchantDisplayName: '100Handy',
+        ...(Platform.OS === 'ios' ? { applePay: { merchantCountryCode: 'GB' } } : {}),
+        ...(Platform.OS === 'android'
+          ? { googlePay: { merchantCountryCode: 'GB', testEnv: __DEV__ } }
+          : {}),
+        style: 'automatic',
+      });
+
+      if (initError) {
+        Alert.alert('Payment Error', initError.message || 'Failed to initialize card entry. Please try again.');
+        return;
+      }
+
+      const { error: presentError } = await presentStripePaymentSheet();
+      if (presentError) {
+        if (presentError.code !== 'Canceled') {
+          Alert.alert('Payment Error', presentError.message || 'Failed to add payment method.');
+        }
+        return;
+      }
+
+      toast.success('Success', 'Payment method added successfully.');
+      goBackOrReplace(router, '/(client)/profile/payment-methods');
+    } catch (error) {
+      console.error('Add payment method error:', error);
+      Alert.alert('Payment Error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -35,7 +88,7 @@ export default function AddPaymentMethodScreen() {
               style={{ fontFamily: 'WorkSans_400Regular' }}
             >
               {isStripeSupported
-                ? 'Use a development build to complete card entry. Payment details are securely processed by Stripe.'
+                ? 'Enter your card details securely through Stripe. Payment details are securely processed by Stripe.'
                 : getUnsupportedNativeFeatureMessage('Card entry')}
             </Text>
           </View>
@@ -87,6 +140,7 @@ export default function AddPaymentMethodScreen() {
       <View className="px-5 pb-6 pt-3 border-t border-[#F0F0F0]">
         <Pressable
           onPress={handleSaveCard}
+          disabled={isSaving}
           className="rounded-xl py-4 flex-row items-center justify-center"
           style={{
             backgroundColor: '#C1856A',
@@ -95,13 +149,15 @@ export default function AddPaymentMethodScreen() {
             shadowOpacity: 0.1,
             shadowRadius: 4,
             elevation: 3,
+            opacity: isSaving ? 0.7 : 1,
           }}
         >
+          {isSaving ? <ActivityIndicator color="#fff" className="mr-2" /> : null}
           <Text
             className="text-white text-base font-semibold"
             style={{ fontFamily: 'WorkSans_600SemiBold' }}
           >
-            Open in Dev Build
+            {isSaving ? 'Opening Stripe...' : 'Add Card'}
           </Text>
         </Pressable>
       </View>

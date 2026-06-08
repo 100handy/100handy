@@ -2,12 +2,18 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { corsHeaders } from "../_shared/cors.ts";
 import { calculatePayoutAmounts } from "../_shared/payment-policy.ts";
-import { jsonResponse, requireAuthenticatedUser } from "../_shared/auth.ts";
+import { jsonResponse, requireAdminPermission } from "../_shared/auth.ts";
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2024-10-28.acacia',
   httpClient: Stripe.createFetchHttpClient(),
 });
+
+function getLatestChargeId(paymentIntent: Stripe.PaymentIntent): string | null {
+  const latestCharge = paymentIntent.latest_charge;
+  if (typeof latestCharge === 'string') return latestCharge;
+  return latestCharge?.id ?? null;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,23 +21,13 @@ serve(async (req) => {
   }
 
   try {
-    const auth = await requireAuthenticatedUser(req);
+    const auth = await requireAdminPermission(req, 'finance.manage');
     if ('error' in auth) return auth.error;
     const { user, serviceClient } = auth;
 
     const { bookingId } = await req.json();
     if (!bookingId) {
       return jsonResponse({ error: 'Booking ID is required' }, 400);
-    }
-
-    const { data: requesterProfile, error: requesterError } = await serviceClient
-      .from('profiles')
-      .select('role, account_status')
-      .eq('user_id', user.id)
-      .single();
-
-    if (requesterError || !requesterProfile || requesterProfile.role !== 'admin' || requesterProfile.account_status !== 'active') {
-      return jsonResponse({ error: 'Active admin access is required' }, 403);
     }
 
     const { data: booking, error: bookingError } = await serviceClient
@@ -82,12 +78,17 @@ serve(async (req) => {
 
     const capturedAmount = paymentIntent.amount_received || paymentIntent.amount;
     const { platformFee, professionalPayout } = calculatePayoutAmounts(capturedAmount);
+    const sourceTransaction = getLatestChargeId(paymentIntent);
+    if (!sourceTransaction) {
+      return jsonResponse({ error: 'Captured payment charge not found for payout' }, 400);
+    }
 
     const transfer = await stripe.transfers.create(
       {
         amount: professionalPayout,
         currency: paymentIntent.currency,
         destination: handyProfile.stripe_connect_account_id,
+        source_transaction: sourceTransaction,
         transfer_group: `booking_${bookingId}`,
         metadata: {
           booking_id: bookingId,

@@ -1,12 +1,19 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
-import { jsonResponse, requireAuthenticatedUser } from '../_shared/auth.ts';
+import { jsonResponse, requireAdminPermission } from '../_shared/auth.ts';
+import { calculatePayoutAmounts } from '../_shared/payment-policy.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2024-10-28.acacia',
   httpClient: Stripe.createFetchHttpClient(),
 });
+
+function getTransferReversalAmount(refundAmount: number | undefined, transferAmount: number): number | undefined {
+  if (!refundAmount || refundAmount <= 0) return undefined;
+  const { professionalPayout } = calculatePayoutAmounts(refundAmount);
+  return Math.min(professionalPayout, transferAmount);
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -14,9 +21,9 @@ serve(async (req) => {
   }
 
   try {
-    const auth = await requireAuthenticatedUser(req);
+    const auth = await requireAdminPermission(req, 'finance.manage');
     if ('error' in auth) return auth.error;
-    const { user, serviceClient } = auth;
+    const { serviceClient } = auth;
 
     const { bookingId, amount } = await req.json();
 
@@ -32,16 +39,6 @@ serve(async (req) => {
 
     if (bookingError || !booking) {
       return jsonResponse({ error: 'Booking not found' }, 404);
-    }
-
-    const { data: profile } = await serviceClient
-      .from('profiles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
-      return jsonResponse({ error: 'Forbidden: refunds require admin approval' }, 403);
     }
 
     if (!booking.payment_intent_id) {
@@ -68,9 +65,11 @@ serve(async (req) => {
 
     let reversalId: string | null = null;
     if (booking.transfer_id) {
+      const transfer = await stripe.transfers.retrieve(booking.transfer_id);
+      const reversalAmount = getTransferReversalAmount(refund.amount, transfer.amount);
       const reversal = await stripe.transfers.createReversal(
         booking.transfer_id,
-        amount && amount > 0 ? { amount: Math.round(amount) } : {},
+        reversalAmount ? { amount: reversalAmount } : {},
         { idempotencyKey: `${bookingId}_${amount || 'full'}_transfer_reversal` }
       );
       reversalId = reversal.id;

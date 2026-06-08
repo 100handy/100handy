@@ -13,6 +13,7 @@ export type AdminPermission =
   | 'accounts.manage'
   | 'notifications.manage'
   | 'finance.view'
+  | 'finance.manage'
   | 'insights.view'
   | 'reports.view'
   | 'promotions.manage'
@@ -42,6 +43,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
     'accounts.manage',
     'notifications.manage',
     'finance.view',
+    'finance.manage',
     'insights.view',
     'reports.view',
     'promotions.manage',
@@ -78,6 +80,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
     'dashboard.view',
     'audit.view',
     'finance.view',
+    'finance.manage',
     'insights.view',
     'reports.view',
   ],
