@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/lib/database.types'
@@ -172,6 +173,20 @@ export function useCreateOutreachLead() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.lead.create',
+        entityType: 'outreach_lead',
+        entityId: data.id,
+        summary: `Created outreach lead ${data.profile_name || data.business_name || data.id}`,
+        metadata: {
+          leadType: data.lead_type,
+          sourcePlatform: data.source_platform,
+          serviceType: data.service_type,
+          approvalStatus: data.approval_status,
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -195,6 +210,19 @@ export function useUpdateOutreachLead() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.lead.update',
+        entityType: 'outreach_lead',
+        entityId: data.id,
+        summary: `Updated outreach lead ${data.profile_name || data.business_name || data.id}`,
+        metadata: {
+          updatedFields: Object.keys(updates),
+          status: data.status,
+          approvalStatus: data.approval_status,
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -217,6 +245,20 @@ export function useCreateOutreachMessage() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.message.create',
+        entityType: 'outreach_message',
+        entityId: data.id,
+        summary: `Created outreach message for lead ${data.lead_id}`,
+        metadata: {
+          leadId: data.lead_id,
+          channel: data.channel,
+          approvalStatus: data.approval_status,
+          deliveryStatus: data.delivery_status,
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -237,6 +279,17 @@ export function useGenerateOutreachDraft() {
       })
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.draft.generate',
+        entityType: 'outreach_lead',
+        entityId: leadId,
+        summary: `Generated outreach draft for lead ${leadId}`,
+        metadata: {
+          function: 'generate-outreach-draft',
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -262,6 +315,21 @@ export function useRunOutreachAgent() {
       })
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.agent.run',
+        entityType: 'outreach_agent',
+        entityId: input.agentType,
+        summary: `Ran ${input.agentType.replaceAll('_', ' ')} outreach agent`,
+        metadata: {
+          agentType: input.agentType,
+          sourcePlatform: input.sourcePlatform,
+          defaultServiceType: input.defaultServiceType,
+          itemCount: input.items.length,
+          createdCount: data?.created_count ?? null,
+        },
+      })
+
       return data as { success: boolean; created_count: number }
     },
     onSuccess: () => {
@@ -296,6 +364,20 @@ export function useUpdateOutreachMessage() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.message.update',
+        entityType: 'outreach_message',
+        entityId: data.id,
+        summary: `Updated outreach message ${data.id}`,
+        metadata: {
+          leadId: data.lead_id,
+          updatedFields: Object.keys(updates),
+          approvalStatus: data.approval_status,
+          deliveryStatus: data.delivery_status,
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -318,6 +400,19 @@ export function useCreateOutreachFollowUp() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.follow_up.create',
+        entityType: 'outreach_follow_up',
+        entityId: data.id,
+        summary: `Created outreach follow-up for lead ${data.lead_id}`,
+        metadata: {
+          leadId: data.lead_id,
+          dueAt: data.due_at,
+          status: data.status,
+        },
+      })
+
       return data
     },
     onSuccess: () => {
@@ -347,6 +442,19 @@ export function useUpdateOutreachFollowUp() {
         .single()
 
       if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.follow_up.update',
+        entityType: 'outreach_follow_up',
+        entityId: data.id,
+        summary: `Updated outreach follow-up ${data.id}`,
+        metadata: {
+          leadId: data.lead_id,
+          updatedFields: Object.keys(updates),
+          status: data.status,
+        },
+      })
+
       return data
     },
     onSuccess: () => {

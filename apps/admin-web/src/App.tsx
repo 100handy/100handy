@@ -1,10 +1,11 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { resolveInitialRoute } from '@/contexts/auth-routing'
 import DashboardLayout from '@/layouts/dashboard-layout'
 import AdminAnalyticsProvider from '@/components/analytics/AdminAnalyticsProvider'
+import { AdminErrorBoundary } from '@/components/AdminErrorBoundary'
 
 const LoginPage = lazy(() => import('@/pages/login'))
 const ForgotPasswordPage = lazy(() => import('@/pages/forgot-password'))
@@ -108,8 +109,19 @@ function App() {
   return (
     <BrowserRouter>
       <AdminAnalyticsProvider>
-        <Suspense fallback={<RouteLoadingScreen />}>
-          <Routes>
+        <AdminRoutes />
+      </AdminAnalyticsProvider>
+    </BrowserRouter>
+  )
+}
+
+function AdminRoutes() {
+  const location = useLocation()
+
+  return (
+    <AdminErrorBoundary key={location.pathname}>
+      <Suspense fallback={<RouteLoadingScreen />}>
+        <Routes>
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -217,10 +229,9 @@ function App() {
                 </Route>
               </Route>
             </Route>
-          </Routes>
-        </Suspense>
-      </AdminAnalyticsProvider>
-    </BrowserRouter>
+        </Routes>
+      </Suspense>
+    </AdminErrorBoundary>
   )
 }
 

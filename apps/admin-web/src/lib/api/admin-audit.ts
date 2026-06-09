@@ -60,6 +60,7 @@ function getAuditSection(entityType: string) {
     'popup',
   ].includes(entityType)) return 'notifications'
   if (['refund', 'payout', 'payment'].includes(entityType)) return 'finance'
+  if (['outreach_agent', 'outreach_follow_up', 'outreach_lead', 'outreach_message'].includes(entityType)) return 'outreach'
   return 'other'
 }
 
