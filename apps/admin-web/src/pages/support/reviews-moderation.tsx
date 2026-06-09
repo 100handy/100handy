@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { AlertTriangle, Search, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
@@ -18,7 +18,7 @@ export default function ReviewsModerationPage() {
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  useMemo(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300)
     return () => clearTimeout(timer)
   }, [searchQuery])

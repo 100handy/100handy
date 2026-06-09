@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { Search, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
@@ -20,7 +20,7 @@ export default function HandysPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
   // Debounce search input
-  useMemo(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery)
       setCurrentPage(1)

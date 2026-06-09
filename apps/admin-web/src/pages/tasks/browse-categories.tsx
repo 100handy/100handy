@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search, Plus, Edit, Loader2, ArrowUp, ArrowDown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
@@ -19,7 +19,7 @@ export default function BrowseCategoriesPage() {
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
-  useMemo(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery)
       setCurrentPage(1)

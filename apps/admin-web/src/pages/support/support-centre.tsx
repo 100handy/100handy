@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '../../components/header'
 import { Search, ChevronDown, Loader2, X, Send, MessageSquare, StickyNote, UserCheck } from 'lucide-react'
 import {
@@ -25,7 +25,7 @@ export default function SupportCentre() {
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  useMemo(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300)
     return () => clearTimeout(timer)
   }, [searchQuery])

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { Search, Download, ChevronDown, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useHandyEarnings, type HandyEarningsFilters } from '@/lib/api/earnings'
@@ -29,7 +29,7 @@ export default function EarningsDashboardPage() {
 
   // Debounce search
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  useMemo(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery)
       setPage(1) // Reset to first page on search
