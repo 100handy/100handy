@@ -1,0 +1,63 @@
+name: Admin Web
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/admin-web.yml"
+      - "apps/admin-web/**"
+      - "pnpm-lock.yaml"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - "packages/**"
+  push:
+    branches:
+      - main
+      - feat/web-ui
+    paths:
+      - ".github/workflows/admin-web.yml"
+      - "apps/admin-web/**"
+      - "pnpm-lock.yaml"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - "packages/**"
+
+jobs:
+  verify:
+    name: Verify admin web
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm --dir apps/admin-web test:e2e:install --with-deps
+
+      - name: Lint
+        run: pnpm --dir apps/admin-web lint
+
+      - name: Typecheck
+        run: pnpm --dir apps/admin-web check-types
+
+      - name: Build
+        run: pnpm --dir apps/admin-web build
+
+      - name: Route smoke tests
+        run: pnpm --dir apps/admin-web test:e2e
