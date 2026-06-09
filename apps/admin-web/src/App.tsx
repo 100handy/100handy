@@ -62,6 +62,8 @@ const ReviewsModerationPage = lazy(() => import('@/pages/support/reviews-moderat
 const DisputesPage = lazy(() => import('@/pages/support/disputes'))
 const AnnouncementsPage = lazy(() => import('@/pages/dashboard/announcements'))
 
+const isE2EAdmin = import.meta.env.VITE_ADMIN_E2E_AUTH === 'true'
+
 function AuthBootstrapScreen() {
   return (
     <div className="flex h-screen w-full items-center justify-center">
@@ -103,6 +105,11 @@ function RootRedirect() {
 function TaskDetailsRedirect() {
   const { id } = useParams<{ id: string }>()
   return id ? <Navigate to={`/tasks/details/${id}`} replace /> : <Navigate to="/tasks/list" replace />
+}
+
+function E2ECrashPage() {
+  throw new Error('E2E admin crash boundary probe')
+  return null
 }
 
 function App() {
@@ -227,6 +234,9 @@ function AdminRoutes() {
                 <Route element={<ProtectedRoute permissions={['disputes.manage']} />}>
                   <Route path="/support/disputes" element={<DisputesPage />} />
                 </Route>
+                {isE2EAdmin ? (
+                  <Route path="/__e2e/crash" element={<E2ECrashPage />} />
+                ) : null}
               </Route>
             </Route>
         </Routes>

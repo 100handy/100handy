@@ -42,3 +42,17 @@ test('announcement editor blocks empty drafts with visible validation', async ({
   await expect(page.getByText('Body is required.')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Save Draft' })).toBeDisabled()
 })
+
+test('admin shell shows a recovery UI when a screen crashes', async ({ page }) => {
+  page.on('console', (message) => {
+    if (message.type() === 'error' && !message.text().includes('E2E admin crash boundary probe')) {
+      throw new Error(message.text())
+    }
+  })
+
+  await page.goto('/__e2e/crash')
+
+  await expect(page.getByRole('heading', { name: 'Something went wrong' })).toBeVisible()
+  await expect(page.getByText('E2E admin crash boundary probe')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
+})
