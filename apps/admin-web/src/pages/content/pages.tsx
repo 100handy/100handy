@@ -146,9 +146,9 @@ export default function ContentPagesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPages.map((page) => (
+                {filteredPages.map((page, index) => (
                   <tr
-                    key={page.route}
+                    key={`${page.route}-${page.adminPath ?? page.title}-${index}`}
                     className="border-b border-gray-200 bg-white align-top hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50 dark:hover:bg-gray-700/30"
                   >
                     <td className="px-6 py-4">

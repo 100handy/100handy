@@ -17,6 +17,7 @@ import {
   useUserGrowthData,
   useTaskCompletionRate,
 } from '@/lib/api/analytics'
+import Header from '@/components/header'
 import { useState } from 'react'
 
 export default function DataAnalyticsPage() {
@@ -93,7 +94,9 @@ export default function DataAnalyticsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="flex-1 flex flex-col">
+      <Header title="Analytics" />
+      <main className="flex-1 overflow-y-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -279,7 +282,7 @@ export default function DataAnalyticsPage() {
 
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Task Completion Rate
+            Booking Completion Rate
           </h3>
           <div className="h-80 flex items-center justify-center">
             {completionLoading ? (
@@ -374,6 +377,7 @@ export default function DataAnalyticsPage() {
         </div>
       </div>
       ) : null}
+      </main>
     </div>
   )
 }

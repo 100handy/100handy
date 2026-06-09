@@ -67,7 +67,54 @@ interface AuthProviderProps {
 const PROFILE_FETCH_TIMEOUT_MS = 10000;
 const SESSION_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
-export function AuthProvider({ children }: AuthProviderProps) {
+function E2EAuthProvider({ children }: AuthProviderProps) {
+  const mockUser = {
+    id: "admin_e2e",
+    email: "admin-e2e@100handy.test",
+    app_metadata: { role: "admin" },
+    user_metadata: {},
+    aud: "authenticated",
+    created_at: new Date(0).toISOString(),
+  } as User;
+
+  const mockSession = {
+    access_token: "admin-e2e-token",
+    refresh_token: "admin-e2e-refresh-token",
+    token_type: "bearer",
+    expires_in: 3600,
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    user: mockUser,
+  } as Session;
+
+  const mockProfile: Profile = {
+    user_id: mockUser.id,
+    role: "admin",
+    admin_role: "super_admin",
+    first_name: "E2E",
+    last_name: "Admin",
+    phone: null,
+    avatar_url: null,
+    account_status: "active",
+    status_reason: null,
+  };
+
+  const value: AuthContextType = {
+    user: mockUser,
+    session: mockSession,
+    profile: mockProfile,
+    isAdmin: true,
+    hasPermission: () => true,
+    loading: false,
+    roleResolved: true,
+    signIn: async () => ({ error: null }),
+    signOut: async () => {},
+    refreshSession: async () => {},
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function RealAuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -362,6 +409,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  if (import.meta.env.VITE_ADMIN_E2E_AUTH === "true") {
+    return <E2EAuthProvider>{children}</E2EAuthProvider>;
+  }
+
+  return <RealAuthProvider>{children}</RealAuthProvider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
