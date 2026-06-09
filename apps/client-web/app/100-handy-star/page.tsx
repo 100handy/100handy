@@ -7,7 +7,7 @@ import { getPageContent, getPageSeoMetadata } from "@/lib/cms";
 import {
   formatMonthLabel,
   formatWinnerDisplayName,
-  getMonthlyHandyStar,
+  getPromotedOrComputedHandyStar,
 } from "@/lib/handy-stars";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function EliteTaskersPage() {
   const c = await getPageContent("100-handy-star");
-  const monthlyWinner = await getMonthlyHandyStar().catch(() => null);
+  const monthlyWinner = await getPromotedOrComputedHandyStar().catch(() => null);
   const benefits = [
     {
       title: c("benefits.benefit_1_title", "Consistently high ratings"),

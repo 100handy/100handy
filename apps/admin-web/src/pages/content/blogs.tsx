@@ -45,6 +45,7 @@ export default function BlogsPage() {
   const [form, setForm] = useState(emptyPost)
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [editorTab, setEditorTab] = useState<'content' | 'details' | 'seo' | 'history'>('content')
   const selectedPost = posts.find((post) => post.id === selectedId) ?? null
   const effectiveSlug = selectedPost?.slug ?? form.slug.trim()
   const { data: seo } = useSurfaceSeo('blog_post', effectiveSlug)
@@ -227,6 +228,11 @@ export default function BlogsPage() {
               Your admin role can view blog content, but it cannot change or publish it.
             </div>
           )}
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Manage editorial blog posts, SEO metadata, and publish state for the public site.
+            </p>
+          </div>
           <div className="flex items-center justify-between">
             <div className="relative w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -311,135 +317,200 @@ export default function BlogsPage() {
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <a
-                href={`${import.meta.env.VITE_SITE_URL || ''}/blog/${effectiveSlug || form.slug.trim()}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Preview Blog Page
-              </a>
+            <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-4 dark:border-gray-700">
+              {[
+                { id: 'content', label: 'Post content' },
+                { id: 'details', label: 'Post details' },
+                { id: 'seo', label: 'SEO' },
+                { id: 'history', label: 'History' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setEditorTab(tab.id as typeof editorTab)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                    editorTab === tab.id
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            {(effectiveSlug || form.slug.trim()) && (
-              <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
-                  Preview
+            {editorTab === 'content' && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-base font-semibold text-gray-900 dark:text-white">Post content</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Write the headline, excerpt, and main article body here.
+                      </p>
+                    </div>
+                    <a
+                      href={`${import.meta.env.VITE_SITE_URL || ''}/blog/${effectiveSlug || form.slug.trim()}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Open live page
+                    </a>
+                  </div>
                 </div>
-                <iframe
-                  title="Blog preview"
-                  src={`${import.meta.env.VITE_SITE_URL || ''}/blog/${effectiveSlug || form.slug.trim()}`}
-                  className="h-[520px] w-full bg-white"
-                />
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Excerpt</label>
+                    <textarea
+                      value={form.excerpt}
+                      onChange={(e) => setForm((prev) => ({ ...prev, excerpt: e.target.value }))}
+                      rows={4}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Body</label>
+                    <textarea
+                      value={form.body}
+                      onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
+                      rows={16}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-xs"
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextField label="Slug" value={form.slug} onChange={(value) => setForm((prev) => ({ ...prev, slug: value }))} />
-              <FieldErrorText error={fieldErrors.slug} />
-              <TextField label="Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
-              <FieldErrorText error={fieldErrors.title} />
-              <TextField label="Category" value={form.category} onChange={(value) => setForm((prev) => ({ ...prev, category: value }))} />
-              <TextField label="Author" value={form.author_name} onChange={(value) => setForm((prev) => ({ ...prev, author_name: value }))} />
-              <TextField label="Cover Image URL" value={form.cover_image_url} onChange={(value) => setForm((prev) => ({ ...prev, cover_image_url: value }))} />
-              <FieldErrorText error={fieldErrors.cover_image_url} />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                <select
-                  value={form.status}
-                  onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as BlogStatus }))}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="draft">draft</option>
-                  <option value="published">published</option>
-                  <option value="archived">archived</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Publish Date</label>
-                <input
-                  type="date"
-                  value={form.published_at}
-                  onChange={(e) => setForm((prev) => ({ ...prev, published_at: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Excerpt</label>
-                <textarea
-                  value={form.excerpt}
-                  onChange={(e) => setForm((prev) => ({ ...prev, excerpt: e.target.value }))}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Body</label>
-                <textarea
-                  value={form.body}
-                  onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
-                  rows={12}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">SEO</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TextField label="Meta Title" value={seoForm.meta_title} onChange={(value) => setSeoForm((prev) => ({ ...prev, meta_title: value }))} />
-                <TextField label="Canonical URL" value={seoForm.canonical_url} onChange={(value) => setSeoForm((prev) => ({ ...prev, canonical_url: value }))} />
-                <FieldErrorText error={fieldErrors.canonical_url} />
-                <TextAreaField label="Meta Description" value={seoForm.meta_description} onChange={(value) => setSeoForm((prev) => ({ ...prev, meta_description: value }))} className="md:col-span-2" />
-                <TextField label="Open Graph Title" value={seoForm.og_title} onChange={(value) => setSeoForm((prev) => ({ ...prev, og_title: value }))} />
-                <TextField label="Open Graph Image URL" value={seoForm.og_image_url} onChange={(value) => setSeoForm((prev) => ({ ...prev, og_image_url: value }))} />
-                <FieldErrorText error={fieldErrors.og_image_url} />
-                <TextAreaField label="Open Graph Description" value={seoForm.og_description} onChange={(value) => setSeoForm((prev) => ({ ...prev, og_description: value }))} className="md:col-span-2" />
-                <TextField label="Twitter Title" value={seoForm.twitter_title} onChange={(value) => setSeoForm((prev) => ({ ...prev, twitter_title: value }))} />
-                <TextField label="Twitter Image URL" value={seoForm.twitter_image_url} onChange={(value) => setSeoForm((prev) => ({ ...prev, twitter_image_url: value }))} />
-                <FieldErrorText error={fieldErrors.twitter_image_url} />
-              </div>
-            </div>
-
-            {revisions.length > 0 && (
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-3">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Revision History</h4>
-                {revisions.map((revision) => (
-                  <div key={revision.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        v{revision.version_number} · {revision.revision_state}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Updated {format(new Date(revision.updated_at), 'MMM d, yyyy HH:mm')}
-                        {revision.published_at ? ` · Published ${format(new Date(revision.published_at), 'MMM d, yyyy HH:mm')}` : ''}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {revision.revision_state === 'published' ? (
-                        <button
-                          onClick={async () => {
-                            setActionFeedback(null)
-                            try {
-                              await restoreRevision.mutateAsync({ slug: effectiveSlug, revisionId: revision.id })
-                              setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
-                            } catch (error) {
-                              setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
-                            }
-                          }}
-                          disabled={restoreRevision.isPending}
-                          className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
-                        >
-                          Restore to Draft
-                        </button>
-                      ) : (
-                        <span className="text-xs font-medium text-amber-600">Current draft</span>
-                      )}
-                    </div>
+            {editorTab === 'details' && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-white">Post details</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Basic page details. Most editors only need the title, slug, author, and cover image.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <TextField label="Slug" value={form.slug} onChange={(value) => setForm((prev) => ({ ...prev, slug: value }))} />
+                    <FieldErrorText error={fieldErrors.slug} />
                   </div>
-                ))}
+                  <div>
+                    <TextField label="Title" value={form.title} onChange={(value) => setForm((prev) => ({ ...prev, title: value }))} />
+                    <FieldErrorText error={fieldErrors.title} />
+                  </div>
+                  <TextField label="Category" value={form.category} onChange={(value) => setForm((prev) => ({ ...prev, category: value }))} />
+                  <TextField label="Author" value={form.author_name} onChange={(value) => setForm((prev) => ({ ...prev, author_name: value }))} />
+                  <div>
+                    <TextField label="Cover Image URL" value={form.cover_image_url} onChange={(value) => setForm((prev) => ({ ...prev, cover_image_url: value }))} />
+                    <FieldErrorText error={fieldErrors.cover_image_url} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                    <select
+                      value={form.status}
+                      onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as BlogStatus }))}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Publish date</label>
+                    <input
+                      type="date"
+                      value={form.published_at}
+                      onChange={(e) => setForm((prev) => ({ ...prev, published_at: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editorTab === 'seo' && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-white">SEO</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Search and social sharing settings for the published blog page.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <TextField label="Meta Title" value={seoForm.meta_title} onChange={(value) => setSeoForm((prev) => ({ ...prev, meta_title: value }))} />
+                  <div>
+                    <TextField label="Canonical URL" value={seoForm.canonical_url} onChange={(value) => setSeoForm((prev) => ({ ...prev, canonical_url: value }))} />
+                    <FieldErrorText error={fieldErrors.canonical_url} />
+                  </div>
+                  <TextAreaField label="Meta Description" value={seoForm.meta_description} onChange={(value) => setSeoForm((prev) => ({ ...prev, meta_description: value }))} className="md:col-span-2" />
+                  <TextField label="Open Graph Title" value={seoForm.og_title} onChange={(value) => setSeoForm((prev) => ({ ...prev, og_title: value }))} />
+                  <div>
+                    <TextField label="Open Graph Image URL" value={seoForm.og_image_url} onChange={(value) => setSeoForm((prev) => ({ ...prev, og_image_url: value }))} />
+                    <FieldErrorText error={fieldErrors.og_image_url} />
+                  </div>
+                  <TextAreaField label="Open Graph Description" value={seoForm.og_description} onChange={(value) => setSeoForm((prev) => ({ ...prev, og_description: value }))} className="md:col-span-2" />
+                  <TextField label="Twitter Title" value={seoForm.twitter_title} onChange={(value) => setSeoForm((prev) => ({ ...prev, twitter_title: value }))} />
+                  <div>
+                    <TextField label="Twitter Image URL" value={seoForm.twitter_image_url} onChange={(value) => setSeoForm((prev) => ({ ...prev, twitter_image_url: value }))} />
+                    <FieldErrorText error={fieldErrors.twitter_image_url} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editorTab === 'history' && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-white">Revision history</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Review published versions and restore one back into draft.
+                  </p>
+                </div>
+                {revisions.length > 0 ? (
+                  <div className="space-y-3">
+                    {revisions.map((revision) => (
+                      <div key={revision.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            v{revision.version_number} · {revision.revision_state}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Updated {format(new Date(revision.updated_at), 'MMM d, yyyy HH:mm')}
+                            {revision.published_at ? ` · Published ${format(new Date(revision.published_at), 'MMM d, yyyy HH:mm')}` : ''}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {revision.revision_state === 'published' ? (
+                            <button
+                              onClick={async () => {
+                                setActionFeedback(null)
+                                try {
+                                  await restoreRevision.mutateAsync({ slug: effectiveSlug, revisionId: revision.id })
+                                  setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                                } catch (error) {
+                                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                                }
+                              }}
+                              disabled={restoreRevision.isPending}
+                              className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                            >
+                              Restore to Draft
+                            </button>
+                          ) : (
+                            <span className="text-xs font-medium text-amber-600">Current draft</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-gray-300 px-4 py-8 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                    No revision history yet.
+                  </div>
+                )}
               </div>
             )}
 

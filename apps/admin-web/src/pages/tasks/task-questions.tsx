@@ -85,7 +85,7 @@ export default function TaskQuestionsPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Task Questions" />
+      <Header title="Booking Form Fields" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="mx-auto max-w-7xl space-y-8">
           {actionFeedback && (
@@ -97,6 +97,11 @@ export default function TaskQuestionsPage() {
               {actionFeedback.message}
             </div>
           )}
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Control the booking questions customers answer for each service category.
+            </p>
+          </div>
           <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-[320px,1fr,auto] md:items-end">
               <div>
@@ -133,7 +138,7 @@ export default function TaskQuestionsPage() {
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
               >
                 <Plus className="h-4 w-4" />
-                New Field
+                New Booking Field
               </button>
             </div>
           </div>
@@ -161,7 +166,7 @@ export default function TaskQuestionsPage() {
                 ) : filtered.length === 0 ? (
                   <tr>
                     <td className="px-6 py-6 text-center text-gray-500" colSpan={7}>
-                      No fields found for this category.
+                      No booking form fields found for this category.
                     </td>
                   </tr>
                 ) : (
@@ -182,8 +187,8 @@ export default function TaskQuestionsPage() {
                           onClick={() => {
                             setActionFeedback(null)
                             deleteField.mutate({ id: field.id, categoryId: field.category_id }, {
-                              onSuccess: () => setActionFeedback({ tone: 'success', message: 'Task question deleted.' }),
-                              onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete task question.' }),
+                              onSuccess: () => setActionFeedback({ tone: 'success', message: 'Booking form field deleted.' }),
+                              onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to delete booking form field.' }),
                             })
                           }}
                         >
@@ -199,7 +204,7 @@ export default function TaskQuestionsPage() {
 
           <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
             <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-              {selectedId ? 'Edit Task Question' : 'Create Task Question'}
+              {selectedId ? 'Edit Booking Form Field' : 'Create Booking Form Field'}
             </h3>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -254,15 +259,15 @@ export default function TaskQuestionsPage() {
                     display_order: Number(form.display_order) || 0,
                     section: form.section,
                   }, {
-                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Task question saved.' }),
-                    onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save task question.' }),
+                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Booking form field saved.' }),
+                    onError: (error) => setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to save booking form field.' }),
                   })
                 }}
                 disabled={saveField.isPending || !categoryId}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
               >
                 {saveField.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                Save Task Question
+                Save Booking Field
               </button>
             </div>
           </div>

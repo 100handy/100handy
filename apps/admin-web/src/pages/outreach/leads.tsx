@@ -43,6 +43,7 @@ const defaultLeadForm: LeadFormState = {
 }
 
 export default function OutreachLeadsPage() {
+  const [activeView, setActiveView] = useState<'queue' | 'add' | 'finder' | 'detail'>('queue')
   const [leadType, setLeadType] = useState<OutreachLeadType | 'all'>('all')
   const [status, setStatus] = useState<OutreachLeadStatus | 'all'>('all')
   const [approvalStatus, setApprovalStatus] = useState<OutreachApprovalStatus | 'all'>('all')
@@ -222,6 +223,29 @@ export default function OutreachLeadsPage() {
 
       <div className="flex-1 overflow-y-auto bg-background-light p-8 dark:bg-background-dark">
         <div className="mx-auto max-w-7xl space-y-6">
+          <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+            {[
+              { id: 'queue', label: 'Lead queue' },
+              { id: 'detail', label: 'Lead detail' },
+              { id: 'add', label: 'Add lead' },
+              { id: 'finder', label: 'AI finder' },
+            ].map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id as typeof activeView)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  activeView === view.id
+                    ? 'bg-primary text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+
+          {activeView === 'queue' ? (
           <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
             <SummaryCard label="Total leads" value={summary?.total ?? 0} />
             <SummaryCard label="Customers" value={summary?.customers ?? 0} />
@@ -230,9 +254,11 @@ export default function OutreachLeadsPage() {
             <SummaryCard label="Approved" value={summary?.approved ?? 0} />
             <SummaryCard label="Contacted" value={summary?.contacted ?? 0} />
           </div>
+          ) : null}
 
           <div className="grid gap-6 xl:grid-cols-[0.9fr,1.1fr]">
             <section className="space-y-6">
+              {activeView === 'queue' ? (
               <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
@@ -309,13 +335,18 @@ export default function OutreachLeadsPage() {
                   )}
                 </div>
               </div>
+              ) : null}
 
+              {activeView === 'add' ? (
               <LeadCreatePanel
                 form={leadForm}
                 setForm={setLeadForm}
                 onCreate={handleCreateLead}
                 saving={createLead.isPending}
               />
+              ) : null}
+
+              {activeView === 'finder' ? (
               <AgentRunnerPanel
                 agentType={agentType}
                 setAgentType={setAgentType}
@@ -328,10 +359,11 @@ export default function OutreachLeadsPage() {
                 onRun={handleRunAgent}
                 running={runAgent.isPending}
               />
+              ) : null}
             </section>
 
             <section className="space-y-6">
-              {selectedLead ? (
+              {activeView === 'detail' && selectedLead ? (
                 <LeadDetailPanel
                   lead={selectedLead}
                   draftText={draftText}
@@ -357,11 +389,11 @@ export default function OutreachLeadsPage() {
                     updateFollowUp.isPending
                   }
                 />
-              ) : (
+              ) : activeView === 'detail' ? (
                 <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-gray-900/50 dark:text-slate-400">
                   Select a lead to review details.
                 </div>
-              )}
+              ) : null}
             </section>
           </div>
         </div>

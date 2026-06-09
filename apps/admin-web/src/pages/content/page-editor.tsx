@@ -179,7 +179,7 @@ export default function PageEditorPage() {
   }
 
   const handlePublish = async () => {
-    if (!pageKey || !canPublish) return
+    if (!pageKey || !pageDef || !canPublish) return
     setActionFeedback(null)
     try {
       await publishDraftMutation.mutateAsync(pageKey)

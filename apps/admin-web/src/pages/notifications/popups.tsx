@@ -34,6 +34,7 @@ const emptyPopup = {
 export default function PopupsPage() {
   const { hasPermission } = useAuth()
   const canManageNotifications = hasPermission('notifications.manage')
+  const [activeView, setActiveView] = useState<'library' | 'editor' | 'history'>('library')
   const { data: popups = [], isLoading } = useAnnouncements()
   const saveDraft = useSaveAnnouncementDraft()
   const publishDraft = usePublishAnnouncementDraft()
@@ -199,6 +200,28 @@ export default function PopupsPage() {
           </button>
         </div>
 
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'library', label: 'Pop-up list' },
+            { id: 'editor', label: 'Editor' },
+            { id: 'history', label: 'History' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+
+        {activeView === 'library' ? (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
           <table className="w-full min-w-[800px] text-left text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
@@ -251,7 +274,9 @@ export default function PopupsPage() {
             </tbody>
           </table>
         </div>
+        ) : null}
 
+        {activeView === 'editor' ? (
         <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
           <UnsavedChangesBanner show={isDirty} />
           {validationErrors.length > 0 && (
@@ -327,6 +352,15 @@ export default function PopupsPage() {
             </button>
           </div>
 
+        </div>
+        ) : null}
+
+        {activeView === 'history' ? (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Revision history</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Review previous banner and modal versions and restore one back to draft when needed.
+          </p>
           <div className="mt-6 space-y-3">
             <h4 className="font-semibold text-gray-900 dark:text-white">Revision History</h4>
             {revisions.length === 0 ? (
@@ -357,6 +391,7 @@ export default function PopupsPage() {
             ))}
           </div>
         </div>
+        ) : null}
       </main>
 
       {deleteTargetId ? (

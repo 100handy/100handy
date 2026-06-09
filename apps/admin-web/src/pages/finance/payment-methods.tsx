@@ -25,6 +25,7 @@ const emptyForm = {
 export default function PaymentMethods() {
   const { hasPermission } = useAuth()
   const canManageFinance = hasPermission('finance.manage')
+  const [activeView, setActiveView] = useState<'library' | 'editor'>('library')
   const [form, setForm] = useState(emptyForm)
   const [deleteTarget, setDeleteTarget] = useState<PaymentMethodConfig | null>(null)
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
@@ -99,13 +100,35 @@ export default function PaymentMethods() {
             Your admin role can view payment method settings, but it cannot change them.
           </div>
         )}
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'library', label: 'Method list' },
+            { id: 'editor', label: 'Method editor' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+        {activeView === 'library' ? (
         <div className="grid gap-4 md:grid-cols-3">
           <MetricCard label="Configured methods" value={methods.length} />
           <MetricCard label="Active methods" value={activeCount} />
           <MetricCard label="Public checkout methods" value={methods.filter((m) => m.public_enabled).length} />
         </div>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr,0.9fr]">
+          {activeView === 'library' ? (
           <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -156,7 +179,9 @@ export default function PaymentMethods() {
               </table>
             </div>
           </section>
+          ) : null}
 
+          {activeView === 'editor' ? (
           <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{form.id ? 'Edit payment method' : 'Add payment method'}</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -199,6 +224,7 @@ export default function PaymentMethods() {
               </div>
             </form>
           </section>
+          ) : null}
         </div>
       </main>
 

@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/reviews'
 
 export default function ReviewsModerationPage() {
+  const [activeView, setActiveView] = useState<'queue' | 'detail'>('queue')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null)
   const [noteReason, setNoteReason] = useState('')
@@ -70,6 +71,26 @@ export default function ReviewsModerationPage() {
     <div className="flex-1 flex flex-col">
       <Header title="Reviews Moderation" />
       <main className="flex-1 p-6">
+        <div className="mb-4 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'queue', label: 'Review queue' },
+            { id: 'detail', label: 'Moderation detail' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Customer review moderation</h2>
@@ -102,6 +123,7 @@ export default function ReviewsModerationPage() {
         )}
 
         <div className="grid gap-6 xl:grid-cols-[1.4fr,1fr]">
+          {activeView === 'queue' ? (
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-gray-900/50">
             <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
               <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
@@ -155,7 +177,9 @@ export default function ReviewsModerationPage() {
               </tbody>
             </table>
           </div>
+          ) : null}
 
+          {activeView === 'detail' ? (
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
             {selectedReview ? (
               <div className="space-y-5">
@@ -238,6 +262,7 @@ export default function ReviewsModerationPage() {
               <p className="text-sm text-slate-500 dark:text-slate-400">Select a review to moderate it.</p>
             )}
           </div>
+          ) : null}
         </div>
       </main>
 

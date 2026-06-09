@@ -119,7 +119,7 @@ export default function DashboardPage() {
     metricOrder: [...DASHBOARD_METRIC_LIBRARY],
   })
 
-  const metricCards = data ? Object.values(data.metrics) : []
+  const metricCards = useMemo(() => (data ? Object.values(data.metrics) : []), [data])
   const effectivePreferences = preferences ?? draftPreferences
 
   useEffect(() => {

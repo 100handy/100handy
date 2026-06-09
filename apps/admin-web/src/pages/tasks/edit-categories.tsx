@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ExternalLink, Plus, Edit, Trash2, Loader2, X, Save, Image as ImageIcon } from 'lucide-react'
+import { ExternalLink, Plus, Edit, Trash2, Loader2, X, Save, Image as ImageIcon, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
 import { emitAdminToast } from '@/lib/admin-toast'
@@ -7,7 +7,7 @@ import { FieldErrorText } from '@/components/editor/FieldErrorText'
 import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
-import { isValidSlug, isValidUrl } from '@/lib/editor-validation'
+import { isValidAssetUrl, isValidSlug } from '@/lib/editor-validation'
 import {
   useCategories,
   useCreateCategory,
@@ -45,6 +45,8 @@ interface CategoryFormData {
   tasks: TitleDescriptionItem[]
   faqs: FaqItem[]
 }
+
+type CategoryEditorTab = 'basics' | 'media' | 'marketing' | 'content'
 
 const emptyForm: CategoryFormData = {
   name: '',
@@ -95,6 +97,8 @@ export default function EditCategoriesPage() {
   const [formData, setFormData] = useState<CategoryFormData>(emptyForm)
   const [isCreating, setIsCreating] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<CategoryWithStats | null>(null)
+  const [categorySearch, setCategorySearch] = useState('')
+  const [activeTab, setActiveTab] = useState<CategoryEditorTab>('basics')
 
   const parentOptions = useMemo(
     () => (categories || []).filter((category) => category.level === 0),
@@ -105,10 +109,12 @@ export default function EditCategoriesPage() {
     setFormData(emptyForm)
     setEditingId(null)
     setIsCreating(false)
+    setActiveTab('basics')
   }
 
   const handleEdit = (category: CategoryWithStats) => {
     setEditingId(category.id)
+    setActiveTab('basics')
     setFormData({
       name: category.name,
       description: category.description || '',
@@ -139,6 +145,7 @@ export default function EditCategoriesPage() {
   const handleCreate = () => {
     setIsCreating(true)
     setEditingId(null)
+    setActiveTab('basics')
     setFormData(emptyForm)
   }
 
@@ -242,9 +249,9 @@ export default function EditCategoriesPage() {
     if (formData.route_slug.trim() && !isValidSlug(formData.route_slug.trim())) {
       errors.push('Route slug must use lowercase letters, numbers, and hyphens only.')
     }
-    if (formData.icon_url.trim() && !isValidUrl(formData.icon_url)) errors.push('Icon URL must be a valid absolute URL.')
-    if (formData.hero_image_url.trim() && !isValidUrl(formData.hero_image_url)) errors.push('Hero image URL must be a valid absolute URL.')
-    if (formData.content_image_url.trim() && !isValidUrl(formData.content_image_url)) errors.push('Content image URL must be a valid absolute URL.')
+    if (formData.icon_url.trim() && !isValidAssetUrl(formData.icon_url)) errors.push('Icon URL must be a valid absolute URL or site-relative path.')
+    if (formData.hero_image_url.trim() && !isValidAssetUrl(formData.hero_image_url)) errors.push('Hero image URL must be a valid absolute URL or site-relative path.')
+    if (formData.content_image_url.trim() && !isValidAssetUrl(formData.content_image_url)) errors.push('Content image URL must be a valid absolute URL or site-relative path.')
     if (editingId && formData.parent_id === editingId) errors.push('A category cannot be its own parent.')
     return errors
   }, [formData, editingId])
@@ -259,10 +266,24 @@ export default function EditCategoriesPage() {
         })),
     [mediaAssets]
   )
+  const filteredCategories = useMemo(() => {
+    const query = categorySearch.trim().toLowerCase()
+    if (!query) return categories || []
+    return (categories || []).filter((category) =>
+      [
+        category.name,
+        category.marketing_title || '',
+        category.route_slug || '',
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(query),
+    )
+  }, [categories, categorySearch])
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Edit Categories" />
+      <Header title="Category Editor" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-7xl mx-auto">
           <UnsavedChangesBanner show={isDirty} />
@@ -271,6 +292,11 @@ export default function EditCategoriesPage() {
               Your admin role can view category setup, but it cannot change the service catalog.
             </div>
           )}
+          <div className="mb-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Manage service categories, visibility, routing, and public-facing copy from one editor.
+            </p>
+          </div>
           <div className="flex items-center justify-between mb-6">
             <Link to="/tasks/categories" className="text-primary hover:underline text-sm">
               ← Back to Browse Categories
@@ -303,9 +329,25 @@ export default function EditCategoriesPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                      Category Catalog
-                    </h3>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Category Catalog
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        {categories?.length || 0} categories in the current service catalog.
+                      </p>
+                    </div>
+
+                    <div className="relative mb-4">
+                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        value={categorySearch}
+                        onChange={(e) => setCategorySearch(e.target.value)}
+                        placeholder="Search categories..."
+                        className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm dark:border-gray-700 dark:bg-gray-900"
+                      />
+                    </div>
 
                     {categories?.length === 0 && (
                       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -314,7 +356,7 @@ export default function EditCategoriesPage() {
                     )}
 
                     <ul className="space-y-3">
-                      {categories?.map((category) => (
+                      {filteredCategories.map((category) => (
                         <li
                           key={category.id}
                           className={`p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg ${
@@ -341,23 +383,11 @@ export default function EditCategoriesPage() {
                                   </span>
                                 )}
                               </div>
-                              {category.marketing_title && (
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                  Public title: {category.marketing_title}
-                                </p>
-                              )}
-                              {category.route_slug && (
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                  /services/{category.route_slug}
-                                </p>
-                              )}
-                              <div className="mt-3 flex items-center gap-2">
-                                <MediaThumb src={category.icon_url} alt={`${category.name} icon`} label="Icon" />
-                                <MediaThumb src={category.hero_image_url} alt={`${category.name} hero`} label="Hero" />
-                                <MediaThumb src={category.content_image_url} alt={`${category.name} content`} label="Content" />
-                              </div>
-                              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                Order {category.display_order} · {category.tasks_count} tasks
+                              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                {category.marketing_title || category.description || 'No public copy set yet'}
+                              </p>
+                              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                {category.route_slug ? `/services/${category.route_slug}` : 'No route slug'} · Order {category.display_order} · {category.tasks_count} tasks
                               </p>
                             </div>
 
@@ -381,6 +411,11 @@ export default function EditCategoriesPage() {
                         </li>
                       ))}
                     </ul>
+                    {categories?.length !== 0 && filteredCategories.length === 0 && (
+                      <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                        No categories match that search.
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -389,7 +424,7 @@ export default function EditCategoriesPage() {
                 <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {editingId ? 'Edit Category' : isCreating ? 'Add Category' : 'Select a Category'}
+                      {editingId ? 'Edit Category' : isCreating ? 'Add Category' : 'Category Details'}
                     </h3>
                     {(editingId || isCreating) && (
                       <button
@@ -402,10 +437,14 @@ export default function EditCategoriesPage() {
                   </div>
 
                   {!editingId && !isCreating ? (
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">
-                      Select a category to manage routing, marketing copy, visibility, order,
-                      and recurring-booking support.
-                    </p>
+                    <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center dark:border-gray-700 dark:bg-gray-900/30">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Select a category to edit
+                      </p>
+                      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        Choose a category from the catalog to manage routing, visibility, media, and public copy.
+                      </p>
+                    </div>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-5">
                       {validationErrors.length > 0 && (
@@ -413,6 +452,31 @@ export default function EditCategoriesPage() {
                           {validationErrors.map((error) => <div key={error}>{error}</div>)}
                         </div>
                       )}
+                      <div className="border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex gap-2 overflow-x-auto pb-3">
+                          {[
+                            { key: 'basics', label: 'Basics' },
+                            { key: 'media', label: 'Media' },
+                            { key: 'marketing', label: 'Marketing' },
+                            { key: 'content', label: 'Content' },
+                          ].map((tab) => (
+                            <button
+                              key={tab.key}
+                              type="button"
+                              onClick={() => setActiveTab(tab.key as CategoryEditorTab)}
+                              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                                activeTab === tab.key
+                                  ? 'bg-primary/10 text-primary dark:bg-primary/20'
+                                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                              }`}
+                            >
+                              {tab.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {activeTab === 'basics' && (
+                        <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -499,8 +563,13 @@ export default function EditCategoriesPage() {
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
+                      </>
+                      )}
 
+                      {activeTab === 'marketing' && (
+                        <>
                       <div>
+                        <h4 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">Public Copy</h4>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Public Marketing Title
                         </label>
@@ -530,7 +599,10 @@ export default function EditCategoriesPage() {
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
+                      </>
+                      )}
 
+                      {activeTab === 'media' && (
                       <div className="space-y-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                         <div>
                           <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Category Media</h4>
@@ -544,26 +616,30 @@ export default function EditCategoriesPage() {
                             value={formData.icon_url}
                             onChange={(value) => setFormData({ ...formData, icon_url: value })}
                             options={imageOptions}
-                            error={formData.icon_url.trim() && !isValidUrl(formData.icon_url) ? 'Enter a valid absolute URL.' : null}
+                            error={formData.icon_url.trim() && !isValidAssetUrl(formData.icon_url) ? 'Enter a valid absolute URL or site-relative path.' : null}
                           />
                           <MediaInputCard
                             label="Hero Image"
                             value={formData.hero_image_url}
                             onChange={(value) => setFormData({ ...formData, hero_image_url: value })}
                             options={imageOptions}
-                            error={formData.hero_image_url.trim() && !isValidUrl(formData.hero_image_url) ? 'Enter a valid absolute URL.' : null}
+                            error={formData.hero_image_url.trim() && !isValidAssetUrl(formData.hero_image_url) ? 'Enter a valid absolute URL or site-relative path.' : null}
                           />
                           <MediaInputCard
                             label="Content Image"
                             value={formData.content_image_url}
                             onChange={(value) => setFormData({ ...formData, content_image_url: value })}
                             options={imageOptions}
-                            error={formData.content_image_url.trim() && !isValidUrl(formData.content_image_url) ? 'Enter a valid absolute URL.' : null}
+                            error={formData.content_image_url.trim() && !isValidAssetUrl(formData.content_image_url) ? 'Enter a valid absolute URL or site-relative path.' : null}
                           />
                         </div>
                       </div>
+                      )}
 
+                      {activeTab === 'content' && (
+                        <>
                       <div>
+                        <h4 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">Long Description</h4>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Long Description
                         </label>
@@ -599,7 +675,10 @@ export default function EditCategoriesPage() {
                         items={formData.faqs}
                         onChange={(faqs) => setFormData({ ...formData, faqs })}
                       />
+                      </>
+                      )}
 
+                      {activeTab === 'basics' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
                           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -632,30 +711,19 @@ export default function EditCategoriesPage() {
                           />
                         </label>
                       </div>
+                      )}
 
-                      {formData.route_slug.trim() && (
-                        <div className="space-y-3">
-                          <div className="flex justify-end">
-                            <a
-                              href={`${import.meta.env.VITE_SITE_URL || ''}/services/${formData.route_slug.trim()}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                              Preview Category Page
-                            </a>
-                          </div>
-                          <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                            <div className="border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
-                              Preview
-                            </div>
-                            <iframe
-                              title="Category preview"
-                              src={`${import.meta.env.VITE_SITE_URL || ''}/services/${formData.route_slug.trim()}`}
-                              className="h-[520px] w-full bg-white"
-                            />
-                          </div>
+                      {activeTab === 'marketing' && formData.route_slug.trim() && (
+                        <div className="flex justify-end">
+                          <a
+                            href={`${import.meta.env.VITE_SITE_URL || ''}/services/${formData.route_slug.trim()}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            Open public category page
+                          </a>
                         </div>
                       )}
 
@@ -730,28 +798,32 @@ function MediaThumb({
   src,
   alt,
   label,
+  large = false,
 }: {
   src?: string | null
   alt: string
   label: string
+  large?: boolean
 }) {
   const [failed, setFailed] = useState(false)
   const resolvedSrc = resolvePreviewUrl(src)
+  const sizeClasses = large ? 'h-24 w-24' : 'h-12 w-12'
+  const iconClasses = large ? 'h-8 w-8' : 'h-4 w-4'
 
   return resolvedSrc && !failed ? (
     <img
       src={resolvedSrc}
       alt={alt}
       title={label}
-      className="h-12 w-12 rounded-lg border border-gray-200 object-cover dark:border-gray-700"
+      className={`${sizeClasses} rounded-lg border border-gray-200 object-cover dark:border-gray-700`}
       onError={() => setFailed(true)}
     />
   ) : (
     <div
-      className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-500"
+      className={`flex ${sizeClasses} items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-500`}
       title={`${label}: not set`}
     >
-      <ImageIcon className="h-4 w-4" />
+      <ImageIcon className={iconClasses} />
     </div>
   )
 }
@@ -769,11 +841,33 @@ function MediaInputCard({
   options: Array<{ label: string; value: string }>
   error: string | null
 }) {
+  const resolvedSrc = resolvePreviewUrl(value)
+  const selectedOption = options.find((option) => option.value === value)
+  const assetHint = selectedOption?.label || value.replace(/^.*\//, '') || 'No asset selected'
+
   return (
-    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-gray-900 dark:text-white">{label}</p>
-        <MediaThumb src={value} alt={label} label={label} />
+    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-gray-900 dark:text-white">{label}</p>
+          <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
+            {assetHint}
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <MediaThumb src={value} alt={label} label={label} large />
+          {resolvedSrc ? (
+            <a
+              href={resolvedSrc}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Open
+            </a>
+          ) : null}
+        </div>
       </div>
       <input
         type="text"

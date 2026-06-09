@@ -66,21 +66,27 @@ export default function ContentPagesPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Website Pages" />
+      <Header title="Pages" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="w-full space-y-6">
           {!canManageContent && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-              Your admin role can view the website inventory, but it cannot edit content directly.
+              Your admin role can view pages, but it cannot edit text or publish changes.
             </div>
           )}
+
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Open a page and edit its text, images, and SEO without touching code.
+            </p>
+          </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-800/50">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-2">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Full website inventory</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Pages library</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  This list is built from the real route tree. It shows every web page, how it is managed, and where to edit it when admin support exists.
+                  Choose a page, update the wording or images you need, save a draft, and publish when ready.
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -88,7 +94,7 @@ export default function ContentPagesPage() {
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search routes, titles, notes..."
+                    placeholder="Search pages..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary dark:border-gray-700 dark:bg-gray-900"
@@ -120,10 +126,10 @@ export default function ContentPagesPage() {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <SummaryCard label="Total web pages" value={counts.total} />
-              <SummaryCard label="Admin-managed" value={counts.admin} tone="good" />
-              <SummaryCard label="Partial coverage" value={counts.partial} tone="warn" />
-              <SummaryCard label="Code only" value={counts.code} tone="muted" />
+              <SummaryCard label="Total pages" value={counts.total} />
+              <SummaryCard label="Editable in admin" value={counts.admin} tone="good" />
+              <SummaryCard label="Partly editable" value={counts.partial} tone="warn" />
+              <SummaryCard label="Still needs code" value={counts.code} tone="muted" />
             </div>
           </div>
 
@@ -132,11 +138,8 @@ export default function ContentPagesPage() {
               <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
                 <tr>
                   <th className="px-6 py-3">Page</th>
-                  <th className="px-6 py-3">Route</th>
-                  <th className="px-6 py-3">Area</th>
-                  <th className="px-6 py-3">Management</th>
+                  <th className="px-6 py-3">What you can edit</th>
                   <th className="px-6 py-3">Coverage</th>
-                  <th className="px-6 py-3">Notes</th>
                   <th className="px-6 py-3">
                     <span className="sr-only">Actions</span>
                   </th>
@@ -148,24 +151,28 @@ export default function ContentPagesPage() {
                     key={page.route}
                     className="border-b border-gray-200 bg-white align-top hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50 dark:hover:bg-gray-700/30"
                   >
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{page.title}</td>
-                    <td className="px-6 py-4 font-mono text-xs text-gray-600 dark:text-gray-300">{page.route}</td>
-                    <td className="px-6 py-4">{page.area}</td>
-                    <td className="px-6 py-4">{page.source}</td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900 dark:text-white">{page.title}</div>
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{page.area}</div>
+                      <div className="mt-1 font-mono text-[11px] text-gray-500 dark:text-gray-400">{page.route}</div>
+                    </td>
+                    <td className="px-6 py-4 max-w-md">
+                      <div className="text-sm text-gray-700 dark:text-gray-300">{page.source}</div>
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{page.notes ?? 'Text and media can be managed here.'}</div>
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusMeta[page.status].className}`}>
                         {statusMeta[page.status].label}
                       </span>
                     </td>
-                    <td className="px-6 py-4 max-w-md text-sm">{page.notes ?? '—'}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
                         {page.adminPath ? (
                           <Link to={page.adminPath} className="font-medium text-primary hover:underline">
-                            Manage
+                            Edit page
                           </Link>
                         ) : (
-                          <span className="text-xs text-gray-400">No admin editor</span>
+                          <span className="text-xs text-gray-400">Code only</span>
                         )}
                         <a
                           href={page.route}

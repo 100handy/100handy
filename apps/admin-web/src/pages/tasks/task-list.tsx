@@ -23,7 +23,7 @@ interface TaskListPageProps {
 }
 
 export default function TaskListPage({
-  pageTitle = 'Task List',
+  pageTitle = 'Bookings',
   forcedStatus,
 }: TaskListPageProps) {
   const [searchQuery, setSearchQuery] = useState('')
@@ -93,12 +93,17 @@ export default function TaskListPage({
       <Header title={pageTitle} />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Review bookings, booking status, assigned providers, and scheduled work.
+            </p>
+          </div>
           <div className="mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search tasks by ID, title..."
+                placeholder="Search bookings by ID, title..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -117,7 +122,7 @@ export default function TaskListPage({
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                 }`}
               >
-                All Tasks {statusCounts?.all !== undefined && `(${statusCounts.all})`}
+                All Bookings {statusCounts?.all !== undefined && `(${statusCounts.all})`}
               </button>
               <button
                 onClick={() => handleStatusFilterChange('pending')}
@@ -167,21 +172,21 @@ export default function TaskListPage({
           {isLoading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <span className="ml-2 text-gray-500">Loading tasks...</span>
+              <span className="ml-2 text-gray-500">Loading bookings...</span>
             </div>
           )}
 
           {/* Error state */}
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
-              Failed to load tasks: {error.message}
+              Failed to load bookings: {error.message}
             </div>
           )}
 
           {/* Empty state */}
           {!isLoading && !error && tasks?.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">No tasks found</p>
+              <p className="text-gray-500 dark:text-gray-400">No bookings found</p>
               {searchQuery && (
                 <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                   Try adjusting your search or filter

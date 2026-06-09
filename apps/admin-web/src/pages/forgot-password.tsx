@@ -65,9 +65,9 @@ export default function ForgotPasswordPage() {
           </div>
 
           <div className="bg-white/5 dark:bg-black/10 rounded-lg p-8 shadow-2xl shadow-black/10">
-            <h2 className="text-2xl font-bold text-center mb-2">Forgot Password?</h2>
+            <h2 className="text-2xl font-bold text-center mb-2">Reset your password</h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 text-center mb-6">
-              Enter your email address and we'll send you a verification code to reset your password.
+              Enter your email address and we will send you a six-digit code for the next step.
             </p>
 
             {error && (
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
                       <span>Sending...</span>
                     </>
                   ) : (
-                    'Send Verification Code'
+                    'Send code'
                   )}
                 </button>
               </div>
@@ -117,7 +117,7 @@ export default function ForgotPasswordPage() {
 
             <div className="mt-6 text-center">
               <Link to="/login" className="text-sm text-primary hover:underline">
-                Back to Login
+                Back to sign in
               </Link>
             </div>
           </div>

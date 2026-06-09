@@ -173,6 +173,9 @@ export default function TaskDetailsPage() {
             <Link to="/tasks/list" className="text-sm text-primary hover:underline">
               ← Back to bookings
             </Link>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Manage booking details, provider assignment, schedule changes, and payment actions from one screen.
+            </p>
           </div>
 
           <section className="grid gap-6 xl:grid-cols-[2fr,1fr]">

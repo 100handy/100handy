@@ -23,6 +23,7 @@ const emptyForm = {
 export default function RatesAdjustments() {
   const { hasPermission } = useAuth()
   const canManageFinance = hasPermission('finance.manage')
+  const [activeView, setActiveView] = useState<'library' | 'editor'>('library')
   const [form, setForm] = useState(emptyForm)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
@@ -92,13 +93,35 @@ export default function RatesAdjustments() {
             Your admin role can view pricing rules, but it cannot change them.
           </div>
         )}
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'library', label: 'Pricing rules' },
+            { id: 'editor', label: 'Rule editor' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+        {activeView === 'library' ? (
         <div className="grid gap-4 md:grid-cols-3">
           <MetricCard label="Pricing rules" value={rules.length} />
           <MetricCard label="Active rules" value={activeRules} />
           <MetricCard label="Categories covered" value={new Set(rules.map((rule) => rule.category_id)).size} />
         </div>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
+          {activeView === 'library' ? (
           <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Pricing rules</h3>
@@ -142,7 +165,9 @@ export default function RatesAdjustments() {
               </table>
             </div>
           </section>
+          ) : null}
 
+          {activeView === 'editor' ? (
           <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{form.id ? 'Edit pricing rule' : 'Add pricing rule'}</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Use area-specific pricing only where rollout or supply makes it necessary. Leave area blank for global category pricing.</p>
@@ -192,6 +217,7 @@ export default function RatesAdjustments() {
               </form>
             )}
           </section>
+          ) : null}
         </div>
       </main>
 

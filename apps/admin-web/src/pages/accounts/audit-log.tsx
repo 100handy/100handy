@@ -14,6 +14,7 @@ const ENTITY_OPTIONS = [
 export default function AuditLogPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [entityType, setEntityType] = useState('')
+  const [activeView, setActiveView] = useState<'log' | 'filters'>('log')
 
   const filters = useMemo(
     () => ({
@@ -32,6 +33,26 @@ export default function AuditLogPage() {
 
       <main className="flex-1 p-8">
         <div className="mx-auto max-w-7xl">
+          <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+            {[
+              { id: 'log', label: 'Audit log' },
+              { id: 'filters', label: 'Filters' },
+            ].map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id as typeof activeView)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  activeView === view.id
+                    ? 'bg-primary text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+
           <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Admin audit trail</h2>
@@ -39,6 +60,7 @@ export default function AuditLogPage() {
                 Core admin mutations are logged here with actor, target entity, and summary.
               </p>
             </div>
+            {activeView === 'filters' ? (
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -58,9 +80,14 @@ export default function AuditLogPage() {
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
-                ))}
+                  ))}
               </select>
             </div>
+            ) : (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+              Use <span className="font-medium">Filters</span> to narrow by entity or search by actor, action, and summary.
+            </div>
+            )}
           </div>
 
           {error && (

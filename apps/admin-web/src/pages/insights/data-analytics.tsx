@@ -17,8 +17,10 @@ import {
   useUserGrowthData,
   useTaskCompletionRate,
 } from '@/lib/api/analytics'
+import { useState } from 'react'
 
 export default function DataAnalyticsPage() {
+  const [activeView, setActiveView] = useState<'overview' | 'charts' | 'exports'>('overview')
   const { data: kpis, isLoading: kpisLoading } = useAnalyticsKPIs()
   const { data: userGrowthData, isLoading: growthLoading } = useUserGrowthData(7)
   const { data: completionData, isLoading: completionLoading } = useTaskCompletionRate()
@@ -27,7 +29,7 @@ export default function DataAnalyticsPage() {
   const completionRate = completionData?.find((d) => d.name === 'Completed')?.value || 0
   const generatedOn = new Date().toISOString().slice(0, 10)
 
-  function downloadCsv(filename: string, rows: string[][]) {
+  function downloadCsv(filename: string, rows: Array<Array<string | number>>) {
     const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -48,7 +50,7 @@ export default function DataAnalyticsPage() {
           ['Metric', 'Value'],
           ['Total Users', kpis?.totalUsers ?? 0],
           ['Active Handys', kpis?.activeHandys ?? 0],
-          ['Completed Tasks', kpis?.completedTasks ?? 0],
+          ['Completed Bookings', kpis?.completedTasks ?? 0],
           ['Average Rating', kpis?.averageRating ?? 0],
           ['Users Change %', kpis?.usersChange ?? 0],
           ['Handys Change %', kpis?.handysChange ?? 0],
@@ -66,7 +68,7 @@ export default function DataAnalyticsPage() {
         ]),
     },
     {
-      name: 'Task Completion Mix',
+      name: 'Booking Completion Mix',
       description: 'Completed, cancelled, and pending share across bookings.',
       lastGenerated: generatedOn,
       download: () =>
@@ -82,7 +84,7 @@ export default function DataAnalyticsPage() {
       ['Section', 'Key', 'Value'],
       ['KPI', 'Total Users', kpis?.totalUsers ?? 0],
       ['KPI', 'Active Handys', kpis?.activeHandys ?? 0],
-      ['KPI', 'Completed Tasks', kpis?.completedTasks ?? 0],
+      ['KPI', 'Completed Bookings', kpis?.completedTasks ?? 0],
       ['KPI', 'Average Rating', kpis?.averageRating ?? 0],
       ['Growth', 'Generated On', generatedOn],
       ...((userGrowthData ?? []).map((row) => ['Growth', row.month, `${row.users} users / ${row.handys} handys`])),
@@ -116,7 +118,29 @@ export default function DataAnalyticsPage() {
         </div>
       </div>
 
+      <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+        {[
+          { id: 'overview', label: 'Overview' },
+          { id: 'charts', label: 'Charts' },
+          { id: 'exports', label: 'Exports' },
+        ].map((view) => (
+          <button
+            key={view.id}
+            type="button"
+            onClick={() => setActiveView(view.id as typeof activeView)}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+              activeView === view.id
+                ? 'bg-primary text-white'
+                : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+            }`}
+          >
+            {view.label}
+          </button>
+        ))}
+      </div>
+
       {/* KPI Cards */}
+      {activeView === 'overview' ? (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-start">
@@ -169,7 +193,7 @@ export default function DataAnalyticsPage() {
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Completed Tasks</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Completed Bookings</p>
               {kpisLoading ? (
                 <div className="h-9 w-20 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
               ) : (
@@ -212,8 +236,10 @@ export default function DataAnalyticsPage() {
           </p>
         </div>
       </div>
+      ) : null}
 
       {/* Charts */}
+      {activeView === 'charts' ? (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -307,8 +333,10 @@ export default function DataAnalyticsPage() {
           )}
         </div>
       </div>
+      ) : null}
 
       {/* Data Exports */}
+      {activeView === 'exports' ? (
       <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Data Exports
@@ -345,6 +373,7 @@ export default function DataAnalyticsPage() {
           </table>
         </div>
       </div>
+      ) : null}
     </div>
   )
 }

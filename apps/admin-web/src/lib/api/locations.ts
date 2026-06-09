@@ -20,7 +20,7 @@ export interface LocationAreaNode {
   id: string
   name: string
   slug: string
-  areaType: 'country' | 'nation' | 'region' | 'city' | 'postcode_area' | 'postcode_district'
+  areaType: 'country' | 'nation' | 'region' | 'city' | 'borough' | 'postcode_area' | 'postcode_district'
   parentId: string | null
   countryCode: string
   enabled: boolean
@@ -116,6 +116,20 @@ function isDescendant(targetId: string, candidateParentId: string | null, parent
   return false
 }
 
+function isLocationAreaEffectivelyEnabled(
+  areaId: string,
+  areaMap: Map<string, { enabled: boolean; parent_id: string | null }>,
+) {
+  let currentId: string | null = areaId
+  while (currentId) {
+    const area = areaMap.get(currentId)
+    if (!area) return null
+    if (!area.enabled) return false
+    currentId = area.parent_id
+  }
+  return true
+}
+
 export function useServiceAreas() {
   return useQuery({
     queryKey: ['admin', 'service-areas'],
@@ -169,13 +183,55 @@ export function useServiceAreas() {
       const { data: locationAreas, error: locationAreasError } = locationAreaIds.length > 0
         ? await supabase
           .from('location_areas')
-          .select('id, name, enabled')
+          .select('id, name, enabled, parent_id')
           .in('id', locationAreaIds)
         : { data: [], error: null as Error | null }
 
       if (locationAreasError) throw locationAreasError
 
       const locationAreaMap = new Map((locationAreas ?? []).map((area) => [area.id, area]))
+      const parentIds = Array.from(
+        new Set((locationAreas ?? []).map((area) => area.parent_id).filter(Boolean) as string[]),
+      )
+
+      if (parentIds.length > 0) {
+        const { data: parentAreas, error: parentAreasError } = await supabase
+          .from('location_areas')
+          .select('id, enabled, parent_id')
+          .in('id', parentIds)
+
+        if (parentAreasError) throw parentAreasError
+
+        for (const parentArea of parentAreas ?? []) {
+          locationAreaMap.set(parentArea.id, {
+            ...locationAreaMap.get(parentArea.id),
+            ...parentArea,
+            name: locationAreaMap.get(parentArea.id)?.name ?? '',
+          })
+        }
+
+        let frontier = (parentAreas ?? []).map((area) => area.parent_id).filter(Boolean) as string[]
+        while (frontier.length > 0) {
+          const { data: ancestors, error: ancestorsError } = await supabase
+            .from('location_areas')
+            .select('id, enabled, parent_id')
+            .in('id', frontier)
+
+          if (ancestorsError) throw ancestorsError
+
+          for (const ancestor of ancestors ?? []) {
+            locationAreaMap.set(ancestor.id, {
+              ...locationAreaMap.get(ancestor.id),
+              ...ancestor,
+              name: locationAreaMap.get(ancestor.id)?.name ?? '',
+            })
+          }
+
+          frontier = Array.from(
+            new Set((ancestors ?? []).map((area) => area.parent_id).filter(Boolean) as string[]),
+          )
+        }
+      }
 
       return (areas ?? []).map((area) => ({
         id: area.id,
@@ -183,7 +239,7 @@ export function useServiceAreas() {
         postcodePrefix: area.postcode_prefix,
         locationAreaId: area.location_area_id,
         locationAreaName: area.location_area_id ? (locationAreaMap.get(area.location_area_id)?.name ?? null) : null,
-        locationAreaEnabled: area.location_area_id ? (locationAreaMap.get(area.location_area_id)?.enabled ?? null) : null,
+        locationAreaEnabled: area.location_area_id ? isLocationAreaEffectivelyEnabled(area.location_area_id, locationAreaMap as Map<string, { enabled: boolean; parent_id: string | null }>) : null,
         enabled: area.enabled,
         notes: area.notes,
         assignedProviders: counts.get(area.id) || 0,
@@ -636,8 +692,9 @@ export function useSaveLocationArea() {
         nation: ['country'],
         region: ['nation'],
         city: ['region', 'nation'],
-        postcode_area: ['city', 'region', 'nation'],
-        postcode_district: ['postcode_area', 'city'],
+        borough: ['city'],
+        postcode_area: ['borough', 'city', 'region', 'nation'],
+        postcode_district: ['postcode_area', 'borough', 'city'],
       }
 
       if (parent && !allowedParents[areaType].includes(parent.area_type as LocationAreaNode['areaType'])) {
@@ -685,6 +742,8 @@ export function useSaveLocationArea() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'location-areas'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'service-areas'] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'service-area-health-warnings'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'location-coverage-summary'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'location-map-data'] })
     },
@@ -859,8 +918,9 @@ export function useBulkImportLocationAreas() {
         nation: ['country'],
         region: ['nation'],
         city: ['region', 'nation'],
-        postcode_area: ['city', 'region', 'nation'],
-        postcode_district: ['postcode_area', 'city'],
+        borough: ['city'],
+        postcode_area: ['borough', 'city', 'region', 'nation'],
+        postcode_district: ['postcode_area', 'borough', 'city'],
       }
 
       if (!allowedParents[areaType].includes(parent.area_type as LocationAreaNode['areaType'])) {

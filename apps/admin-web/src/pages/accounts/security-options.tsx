@@ -95,7 +95,7 @@ export default function SecurityOptions() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Admin Access & Security" />
+      <Header title="Admin Access" />
 
       <main className="flex-1 p-8">
         <div className="mx-auto max-w-6xl">
@@ -120,7 +120,7 @@ export default function SecurityOptions() {
               Accounts
             </Link>
             <ChevronRight className="mx-2 h-4 w-4 text-slate-400 dark:text-slate-500" />
-            <span className="text-slate-800 dark:text-slate-200">Admin Access & Security</span>
+            <span className="text-slate-800 dark:text-slate-200">Admin Access</span>
           </div>
 
           <div className="mb-8 grid gap-4 md:grid-cols-4">

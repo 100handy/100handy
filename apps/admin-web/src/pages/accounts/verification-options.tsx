@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext'
 export default function VerificationOptions() {
   const { hasPermission } = useAuth()
   const canManageSettings = hasPermission('accounts.manage')
+  const [activeView, setActiveView] = useState<'requests' | 'rules' | 'performance'>('requests')
   const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'verified' | 'rejected'>('all')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [settingsDraft, setSettingsDraft] = useState<VerificationSettings | null>(null)
@@ -114,43 +115,31 @@ export default function VerificationOptions() {
             <span className="text-slate-800 dark:text-slate-200">Account Verification Options</span>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
-              {statsLoading ? (
-                <div className="h-8 w-12 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
-              ) : (
-                <p className="text-2xl font-bold text-yellow-600">{stats?.pendingCount || 0}</p>
-              )}
-            </div>
-            <div className="bg-white dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Submitted</p>
-              {statsLoading ? (
-                <div className="h-8 w-12 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
-              ) : (
-                <p className="text-2xl font-bold text-blue-600">{stats?.submittedCount || 0}</p>
-              )}
-            </div>
-            <div className="bg-white dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Verified</p>
-              {statsLoading ? (
-                <div className="h-8 w-12 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
-              ) : (
-                <p className="text-2xl font-bold text-green-600">{stats?.verifiedCount || 0}</p>
-              )}
-            </div>
-            <div className="bg-white dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Rejected</p>
-              {statsLoading ? (
-                <div className="h-8 w-12 mt-1 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
-              ) : (
-                <p className="text-2xl font-bold text-red-600">{stats?.rejectedCount || 0}</p>
-              )}
+          <div className="mb-6">
+            <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+              {[
+                { id: 'requests', label: 'Requests' },
+                { id: 'rules', label: 'Rules' },
+                { id: 'performance', label: 'Performance' },
+              ].map((view) => (
+                <button
+                  key={view.id}
+                  type="button"
+                  onClick={() => setActiveView(view.id as typeof activeView)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                    activeView === view.id
+                      ? 'bg-primary text-white'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                  }`}
+                >
+                  {view.label}
+                </button>
+              ))}
             </div>
           </div>
 
           <div className="space-y-10">
+            {activeView === 'rules' ? (
             <section>
               <div className="mb-4 flex items-center justify-between border-b border-slate-200/50 pb-2 dark:border-slate-800/50">
                 <div>
@@ -217,13 +206,36 @@ export default function VerificationOptions() {
                 )}
               </div>
             </section>
+            ) : null}
 
-            {/* Verification Status Section */}
+            {activeView === 'performance' ? (
+            <section>
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Verification performance</h3>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Track where provider verification is waiting, completing, or being rejected.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <MetricCard label="Pending" value={statsLoading ? '...' : String(stats?.pendingCount || 0)} tone="yellow" />
+                <MetricCard label="Submitted" value={statsLoading ? '...' : String(stats?.submittedCount || 0)} tone="blue" />
+                <MetricCard label="Verified" value={statsLoading ? '...' : String(stats?.verifiedCount || 0)} tone="green" />
+                <MetricCard label="Rejected" value={statsLoading ? '...' : String(stats?.rejectedCount || 0)} tone="red" />
+              </div>
+            </section>
+            ) : null}
+
+            {activeView === 'requests' ? (
             <section>
               <div className="flex items-center justify-between mb-4 border-b border-slate-200/50 dark:border-slate-800/50 pb-2">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Verification Status
-                </h3>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Verification requests
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Review submitted provider checks and open the detail drawer to approve or reject them.
+                  </p>
+                </div>
                 <div className="flex items-center gap-2">
                   <select
                     value={filter}
@@ -311,6 +323,7 @@ export default function VerificationOptions() {
                 </table>
               </div>
             </section>
+            ) : null}
           </div>
         </div>
       </main>
@@ -464,6 +477,30 @@ export default function VerificationOptions() {
           </div>
         </div>
       ) : null}
+    </div>
+  )
+}
+
+function MetricCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: string
+  tone: 'yellow' | 'blue' | 'green' | 'red'
+}) {
+  const toneClass = {
+    yellow: 'text-yellow-600',
+    blue: 'text-blue-600',
+    green: 'text-green-600',
+    red: 'text-red-600',
+  }[tone]
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/50">
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className={`mt-1 text-2xl font-bold ${toneClass}`}>{value}</p>
     </div>
   )
 }

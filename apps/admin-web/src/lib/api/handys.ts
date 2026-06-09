@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createAdminAuditLog } from '@/lib/api/admin-audit'
-import { requireAdminPermission } from '@/lib/api/admin-auth'
+import { requireActiveAdmin, requireAdminPermission } from '@/lib/api/admin-auth'
 import { fetchAdminAuthUsersByIds } from '@/lib/api/admin-user-management'
 import { supabase } from '@/lib/supabase'
-import type { Database } from '@/lib/database.types'
+import type { Database, Json } from '@/lib/database.types'
 
 /**
  * Handys API Hooks
@@ -85,6 +85,27 @@ export interface MonthlyHandyStarItem {
   total_reviews: number
   five_star_reviews: number
   jobs_completed: number
+}
+
+export interface HandyStarPromotionRecord {
+  month: string
+  user_id: string
+  first_name: string | null
+  last_name: string | null
+  avatar_url: string | null
+  postcode: string | null
+  verified: boolean
+  average_rating: number
+  total_reviews: number
+  five_star_reviews: number
+  jobs_completed: number
+  summary: string
+  promoted_at: string
+  promoted_by: string | null
+}
+
+function getHandyStarPromotionSettingKey(month: string) {
+  return `handy_star.promotion.${month}`
 }
 
 // ============================================================================
@@ -483,6 +504,95 @@ export function useMonthlyHandyStars(month: string) {
     },
     enabled: Boolean(month),
     staleTime: 60 * 1000,
+  })
+}
+
+export function useSavedHandyStarPromotion(month: string) {
+  return useQuery({
+    queryKey: ['handys', 'stars', 'saved', month],
+    queryFn: async (): Promise<HandyStarPromotionRecord | null> => {
+      await requireAdminPermission('handys.manage')
+
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value_json')
+        .eq('setting_key', getHandyStarPromotionSettingKey(month))
+        .maybeSingle()
+
+      if (error) throw error
+      return (data?.value_json as HandyStarPromotionRecord | undefined) ?? null
+    },
+    enabled: Boolean(month),
+    staleTime: 60 * 1000,
+  })
+}
+
+export function useHandyStarPromotionsHistory() {
+  return useQuery({
+    queryKey: ['handys', 'stars', 'history'],
+    queryFn: async (): Promise<HandyStarPromotionRecord[]> => {
+      await requireAdminPermission('handys.manage')
+
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('setting_key, value_json, updated_at')
+        .eq('setting_group', 'handy_star')
+        .order('updated_at', { ascending: false })
+
+      if (error) throw error
+
+      return (data ?? [])
+        .filter((row) => row.setting_key.startsWith('handy_star.promotion.'))
+        .map((row) => row.value_json as HandyStarPromotionRecord)
+        .sort((a, b) => b.month.localeCompare(a.month))
+    },
+    staleTime: 60 * 1000,
+  })
+}
+
+export function useSaveHandyStarPromotion() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: HandyStarPromotionRecord) => {
+      await requireAdminPermission('handys.manage')
+      const { user } = await requireActiveAdmin()
+      const settingKey = getHandyStarPromotionSettingKey(input.month)
+
+      const record: HandyStarPromotionRecord = {
+        ...input,
+        promoted_by: user.id,
+        promoted_at: new Date().toISOString(),
+      }
+
+      const { error } = await supabase
+        .from('site_settings')
+        .upsert(
+          {
+            setting_group: 'handy_star',
+            setting_key: settingKey,
+            value_json: record as unknown as Json,
+            updated_by: user.id,
+          },
+          { onConflict: 'setting_key' },
+        )
+
+      if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'handy_star.promote',
+        entityType: 'handy_star_promotion',
+        entityId: input.month,
+        summary: `Saved 100 Handy Star promotion for ${input.month}`,
+        metadata: record as unknown as Json,
+      })
+
+      return record
+    },
+    onSuccess: (_, input) => {
+      queryClient.invalidateQueries({ queryKey: ['handys', 'stars', 'saved', input.month] })
+      queryClient.invalidateQueries({ queryKey: ['handys', 'stars', 'history'] })
+    },
   })
 }
 

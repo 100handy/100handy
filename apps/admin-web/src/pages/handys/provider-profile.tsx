@@ -31,6 +31,7 @@ function SummaryCard({
 
 export default function ProviderProfilePage() {
   const { userId } = useParams<{ userId: string }>()
+  const [activeView, setActiveView] = useState<'overview' | 'jobs' | 'verification'>('overview')
   const { data: provider, isLoading, error } = useHandyManagementDetails(userId)
   const updateVerification = useUpdateVerificationStatus()
   const updateAccountStatus = useUpdateAccountLifecycleStatus()
@@ -201,47 +202,70 @@ export default function ProviderProfilePage() {
                 </div>
               </section>
 
-              <section className="grid gap-4 md:grid-cols-4">
-                <SummaryCard label="Completed Jobs" value={String(provider.completed_jobs)} icon={BadgeCheck} />
-                <SummaryCard label="Total Earnings" value={`£${provider.total_earnings.toFixed(0)}`} icon={Star} />
-                <SummaryCard label="Avg Rating" value={provider.rating.toFixed(1)} icon={Star} />
-                <SummaryCard
-                  label="Availability"
-                  value={`${provider.active_availability_slots}/${provider.total_availability_slots}`}
-                  icon={Clock3}
-                />
-              </section>
+              <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+                {[
+                  { id: 'overview', label: 'Overview' },
+                  { id: 'jobs', label: 'Jobs' },
+                  { id: 'verification', label: 'Verification & reviews' },
+                ].map((view) => (
+                  <button
+                    key={view.id}
+                    type="button"
+                    onClick={() => setActiveView(view.id as typeof activeView)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                      activeView === view.id
+                        ? 'bg-primary text-white'
+                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                    }`}
+                  >
+                    {view.label}
+                  </button>
+                ))}
+              </div>
 
-              <section className="grid gap-6 xl:grid-cols-[2fr,1fr]">
-                <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Recent jobs</h2>
-                  <div className="mt-4 overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                      <thead className="text-xs uppercase text-slate-500 dark:text-slate-400">
-                        <tr>
-                          <th className="pb-3">Task</th>
-                          <th className="pb-3">Customer</th>
-                          <th className="pb-3">Status</th>
-                          <th className="pb-3">When</th>
-                          <th className="pb-3 text-right">Payout</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {provider.bookings.slice(0, 8).map((booking) => (
-                          <tr key={booking.id} className="border-t border-slate-200 dark:border-slate-800">
-                            <td className="py-3 font-medium text-slate-900 dark:text-white">{booking.task_title}</td>
-                            <td className="py-3">{booking.customer_name}</td>
-                            <td className="py-3 capitalize">{booking.status.replaceAll('_', ' ')}</td>
-                            <td className="py-3">{format(new Date(booking.scheduled_date), 'dd MMM yyyy')}</td>
-                            <td className="py-3 text-right">£{booking.payout_amount.toFixed(0)}</td>
+              {activeView === 'overview' ? (
+                <section className="grid gap-4 md:grid-cols-4">
+                  <SummaryCard label="Completed Jobs" value={String(provider.completed_jobs)} icon={BadgeCheck} />
+                  <SummaryCard label="Total Earnings" value={`£${provider.total_earnings.toFixed(0)}`} icon={Star} />
+                  <SummaryCard label="Avg Rating" value={provider.rating.toFixed(1)} icon={Star} />
+                  <SummaryCard
+                    label="Availability"
+                    value={`${provider.active_availability_slots}/${provider.total_availability_slots}`}
+                    icon={Clock3}
+                  />
+                </section>
+              ) : null}
+
+              {activeView === 'jobs' ? (
+                <section className="grid gap-6 xl:grid-cols-[2fr,1fr]">
+                  <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Recent jobs</h2>
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead className="text-xs uppercase text-slate-500 dark:text-slate-400">
+                          <tr>
+                            <th className="pb-3">Task</th>
+                            <th className="pb-3">Customer</th>
+                            <th className="pb-3">Status</th>
+                            <th className="pb-3">When</th>
+                            <th className="pb-3 text-right">Payout</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {provider.bookings.slice(0, 8).map((booking) => (
+                            <tr key={booking.id} className="border-t border-slate-200 dark:border-slate-800">
+                              <td className="py-3 font-medium text-slate-900 dark:text-white">{booking.task_title}</td>
+                              <td className="py-3">{booking.customer_name}</td>
+                              <td className="py-3 capitalize">{booking.status.replaceAll('_', ' ')}</td>
+                              <td className="py-3">{format(new Date(booking.scheduled_date), 'dd MMM yyyy')}</td>
+                              <td className="py-3 text-right">£{booking.payout_amount.toFixed(0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-6">
                   <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
                     <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Skills & service areas</h2>
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -262,7 +286,11 @@ export default function ProviderProfilePage() {
                       Primary service area: {provider.postcode || 'Not configured'}
                     </div>
                   </div>
+                </section>
+              ) : null}
 
+              {activeView === 'verification' ? (
+                <section className="grid gap-6 xl:grid-cols-2">
                   <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
                     <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Verification</h2>
                     <div className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
@@ -316,8 +344,8 @@ export default function ProviderProfilePage() {
                       )}
                     </div>
                   </div>
-                </div>
-              </section>
+                </section>
+              ) : null}
             </div>
           )}
         </div>

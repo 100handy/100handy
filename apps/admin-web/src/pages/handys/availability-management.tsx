@@ -23,6 +23,7 @@ const statusColors = {
 }
 
 export default function AvailabilityManagement() {
+  const [activeView, setActiveView] = useState<'overview' | 'handys' | 'editor'>('overview')
   const { data: summary, isLoading: summaryLoading, error: summaryError } = useAvailabilityOverview()
   const { data: handys, isLoading: handysLoading, error: handysError } = useHandysWithAvailability()
   const [selectedHandyId, setSelectedHandyId] = useState<string | null>(null)
@@ -131,6 +132,27 @@ export default function AvailabilityManagement() {
             </p>
           </div>
 
+          <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+            {[
+              { id: 'overview', label: 'Overview' },
+              { id: 'handys', label: 'Handy list' },
+              { id: 'editor', label: 'Slot editor' },
+            ].map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id as typeof activeView)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  activeView === view.id
+                    ? 'bg-primary text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800/50 dark:bg-red-900/20">
               <div className="flex items-start gap-3">
@@ -145,6 +167,7 @@ export default function AvailabilityManagement() {
             </div>
           )}
 
+          {activeView === 'overview' ? (
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               title="Handys with Availability"
@@ -175,7 +198,9 @@ export default function AvailabilityManagement() {
               loading={loading}
             />
           </section>
+          ) : null}
 
+          {activeView === 'overview' ? (
           <section className="grid gap-8 xl:grid-cols-[1.1fr_1fr]">
             <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark">
               <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
@@ -238,7 +263,9 @@ export default function AvailabilityManagement() {
               </div>
             </div>
           </section>
+          ) : null}
 
+          {activeView === 'handys' ? (
           <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark">
             <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Handy Availability</h3>
@@ -293,7 +320,9 @@ export default function AvailabilityManagement() {
               </table>
             </div>
           </section>
+          ) : null}
 
+          {activeView === 'editor' ? (
           <section className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark">
               <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
@@ -478,6 +507,7 @@ export default function AvailabilityManagement() {
               </div>
             </div>
           </section>
+          ) : null}
         </div>
       </main>
     </div>

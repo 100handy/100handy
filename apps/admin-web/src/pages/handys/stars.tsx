@@ -1,8 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Award, Check, Copy, Loader2, Star } from 'lucide-react'
+import { Award, Check, Copy, Loader2, Save, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
-import { useMonthlyHandyStars } from '@/lib/api/handys'
+import { emitAdminToast } from '@/lib/admin-toast'
+import {
+  useHandyStarPromotionsHistory,
+  useMonthlyHandyStars,
+  useSavedHandyStarPromotion,
+  useSaveHandyStarPromotion,
+} from '@/lib/api/handys'
 
 function getCurrentMonthValue() {
   const now = new Date()
@@ -19,7 +25,11 @@ function formatMonthLabel(month: string) {
 export default function HandyStarsPage() {
   const [month, setMonth] = useState(getCurrentMonthValue())
   const [copied, setCopied] = useState(false)
+  const [customSummary, setCustomSummary] = useState('')
   const { data: leaderboard = [], isLoading, error } = useMonthlyHandyStars(month)
+  const { data: savedPromotion } = useSavedHandyStarPromotion(month)
+  const { data: promotionHistory = [] } = useHandyStarPromotionsHistory()
+  const savePromotion = useSaveHandyStarPromotion()
   const winner = leaderboard[0] ?? null
 
   const winnerName = useMemo(() => {
@@ -31,6 +41,34 @@ export default function HandyStarsPage() {
     if (!winner) return ''
     return `100 Handy Star for ${formatMonthLabel(month)}: ${winnerName}. ${winner.five_star_reviews} customer 5-star reviews this month, ${winner.total_reviews} total customer reviews, and an average rating of ${winner.average_rating.toFixed(1)}.`
   }, [winner, winnerName, month])
+
+  const promotionSummary = customSummary.trim() || savedPromotion?.summary || promoCopy
+
+  async function handleSavePromotion() {
+    if (!winner) return
+
+    try {
+      await savePromotion.mutateAsync({
+        ...winner,
+        month,
+        summary: promotionSummary,
+        promoted_at: savedPromotion?.promoted_at || new Date().toISOString(),
+        promoted_by: savedPromotion?.promoted_by || null,
+      })
+      emitAdminToast({
+        tone: 'success',
+        title: 'Promotion saved',
+        description: `Saved the 100 Handy Star promotion for ${formatMonthLabel(month)}.`,
+      })
+      setCustomSummary('')
+    } catch (saveError) {
+      emitAdminToast({
+        tone: 'error',
+        title: 'Failed to save promotion',
+        description: saveError instanceof Error ? saveError.message : 'Please try again.',
+      })
+    }
+  }
 
   return (
     <div className="flex-1 flex flex-col">
@@ -97,12 +135,14 @@ export default function HandyStarsPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Promotion summary</h4>
-                      <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{promoCopy}</p>
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        This is the copy you can save for the month and use across the website, app, and campaigns.
+                      </p>
                     </div>
                     <button
                       type="button"
                       onClick={async () => {
-                        await navigator.clipboard.writeText(promoCopy)
+                        await navigator.clipboard.writeText(promotionSummary)
                         setCopied(true)
                         window.setTimeout(() => setCopied(false), 2000)
                       }}
@@ -110,6 +150,28 @@ export default function HandyStarsPage() {
                     >
                       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                       {copied ? 'Copied' : 'Copy summary'}
+                    </button>
+                  </div>
+                  <textarea
+                    rows={5}
+                    value={customSummary || savedPromotion?.summary || promoCopy}
+                    onChange={(event) => setCustomSummary(event.target.value)}
+                    className="mt-4 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm leading-6 text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                  />
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      {savedPromotion
+                        ? `Saved promotion record for ${formatMonthLabel(savedPromotion.month)}.`
+                        : 'No saved promotion record for this month yet.'}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSavePromotion}
+                      disabled={savePromotion.isPending}
+                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+                    >
+                      {savePromotion.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      {savedPromotion ? 'Update saved promotion' : 'Save monthly promotion'}
                     </button>
                   </div>
                 </div>
@@ -184,6 +246,62 @@ export default function HandyStarsPage() {
             </div>
           </section>
         </div>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Promotion history</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Saved monthly winners. This is the stable record for who was actually promoted each month.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
+                <tr>
+                  <th className="px-4 py-3">Month</th>
+                  <th className="px-4 py-3">Provider</th>
+                  <th className="px-4 py-3">5-star reviews</th>
+                  <th className="px-4 py-3">Avg rating</th>
+                  <th className="px-4 py-3">Jobs</th>
+                  <th className="px-4 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {promotionHistory.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-10 text-center text-slate-500 dark:text-slate-400">
+                      No saved promotions yet.
+                    </td>
+                  </tr>
+                ) : (
+                  promotionHistory.map((item) => (
+                    <tr key={`${item.month}-${item.user_id}`} className="border-t border-slate-200 dark:border-slate-800">
+                      <td className="px-4 py-4 font-medium text-slate-900 dark:text-white">{formatMonthLabel(item.month)}</td>
+                      <td className="px-4 py-4">
+                        <div className="font-medium text-slate-900 dark:text-white">
+                          {[item.first_name, item.last_name].filter(Boolean).join(' ') || 'Unknown provider'}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{item.postcode || 'No postcode'}</div>
+                      </td>
+                      <td className="px-4 py-4">{item.five_star_reviews}</td>
+                      <td className="px-4 py-4">{item.average_rating.toFixed(1)}</td>
+                      <td className="px-4 py-4">{item.jobs_completed}</td>
+                      <td className="px-4 py-4">
+                        <Link
+                          to={`/handys/${item.user_id}`}
+                          className="inline-flex items-center rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                        >
+                          Open profile
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
     </div>
   )

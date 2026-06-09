@@ -32,6 +32,7 @@ const formatCurrency = (value: number): string => {
 }
 
 export default function TotalIncome() {
+  const [activeView, setActiveView] = useState<'overview' | 'charts' | 'transactions'>('overview')
   const [filter, setFilter] = useState<'All' | 'Payout' | 'Fee'>('All')
 
   const { data: metrics, isLoading: metricsLoading } = useIncomeMetrics()
@@ -77,7 +78,28 @@ export default function TotalIncome() {
       <Header title={`Total Income: Overview${metrics ? ` for ${metrics.activeHandyCount} Handys` : ''}`} />
 
       <main className="flex-1 p-6 space-y-6">
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'charts', label: 'Charts' },
+            { id: 'transactions', label: 'Transactions' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
         {/* KPI Cards */}
+        {activeView === 'overview' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {kpiData.map((kpi) => {
             const Icon = kpi.icon
@@ -124,8 +146,10 @@ export default function TotalIncome() {
             )
           })}
         </div>
+        ) : null}
 
         {/* Charts Section */}
+        {activeView === 'charts' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Income Breakdown Chart */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
@@ -240,8 +264,10 @@ export default function TotalIncome() {
             </div>
           </div>
         </div>
+        ) : null}
 
         {/* Recent Transactions Table */}
+        {activeView === 'transactions' ? (
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -328,6 +354,7 @@ export default function TotalIncome() {
             </table>
           </div>
         </div>
+        ) : null}
       </main>
     </div>
   )

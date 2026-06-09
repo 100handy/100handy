@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createAdminAuditLog } from '@/lib/api/admin-audit'
-import { requireAdminPermission } from '@/lib/api/admin-auth'
+import { requireAdminPermission, requireAdminPermissions } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/lib/database.types'
 
@@ -271,7 +271,7 @@ export function useUpdateVerificationStatus() {
       userId: string
       status: 'verified' | 'rejected' | 'pending'
     }) => {
-      await requireAdminPermission('providers.manage')
+      await requireAdminPermissions(['providers.manage', 'accounts.manage', 'handys.manage'])
       const updates: Record<string, unknown> = {
         verification_status: status,
       }
@@ -329,6 +329,8 @@ export function useVerificationDetail(userId: string) {
   return useQuery({
     queryKey: ['admin', 'verification-detail', userId],
     queryFn: async (): Promise<VerificationDetail | null> => {
+      await requireAdminPermissions(['providers.manage', 'accounts.manage', 'handys.manage'])
+
       const { data, error } = await supabase
         .from('handy_profiles')
         .select(`

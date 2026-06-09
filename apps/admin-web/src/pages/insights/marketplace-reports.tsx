@@ -5,8 +5,10 @@ import {
   useCityCoverageReport,
   useMarketplaceReportSummary,
 } from '@/lib/api/reports'
+import { useState } from 'react'
 
 export default function MarketplaceReportsPage() {
+  const [activeView, setActiveView] = useState<'overview' | 'categories' | 'cities'>('overview')
   const { data: summary, isLoading: summaryLoading } = useMarketplaceReportSummary()
   const { data: categories = [], isLoading: categoriesLoading } = useCategoryPerformanceReport()
   const { data: cities = [], isLoading: citiesLoading } = useCityCoverageReport()
@@ -36,6 +38,28 @@ export default function MarketplaceReportsPage() {
       <Header title="Marketplace Reports" />
 
       <main className="flex-1 space-y-6 p-6">
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'categories', label: 'Categories' },
+            { id: 'cities', label: 'Cities' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+
+        {activeView === 'overview' ? (
         <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
           <SummaryCard label="Gross revenue" value={summaryLoading ? '...' : `£${(summary?.grossRevenue || 0).toFixed(0)}`} />
           <SummaryCard label="Refunded" value={summaryLoading ? '...' : `£${(summary?.refundedRevenue || 0).toFixed(0)}`} />
@@ -44,8 +68,10 @@ export default function MarketplaceReportsPage() {
           <SummaryCard label="Open disputes" value={summaryLoading ? '...' : String(summary?.openDisputes || 0)} />
           <SummaryCard label="Open tickets" value={summaryLoading ? '...' : String(summary?.openTickets || 0)} />
         </div>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-2">
+          {activeView === 'categories' ? (
           <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -69,7 +95,9 @@ export default function MarketplaceReportsPage() {
               rows={categories.map((row) => [row.category, String(row.bookings), `£${row.revenue.toFixed(2)}`])}
             />
           </section>
+          ) : null}
 
+          {activeView === 'cities' ? (
           <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -93,6 +121,7 @@ export default function MarketplaceReportsPage() {
               rows={cities.map((row) => [row.city, String(row.providers), String(row.customers)])}
             />
           </section>
+          ) : null}
         </div>
       </main>
     </div>

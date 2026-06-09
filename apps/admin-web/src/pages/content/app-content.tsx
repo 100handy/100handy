@@ -810,6 +810,9 @@ export default function AppContentPage() {
   const canManageContent = hasPermission('content.manage')
   const [platform, setPlatform] = useState<PlatformKey>('shared')
   const [screenKey, setScreenKey] = useState<string>(SCREEN_DEFINITIONS[0].key)
+  const [screenGroup, setScreenGroup] = useState<'auth' | 'client' | 'professional'>('auth')
+  const [editorTab, setEditorTab] = useState<'copy' | 'details' | 'history'>('copy')
+  const [activeSectionKey, setActiveSectionKey] = useState<string>('')
   const { data: rows = [], isLoading } = useAppContentEntries(platform, screenKey)
   const { data: latestDraft } = useLatestAppContentScreenDraft(platform, screenKey)
   const { data: revisions = [] } = useAppContentScreenRevisions(platform, screenKey)
@@ -820,6 +823,33 @@ export default function AppContentPage() {
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const screenDefinition = SCREEN_DEFINITIONS.find((screen) => screen.key === screenKey) ?? SCREEN_DEFINITIONS[0]
+  const sectionKeys = useMemo(
+    () => Array.from(new Set(screenDefinition.fields.map((field) => field.section_key))),
+    [screenDefinition.fields],
+  )
+  const groupedScreens = useMemo(
+    () => ({
+      auth: SCREEN_DEFINITIONS.filter((screen) => screen.key.startsWith('auth_')),
+      client: SCREEN_DEFINITIONS.filter((screen) => screen.key.startsWith('client_')),
+      professional: SCREEN_DEFINITIONS.filter((screen) => screen.key.startsWith('professional_')),
+    }),
+    [],
+  )
+
+  useEffect(() => {
+    const nextGroup = screenDefinition.key.startsWith('auth_')
+      ? 'auth'
+      : screenDefinition.key.startsWith('professional_')
+        ? 'professional'
+        : 'client'
+    setScreenGroup(nextGroup)
+  }, [screenDefinition.key])
+
+  useEffect(() => {
+    if (!sectionKeys.includes(activeSectionKey)) {
+      setActiveSectionKey(sectionKeys[0] ?? '')
+    }
+  }, [sectionKeys, activeSectionKey])
 
   useEffect(() => {
     const nextValues: Record<string, string> = {}
@@ -915,24 +945,72 @@ export default function AppContentPage() {
               {validationErrors.map((error) => <div key={error}>{error}</div>)}
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_220px_1fr]">
-            <SelectField
-              label="Platform"
-              value={platform}
-              onChange={(value) => setPlatform(value as PlatformKey)}
-              options={[
-                { label: 'Shared', value: 'shared' },
-                { label: 'iOS', value: 'ios' },
-                { label: 'Android', value: 'android' },
-              ]}
-            />
-            <SelectField
-              label="Screen"
-              value={screenKey}
-              onChange={setScreenKey}
-              options={SCREEN_DEFINITIONS.map((screen) => ({ label: screen.label, value: screen.key }))}
-            />
-            <div className="flex items-end justify-end">
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Edit app text by screen. Save a draft first, then publish when you want the mobile apps to update.
+            </p>
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[280px,minmax(0,1fr)]">
+            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/50">
+              <div className="mb-4">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">App version</label>
+                <select
+                  value={platform}
+                  onChange={(e) => setPlatform(e.target.value as PlatformKey)}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-900"
+                >
+                  <option value="shared">Shared across iPhone and Android</option>
+                  <option value="ios">iPhone only</option>
+                  <option value="android">Android only</option>
+                </select>
+              </div>
+              <div className="mb-4 flex flex-wrap gap-2">
+                {[
+                  { id: 'auth', label: 'Auth' },
+                  { id: 'client', label: 'Client app' },
+                  { id: 'professional', label: 'Professional app' },
+                ].map((group) => (
+                  <button
+                    key={group.id}
+                    type="button"
+                    onClick={() => {
+                      setScreenGroup(group.id as typeof screenGroup)
+                      const firstScreen = groupedScreens[group.id as keyof typeof groupedScreens][0]
+                      if (firstScreen) {
+                        setScreenKey(firstScreen.key)
+                      }
+                    }}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                      screenGroup === group.id
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {group.label}
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-1">
+                {groupedScreens[screenGroup].map((screen) => (
+                  <button
+                    key={screen.key}
+                    type="button"
+                    onClick={() => setScreenKey(screen.key)}
+                    className={`w-full rounded-lg px-3 py-3 text-left transition ${
+                      screenKey === screen.key
+                        ? 'bg-primary/10 text-primary'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                    }`}
+                  >
+                    <div className="font-medium">{screen.label}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{screen.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-end justify-end">
               <div className="flex items-center gap-3">
                 <button
                   onClick={saveAll}
@@ -952,139 +1030,193 @@ export default function AppContentPage() {
                 </button>
               </div>
             </div>
-          </div>
+              <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{screenDefinition.label}</h3>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{screenDefinition.description}</p>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-500 dark:text-gray-400">
+                  <p>Work is saved to a draft first. Mobile apps only change after publish.</p>
+                  <div>
+                    Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
+                  </div>
+                </div>
+                {actionFeedback && (
+                  <p className={`mt-3 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
+                    {actionFeedback.message}
+                  </p>
+                )}
+              </div>
 
-          <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{screenDefinition.label}</h3>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{screenDefinition.description}</p>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-500 dark:text-gray-400">
-              <p>Work is saved to a draft first. Mobile apps only change after publish.</p>
-              <div>
-                Draft: <span className="font-semibold text-gray-900 dark:text-white">{latestDraft ? `v${latestDraft.version_number}` : 'none'}</span>
+              <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-6">
+                <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-4 dark:border-gray-700">
+                  {[
+                    { id: 'copy', label: 'Screen text' },
+                    { id: 'details', label: 'Field details' },
+                    { id: 'history', label: 'History' },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setEditorTab(tab.id as typeof editorTab)}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                        editorTab === tab.id
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {editorTab === 'copy' && (
+                  <>
+                    <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                      <h4 className="text-base font-semibold text-gray-900 dark:text-white">Screen text</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Choose a section below, then edit only the text used on that part of the app screen.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {sectionKeys.map((sectionKey) => (
+                        <button
+                          key={sectionKey}
+                          type="button"
+                          onClick={() => setActiveSectionKey(sectionKey)}
+                          className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                            activeSectionKey === sectionKey
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                          }`}
+                        >
+                          {sectionKey.replace(/_/g, ' ')}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-4">
+                      {isLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        screenDefinition.fields
+                          .filter((field) => field.section_key === activeSectionKey)
+                          .map((field) => {
+                            const key = contentKey(field.section_key, field.field_key)
+                            const value = values[key] ?? field.defaultValue
+                            return (
+                              <div key={key}>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                  {field.label}
+                                </label>
+                                {field.multiline ? (
+                                  <textarea
+                                    value={value}
+                                    rows={field.rows ?? 4}
+                                    onChange={(e) =>
+                                      setValues((prev) => ({ ...prev, [key]: e.target.value }))
+                                    }
+                                    className={`w-full px-4 py-2 border bg-white dark:bg-gray-900 rounded-lg ${
+                                      validationErrors.some((error) => error.startsWith(field.label))
+                                        ? 'border-red-300 dark:border-red-700'
+                                        : 'border-gray-200 dark:border-gray-700'
+                                    }`}
+                                  />
+                                ) : (
+                                  <input
+                                    value={value}
+                                    onChange={(e) =>
+                                      setValues((prev) => ({ ...prev, [key]: e.target.value }))
+                                    }
+                                    className={`w-full px-4 py-2 border bg-white dark:bg-gray-900 rounded-lg ${
+                                      validationErrors.some((error) => error.startsWith(field.label))
+                                        ? 'border-red-300 dark:border-red-700'
+                                        : 'border-gray-200 dark:border-gray-700'
+                                    }`}
+                                  />
+                                )}
+                              </div>
+                            )
+                          })
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {editorTab === 'details' && (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                      <h4 className="text-base font-semibold text-gray-900 dark:text-white">Field details</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Reference view for the screen keys used by the app. This is mainly for advanced editors.
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      {screenDefinition.fields.map((field) => (
+                        <div key={contentKey(field.section_key, field.field_key)} className="rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
+                          <div className="font-medium text-gray-900 dark:text-white">{field.label}</div>
+                          <div className="mt-1 text-xs font-mono text-gray-500 dark:text-gray-400">
+                            {field.section_key}.{field.field_key}
+                          </div>
+                          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            Default: {field.defaultValue || 'Empty'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {editorTab === 'history' && (
+                  revisions.length > 0 ? (
+                    <div className="space-y-3">
+                      <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                        <h4 className="text-base font-semibold text-gray-900 dark:text-white">Revision history</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Review previous published versions and restore one back into draft.
+                        </p>
+                      </div>
+                      {revisions.map((revision) => (
+                        <div key={revision.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                              v{revision.version_number} · {revision.revision_state}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Updated {new Date(revision.updated_at).toLocaleString('en-GB')}
+                              {revision.published_at ? ` · Published ${new Date(revision.published_at).toLocaleString('en-GB')}` : ''}
+                            </p>
+                          </div>
+                          {revision.revision_state === 'published' ? (
+                            <button
+                              onClick={async () => {
+                                setActionFeedback(null)
+                                try {
+                                  await restoreRevision.mutateAsync({ platform, screenKey, revisionId: revision.id })
+                                  setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                                } catch (error) {
+                                  setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                                }
+                              }}
+                              disabled={restoreRevision.isPending}
+                              className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                            >
+                              Restore to Draft
+                            </button>
+                          ) : (
+                            <span className="text-xs font-medium text-amber-600">Current draft</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-gray-300 px-4 py-8 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                      No revision history yet.
+                    </div>
+                  )
+                )}
               </div>
             </div>
-            {actionFeedback && (
-              <p className={`mt-3 text-sm font-medium ${actionFeedback.tone === 'success' ? 'text-emerald-600' : 'text-red-600 dark:text-red-300'}`}>
-                {actionFeedback.message}
-              </p>
-            )}
           </div>
-
-          <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              screenDefinition.fields.map((field) => {
-                const key = contentKey(field.section_key, field.field_key)
-                const value = values[key] ?? field.defaultValue
-                return (
-                  <div key={key}>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {field.label}
-                    </label>
-                    <p className="mb-2 text-xs text-gray-400 dark:text-gray-500 font-mono">
-                      {field.section_key}.{field.field_key}
-                    </p>
-                    {field.multiline ? (
-                      <textarea
-                        value={value}
-                        rows={field.rows ?? 4}
-                        onChange={(e) =>
-                          setValues((prev) => ({ ...prev, [key]: e.target.value }))
-                        }
-                        className={`w-full px-4 py-2 border bg-white dark:bg-gray-900 rounded-lg ${
-                          validationErrors.some((error) => error.startsWith(field.label))
-                            ? 'border-red-300 dark:border-red-700'
-                            : 'border-gray-200 dark:border-gray-700'
-                        }`}
-                      />
-                    ) : (
-                      <input
-                        value={value}
-                        onChange={(e) =>
-                          setValues((prev) => ({ ...prev, [key]: e.target.value }))
-                        }
-                        className={`w-full px-4 py-2 border bg-white dark:bg-gray-900 rounded-lg ${
-                          validationErrors.some((error) => error.startsWith(field.label))
-                            ? 'border-red-300 dark:border-red-700'
-                            : 'border-gray-200 dark:border-gray-700'
-                        }`}
-                      />
-                    )}
-                  </div>
-                )
-              })
-            )}
-          </div>
-
-          {revisions.length > 0 && (
-            <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-3">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Revision History</h3>
-              {revisions.map((revision) => (
-                <div key={revision.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      v{revision.version_number} · {revision.revision_state}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Updated {new Date(revision.updated_at).toLocaleString('en-GB')}
-                      {revision.published_at ? ` · Published ${new Date(revision.published_at).toLocaleString('en-GB')}` : ''}
-                    </p>
-                  </div>
-                  {revision.revision_state === 'published' ? (
-                    <button
-                      onClick={async () => {
-                        setActionFeedback(null)
-                        try {
-                          await restoreRevision.mutateAsync({ platform, screenKey, revisionId: revision.id })
-                          setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
-                        } catch (error) {
-                          setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
-                        }
-                      }}
-                      disabled={restoreRevision.isPending}
-                      className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
-                    >
-                      Restore to Draft
-                    </button>
-                  ) : (
-                    <span className="text-xs font-medium text-amber-600">Current draft</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
-    </div>
-  )
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  options: Array<{ label: string; value: string }>
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
     </div>
   )
 }

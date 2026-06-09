@@ -156,6 +156,7 @@ export default function MediaPage() {
   const [appOnboardingImages, setAppOnboardingImages] = useState<AppOnboardingState>(defaultAppOnboarding)
   const [appCategoryImages, setAppCategoryImages] = useState<AppCategoryState>(defaultAppCategories)
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [editorTab, setEditorTab] = useState<'library' | 'website' | 'app'>('library')
 
   const selected = media.find((item) => item.id === selectedId) ?? null
 
@@ -290,321 +291,365 @@ export default function MediaPage() {
               New Asset
             </button>
           </div>
-
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
-            {isLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              filtered.map((item) => (
-                <div key={item.id} className="group relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-800/50">
-                  {item.asset_type === 'image' ? (
-                    <img src={item.url} alt={item.alt_text ?? item.title ?? item.asset_key} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-700">
-                      <Film className="h-12 w-12 text-gray-400" />
-                    </div>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 bg-black/70 p-2 text-xs text-white">
-                    <p className="truncate font-medium">{item.asset_key}</p>
-                    <div className="mt-1 flex justify-between">
-                      <button onClick={() => setSelectedId(item.id)} className="underline">
-                        Edit
-                      </button>
-                      <button
-                        onClick={() =>
-                          deleteMedia.mutate(item.id, {
-                            onSuccess: () =>
-                              setActionFeedback({
-                                tone: 'success',
-                                message: `Deleted media asset "${item.asset_key}".`,
-                              }),
-                            onError: (error) =>
-                              setActionFeedback({
-                                tone: 'error',
-                                message: error instanceof Error ? error.message : 'Failed to delete media asset.',
-                              }),
-                          })
-                        }
-                        className="text-red-300 underline"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: 'library', label: 'Asset library' },
+              { id: 'website', label: 'Website images' },
+              { id: 'app', label: 'App images' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setEditorTab(tab.id as typeof editorTab)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  editorTab === tab.id
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          <Panel title={selectedId ? 'Edit Media Asset' : 'Create Media Asset'}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Field label="Asset Key" value={assetForm.asset_key} onChange={(value) => setAssetForm((prev) => ({ ...prev, asset_key: value }))} />
-              <FieldErrorText error={assetErrors.asset_key} />
-              <Field label="URL" value={assetForm.url} onChange={(value) => setAssetForm((prev) => ({ ...prev, url: value }))} />
-              <FieldErrorText error={assetErrors.url} />
-              <Field label="Title" value={assetForm.title} onChange={(value) => setAssetForm((prev) => ({ ...prev, title: value }))} />
-              <Field label="Alt Text" value={assetForm.alt_text} onChange={(value) => setAssetForm((prev) => ({ ...prev, alt_text: value }))} />
-              <Field label="Tags (comma separated)" value={assetForm.tags} onChange={(value) => setAssetForm((prev) => ({ ...prev, tags: value }))} />
-              <SelectField
-                label="Asset Type"
-                value={assetForm.asset_type}
-                onChange={(value) => setAssetForm((prev) => ({ ...prev, asset_type: value as typeof prev.asset_type }))}
-                options={['image', 'video', 'document']}
-              />
-              <SelectField
-                label="Usage Scope"
-                value={assetForm.usage_scope}
-                onChange={(value) => setAssetForm((prev) => ({ ...prev, usage_scope: value as typeof prev.usage_scope }))}
-                options={['shared', 'web', 'mobile', 'admin']}
-              />
-              <ToggleField label="Active" checked={assetForm.active} onChange={(checked) => setAssetForm((prev) => ({ ...prev, active: checked }))} />
-            </div>
-            <div className="flex justify-end pt-4">
-              {assetForm.url && isValidUrl(assetForm.url) && (
-                <a
-                  href={assetForm.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mr-3 inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Preview Asset
-                </a>
-              )}
-              <button
-                onClick={() =>
-                  saveMedia.mutate(
-                    {
-                      id: selected?.id,
-                      asset_key: assetForm.asset_key,
-                      asset_type: assetForm.asset_type,
-                      url: assetForm.url,
-                      title: assetForm.title,
-                      alt_text: assetForm.alt_text,
-                      tags: assetForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
-                      usage_scope: assetForm.usage_scope,
-                      active: assetForm.active,
-                    },
-                    {
-                      onSuccess: () =>
-                        setActionFeedback({
-                          tone: 'success',
-                          message: selected ? `Updated media asset "${assetForm.asset_key}".` : `Created media asset "${assetForm.asset_key}".`,
-                        }),
-                      onError: (error) =>
-                        setActionFeedback({
-                          tone: 'error',
-                          message: error instanceof Error ? error.message : 'Failed to save media asset.',
-                        }),
-                    },
-                  )
-                }
-                disabled={saveMedia.isPending || !canSaveAsset}
-                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
-              >
-                {saveMedia.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                Save Asset
-              </button>
-            </div>
-          </Panel>
+          {editorTab === 'library' && (
+            <>
+              <Panel title="Asset library">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Browse uploaded images, videos, and documents used across the site and app.
+                </p>
+                <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    filtered.map((item) => (
+                      <div key={item.id} className="group relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-800/50">
+                        {item.asset_type === 'image' ? (
+                          <img src={item.url} alt={item.alt_text ?? item.title ?? item.asset_key} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-700">
+                            <Film className="h-12 w-12 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="absolute inset-x-0 bottom-0 bg-black/70 p-2 text-xs text-white">
+                          <p className="truncate font-medium">{item.asset_key}</p>
+                          <div className="mt-1 flex justify-between">
+                            <button onClick={() => setSelectedId(item.id)} className="underline">
+                              Edit
+                            </button>
+                            <button
+                              onClick={() =>
+                                deleteMedia.mutate(item.id, {
+                                  onSuccess: () =>
+                                    setActionFeedback({
+                                      tone: 'success',
+                                      message: `Deleted media asset "${item.asset_key}".`,
+                                    }),
+                                  onError: (error) =>
+                                    setActionFeedback({
+                                      tone: 'error',
+                                      message: error instanceof Error ? error.message : 'Failed to delete media asset.',
+                                    }),
+                                })
+                              }
+                              className="text-red-300 underline"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Panel>
 
-          <Panel title="Web Brand Logos">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <AssetPickerField label="Dark Logo" value={brandLogos.dark} assets={imageAssets} onChange={(value) => setBrandLogos((prev) => ({ ...prev, dark: value }))} />
-              <AssetPickerField label="Cream Logo" value={brandLogos.cream} assets={imageAssets} onChange={(value) => setBrandLogos((prev) => ({ ...prev, cream: value }))} />
-              <AssetPickerField label="Mobile Green Logo" value={brandLogos.mobile_green} assets={imageAssets} onChange={(value) => setBrandLogos((prev) => ({ ...prev, mobile_green: value }))} />
-              <AssetPickerField label="Mobile Cream Logo" value={brandLogos.mobile_cream} assets={imageAssets} onChange={(value) => setBrandLogos((prev) => ({ ...prev, mobile_cream: value }))} />
-            </div>
-            <SaveButton
-              isPending={saveSetting.isPending}
-              disabled={!canManageContent}
-              onClick={() =>
-                saveSetting.mutate(
-                  {
-                    setting_group: 'brand',
-                    setting_key: 'brand.logos',
-                    value_json: brandLogos,
-                  },
-                  {
-                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved brand logo settings.' }),
-                    onError: (error) =>
-                      setActionFeedback({
-                        tone: 'error',
-                        message: error instanceof Error ? error.message : 'Failed to save brand logo settings.',
-                      }),
-                  },
-                )
-              }
-            />
-          </Panel>
+              <Panel title={selectedId ? 'Edit asset' : 'Create asset'}>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <Field label="Asset Key" value={assetForm.asset_key} onChange={(value) => setAssetForm((prev) => ({ ...prev, asset_key: value }))} />
+                    <FieldErrorText error={assetErrors.asset_key} />
+                  </div>
+                  <div>
+                    <Field label="URL" value={assetForm.url} onChange={(value) => setAssetForm((prev) => ({ ...prev, url: value }))} />
+                    <FieldErrorText error={assetErrors.url} />
+                  </div>
+                  <Field label="Title" value={assetForm.title} onChange={(value) => setAssetForm((prev) => ({ ...prev, title: value }))} />
+                  <Field label="Alt Text" value={assetForm.alt_text} onChange={(value) => setAssetForm((prev) => ({ ...prev, alt_text: value }))} />
+                  <Field label="Tags (comma separated)" value={assetForm.tags} onChange={(value) => setAssetForm((prev) => ({ ...prev, tags: value }))} />
+                  <SelectField
+                    label="Asset Type"
+                    value={assetForm.asset_type}
+                    onChange={(value) => setAssetForm((prev) => ({ ...prev, asset_type: value as typeof prev.asset_type }))}
+                    options={['image', 'video', 'document']}
+                  />
+                  <SelectField
+                    label="Usage Scope"
+                    value={assetForm.usage_scope}
+                    onChange={(value) => setAssetForm((prev) => ({ ...prev, usage_scope: value as typeof prev.usage_scope }))}
+                    options={['shared', 'web', 'mobile', 'admin']}
+                  />
+                  <ToggleField label="Active" checked={assetForm.active} onChange={(checked) => setAssetForm((prev) => ({ ...prev, active: checked }))} />
+                </div>
+                <div className="flex justify-end pt-4">
+                  {assetForm.url && isValidUrl(assetForm.url) && (
+                    <a
+                      href={assetForm.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mr-3 inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Preview Asset
+                    </a>
+                  )}
+                  <button
+                    onClick={() =>
+                      saveMedia.mutate(
+                        {
+                          id: selected?.id,
+                          asset_key: assetForm.asset_key,
+                          asset_type: assetForm.asset_type,
+                          url: assetForm.url,
+                          title: assetForm.title,
+                          alt_text: assetForm.alt_text,
+                          tags: assetForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+                          usage_scope: assetForm.usage_scope,
+                          active: assetForm.active,
+                        },
+                        {
+                          onSuccess: () =>
+                            setActionFeedback({
+                              tone: 'success',
+                              message: selected ? `Updated media asset "${assetForm.asset_key}".` : `Created media asset "${assetForm.asset_key}".`,
+                            }),
+                          onError: (error) =>
+                            setActionFeedback({
+                              tone: 'error',
+                              message: error instanceof Error ? error.message : 'Failed to save media asset.',
+                            }),
+                        },
+                      )
+                    }
+                    disabled={saveMedia.isPending || !canSaveAsset}
+                    className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {saveMedia.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Save Asset
+                  </button>
+                </div>
+              </Panel>
+            </>
+          )}
 
-          <Panel title="Web Service Images">
-            <div className="space-y-6">
-              <AssetPickerField label="Services Hero Image" value={serviceImages.hero} assets={imageAssets} onChange={(value) => setServiceImages((prev) => ({ ...prev, hero: value }))} />
+          {editorTab === 'website' && (
+            <>
+              <Panel title="Website brand images">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Logos used across the public website header, footer, and branded surfaces.
+                </p>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <AssetPickerField label="Dark Logo" value={brandLogos.dark} assets={imageAssets} onChange={(value) => setBrandLogos((prev) => ({ ...prev, dark: value }))} />
+                  <AssetPickerField label="Cream Logo" value={brandLogos.cream} assets={imageAssets} onChange={(value) => setBrandLogos((prev) => ({ ...prev, cream: value }))} />
+                  <AssetPickerField label="Mobile Green Logo" value={brandLogos.mobile_green} assets={imageAssets} onChange={(value) => setBrandLogos((prev) => ({ ...prev, mobile_green: value }))} />
+                  <AssetPickerField label="Mobile Cream Logo" value={brandLogos.mobile_cream} assets={imageAssets} onChange={(value) => setBrandLogos((prev) => ({ ...prev, mobile_cream: value }))} />
+                </div>
+                <SaveButton
+                  isPending={saveSetting.isPending}
+                  disabled={!canManageContent}
+                  onClick={() =>
+                    saveSetting.mutate(
+                      {
+                        setting_group: 'brand',
+                        setting_key: 'brand.logos',
+                        value_json: brandLogos,
+                      },
+                      {
+                        onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved brand logo settings.' }),
+                        onError: (error) =>
+                          setActionFeedback({
+                            tone: 'error',
+                            message: error instanceof Error ? error.message : 'Failed to save brand logo settings.',
+                          }),
+                      },
+                    )
+                  }
+                />
+              </Panel>
 
-              <MappingEditor
-                title="Main Category Card Images"
-                mapping={serviceImages.mainCategoryImages}
-                assets={imageAssets}
-                onChange={(key, value) =>
-                  setServiceImages((prev) => ({
-                    ...prev,
-                    mainCategoryImages: { ...prev.mainCategoryImages, [key]: value },
-                  }))
-                }
-              />
+              <Panel title="Website service images">
+                <div className="space-y-6">
+                  <AssetPickerField label="Services Hero Image" value={serviceImages.hero} assets={imageAssets} onChange={(value) => setServiceImages((prev) => ({ ...prev, hero: value }))} />
 
-              <MappingEditor
-                title="Category Hero Images"
-                mapping={serviceImages.categoryHeroImages}
-                assets={imageAssets}
-                onChange={(key, value) =>
-                  setServiceImages((prev) => ({
-                    ...prev,
-                    categoryHeroImages: { ...prev.categoryHeroImages, [key]: value },
-                  }))
-                }
-              />
-            </div>
-            <SaveButton
-              isPending={saveSetting.isPending}
-              disabled={!canManageContent}
-              onClick={() =>
-                saveSetting.mutate(
-                  {
-                    setting_group: 'services',
-                    setting_key: 'services.web_images',
-                    value_json: serviceImages,
-                  },
-                  {
-                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved web service image settings.' }),
-                    onError: (error) =>
-                      setActionFeedback({
-                        tone: 'error',
-                        message: error instanceof Error ? error.message : 'Failed to save web service image settings.',
-                      }),
-                  },
-                )
-              }
-            />
-          </Panel>
+                  <MappingEditor
+                    title="Main Category Card Images"
+                    mapping={serviceImages.mainCategoryImages}
+                    assets={imageAssets}
+                    onChange={(key, value) =>
+                      setServiceImages((prev) => ({
+                        ...prev,
+                        mainCategoryImages: { ...prev.mainCategoryImages, [key]: value },
+                      }))
+                    }
+                  />
 
-          <Panel title="App Brand Images">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <AssetPickerField label="Green Auth Logo" value={appBrandImages.greenLogo} assets={imageAssets} onChange={(value) => setAppBrandImages((prev) => ({ ...prev, greenLogo: value }))} />
-              <AssetPickerField label="Cream Auth Logo" value={appBrandImages.creamLogo} assets={imageAssets} onChange={(value) => setAppBrandImages((prev) => ({ ...prev, creamLogo: value }))} />
-            </div>
-            <SaveButton
-              isPending={saveSetting.isPending}
-              disabled={!canManageContent}
-              onClick={() =>
-                saveSetting.mutate(
-                  {
-                    setting_group: 'app_images',
-                    setting_key: 'app.images.brand',
-                    value_json: appBrandImages,
-                  },
-                  {
-                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app brand image settings.' }),
-                    onError: (error) =>
-                      setActionFeedback({
-                        tone: 'error',
-                        message: error instanceof Error ? error.message : 'Failed to save app brand image settings.',
-                      }),
-                  },
-                )
-              }
-            />
-          </Panel>
+                  <MappingEditor
+                    title="Category Hero Images"
+                    mapping={serviceImages.categoryHeroImages}
+                    assets={imageAssets}
+                    onChange={(key, value) =>
+                      setServiceImages((prev) => ({
+                        ...prev,
+                        categoryHeroImages: { ...prev.categoryHeroImages, [key]: value },
+                      }))
+                    }
+                  />
+                </div>
+                <SaveButton
+                  isPending={saveSetting.isPending}
+                  disabled={!canManageContent}
+                  onClick={() =>
+                    saveSetting.mutate(
+                      {
+                        setting_group: 'services',
+                        setting_key: 'services.web_images',
+                        value_json: serviceImages,
+                      },
+                      {
+                        onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved web service image settings.' }),
+                        onError: (error) =>
+                          setActionFeedback({
+                            tone: 'error',
+                            message: error instanceof Error ? error.message : 'Failed to save web service image settings.',
+                          }),
+                      },
+                    )
+                  }
+                />
+              </Panel>
+            </>
+          )}
 
-          <Panel title="App Welcome Images">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <AssetPickerField label="Welcome Logo" value={appWelcomeImages.logo} assets={imageAssets} onChange={(value) => setAppWelcomeImages((prev) => ({ ...prev, logo: value }))} />
-              <AssetPickerField label="Welcome Background" value={appWelcomeImages.backgroundImage} assets={imageAssets} onChange={(value) => setAppWelcomeImages((prev) => ({ ...prev, backgroundImage: value }))} />
-            </div>
-            <SaveButton
-              isPending={saveSetting.isPending}
-              disabled={!canManageContent}
-              onClick={() =>
-                saveSetting.mutate(
-                  {
-                    setting_group: 'app_images',
-                    setting_key: 'app.images.welcome',
-                    value_json: appWelcomeImages,
-                  },
-                  {
-                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app welcome image settings.' }),
-                    onError: (error) =>
-                      setActionFeedback({
-                        tone: 'error',
-                        message: error instanceof Error ? error.message : 'Failed to save app welcome image settings.',
-                      }),
-                  },
-                )
-              }
-            />
-          </Panel>
+          {editorTab === 'app' && (
+            <>
+              <Panel title="App brand images">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <AssetPickerField label="Green Auth Logo" value={appBrandImages.greenLogo} assets={imageAssets} onChange={(value) => setAppBrandImages((prev) => ({ ...prev, greenLogo: value }))} />
+                  <AssetPickerField label="Cream Auth Logo" value={appBrandImages.creamLogo} assets={imageAssets} onChange={(value) => setAppBrandImages((prev) => ({ ...prev, creamLogo: value }))} />
+                </div>
+                <SaveButton
+                  isPending={saveSetting.isPending}
+                  disabled={!canManageContent}
+                  onClick={() =>
+                    saveSetting.mutate(
+                      {
+                        setting_group: 'app_images',
+                        setting_key: 'app.images.brand',
+                        value_json: appBrandImages,
+                      },
+                      {
+                        onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app brand image settings.' }),
+                        onError: (error) =>
+                          setActionFeedback({
+                            tone: 'error',
+                            message: error instanceof Error ? error.message : 'Failed to save app brand image settings.',
+                          }),
+                      },
+                    )
+                  }
+                />
+              </Panel>
 
-          <Panel title="App Onboarding Images">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <AssetPickerField label="Lukas Avatar" value={appOnboardingImages.avatarLukas} assets={imageAssets} onChange={(value) => setAppOnboardingImages((prev) => ({ ...prev, avatarLukas: value }))} />
-              <AssetPickerField label="Jana Avatar" value={appOnboardingImages.avatarJana} assets={imageAssets} onChange={(value) => setAppOnboardingImages((prev) => ({ ...prev, avatarJana: value }))} />
-            </div>
-            <SaveButton
-              isPending={saveSetting.isPending}
-              disabled={!canManageContent}
-              onClick={() =>
-                saveSetting.mutate(
-                  {
-                    setting_group: 'app_images',
-                    setting_key: 'app.images.onboarding',
-                    value_json: appOnboardingImages,
-                  },
-                  {
-                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app onboarding image settings.' }),
-                    onError: (error) =>
-                      setActionFeedback({
-                        tone: 'error',
-                        message: error instanceof Error ? error.message : 'Failed to save app onboarding image settings.',
-                      }),
-                  },
-                )
-              }
-            />
-          </Panel>
+              <Panel title="App welcome images">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <AssetPickerField label="Welcome Logo" value={appWelcomeImages.logo} assets={imageAssets} onChange={(value) => setAppWelcomeImages((prev) => ({ ...prev, logo: value }))} />
+                  <AssetPickerField label="Welcome Background" value={appWelcomeImages.backgroundImage} assets={imageAssets} onChange={(value) => setAppWelcomeImages((prev) => ({ ...prev, backgroundImage: value }))} />
+                </div>
+                <SaveButton
+                  isPending={saveSetting.isPending}
+                  disabled={!canManageContent}
+                  onClick={() =>
+                    saveSetting.mutate(
+                      {
+                        setting_group: 'app_images',
+                        setting_key: 'app.images.welcome',
+                        value_json: appWelcomeImages,
+                      },
+                      {
+                        onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app welcome image settings.' }),
+                        onError: (error) =>
+                          setActionFeedback({
+                            tone: 'error',
+                            message: error instanceof Error ? error.message : 'Failed to save app welcome image settings.',
+                          }),
+                      },
+                    )
+                  }
+                />
+              </Panel>
 
-          <Panel title="App Category Images">
-            <MappingEditor
-              title="Mobile Category Image Map"
-              mapping={appCategoryImages}
-              assets={imageAssets}
-              onChange={(key, value) => setAppCategoryImages((prev) => ({ ...prev, [key]: value }))}
-            />
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              These are stored separately for the app and do not affect the website. Client home and service discovery screens read this mapping for mobile category imagery.
-            </p>
-            <SaveButton
-              isPending={saveSetting.isPending}
-              disabled={!canManageContent}
-              onClick={() =>
-                saveSetting.mutate(
-                  {
-                    setting_group: 'app_images',
-                    setting_key: 'app.images.categories',
-                    value_json: appCategoryImages,
-                  },
-                  {
-                    onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app category image settings.' }),
-                    onError: (error) =>
-                      setActionFeedback({
-                        tone: 'error',
-                        message: error instanceof Error ? error.message : 'Failed to save app category image settings.',
-                      }),
-                  },
-                )
-              }
-            />
-          </Panel>
+              <Panel title="App onboarding images">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <AssetPickerField label="Lukas Avatar" value={appOnboardingImages.avatarLukas} assets={imageAssets} onChange={(value) => setAppOnboardingImages((prev) => ({ ...prev, avatarLukas: value }))} />
+                  <AssetPickerField label="Jana Avatar" value={appOnboardingImages.avatarJana} assets={imageAssets} onChange={(value) => setAppOnboardingImages((prev) => ({ ...prev, avatarJana: value }))} />
+                </div>
+                <SaveButton
+                  isPending={saveSetting.isPending}
+                  disabled={!canManageContent}
+                  onClick={() =>
+                    saveSetting.mutate(
+                      {
+                        setting_group: 'app_images',
+                        setting_key: 'app.images.onboarding',
+                        value_json: appOnboardingImages,
+                      },
+                      {
+                        onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app onboarding image settings.' }),
+                        onError: (error) =>
+                          setActionFeedback({
+                            tone: 'error',
+                            message: error instanceof Error ? error.message : 'Failed to save app onboarding image settings.',
+                          }),
+                      },
+                    )
+                  }
+                />
+              </Panel>
+
+              <Panel title="App category images">
+                <MappingEditor
+                  title="Mobile Category Image Map"
+                  mapping={appCategoryImages}
+                  assets={imageAssets}
+                  onChange={(key, value) => setAppCategoryImages((prev) => ({ ...prev, [key]: value }))}
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  These only affect the mobile app. Client home and service discovery screens use this mapping.
+                </p>
+                <SaveButton
+                  isPending={saveSetting.isPending}
+                  disabled={!canManageContent}
+                  onClick={() =>
+                    saveSetting.mutate(
+                      {
+                        setting_group: 'app_images',
+                        setting_key: 'app.images.categories',
+                        value_json: appCategoryImages,
+                      },
+                      {
+                        onSuccess: () => setActionFeedback({ tone: 'success', message: 'Saved app category image settings.' }),
+                        onError: (error) =>
+                          setActionFeedback({
+                            tone: 'error',
+                            message: error instanceof Error ? error.message : 'Failed to save app category image settings.',
+                          }),
+                      },
+                    )
+                  }
+                />
+              </Panel>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -120,7 +120,7 @@ export default function PageSettingsPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Global Settings" />
+      <Header title="Site Settings" />
       <div className="flex-1 overflow-y-auto p-8 bg-background-light dark:bg-background-dark">
         <div className="max-w-4xl mx-auto space-y-6">
           <UnsavedChangesBanner show={isDirty} />
@@ -134,11 +134,16 @@ export default function PageSettingsPage() {
               {validationErrors.map((error) => <div key={error}>{error}</div>)}
             </div>
           )}
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Manage shared SEO defaults and public-site settings used across help, booking, and other website surfaces.
+            </p>
+          </div>
           <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 px-4 py-3">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Global SEO and shared website settings</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Global SEO and shared site settings</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     This page controls global defaults and shared content blocks. It does not edit individual pages.
                   </p>
@@ -154,7 +159,7 @@ export default function PageSettingsPage() {
                 />
                 <SettingsSummaryCard
                   title="Organization Schema"
-                  description="Global structured data for the website."
+                  description="Global structured data for the public site."
                 />
                 <SettingsSummaryCard
                   title="Help Settings"
@@ -239,7 +244,7 @@ export default function PageSettingsPage() {
 
           <JsonPanel
             title="Booking Copy"
-            description="Shared copy used by booking confirmation components on the website."
+            description="Shared copy used by booking confirmation components on the public site."
             value={bookingCopyJson}
             onChange={setBookingCopyJson}
           />

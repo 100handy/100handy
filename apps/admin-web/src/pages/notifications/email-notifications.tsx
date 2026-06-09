@@ -58,6 +58,7 @@ export default function EmailNotifications() {
   const [testEmail, setTestEmail] = useState('')
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [editorTab, setEditorTab] = useState<'templates' | 'drafts' | 'jobs' | 'history'>('templates')
 
   const { data: audiencePreview, isLoading: previewLoading } = useNotificationAudiencePreview({
     channel: 'email',
@@ -177,6 +178,29 @@ export default function EmailNotifications() {
           </button>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: 'templates', label: 'Templates' },
+            { id: 'drafts', label: 'Campaign drafts' },
+            { id: 'jobs', label: 'Delivery jobs' },
+            { id: 'history', label: 'History' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setEditorTab(tab.id as typeof editorTab)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                editorTab === tab.id
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {editorTab === 'templates' && (
         <section className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
           <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Manage Email Templates</h3>
@@ -230,8 +254,11 @@ export default function EmailNotifications() {
             </table>
           </div>
         </section>
+        )}
 
         <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          {editorTab === 'jobs' && (
+          <>
           <div className="mb-6 grid gap-4 md:grid-cols-4">
             <DeliveryStatCard label="Total jobs" value={deliveryJobs.length} />
             <DeliveryStatCard label="Sent jobs" value={sentJobs.length} />
@@ -321,10 +348,17 @@ export default function EmailNotifications() {
               )}
             </div>
           </div>
+          </>
+          )}
 
+          {editorTab === 'templates' && (
+          <>
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
             {selectedId ? 'Edit Email Template' : 'Create Email Template'}
           </h3>
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            Edit reusable email templates that can be loaded into one-time campaigns later.
+          </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <Field label="Template Key" value={form.template_key} onChange={(value) => setForm((prev) => ({ ...prev, template_key: value }))} />
@@ -382,9 +416,11 @@ export default function EmailNotifications() {
               Save Template
             </button>
           </div>
-        </section>
+          </>
+          )}
 
-        <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          {editorTab === 'drafts' && (
+          <>
           <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">One-Time Email Drafts</h3>
           <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
             One-time campaigns can be sent now, scheduled, or saved for later reuse.
@@ -568,7 +604,10 @@ export default function EmailNotifications() {
               </div>
             </div>
           )}
+          </>
+          )}
 
+          {editorTab === 'history' && (
           <div className="mt-6 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
             <div className="mb-3 flex items-center gap-2">
               <CalendarClock className="h-4 w-4 text-gray-500" />
@@ -590,6 +629,7 @@ export default function EmailNotifications() {
               )}
             </div>
           </div>
+          )}
         </section>
       </main>
 

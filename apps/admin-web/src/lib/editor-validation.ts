@@ -30,3 +30,8 @@ export function isValidUrl(value: string) {
     return false
   }
 }
+
+export function isValidAssetUrl(value: string) {
+  if (!value.trim()) return false
+  return value.startsWith('/') || isValidUrl(value)
+}

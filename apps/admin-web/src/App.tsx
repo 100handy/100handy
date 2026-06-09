@@ -113,6 +113,8 @@ function App() {
           <Route path="/accounts/location" element={<Navigate to="/accounts/service-areas" replace />} />
           <Route element={<ProtectedRoute permissions={['dashboard.view']} />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={['notifications.manage']} />}>
             <Route path="/dashboard/announcements" element={<AnnouncementsPage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['users.manage']} />}>
@@ -125,12 +127,12 @@ function App() {
             <Route path="/tasks/categories/edit" element={<EditCategoriesPage />} />
             <Route path="/tasks/categories/delete" element={<Navigate to="/tasks/categories/edit" replace />} />
             <Route path="/tasks/list" element={<TaskListPage />} />
-            <Route path="/tasks/open" element={<TaskListPage pageTitle="Open Tasks" forcedStatus="pending" />} />
-            <Route path="/tasks/scheduled" element={<TaskListPage pageTitle="Scheduled Tasks" forcedStatus="accepted" />} />
+            <Route path="/tasks/open" element={<TaskListPage pageTitle="Open Bookings" forcedStatus="pending" />} />
+            <Route path="/tasks/scheduled" element={<TaskListPage pageTitle="Scheduled Bookings" forcedStatus="accepted" />} />
             <Route path="/tasks/details/:taskId" element={<TaskDetailsPage />} />
             <Route path="/tasks/edit/:id" element={<TaskDetailsRedirect />} />
-            <Route path="/tasks/completed" element={<TaskListPage pageTitle="Completed Tasks" forcedStatus="completed" />} />
-            <Route path="/tasks/cancelled" element={<TaskListPage pageTitle="Cancelled Tasks" forcedStatus="cancelled" />} />
+            <Route path="/tasks/completed" element={<TaskListPage pageTitle="Completed Bookings" forcedStatus="completed" />} />
+            <Route path="/tasks/cancelled" element={<TaskListPage pageTitle="Cancelled Bookings" forcedStatus="cancelled" />} />
             <Route path="/tasks/questions" element={<TaskQuestionsPage />} />
           </Route>
           <Route element={<ProtectedRoute permissions={['handys.manage']} />}>

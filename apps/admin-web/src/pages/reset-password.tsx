@@ -104,16 +104,16 @@ export default function ResetPasswordPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              Password Reset Successful!
+              Password updated
             </h2>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Your password has been successfully updated. You can now sign in with your new password.
+              Your password has been updated. You can now sign in with the new password.
             </p>
             <button
               onClick={() => navigate('/login')}
               className="w-full h-12 px-6 bg-primary text-white font-bold rounded-lg hover:bg-primary/90"
             >
-              Go to Login
+              Go to sign in
             </button>
           </div>
         </div>
@@ -149,9 +149,9 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="bg-white/5 dark:bg-black/10 rounded-lg p-8 shadow-2xl shadow-black/10">
-            <h2 className="text-2xl font-bold text-center mb-2">Reset Your Password</h2>
+            <h2 className="text-2xl font-bold text-center mb-2">Choose a new password</h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 text-center mb-6">
-              Enter your new password below
+              Create a new password for your admin account.
             </p>
 
             {error && (
@@ -256,7 +256,7 @@ export default function ResetPasswordPage() {
                       <span>Updating Password...</span>
                     </>
                   ) : (
-                    'Reset Password'
+                    'Update password'
                   )}
                 </button>
               </div>

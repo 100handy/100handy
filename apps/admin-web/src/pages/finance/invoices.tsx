@@ -27,6 +27,7 @@ const getStatusColor = (status: Invoice['status']): string => {
 };
 
 export default function Invoices() {
+  const [activeView, setActiveView] = useState<'invoices' | 'filters'>('invoices');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'Paid' | 'Pending' | 'Overdue'>('all');
   const [page, setPage] = useState(1);
@@ -48,10 +49,30 @@ export default function Invoices() {
       <Header title="Invoices" />
 
       <main className="flex-1 p-6 space-y-6">
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'invoices', label: 'Invoice list' },
+            { id: 'filters', label: 'Filters' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
         {/* Invoices Table */}
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">All Invoices</h3>
+            {activeView === 'filters' ? (
             <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
               {/* Search Input */}
               <div className="relative w-full sm:w-auto">
@@ -92,6 +113,11 @@ export default function Invoices() {
                 <span>Export All</span>
               </button>
             </div>
+            ) : (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+              Use <span className="font-medium">Filters</span> to narrow by status or search by invoice.
+            </div>
+            )}
           </div>
 
           <div className="overflow-x-auto">

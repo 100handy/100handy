@@ -2,8 +2,10 @@ import Header from '@/components/header'
 import { Shield, UserX, PauseCircle, MapPin, Users, Wrench, Loader2, History } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAccountsSummary } from '@/lib/api/accounts'
+import { useState } from 'react'
 
 export default function AccountsOverviewPage() {
+  const [activeView, setActiveView] = useState<'sections' | 'overview'>('sections')
   const { data: summary, isLoading } = useAccountsSummary()
   const cards = [
     {
@@ -37,8 +39,8 @@ export default function AccountsOverviewPage() {
       icon: History,
     },
     {
-      title: 'Location Status',
-      description: 'Review users who have configured their default address and location records.',
+      title: 'Service Areas & Locations',
+      description: 'Manage UK service coverage, default location records, and area-level rollout state.',
       href: '/accounts/service-areas',
       icon: MapPin,
     },
@@ -48,6 +50,26 @@ export default function AccountsOverviewPage() {
     <div className="flex-1 flex flex-col">
       <Header title="Accounts" />
       <main className="flex-1 overflow-y-auto p-6">
+        <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'sections', label: 'Sections' },
+            { id: 'overview', label: 'Overview' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+        {activeView === 'overview' ? (
         <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
           <SummaryCard title="Total Users" value={summary?.totalUsers ?? 0} icon={Users} loading={isLoading} />
           <SummaryCard title="Clients" value={summary?.clients ?? 0} icon={Users} loading={isLoading} />
@@ -56,6 +78,8 @@ export default function AccountsOverviewPage() {
           <SummaryCard title="Paused Users" value={summary?.pausedUsers ?? 0} icon={PauseCircle} loading={isLoading} />
           <SummaryCard title="Deleted Users" value={summary?.deletedUsers ?? 0} icon={UserX} loading={isLoading} />
         </div>
+        ) : null}
+        {activeView === 'sections' ? (
         <div className="grid gap-6 md:grid-cols-2">
           {cards.map((card) => {
             const Icon = card.icon
@@ -74,6 +98,7 @@ export default function AccountsOverviewPage() {
             )
           })}
         </div>
+        ) : null}
       </main>
     </div>
   )

@@ -37,6 +37,7 @@ const getBalanceColor = (type: AccountBalance['type']): string => {
 };
 
 export default function AccountBalances() {
+  const [activeView, setActiveView] = useState<'overview' | 'accounts'>('accounts');
   const [filter, setFilter] = useState<'all' | 'Handy Payout' | 'Client Credit' | 'Platform Revenue'>('all');
 
   const { data: summary, isLoading: summaryLoading } = useAccountBalancesSummary();
@@ -74,7 +75,27 @@ export default function AccountBalances() {
       <Header title="Account Balances" />
 
       <main className="flex-1 p-6 space-y-6">
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'accounts', label: 'Account list' },
+            { id: 'overview', label: 'Overview' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
         {/* Summary Cards */}
+        {activeView === 'overview' ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {summaryCards.map((card) => {
             const Icon = card.icon;
@@ -103,8 +124,10 @@ export default function AccountBalances() {
             );
           })}
         </div>
+        ) : null}
 
         {/* All Accounts Table */}
+        {activeView === 'accounts' ? (
         <div className="bg-white dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">All Accounts</h3>
@@ -198,6 +221,7 @@ export default function AccountBalances() {
             </table>
           </div>
         </div>
+        ) : null}
       </main>
     </div>
   );

@@ -36,6 +36,8 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+*.p8
+apps/client-mobile/assets/images/welcome-splash-loading.png
 
 
 #cursor

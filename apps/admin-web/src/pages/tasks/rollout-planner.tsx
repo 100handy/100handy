@@ -18,6 +18,7 @@ const emptySnapshot: RolloutSnapshot = {
 }
 
 export default function RolloutPlannerPage() {
+  const [activeView, setActiveView] = useState<'live' | 'editor' | 'presets'>('editor')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -96,12 +97,39 @@ export default function RolloutPlannerPage() {
 
       <div className="flex-1 overflow-y-auto bg-background-light p-8 dark:bg-background-dark">
         <div className="mx-auto max-w-7xl space-y-6">
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Plan month-to-month category and service-area rollout changes before they go live.
+            </p>
+          </div>
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/20 dark:text-blue-200">
             This is an admin-only planning layer. Presets capture the current category, service-area, and area-level category rollout state so you can plan month-to-month changes and apply them intentionally.
           </div>
 
+          <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+            {[
+              { id: 'live', label: 'Live state' },
+              { id: 'editor', label: 'Preset editor' },
+              { id: 'presets', label: 'Saved presets' },
+            ].map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id as typeof activeView)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  activeView === view.id
+                    ? 'bg-primary text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+
           <div className="grid gap-6 xl:grid-cols-[1.05fr,0.95fr]">
             <section className="space-y-6">
+              {activeView === 'live' ? (
               <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
@@ -127,7 +155,9 @@ export default function RolloutPlannerPage() {
                   <SummaryGrid summary={currentSummary} />
                 )}
               </div>
+              ) : null}
 
+              {activeView === 'editor' ? (
               <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
@@ -147,7 +177,7 @@ export default function RolloutPlannerPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <Field label="Preset name">
-                    <input value={name} onChange={(e) => setName(e.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="July rollout" />
+                    <input value={name} onChange={(e) => setName(e.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="July bookings rollout" />
                   </Field>
                   <Field label="Rollout month">
                     <input value={rolloutMonth} onChange={(e) => setRolloutMonth(e.target.value)} type="month" className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
@@ -210,9 +240,11 @@ export default function RolloutPlannerPage() {
                   </button>
                 </div>
               </div>
+              ) : null}
             </section>
 
             <section className="space-y-6">
+              {activeView === 'presets' ? (
               <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Saved presets</h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Use these for month-to-month launch planning and controlled expansion.</p>
@@ -280,6 +312,7 @@ export default function RolloutPlannerPage() {
                   </div>
                 )}
               </div>
+              ) : null}
             </section>
           </div>
         </div>

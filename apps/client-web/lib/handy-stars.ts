@@ -21,6 +21,10 @@ export interface MonthlyHandyStarWinner {
   month: string;
 }
 
+function getHandyStarPromotionSettingKey(month: string) {
+  return `handy_star.promotion.${month}`;
+}
+
 export function getCurrentMonthValue() {
   const now = new Date();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -145,4 +149,26 @@ export async function getMonthlyHandyStar(
   });
 
   return leaderboard[0] ?? null;
+}
+
+export async function getSavedHandyStarPromotion(
+  month = getCurrentMonthValue(),
+): Promise<MonthlyHandyStarWinner | null> {
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('value_json')
+    .eq('setting_key', getHandyStarPromotionSettingKey(month))
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data?.value_json as MonthlyHandyStarWinner | undefined) ?? null;
+}
+
+export async function getPromotedOrComputedHandyStar(
+  month = getCurrentMonthValue(),
+): Promise<MonthlyHandyStarWinner | null> {
+  const saved = await getSavedHandyStarPromotion(month).catch(() => null);
+  if (saved) return saved;
+  return getMonthlyHandyStar(month);
 }

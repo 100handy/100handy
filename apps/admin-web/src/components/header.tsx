@@ -15,12 +15,12 @@ const sectionTabs = [
     items: [
       { label: 'Categories', to: '/tasks/categories' },
       { label: 'Rollouts', to: '/tasks/rollouts' },
-      { label: 'Task List', to: '/tasks/list' },
+      { label: 'Bookings', to: '/tasks/list' },
       { label: 'Open', to: '/tasks/open' },
       { label: 'Scheduled', to: '/tasks/scheduled' },
       { label: 'Completed', to: '/tasks/completed' },
       { label: 'Cancelled', to: '/tasks/cancelled' },
-      { label: 'Questions', to: '/tasks/questions' },
+      { label: 'Booking Fields', to: '/tasks/questions' },
     ],
   },
   {
@@ -59,7 +59,7 @@ const sectionTabs = [
       { label: 'Verification', to: '/accounts/verification' },
       { label: 'Deleted', to: '/accounts/deleted' },
       { label: 'Paused', to: '/accounts/paused' },
-      { label: 'Locations', to: '/accounts/service-areas' },
+      { label: 'Service Areas', to: '/accounts/service-areas' },
     ],
   },
   {
@@ -85,8 +85,7 @@ const sectionTabs = [
   {
     match: (pathname: string) => pathname.startsWith('/users'),
     items: [
-      { label: 'All Users', to: '/users' },
-      { label: 'Profiles', to: '/users/profiles' },
+      { label: 'Customers', to: '/users' },
     ],
   },
   {

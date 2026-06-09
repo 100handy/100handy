@@ -7,6 +7,7 @@ import type { UserRole } from '@/lib/database.types'
 
 export default function UsersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const [activeView, setActiveView] = useState<'customers' | 'selection'>('customers')
   const [searchQuery, setSearchQuery] = useState('')
   const [accountStatus, setAccountStatus] = useState<'active' | 'paused' | 'deleted' | ''>('')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
@@ -130,7 +131,7 @@ export default function UsersPage() {
 
   return (
     <main className="flex-1 flex flex-col">
-      <Header title="Users Management" />
+      <Header title="Customers" />
 
       <div className="flex-1 p-6 lg:p-10">
         <div className="max-w-7xl mx-auto">
@@ -150,11 +151,35 @@ export default function UsersPage() {
             </div>
           )}
 
+          <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+            {[
+              { id: 'customers', label: 'Customer list' },
+              { id: 'selection', label: 'Selection' },
+            ].map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id as typeof activeView)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  activeView === view.id
+                    ? 'bg-primary text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white">All Users</h2>
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Customers</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {users ? `${users.length} user${users.length !== 1 ? 's' : ''} found` : 'Loading...'}
+                {activeView === 'customers'
+                  ? users
+                    ? `${users.length} customer${users.length !== 1 ? 's' : ''} found`
+                    : 'Loading customers...'
+                  : `${selectedUsers.length} selected for bulk removal`}
               </p>
             </div>
             <div className="flex gap-2">
@@ -166,22 +191,30 @@ export default function UsersPage() {
                 <Plus className="w-4 h-4" />
                 <span>Add User</span>
               </button>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={selectedUsers.length === 0 || deleteUsersMutation.isPending}
-                className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg border border-primary/30 text-slate-700 dark:text-slate-200 bg-background-light dark:bg-background-dark hover:bg-primary/10 dark:hover:bg-primary/20 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>
-                  {deleteUsersMutation.isPending
-                    ? 'Deleting...'
-                    : selectedUsers.length > 0
-                    ? `Remove ${selectedUsers.length}`
-                    : 'Remove Users'}
-                </span>
-              </button>
+              {activeView === 'selection' ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={selectedUsers.length === 0 || deleteUsersMutation.isPending}
+                  className="flex items-center justify-center gap-2 h-10 px-4 rounded-lg border border-primary/30 text-slate-700 dark:text-slate-200 bg-background-light dark:bg-background-dark hover:bg-primary/10 dark:hover:bg-primary/20 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>
+                    {deleteUsersMutation.isPending
+                      ? 'Deleting...'
+                      : selectedUsers.length > 0
+                      ? `Remove ${selectedUsers.length}`
+                      : 'Remove Users'}
+                  </span>
+                </button>
+              ) : null}
             </div>
           </div>
+
+          {activeView === 'selection' ? (
+            <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 dark:border-slate-800 dark:bg-gray-900/50 dark:text-slate-300">
+              Select customers from the list below, then use this view to remove them in one action.
+            </div>
+          ) : null}
 
           <div className="mb-6 flex flex-col gap-3 lg:flex-row">
             <div className="relative flex-1">

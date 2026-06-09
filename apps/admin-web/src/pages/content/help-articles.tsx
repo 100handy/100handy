@@ -43,6 +43,7 @@ export default function HelpArticlesPage() {
   const [relatedJson, setRelatedJson] = useState('[]')
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [editorTab, setEditorTab] = useState<'content' | 'details' | 'navigation' | 'history'>('content')
 
   const selected = useMemo(
     () => articles?.find((article) => article.id === selectedId) ?? null,
@@ -172,6 +173,11 @@ export default function HelpArticlesPage() {
               Your admin role can view help articles, but it cannot change or publish them.
             </div>
           )}
+          <div className="xl:col-span-2">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Manage public help-centre content, sidebar links, related links, and publish state.
+            </p>
+          </div>
           <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
             <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4 dark:border-gray-800">
               <div>
@@ -220,9 +226,9 @@ export default function HelpArticlesPage() {
             )}
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Editor</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Help Article</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Manage article metadata, navigation, and HTML body content.
+                    Update article text, navigation links, and publish state without touching code.
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -272,112 +278,172 @@ export default function HelpArticlesPage() {
               )}
             </div>
 
-            <div className="mb-4 flex justify-end">
-              <a
-                href={`${import.meta.env.VITE_SITE_URL || ''}/help/${draft.slug.trim() || effectiveArticleKey || ''}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Preview Help Article
-              </a>
+            <div className="mb-6 flex flex-wrap items-center gap-2 border-b border-gray-200 pb-4 dark:border-gray-700">
+              {[
+                { id: 'content', label: 'Article content' },
+                { id: 'details', label: 'Article details' },
+                { id: 'navigation', label: 'Sidebar & related links' },
+                { id: 'history', label: 'History' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setEditorTab(tab.id as typeof editorTab)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                    editorTab === tab.id
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            {(draft.slug.trim() || effectiveArticleKey) && (
-              <div className="mb-4 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                <div className="border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
-                  Preview
+            {editorTab === 'content' && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-white">Article content</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Edit the article summary and main body text.
+                      </p>
+                    </div>
+                    <a
+                      href={`${import.meta.env.VITE_SITE_URL || ''}/help/${draft.slug.trim() || effectiveArticleKey || ''}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Open live article
+                    </a>
+                  </div>
                 </div>
-                <iframe
-                  title="Help article preview"
-                  src={`${import.meta.env.VITE_SITE_URL || ''}/help/${draft.slug.trim() || effectiveArticleKey || ''}`}
-                  className="h-[520px] w-full bg-white"
-                />
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Summary</label>
+                  <textarea
+                    value={draft.summary}
+                    onChange={(event) => setDraft((prev) => ({ ...prev, summary: event.target.value }))}
+                    rows={4}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Body HTML</label>
+                  <textarea
+                    value={draft.body_html}
+                    onChange={(event) => setDraft((prev) => ({ ...prev, body_html: event.target.value }))}
+                    rows={18}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm dark:border-gray-700 dark:bg-gray-900"
+                  />
+                  <FieldErrorText error={!draft.body_html.trim() ? 'Body HTML is required.' : null} />
+                </div>
               </div>
             )}
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Article Key" value={draft.article_key} onChange={(value) => setDraft((prev) => ({ ...prev, article_key: value }))} />
-              <FieldErrorText error={!draft.article_key.trim() ? 'Article key is required.' : null} />
-              <Field label="Slug" value={draft.slug} onChange={(value) => setDraft((prev) => ({ ...prev, slug: value }))} />
-              <FieldErrorText error={!draft.slug.trim() ? 'Slug is required.' : !isValidSlug(draft.slug.trim()) ? 'Use lowercase letters, numbers, and hyphens only.' : null} />
-              <Field label="Title" value={draft.title} onChange={(value) => setDraft((prev) => ({ ...prev, title: value }))} />
-              <FieldErrorText error={!draft.title.trim() ? 'Title is required.' : null} />
-              <Field label="Breadcrumb" value={draft.breadcrumb} onChange={(value) => setDraft((prev) => ({ ...prev, breadcrumb: value }))} />
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                <select
-                  value={draft.status}
-                  onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as HelpArticleInput['status'] }))}
-                  className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Summary</label>
-              <textarea
-                value={draft.summary}
-                onChange={(event) => setDraft((prev) => ({ ...prev, summary: event.target.value }))}
-                rows={3}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900"
-              />
-            </div>
-
-            <JsonEditor label="Sidebar links JSON" value={sidebarJson} onChange={setSidebarJson} />
-            <JsonEditor label="Related links JSON" value={relatedJson} onChange={setRelatedJson} />
-
-            <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Body HTML</label>
-              <textarea
-                value={draft.body_html}
-                onChange={(event) => setDraft((prev) => ({ ...prev, body_html: event.target.value }))}
-                rows={22}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm dark:border-gray-700 dark:bg-gray-900"
-              />
-              <FieldErrorText error={!draft.body_html.trim() ? 'Body HTML is required.' : null} />
-            </div>
-
-            {revisions.length > 0 && (
-              <div className="mt-6 space-y-3 border-t border-gray-200 pt-6 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Revision History</h3>
-                {revisions.map((revision) => (
-                  <div key={revision.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        v{revision.version_number} · {revision.revision_state}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Updated {new Date(revision.updated_at).toLocaleString('en-GB')}
-                        {revision.published_at ? ` · Published ${new Date(revision.published_at).toLocaleString('en-GB')}` : ''}
-                      </p>
-                    </div>
-                    {revision.revision_state === 'published' ? (
-                      <button
-                        onClick={async () => {
-                          setActionFeedback(null)
-                          try {
-                            await restoreRevision.mutateAsync({ articleKey: effectiveArticleKey, revisionId: revision.id })
-                            setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
-                          } catch (error) {
-                            setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
-                          }
-                        }}
-                        disabled={restoreRevision.isPending}
-                        className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 disabled:opacity-50"
-                      >
-                        Restore to Draft
-                      </button>
-                    ) : (
-                      <span className="text-xs font-medium text-amber-600">Current draft</span>
-                    )}
+            {editorTab === 'details' && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">Article details</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Basic page details. Most editors only need the title, breadcrumb, and page address.
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Field label="Article Key" value={draft.article_key} onChange={(value) => setDraft((prev) => ({ ...prev, article_key: value }))} />
+                    <FieldErrorText error={!draft.article_key.trim() ? 'Article key is required.' : null} />
                   </div>
-                ))}
+                  <div>
+                    <Field label="Slug" value={draft.slug} onChange={(value) => setDraft((prev) => ({ ...prev, slug: value }))} />
+                    <FieldErrorText error={!draft.slug.trim() ? 'Slug is required.' : !isValidSlug(draft.slug.trim()) ? 'Use lowercase letters, numbers, and hyphens only.' : null} />
+                  </div>
+                  <div>
+                    <Field label="Title" value={draft.title} onChange={(value) => setDraft((prev) => ({ ...prev, title: value }))} />
+                    <FieldErrorText error={!draft.title.trim() ? 'Title is required.' : null} />
+                  </div>
+                  <Field label="Breadcrumb" value={draft.breadcrumb} onChange={(value) => setDraft((prev) => ({ ...prev, breadcrumb: value }))} />
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                    <select
+                      value={draft.status}
+                      onChange={(event) => setDraft((prev) => ({ ...prev, status: event.target.value as HelpArticleInput['status'] }))}
+                      className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm dark:border-gray-700 dark:bg-gray-900"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editorTab === 'navigation' && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">Sidebar and related links</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Manage the lists that appear next to the article and at the bottom of the page.
+                  </p>
+                </div>
+                <JsonEditor label="Sidebar links JSON" value={sidebarJson} onChange={setSidebarJson} />
+                <JsonEditor label="Related links JSON" value={relatedJson} onChange={setRelatedJson} />
+              </div>
+            )}
+
+            {editorTab === 'history' && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">Revision history</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Review previous versions and restore a published version back to draft.
+                  </p>
+                </div>
+                {revisions.length > 0 ? (
+                  <div className="space-y-3">
+                    {revisions.map((revision) => (
+                      <div key={revision.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            v{revision.version_number} · {revision.revision_state}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Updated {new Date(revision.updated_at).toLocaleString('en-GB')}
+                            {revision.published_at ? ` · Published ${new Date(revision.published_at).toLocaleString('en-GB')}` : ''}
+                          </p>
+                        </div>
+                        {revision.revision_state === 'published' ? (
+                          <button
+                            onClick={async () => {
+                              setActionFeedback(null)
+                              try {
+                                await restoreRevision.mutateAsync({ articleKey: effectiveArticleKey, revisionId: revision.id })
+                                setActionFeedback({ tone: 'success', message: 'Revision restored to draft.' })
+                              } catch (error) {
+                                setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to restore revision.' })
+                              }
+                            }}
+                            disabled={restoreRevision.isPending}
+                            className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 disabled:opacity-50"
+                          >
+                            Restore to Draft
+                          </button>
+                        ) : (
+                          <span className="text-xs font-medium text-amber-600">Current draft</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-gray-300 px-4 py-8 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                    No revision history yet.
+                  </div>
+                )}
               </div>
             )}
           </div>

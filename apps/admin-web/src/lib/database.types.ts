@@ -832,7 +832,7 @@ export interface Database {
           id: string
           name: string
           slug: string
-          area_type: 'country' | 'nation' | 'region' | 'city' | 'postcode_area' | 'postcode_district'
+          area_type: 'country' | 'nation' | 'region' | 'city' | 'borough' | 'postcode_area' | 'postcode_district'
           parent_id: string | null
           country_code: string
           enabled: boolean
@@ -845,7 +845,7 @@ export interface Database {
           id?: string
           name: string
           slug: string
-          area_type: 'country' | 'nation' | 'region' | 'city' | 'postcode_area' | 'postcode_district'
+          area_type: 'country' | 'nation' | 'region' | 'city' | 'borough' | 'postcode_area' | 'postcode_district'
           parent_id?: string | null
           country_code?: string
           enabled?: boolean
@@ -858,7 +858,7 @@ export interface Database {
           id?: string
           name?: string
           slug?: string
-          area_type?: 'country' | 'nation' | 'region' | 'city' | 'postcode_area' | 'postcode_district'
+          area_type?: 'country' | 'nation' | 'region' | 'city' | 'borough' | 'postcode_area' | 'postcode_district'
           parent_id?: string | null
           country_code?: string
           enabled?: boolean

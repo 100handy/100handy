@@ -40,6 +40,7 @@ const stageDescriptions: Record<ApplicantStage, string> = {
 };
 
 export default function HandySelectionProcess() {
+  const [activeView, setActiveView] = useState<'stages' | 'applicants'>('applicants');
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState<ApplicantStage | undefined>(undefined);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -63,8 +64,29 @@ export default function HandySelectionProcess() {
             </p>
           </div>
 
+          <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+            {[
+              { id: 'applicants', label: 'Applicant queue' },
+              { id: 'stages', label: 'Process stages' },
+            ].map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setActiveView(view.id as typeof activeView)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  activeView === view.id
+                    ? 'bg-primary text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+
           <div className="space-y-8">
             {/* Process Stages */}
+            {activeView === 'stages' ? (
             <div className="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-slate-800 p-6">
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
                 Process Stages
@@ -109,8 +131,10 @@ export default function HandySelectionProcess() {
                 )}
               </div>
             </div>
+            ) : null}
 
             {/* Current Applicants Table */}
+            {activeView === 'applicants' ? (
             <div className="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-slate-800">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
@@ -249,6 +273,7 @@ export default function HandySelectionProcess() {
                 </div>
               </div>
             </div>
+            ) : null}
           </div>
         </div>
       </main>

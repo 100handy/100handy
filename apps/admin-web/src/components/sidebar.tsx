@@ -7,7 +7,6 @@ import {
   FileText,
   Gauge,
   LifeBuoy,
-  MapPinned,
   Megaphone,
   Radar,
   Search,
@@ -44,7 +43,7 @@ const groups = [
   },
   {
     key: 'tasks',
-    label: 'Tasks',
+    label: 'Bookings',
     icon: ClipboardList,
     path: '/tasks/categories',
     permissions: ['tasks.manage'] as AdminPermission[],

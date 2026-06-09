@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { format } from 'date-fns'
 import { ArrowLeft, Mail, MapPin, Phone, Shield, Star, Ticket } from 'lucide-react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '@/components/header'
 import { useUpdateUser, useDeleteUser, useUpdateUserStatus, useUser } from '@/lib/api/users'
 import type { UserRole } from '@/lib/database.types'
@@ -10,6 +10,7 @@ export default function UserProfilePage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const userId = searchParams.get('id')
+  const [activeView, setActiveView] = useState<'overview' | 'history'>('overview')
 
   const { data: user, isLoading, error } = useUser(userId || undefined)
   const updateUser = useUpdateUser()
@@ -18,6 +19,7 @@ export default function UserProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -38,16 +40,7 @@ export default function UserProfilePage() {
   }, [user])
 
   if (!userId) {
-    return (
-      <div className="flex-1 flex flex-col">
-        <Header title="Customer Profile" />
-        <main className="flex-1 p-8">
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
-            Invalid user id.
-          </div>
-        </main>
-      </div>
-    )
+    return <Navigate to="/users" replace />
   }
 
   async function handleSave() {
@@ -86,6 +79,16 @@ export default function UserProfilePage() {
           {error && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
               {error instanceof Error ? error.message : 'Failed to load customer profile.'}
+            </div>
+          )}
+
+          {actionFeedback && (
+            <div className={`mb-6 rounded-xl px-4 py-3 text-sm ${
+              actionFeedback.tone === 'success'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300'
+                : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
+            }`}>
+              {actionFeedback.message}
             </div>
           )}
 
@@ -259,13 +262,36 @@ export default function UserProfilePage() {
                 </div>
               </section>
 
-              <section className="grid gap-4 md:grid-cols-4">
-                <SummaryCard label="Bookings" value={String(user.bookings_count || 0)} icon={Ticket} />
-                <SummaryCard label="Total spent" value={`£${(user.total_spent || 0).toFixed(0)}`} icon={Star} />
-                <SummaryCard label="Reviews given" value={String(user.reviews_given.length)} icon={Star} />
-                <SummaryCard label="Support tickets" value={String(user.support_tickets.length)} icon={Shield} />
-              </section>
+              <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+                {[
+                  { id: 'overview', label: 'Overview' },
+                  { id: 'history', label: 'History' },
+                ].map((view) => (
+                  <button
+                    key={view.id}
+                    type="button"
+                    onClick={() => setActiveView(view.id as typeof activeView)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                      activeView === view.id
+                        ? 'bg-primary text-white'
+                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                    }`}
+                  >
+                    {view.label}
+                  </button>
+                ))}
+              </div>
 
+              {activeView === 'overview' ? (
+                <section className="grid gap-4 md:grid-cols-4">
+                  <SummaryCard label="Bookings" value={String(user.bookings_count || 0)} icon={Ticket} />
+                  <SummaryCard label="Total spent" value={`£${(user.total_spent || 0).toFixed(0)}`} icon={Star} />
+                  <SummaryCard label="Reviews given" value={String(user.reviews_given.length)} icon={Star} />
+                  <SummaryCard label="Support tickets" value={String(user.support_tickets.length)} icon={Shield} />
+                </section>
+              ) : null}
+
+              {activeView === 'history' ? (
               <section className="grid gap-6 xl:grid-cols-2">
                 <Panel title="Booking history">
                   <SimpleTable
@@ -320,6 +346,7 @@ export default function UserProfilePage() {
                   />
                 </Panel>
               </section>
+              ) : null}
             </div>
           )}
         </div>

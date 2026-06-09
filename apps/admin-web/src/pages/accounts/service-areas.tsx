@@ -1,14 +1,9 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ChevronDown, Loader2, MapPinned, Plus, UserPlus } from 'lucide-react'
 import Header from '@/components/header'
 import {
-  useCategoryAreaCoverageMatrix,
-  useSaveServiceAreaCategoryOverride,
-} from '@/lib/api/categories'
-import {
   useAssignProviderToServiceArea,
   useBulkImportLocationAreas,
-  useCoverageDemandInsights,
   useLocationAreas,
   useProviderCandidates,
   useRemoveProviderFromServiceArea,
@@ -23,6 +18,7 @@ import {
 } from '@/lib/api/locations'
 
 export default function ServiceAreasPage() {
+  const [activePanel, setActivePanel] = useState<'uk_areas' | 'service_areas'>('service_areas')
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null)
   const [selectedLocationAreaId, setSelectedLocationAreaId] = useState<string | null>(null)
   const [city, setCity] = useState('')
@@ -42,6 +38,8 @@ export default function ServiceAreasPage() {
   const [locationSearch, setLocationSearch] = useState('')
   const [locationTypeFilter, setLocationTypeFilter] = useState<'all' | LocationAreaNode['areaType']>('all')
   const [locationStatusFilter, setLocationStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all')
+  const [serviceAreaCityScope, setServiceAreaCityScope] = useState<string>('all')
+  const [serviceAreaBoroughScope, setServiceAreaBoroughScope] = useState<string>('all')
   const [serviceAreaSearch, setServiceAreaSearch] = useState('')
   const [serviceAreaStatusFilter, setServiceAreaStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all')
   const [actionFeedback, setActionFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
@@ -49,13 +47,10 @@ export default function ServiceAreasPage() {
   const { data: areas = [], isLoading, error } = useServiceAreas()
   const { data: locationAreas = [], isLoading: locationAreasLoading, error: locationAreasError } = useLocationAreas()
   const { data: healthWarnings = [] } = useServiceAreaHealthWarnings()
-  const { data: coverageDemand } = useCoverageDemandInsights()
-  const { data: categoryMatrix, isLoading: categoryMatrixLoading } = useCategoryAreaCoverageMatrix()
   const { data: assignments = [], isLoading: assignmentsLoading } = useServiceAreaAssignments(selectedAreaId)
   const { data: candidates = [] } = useProviderCandidates(selectedAreaId)
   const { data: overlapWarnings = [] } = useServiceAreaOverlapCheck(postcodePrefix, selectedAreaId)
   const saveArea = useSaveServiceArea()
-  const saveCategoryOverride = useSaveServiceAreaCategoryOverride()
   const saveLocationArea = useSaveLocationArea()
   const bulkImportLocationAreas = useBulkImportLocationAreas()
   const toggleLocationArea = useToggleLocationArea()
@@ -74,11 +69,19 @@ export default function ServiceAreasPage() {
   const importParentOptions = useMemo(
     () =>
       locationAreas
-        .filter((area) => area.areaType === 'nation' || area.areaType === 'region' || area.areaType === 'city' || area.areaType === 'postcode_area')
+        .filter((area) => area.areaType === 'nation' || area.areaType === 'region' || area.areaType === 'city' || area.areaType === 'borough' || area.areaType === 'postcode_area')
         .map((area) => ({ id: area.id, label: `${area.name} (${area.areaType})`, areaType: area.areaType })),
     [locationAreas],
   )
   const locationTree = useMemo(() => buildLocationTree(locationAreas), [locationAreas])
+  const locationAreaMap = useMemo(() => new Map(locationAreas.map((area) => [area.id, area])), [locationAreas])
+  const londonBoroughs = useMemo(
+    () =>
+      locationAreas
+        .filter((area) => area.areaType === 'borough' && area.parentId === 'loc_london_city')
+        .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)),
+    [locationAreas],
+  )
   const filteredLocationTree = useMemo(
     () => filterLocationTree(locationTree, locationSearch, locationTypeFilter, locationStatusFilter),
     [locationTree, locationSearch, locationTypeFilter, locationStatusFilter],
@@ -86,6 +89,12 @@ export default function ServiceAreasPage() {
   const filteredServiceAreas = useMemo(() => {
     const query = serviceAreaSearch.trim().toLowerCase()
     return areas.filter((area) => {
+      const matchesCity = serviceAreaCityScope === 'all' || area.city === serviceAreaCityScope
+      const matchesBorough =
+        serviceAreaBoroughScope === 'all' ||
+        !area.locationAreaId
+          ? serviceAreaBoroughScope === 'all'
+          : isWithinLocationArea(area.locationAreaId, serviceAreaBoroughScope, locationAreaMap)
       const matchesSearch =
         !query ||
         area.city.toLowerCase().includes(query) ||
@@ -93,17 +102,32 @@ export default function ServiceAreasPage() {
       const matchesStatus =
         serviceAreaStatusFilter === 'all' ||
         (serviceAreaStatusFilter === 'enabled' ? area.enabled : !area.enabled)
-      return matchesSearch && matchesStatus
+      return matchesCity && matchesBorough && matchesSearch && matchesStatus
     })
-  }, [areas, serviceAreaSearch, serviceAreaStatusFilter])
-  const rolloutMatrix = useMemo(() => {
-    if (!categoryMatrix) return null
-
-    return {
-      serviceAreas: categoryMatrix.serviceAreas,
-      rows: categoryMatrix.rows.filter((row) => row.active),
+  }, [areas, locationAreaMap, serviceAreaBoroughScope, serviceAreaCityScope, serviceAreaSearch, serviceAreaStatusFilter])
+  const currentScopedBorough = useMemo(
+    () => londonBoroughs.find((borough) => borough.id === serviceAreaBoroughScope) || null,
+    [londonBoroughs, serviceAreaBoroughScope],
+  )
+  const serviceAreaCities = useMemo(
+    () => Array.from(new Set(areas.map((area) => area.city))).sort((a, b) => a.localeCompare(b)),
+    [areas],
+  )
+  const scopedHealthWarnings = useMemo(() => {
+    let warnings = healthWarnings
+    if (serviceAreaCityScope !== 'all') {
+      warnings = warnings.filter((warning) => warning.city === serviceAreaCityScope)
     }
-  }, [categoryMatrix])
+    if (serviceAreaBoroughScope !== 'all') {
+      const serviceAreaMap = new Map(areas.map((area) => [area.id, area]))
+      warnings = warnings.filter((warning) => {
+        const serviceArea = serviceAreaMap.get(warning.serviceAreaId)
+        if (!serviceArea?.locationAreaId) return false
+        return isWithinLocationArea(serviceArea.locationAreaId, serviceAreaBoroughScope, locationAreaMap)
+      })
+    }
+    return warnings
+  }, [areas, healthWarnings, locationAreaMap, serviceAreaBoroughScope, serviceAreaCityScope])
   const locationOverview = useMemo(() => {
     const enabledLocationAreas = locationAreas.filter((area) => area.enabled).length
     const enabledServiceAreas = areas.filter((area) => area.enabled).length
@@ -118,13 +142,44 @@ export default function ServiceAreasPage() {
     }
   }, [areas, healthWarnings.length, locationAreas])
 
+  useEffect(() => {
+    if (serviceAreaCities.length === 0) return
+
+    if (serviceAreaCityScope !== 'all' && serviceAreaCities.includes(serviceAreaCityScope)) return
+
+    if (serviceAreaCities.includes('London')) {
+      setServiceAreaCityScope('London')
+      return
+    }
+
+    setServiceAreaCityScope(serviceAreaCities[0])
+  }, [serviceAreaCities, serviceAreaCityScope])
+
+  useEffect(() => {
+    if (serviceAreaCityScope !== 'London') {
+      if (serviceAreaBoroughScope !== 'all') {
+        setServiceAreaBoroughScope('all')
+      }
+      return
+    }
+
+    if (
+      serviceAreaBoroughScope !== 'all' &&
+      londonBoroughs.some((borough) => borough.id === serviceAreaBoroughScope)
+    ) {
+      return
+    }
+
+    setServiceAreaBoroughScope('all')
+  }, [londonBoroughs, serviceAreaBoroughScope, serviceAreaCityScope])
+
   function startCreate() {
     setSelectedAreaId(null)
-    setCity('')
+    setCity(serviceAreaCityScope === 'all' ? '' : serviceAreaCityScope)
     setPostcodePrefix('')
     setNotes('')
     setEnabled(true)
-    setSelectedLocationAreaId(null)
+    setSelectedLocationAreaId(serviceAreaCityScope === 'London' && serviceAreaBoroughScope !== 'all' ? serviceAreaBoroughScope : null)
   }
 
   function startCreateLocationArea(parentId?: string | null) {
@@ -255,6 +310,8 @@ export default function ServiceAreasPage() {
       case 'region':
         return ['city', 'postcode_area'] as Array<LocationAreaNode['areaType']>
       case 'city':
+        return ['borough', 'postcode_area', 'postcode_district'] as Array<LocationAreaNode['areaType']>
+      case 'borough':
         return ['postcode_area', 'postcode_district'] as Array<LocationAreaNode['areaType']>
       case 'postcode_area':
         return ['postcode_district'] as Array<LocationAreaNode['areaType']>
@@ -285,34 +342,45 @@ export default function ServiceAreasPage() {
               {actionFeedback.message}
             </div>
           )}
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Location overview</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Simple rollout summary for live areas, provider coverage, and warning states.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Quick view of the areas you are actively managing right now.
+              </p>
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <CoverageStat label="UK areas" value={String(locationOverview.locationAreas)} />
-              <CoverageStat label="Areas on" value={String(locationOverview.enabledLocationAreas)} />
-              <CoverageStat label="Service areas" value={String(locationOverview.serviceAreas)} />
-              <CoverageStat label="Service areas on" value={String(locationOverview.enabledServiceAreas)} />
-              <CoverageStat label="Active provider links" value={String(locationOverview.activeAssignments)} />
-              <CoverageStat label="Warnings" value={String(locationOverview.warnings)} />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {activePanel === 'service_areas' ? (
+                <>
+                  <CoverageStat label="Service areas" value={String(locationOverview.serviceAreas)} />
+                  <CoverageStat label="Live service areas" value={String(locationOverview.enabledServiceAreas)} />
+                  <CoverageStat label="Assigned providers" value={String(locationOverview.activeAssignments)} />
+                  <CoverageStat label="Needs attention" value={String(locationOverview.warnings)} />
+                </>
+              ) : (
+                <>
+                  <CoverageStat label="UK areas" value={String(locationOverview.locationAreas)} />
+                  <CoverageStat label="Live UK areas" value={String(locationOverview.enabledLocationAreas)} />
+                  <CoverageStat label="Service areas linked" value={String(locationOverview.serviceAreas)} />
+                  <CoverageStat label="Needs attention" value={String(locationOverview.warnings)} />
+                </>
+              )}
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Operational warnings</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Areas that look enabled in admin but cannot actually serve bookings, or disabled areas still carrying assigned providers.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Needs attention</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Enabled areas without active providers, or disabled areas still carrying assignments.</p>
             </div>
 
-            {healthWarnings.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-emerald-300 bg-emerald-50 px-4 py-6 text-sm text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300">
-                No location coverage warnings right now.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {healthWarnings.map((warning) => (
+                {scopedHealthWarnings.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-emerald-300 bg-emerald-50 px-4 py-6 text-sm text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300">
+                    {serviceAreaCityScope === 'all' ? 'No location coverage warnings right now.' : `No warnings for ${serviceAreaCityScope} right now.`}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                {scopedHealthWarnings.map((warning) => (
                   <button
                     key={`${warning.type}-${warning.serviceAreaId}`}
                     type="button"
@@ -341,206 +409,473 @@ export default function ServiceAreasPage() {
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Coverage demand</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Last 30 days of booking and provider-browse availability checks.</p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-4">
-              <CoverageStat label="Attempts" value={String(coverageDemand?.summary.attempts ?? 0)} />
-              <CoverageStat label="Unavailable" value={String(coverageDemand?.summary.unavailableAttempts ?? 0)} />
-              <CoverageStat label="Available" value={String(coverageDemand?.summary.availableAttempts ?? 0)} />
-              <CoverageStat
-                label="Last attempt"
-                value={coverageDemand?.summary.lastAttemptAt ? new Date(coverageDemand.summary.lastAttemptAt).toLocaleDateString('en-GB') : 'None'}
-              />
-            </div>
-
-            <div className="mt-6 grid gap-6 xl:grid-cols-2">
-              <div>
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Top unavailable areas</h4>
-                <div className="mt-3 space-y-3">
-                  {(coverageDemand?.topUnavailableAreas ?? []).length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                      No failed availability checks logged yet.
-                    </div>
-                  ) : (
-                    coverageDemand!.topUnavailableAreas.map((row) => (
-                      <div key={row.outward} className="rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-800">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="font-medium text-slate-900 dark:text-white">{row.outward}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">{new Date(row.lastAttemptAt).toLocaleString('en-GB')}</div>
-                        </div>
-                        <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                          {row.unavailableAttempts} unavailable of {row.attempts} attempt{row.attempts === 1 ? '' : 's'}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Route breakdown</h4>
-                <div className="mt-3 space-y-3">
-                  {(coverageDemand?.routeBreakdown ?? []).length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                      No route demand logged yet.
-                    </div>
-                  ) : (
-                    coverageDemand!.routeBreakdown.map((row) => (
-                      <div key={row.route} className="rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-800">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="font-medium text-slate-900 dark:text-white">{row.route}</div>
-                          <div className="text-sm text-slate-600 dark:text-slate-300">{row.attempts} attempts</div>
-                        </div>
-                        <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                          {row.unavailableAttempts} unavailable result{row.unavailableAttempts === 1 ? '' : 's'}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">UK area controls</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Turn coverage on or off area by area across the United Kingdom.</p>
-              </div>
+            <div className="mb-4 flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => startCreateLocationArea('loc_uk')}
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+                onClick={() => setActivePanel('service_areas')}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  activePanel === 'service_areas'
+                    ? 'bg-primary text-white'
+                    : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                }`}
               >
-                <Plus className="h-4 w-4" />
-                New area
+                Service areas
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePanel('uk_areas')}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  activePanel === 'uk_areas'
+                    ? 'bg-primary text-white'
+                    : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                }`}
+              >
+                UK areas
               </button>
             </div>
 
-            {locationAreasError && (
-              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
-                {locationAreasError instanceof Error ? locationAreasError.message : 'Failed to load UK location hierarchy.'}
-              </div>
-            )}
-
-            <div className="mb-4 grid gap-3 md:grid-cols-3">
-              <input
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
-                placeholder="Search area or slug"
-                className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
-              />
-              <div className="relative">
-                <select
-                  value={locationTypeFilter}
-                  onChange={(e) => setLocationTypeFilter(e.target.value as 'all' | LocationAreaNode['areaType'])}
-                  className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
-                >
-                  <option value="all">All area types</option>
-                  <option value="country">Country</option>
-                  <option value="nation">Nation</option>
-                  <option value="region">Region</option>
-                  <option value="city">City</option>
-                  <option value="postcode_area">Postcode area</option>
-                  <option value="postcode_district">Postcode district</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              </div>
-              <div className="relative">
-                <select
-                  value={locationStatusFilter}
-                  onChange={(e) => setLocationStatusFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
-                  className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
-                >
-                  <option value="all">All statuses</option>
-                  <option value="enabled">Enabled only</option>
-                  <option value="disabled">Disabled only</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {locationAreasLoading ? (
-                <div className="py-10 text-center">
-                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+            {activePanel === 'uk_areas' ? (
+              <>
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">UK areas</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Turn coverage on or off and maintain the location hierarchy.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => startCreateLocationArea('loc_uk')}
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                    New area
+                  </button>
                 </div>
-              ) : filteredLocationTree.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                  No UK areas match the current filters.
-                </div>
-              ) : (
-                filteredLocationTree.map((node) => (
-                  <LocationAreaTreeRow
-                    key={node.id}
-                    node={node}
-                    level={0}
-                    onEdit={editLocationArea}
-                    onCreateChild={(parentId, nextType) => {
-                      startCreateLocationArea(parentId)
-                      setLocationAreaType(nextType)
-                    }}
-                    onToggle={(id, nextEnabled) =>
-                      toggleLocationArea.mutate(
-                        { id, enabled: nextEnabled },
-                        {
-                          onSuccess: () =>
-                            setActionFeedback({
-                              tone: 'success',
-                              message: `Location area turned ${nextEnabled ? 'on' : 'off'} successfully.`,
-                            }),
-                          onError: (error) =>
-                            setActionFeedback({
-                              tone: 'error',
-                              message: error instanceof Error ? error.message : 'Failed to update location area state.',
-                            }),
-                        },
-                      )
-                    }
+
+                {locationAreasError && (
+                  <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+                    {locationAreasError instanceof Error ? locationAreasError.message : 'Failed to load UK location hierarchy.'}
+                  </div>
+                )}
+
+                <div className="mb-4 grid gap-3 md:grid-cols-3">
+                  <input
+                    value={locationSearch}
+                    onChange={(e) => setLocationSearch(e.target.value)}
+                    placeholder="Search area or slug"
+                    className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
-                ))
-              )}
-            </div>
+                  <div className="relative">
+                    <select
+                      value={locationTypeFilter}
+                      onChange={(e) => setLocationTypeFilter(e.target.value as 'all' | LocationAreaNode['areaType'])}
+                      className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    >
+                      <option value="all">All area types</option>
+                      <option value="country">Country</option>
+                      <option value="nation">Nation</option>
+                      <option value="region">Region</option>
+                      <option value="city">City</option>
+                      <option value="borough">Borough</option>
+                      <option value="postcode_area">Postcode area</option>
+                      <option value="postcode_district">Postcode district</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </div>
+                  <div className="relative">
+                    <select
+                      value={locationStatusFilter}
+                      onChange={(e) => setLocationStatusFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
+                      className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    >
+                      <option value="all">All statuses</option>
+                      <option value="enabled">Enabled only</option>
+                      <option value="disabled">Disabled only</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {locationAreasLoading ? (
+                    <div className="py-10 text-center">
+                      <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : filteredLocationTree.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                      No UK areas match the current filters.
+                    </div>
+                  ) : (
+                    filteredLocationTree.map((node) => (
+                      <LocationAreaTreeRow
+                        key={node.id}
+                        node={node}
+                        level={0}
+                        onEdit={editLocationArea}
+                        onCreateChild={(parentId, nextType) => {
+                          startCreateLocationArea(parentId)
+                          setLocationAreaType(nextType)
+                        }}
+                        onToggle={(id, nextEnabled) =>
+                          toggleLocationArea.mutate(
+                            { id, enabled: nextEnabled },
+                            {
+                              onSuccess: () =>
+                                setActionFeedback({
+                                  tone: 'success',
+                                  message: `Location area turned ${nextEnabled ? 'on' : 'off'} successfully.`,
+                                }),
+                              onError: (error) =>
+                                setActionFeedback({
+                                  tone: 'error',
+                                  message: error instanceof Error ? error.message : 'Failed to update location area state.',
+                                }),
+                            },
+                          )
+                        }
+                      />
+                    ))
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Service areas</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Start with one city, then manage its postcode prefixes and provider coverage.</p>
+                    {serviceAreaCityScope === 'London' && currentScopedBorough ? (
+                      <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+                        Currently scoped to <span className="font-medium text-slate-900 dark:text-white">{currentScopedBorough.name}</span> only.
+                        This does not automatically include neighbouring boroughs.
+                      </div>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={startCreate}
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                    New area
+                  </button>
+                </div>
+
+                {error && (
+                  <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+                    {error instanceof Error ? error.message : 'Failed to load service areas.'}
+                  </div>
+                )}
+
+                <div className="mb-4 grid gap-3 md:grid-cols-4">
+                  <div className="relative">
+                    <select
+                      value={serviceAreaCityScope}
+                      onChange={(e) => setServiceAreaCityScope(e.target.value)}
+                      className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    >
+                      <option value="all">All launch cities</option>
+                      {serviceAreaCities.map((cityOption) => (
+                        <option key={cityOption} value={cityOption}>
+                          {cityOption}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </div>
+                  {serviceAreaCityScope === 'London' ? (
+                    <div className="relative">
+                      <select
+                        value={serviceAreaBoroughScope}
+                        onChange={(e) => setServiceAreaBoroughScope(e.target.value)}
+                        className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      >
+                        <option value="all">All London boroughs</option>
+                        {londonBoroughs.map((borough) => (
+                          <option key={borough.id} value={borough.id}>
+                            {borough.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
+                  ) : null}
+                  <input
+                    value={serviceAreaSearch}
+                    onChange={(e) => setServiceAreaSearch(e.target.value)}
+                    placeholder="Search city or postcode prefix"
+                    className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  />
+                  <div className="relative">
+                    <select
+                      value={serviceAreaStatusFilter}
+                      onChange={(e) => setServiceAreaStatusFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
+                      className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    >
+                      <option value="all">All statuses</option>
+                      <option value="enabled">Enabled only</option>
+                      <option value="disabled">Disabled only</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[760px] text-left text-sm">
+                    <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
+                      <tr>
+                        <th className="px-5 py-3">City</th>
+                        <th className="px-5 py-3">Borough</th>
+                        <th className="px-5 py-3">Postcode</th>
+                        <th className="px-5 py-3">Linked area</th>
+                        <th className="px-5 py-3">Status</th>
+                        <th className="px-5 py-3">Providers</th>
+                        <th className="px-5 py-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {isLoading ? (
+                        <tr>
+                          <td colSpan={7} className="px-5 py-12 text-center">
+                            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+                          </td>
+                        </tr>
+                      ) : areas.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                            No service areas configured yet.
+                          </td>
+                        </tr>
+                      ) : filteredServiceAreas.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                            No service areas match the current filters.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredServiceAreas.map((area) => (
+                          <tr key={area.id} className="border-t border-slate-200 dark:border-slate-800">
+                            <td className="px-5 py-4 font-medium text-slate-900 dark:text-white">{area.city}</td>
+                            <td className="px-5 py-4">
+                              {area.locationAreaId
+                                ? findNearestBoroughName(area.locationAreaId, locationAreaMap)
+                                : <span className="text-slate-500 dark:text-slate-400">Not set</span>}
+                            </td>
+                            <td className="px-5 py-4">{area.postcodePrefix}</td>
+                            <td className="px-5 py-4">
+                              {area.locationAreaName ? (
+                                <div>
+                                  <div className="font-medium text-slate-900 dark:text-white">{area.locationAreaName}</div>
+                                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                                    {area.locationAreaEnabled === false ? 'Linked UK area is off' : 'Linked UK area is on'}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-slate-500 dark:text-slate-400">Not linked</span>
+                              )}
+                            </td>
+                            <td className="px-5 py-4">{area.enabled ? 'Enabled' : 'Disabled'}</td>
+                            <td className="px-5 py-4">
+                              <div className="font-medium text-slate-900 dark:text-white">{area.activeAssignedProviders} active</div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400">{area.assignedProviders} assigned total</div>
+                              {area.enabled && area.activeAssignedProviders === 0 ? (
+                                <div className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">No active provider coverage</div>
+                              ) : null}
+                              {!area.enabled && area.assignedProviders > 0 ? (
+                                <div className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">Assignments remain on disabled area</div>
+                              ) : null}
+                            </td>
+                            <td className="px-5 py-4 text-right">
+                              <button
+                                type="button"
+                                onClick={() => editArea(area.id)}
+                                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-primary hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                              >
+                                Manage
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4 flex items-center gap-3">
-              <MapPinned className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                {selectedLocationArea ? `Edit ${selectedLocationArea.name}` : 'Create location area'}
-              </h3>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Name">
-                <input value={locationName} onChange={(e) => setLocationName(e.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
-              </Field>
-              <Field label="Slug">
-                <input value={locationSlug} onChange={(e) => setLocationSlug(e.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
-              </Field>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <Field label="Area type">
-                <div className="relative">
-                  <select value={locationAreaType} onChange={(e) => setLocationAreaType(e.target.value as LocationAreaNode['areaType'])} className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900">
-                    <option value="country">Country</option>
-                    <option value="nation">Nation</option>
-                    <option value="region">Region</option>
-                    <option value="city">City</option>
-                    <option value="postcode_area">Postcode area</option>
-                    <option value="postcode_district">Postcode district</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          {activePanel === 'uk_areas' ? (
+            <>
+              <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+                <div className="mb-4 flex items-center gap-3">
+                  <MapPinned className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    {selectedLocationArea ? `Edit ${selectedLocationArea.name}` : 'Create location area'}
+                  </h3>
                 </div>
-              </Field>
-              <Field label="Parent area">
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Name">
+                    <input value={locationName} onChange={(e) => setLocationName(e.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                  </Field>
+                  <Field label="Slug">
+                    <input value={locationSlug} onChange={(e) => setLocationSlug(e.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                  </Field>
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Field label="Area type">
+                    <div className="relative">
+                      <select value={locationAreaType} onChange={(e) => setLocationAreaType(e.target.value as LocationAreaNode['areaType'])} className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900">
+                        <option value="country">Country</option>
+                        <option value="nation">Nation</option>
+                        <option value="region">Region</option>
+                        <option value="city">City</option>
+                        <option value="borough">Borough</option>
+                        <option value="postcode_area">Postcode area</option>
+                        <option value="postcode_district">Postcode district</option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
+                  </Field>
+                  <Field label="Parent area">
+                    <div className="relative">
+                      <select value={locationParentId || ''} onChange={(e) => setLocationParentId(e.target.value || null)} className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900">
+                        <option value="">No parent</option>
+                        {locationOptions.map((option) => (
+                          <option key={option.id} value={option.id}>{option.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
+                  </Field>
+                  <Field label="Sort order">
+                    <input value={locationSortOrder} onChange={(e) => setLocationSortOrder(Number(e.target.value) || 0)} type="number" className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                  </Field>
+                </div>
+                <Field label="Notes">
+                  <textarea value={locationNotes} onChange={(e) => setLocationNotes(e.target.value)} rows={3} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                </Field>
+                <label className="mt-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                  <input type="checkbox" checked={locationEnabled} onChange={(e) => setLocationEnabled(e.target.checked)} />
+                  Enabled
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSaveLocationArea}
+                  disabled={saveLocationArea.isPending || !locationName.trim() || !locationSlug.trim()}
+                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Save location area
+                </button>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Bulk import location areas</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Add child areas in bulk. Use one row per line: <span className="font-medium">Name, slug, optional notes</span>.
+                  </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Parent area">
+                    <div className="relative">
+                      <select
+                        value={bulkImportParentId}
+                        onChange={(e) => {
+                          const nextParentId = e.target.value
+                          setBulkImportParentId(nextParentId)
+                          const nextParent = locationAreas.find((area) => area.id === nextParentId)
+                          if (nextParent?.areaType === 'postcode_area') {
+                            setBulkImportAreaType('postcode_district')
+                          } else if (nextParent?.areaType === 'borough') {
+                            setBulkImportAreaType('postcode_area')
+                          } else if (nextParent?.areaType === 'city') {
+                            setBulkImportAreaType('borough')
+                          } else if (nextParent?.areaType === 'region') {
+                            setBulkImportAreaType('city')
+                          } else if (nextParent?.areaType === 'nation') {
+                            setBulkImportAreaType('region')
+                          }
+                        }}
+                        className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      >
+                        <option value="">Select parent area</option>
+                        {importParentOptions.map((option) => (
+                          <option key={option.id} value={option.id}>{option.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
+                  </Field>
+                  <Field label="Import type">
+                    <div className="relative">
+                      <select
+                        value={bulkImportAreaType}
+                        onChange={(e) => setBulkImportAreaType(e.target.value as LocationAreaNode['areaType'])}
+                        className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
+                      >
+                        {allowedBulkImportTypes.map((areaType) => (
+                          <option key={areaType} value={areaType}>
+                            {formatAreaType(areaType)}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    </div>
+                  </Field>
+                </div>
+
+                <Field label="Rows">
+                  <textarea
+                    value={bulkImportText}
+                    onChange={(e) => setBulkImportText(e.target.value)}
+                    rows={10}
+                    placeholder={'SW1, sw1, Westminster core district\nSW3, sw3, Chelsea district\nM1, m1, Central Manchester'}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm dark:border-slate-700 dark:bg-slate-900"
+                  />
+                </Field>
+
+                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+                  {bulkImportPreviewCount} row{bulkImportPreviewCount === 1 ? '' : 's'} ready to import
+                  {selectedImportParent ? ` under ${selectedImportParent.name}` : ''}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleBulkImport}
+                  disabled={bulkImportLocationAreas.isPending || !bulkImportParentId || !bulkImportText.trim()}
+                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Import rows
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+              <div className="mb-4 flex items-center gap-3">
+                <MapPinned className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {selectedArea ? `Edit ${selectedArea.city}` : 'Create service area'}
+                </h3>
+              </div>
+              {serviceAreaCityScope === 'London' && currentScopedBorough ? (
+                <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
+                  New London service areas will default to <span className="font-medium text-slate-900 dark:text-white">{currentScopedBorough.name}</span> only. Nearby boroughs are not included unless you add them separately.
+                </div>
+              ) : null}
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="City">
+                  <input value={city} onChange={(e) => setCity(e.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
+                </Field>
+                <Field label="Postcode prefix">
+                  <input value={postcodePrefix} onChange={(e) => setPostcodePrefix(e.target.value.toUpperCase())} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="E1" />
+                </Field>
+              </div>
+              <Field label="Linked UK area">
                 <div className="relative">
-                  <select value={locationParentId || ''} onChange={(e) => setLocationParentId(e.target.value || null)} className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900">
-                    <option value="">No parent</option>
+                  <select value={selectedLocationAreaId || ''} onChange={(e) => setSelectedLocationAreaId(e.target.value || null)} className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900">
+                    <option value="">No linked area</option>
                     {locationOptions.map((option) => (
                       <option key={option.id} value={option.id}>{option.label}</option>
                     ))}
@@ -548,370 +883,39 @@ export default function ServiceAreasPage() {
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 </div>
               </Field>
-              <Field label="Sort order">
-                <input value={locationSortOrder} onChange={(e) => setLocationSortOrder(Number(e.target.value) || 0)} type="number" className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
+              <Field label="Notes">
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
               </Field>
-            </div>
-            <Field label="Notes">
-              <textarea value={locationNotes} onChange={(e) => setLocationNotes(e.target.value)} rows={3} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
-            </Field>
-            <label className="mt-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-              <input type="checkbox" checked={locationEnabled} onChange={(e) => setLocationEnabled(e.target.checked)} />
-              Enabled
-            </label>
-            <button
-              type="button"
-              onClick={handleSaveLocationArea}
-              disabled={saveLocationArea.isPending || !locationName.trim() || !locationSlug.trim()}
-              className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
-            >
-              Save location area
-            </button>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Bulk import location areas</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Import postcode districts or other child areas in bulk. Use one row per line: <span className="font-medium">Name, slug, optional notes</span>.
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Parent area">
-                <div className="relative">
-                  <select
-                    value={bulkImportParentId}
-                    onChange={(e) => {
-                      const nextParentId = e.target.value
-                      setBulkImportParentId(nextParentId)
-                      const nextParent = locationAreas.find((area) => area.id === nextParentId)
-                      if (nextParent?.areaType === 'postcode_area') {
-                        setBulkImportAreaType('postcode_district')
-                      } else if (nextParent?.areaType === 'city') {
-                        setBulkImportAreaType('postcode_area')
-                      } else if (nextParent?.areaType === 'region') {
-                        setBulkImportAreaType('city')
-                      } else if (nextParent?.areaType === 'nation') {
-                        setBulkImportAreaType('region')
-                      }
-                    }}
-                    className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    <option value="">Select parent area</option>
-                    {importParentOptions.map((option) => (
-                      <option key={option.id} value={option.id}>{option.label}</option>
+              {overlapWarnings.length > 0 && (
+                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-300">
+                  <div className="font-medium">Overlap warnings</div>
+                  <ul className="mt-2 space-y-1">
+                    {overlapWarnings.map((warning) => (
+                      <li key={warning.id}>
+                        <span className="font-medium">{warning.city}</span> ({warning.postcodePrefix}){warning.enabled ? '' : ' [disabled]'}: {warning.reason}
+                      </li>
                     ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </ul>
                 </div>
-              </Field>
-              <Field label="Import type">
-                <div className="relative">
-                  <select
-                    value={bulkImportAreaType}
-                    onChange={(e) => setBulkImportAreaType(e.target.value as LocationAreaNode['areaType'])}
-                    className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    {allowedBulkImportTypes.map((areaType) => (
-                      <option key={areaType} value={areaType}>
-                        {formatAreaType(areaType)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                </div>
-              </Field>
-            </div>
-
-            <Field label="Rows">
-              <textarea
-                value={bulkImportText}
-                onChange={(e) => setBulkImportText(e.target.value)}
-                rows={10}
-                placeholder={'SW1, sw1, Westminster core district\nSW3, sw3, Chelsea district\nM1, m1, Central Manchester'}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm dark:border-slate-700 dark:bg-slate-900"
-              />
-            </Field>
-
-            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-300">
-              {bulkImportPreviewCount} row{bulkImportPreviewCount === 1 ? '' : 's'} ready to import
-              {selectedImportParent ? ` under ${selectedImportParent.name}` : ''}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleBulkImport}
-              disabled={bulkImportLocationAreas.isPending || !bulkImportParentId || !bulkImportText.trim()}
-              className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
-            >
-              Import rows
-            </button>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Coverage list</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Manage enabled cities and postcode prefixes, and link them to UK areas.</p>
-              </div>
+              )}
+              <label className="mt-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
+                Enabled
+              </label>
               <button
                 type="button"
-                onClick={startCreate}
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+                onClick={handleSave}
+                disabled={saveArea.isPending || !city.trim() || !postcodePrefix.trim()}
+                className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
               >
-                <Plus className="h-4 w-4" />
-                New area
+                Save area
               </button>
             </div>
-
-            {error && (
-              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
-                {error instanceof Error ? error.message : 'Failed to load service areas.'}
-              </div>
-            )}
-
-            <div className="mb-4 grid gap-3 md:grid-cols-2">
-              <input
-                value={serviceAreaSearch}
-                onChange={(e) => setServiceAreaSearch(e.target.value)}
-                placeholder="Search city or postcode prefix"
-                className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
-              />
-              <div className="relative">
-                <select
-                  value={serviceAreaStatusFilter}
-                  onChange={(e) => setServiceAreaStatusFilter(e.target.value as 'all' | 'enabled' | 'disabled')}
-                  className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900"
-                >
-                  <option value="all">All statuses</option>
-                  <option value="enabled">Enabled only</option>
-                  <option value="disabled">Disabled only</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
-                  <tr>
-                    <th className="px-5 py-3">City</th>
-                    <th className="px-5 py-3">Postcode</th>
-                    <th className="px-5 py-3">Linked area</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Providers</th>
-                    <th className="px-5 py-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan={6} className="px-5 py-12 text-center">
-                        <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-                      </td>
-                    </tr>
-                  ) : areas.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-                        No service areas configured yet.
-                      </td>
-                    </tr>
-                  ) : filteredServiceAreas.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-                        No service areas match the current filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredServiceAreas.map((area) => (
-                      <tr key={area.id} className="border-t border-slate-200 dark:border-slate-800">
-                        <td className="px-5 py-4 font-medium text-slate-900 dark:text-white">{area.city}</td>
-                        <td className="px-5 py-4">{area.postcodePrefix}</td>
-                        <td className="px-5 py-4">
-                          {area.locationAreaName ? (
-                            <div>
-                              <div className="font-medium text-slate-900 dark:text-white">{area.locationAreaName}</div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400">
-                                {area.locationAreaEnabled === false ? 'Linked UK area is off' : 'Linked UK area is on'}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-slate-500 dark:text-slate-400">Not linked</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-4">{area.enabled ? 'Enabled' : 'Disabled'}</td>
-                        <td className="px-5 py-4">
-                          <div className="font-medium text-slate-900 dark:text-white">{area.activeAssignedProviders} active</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">{area.assignedProviders} assigned total</div>
-                          {area.enabled && area.activeAssignedProviders === 0 ? (
-                            <div className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">No active provider coverage</div>
-                          ) : null}
-                          {!area.enabled && area.assignedProviders > 0 ? (
-                            <div className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">Assignments remain on disabled area</div>
-                          ) : null}
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => editArea(area.id)}
-                            className="text-sm font-medium text-primary hover:underline"
-                          >
-                            Manage
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4 flex items-center gap-3">
-              <MapPinned className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                {selectedArea ? `Edit ${selectedArea.city}` : 'Create service area'}
-              </h3>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="City">
-                <input value={city} onChange={(e) => setCity(e.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" />
-              </Field>
-              <Field label="Postcode prefix">
-                <input value={postcodePrefix} onChange={(e) => setPostcodePrefix(e.target.value.toUpperCase())} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900" placeholder="E1" />
-              </Field>
-            </div>
-            <Field label="Linked UK area">
-              <div className="relative">
-                <select value={selectedLocationAreaId || ''} onChange={(e) => setSelectedLocationAreaId(e.target.value || null)} className="h-11 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-10 text-sm dark:border-slate-700 dark:bg-slate-900">
-                  <option value="">No linked area</option>
-                  {locationOptions.map((option) => (
-                    <option key={option.id} value={option.id}>{option.label}</option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              </div>
-            </Field>
-            <Field label="Notes">
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900" />
-            </Field>
-            {overlapWarnings.length > 0 && (
-              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-300">
-                <div className="font-medium">Overlap warnings</div>
-                <ul className="mt-2 space-y-1">
-                  {overlapWarnings.map((warning) => (
-                    <li key={warning.id}>
-                      <span className="font-medium">{warning.city}</span> ({warning.postcodePrefix}){warning.enabled ? '' : ' [disabled]'}: {warning.reason}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <label className="mt-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-              <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-              Enabled
-            </label>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saveArea.isPending || !city.trim() || !postcodePrefix.trim()}
-              className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
-            >
-              Save area
-            </button>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Category rollout by area</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Override global category rollout for specific enabled service areas. If no override exists, the area follows the global category state.
-              </p>
-            </div>
-
-            {categoryMatrixLoading ? (
-              <div className="py-8 text-center">
-                <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : !rolloutMatrix || rolloutMatrix.rows.length === 0 || rolloutMatrix.serviceAreas.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                No enabled areas or active categories are ready for rollout overrides yet.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
-                    <tr>
-                      <th className="px-4 py-3">Category</th>
-                      {rolloutMatrix.serviceAreas.map((area) => (
-                        <th key={area.id} className="px-4 py-3 text-center">
-                          <div>{area.city}</div>
-                          <div className="mt-1 text-[10px] normal-case text-slate-400 dark:text-slate-500">
-                            {area.postcode_prefix}
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rolloutMatrix.rows.map((row) => (
-                      <tr key={row.categoryId} className="border-t border-slate-200 dark:border-slate-800">
-                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.categoryName}</td>
-                        {row.cells.map((cell) => (
-                          <td key={`${row.categoryId}-${cell.serviceAreaId}`} className="px-4 py-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                saveCategoryOverride.mutate(
-                                  {
-                                    serviceAreaId: cell.serviceAreaId,
-                                    categoryId: row.categoryId,
-                                    enabled: !cell.enabledInArea,
-                                  },
-                                  {
-                                    onSuccess: () =>
-                                      setActionFeedback({
-                                        tone: 'success',
-                                        message: `${row.categoryName} was turned ${!cell.enabledInArea ? 'on' : 'off'} for ${rolloutMatrix.serviceAreas.find((area) => area.id === cell.serviceAreaId)?.city ?? 'that area'}.`,
-                                      }),
-                                    onError: (error) =>
-                                      setActionFeedback({
-                                        tone: 'error',
-                                        message: error instanceof Error ? error.message : 'Failed to update area rollout override.',
-                                      }),
-                                  },
-                                )
-                              }
-                              disabled={saveCategoryOverride.isPending}
-                              className={`inline-flex min-w-[6.5rem] flex-col items-center rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
-                                cell.enabledInArea
-                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300'
-                                  : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
-                              }`}
-                            >
-                              <span>{cell.enabledInArea ? 'On' : 'Off'}</span>
-                              <span className="mt-1 text-[10px] font-medium opacity-80">
-                                {cell.providerCount} pro{cell.providerCount === 1 ? '' : 's'}
-                              </span>
-                              <span className="mt-1 text-[10px] font-normal opacity-70">
-                                {cell.hasOverride ? 'Area override' : 'Using global'}
-                              </span>
-                            </button>
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+          )}
         </section>
 
-        <section className="space-y-6">
+        {activePanel === 'service_areas' ? (
+          <section className="space-y-6">
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Assigned providers</h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manually control which providers serve the selected area.</p>
@@ -1020,7 +1024,14 @@ export default function ServiceAreasPage() {
               </div>
             </div>
           )}
-        </section>
+          </section>
+        ) : (
+          <section className="space-y-6">
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-gray-900/50 dark:text-slate-400">
+              Provider assignments are managed from the <span className="font-medium text-slate-900 dark:text-white">Service areas</span> view.
+            </div>
+          </section>
+        )}
       </main>
     </div>
   )
@@ -1116,6 +1127,8 @@ function getNextAreaType(areaType: LocationAreaNode['areaType']): LocationAreaNo
     case 'region':
       return 'city'
     case 'city':
+      return 'borough'
+    case 'borough':
       return 'postcode_area'
     case 'postcode_area':
       return 'postcode_district'
@@ -1126,6 +1139,33 @@ function getNextAreaType(areaType: LocationAreaNode['areaType']): LocationAreaNo
 
 function formatAreaType(areaType: LocationAreaNode['areaType']) {
   return areaType.replace('_', ' ')
+}
+
+function isWithinLocationArea(
+  candidateId: string,
+  targetId: string,
+  areaMap: Map<string, LocationAreaNode>,
+) {
+  let currentId: string | null = candidateId
+  while (currentId) {
+    if (currentId === targetId) return true
+    currentId = areaMap.get(currentId)?.parentId ?? null
+  }
+  return false
+}
+
+function findNearestBoroughName(
+  locationAreaId: string,
+  areaMap: Map<string, LocationAreaNode>,
+) {
+  let currentId: string | null = locationAreaId
+  while (currentId) {
+    const area = areaMap.get(currentId)
+    if (!area) return null
+    if (area.areaType === 'borough') return area.name
+    currentId = area.parentId
+  }
+  return null
 }
 
 function LocationAreaTreeRow({

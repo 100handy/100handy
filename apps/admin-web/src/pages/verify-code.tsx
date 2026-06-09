@@ -123,10 +123,10 @@ export default function VerifyCodePage() {
 
           <div className="bg-white/5 dark:bg-black/10 rounded-lg p-8 shadow-2xl shadow-black/10">
             <h2 className="text-2xl font-bold text-center mb-2">
-              {isPasswordReset ? 'Reset Your Password' : 'Verify Your Code'}
+              {isPasswordReset ? 'Enter your reset code' : 'Verify your code'}
             </h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 text-center mb-2">
-              Enter the 6-digit code sent to your email
+              Enter the six-digit code sent to your email.
             </p>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 text-center mb-6">
               {email}
@@ -184,7 +184,7 @@ export default function VerifyCodePage() {
                       <span>Verifying...</span>
                     </>
                   ) : (
-                    'Verify Code'
+                    'Verify code'
                   )}
                 </button>
               </div>

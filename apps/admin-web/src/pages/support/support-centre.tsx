@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext'
 
 export default function SupportCentre() {
   const { user } = useAuth()
+  const [viewMode, setViewMode] = useState<'inbox' | 'performance'>('inbox')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<SupportFilters['status']>('all')
   const [priorityFilter, setPriorityFilter] = useState<SupportFilters['priority']>('all')
@@ -99,9 +100,9 @@ export default function SupportCentre() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Support Centre" />
+      <Header title="Support Tickets" />
 
-      <main className="flex-1 p-6 space-y-6">
+      <main className="flex-1 p-6 space-y-5">
         {actionFeedback && (
           <div className={`rounded-xl px-4 py-3 text-sm ${
             actionFeedback.tone === 'success'
@@ -111,16 +112,48 @@ export default function SupportCentre() {
             {actionFeedback.message}
           </div>
         )}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <StatCard label="Open Tickets" value={stats?.openTickets || 0} accent="text-blue-600" />
-          <StatCard label="In Progress" value={stats?.inProgressTickets || 0} accent="text-purple-600" />
-          <StatCard label="Resolved / Closed" value={stats?.closedTickets || 0} accent="text-emerald-600" />
-          <StatCard label="Avg Response Time" value={stats?.avgResponseTime || 'N/A'} accent="text-primary" />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Review customer support conversations, assignments, and ticket status in one place.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: 'inbox', label: 'Inbox' },
+              { id: 'performance', label: 'Performance' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setViewMode(tab.id as typeof viewMode)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  viewMode === tab.id
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+        {viewMode === 'performance' && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <StatCard label="Open Tickets" value={stats?.openTickets || 0} accent="text-blue-600" />
+            <StatCard label="In Progress" value={stats?.inProgressTickets || 0} accent="text-purple-600" />
+            <StatCard label="Resolved / Closed" value={stats?.closedTickets || 0} accent="text-emerald-600" />
+            <StatCard label="Avg Response Time" value={stats?.avgResponseTime || 'N/A'} accent="text-primary" />
+          </div>
+        )}
+
+        <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900/50">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Ticket inbox</h3>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Ticket inbox</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Search tickets, filter by status or priority, and open a conversation to reply.
+              </p>
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
                 <input
@@ -172,7 +205,7 @@ export default function SupportCentre() {
           )}
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] text-left text-sm">
+            <table className="w-full min-w-[900px] text-left text-sm">
               <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800/50 dark:text-gray-400">
                 <tr>
                   <th className="px-6 py-3">Ticket ID</th>
@@ -205,7 +238,10 @@ export default function SupportCentre() {
                       </td>
                       <td className="px-6 py-4">{ticket.agent}</td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => setSelectedTicketId(ticket.id)} className="text-primary hover:underline">
+                        <button
+                          onClick={() => setSelectedTicketId(ticket.id)}
+                          className="rounded-lg border border-slate-200 px-3 py-1.5 text-primary hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                        >
                           Open
                         </button>
                       </td>

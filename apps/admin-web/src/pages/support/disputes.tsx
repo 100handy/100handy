@@ -12,6 +12,7 @@ import {
 } from '@/lib/api/disputes'
 
 export default function DisputesPage() {
+  const [viewMode, setViewMode] = useState<'inbox' | 'performance'>('inbox')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<DisputeFilters['status']>('all')
   const [selectedDisputeId, setSelectedDisputeId] = useState<string | null>(null)
@@ -85,19 +86,46 @@ export default function DisputesPage() {
             {actionFeedback.message}
           </div>
         )}
-        <div className="grid gap-4 md:grid-cols-4">
-          <MetricCard label="Open" value={stats?.open || 0} accent="text-blue-600" icon={Scale} />
-          <MetricCard label="Investigating" value={stats?.investigating || 0} accent="text-amber-600" icon={MessageSquare} />
-          <MetricCard label="Resolved" value={stats?.resolved || 0} accent="text-emerald-600" icon={ShieldCheck} />
-          <MetricCard label="Refunded" value={`£${(stats?.refundedAmount || 0).toFixed(0)}`} accent="text-primary" icon={Scale} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Review booking disputes, assign them, document decisions, and issue refunds when needed.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: 'inbox', label: 'Inbox' },
+              { id: 'performance', label: 'Performance' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setViewMode(tab.id as typeof viewMode)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  viewMode === tab.id
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {viewMode === 'performance' && (
+          <div className="grid gap-4 md:grid-cols-4">
+            <MetricCard label="Open" value={stats?.open || 0} accent="text-blue-600" icon={Scale} />
+            <MetricCard label="Investigating" value={stats?.investigating || 0} accent="text-amber-600" icon={MessageSquare} />
+            <MetricCard label="Resolved" value={stats?.resolved || 0} accent="text-emerald-600" icon={ShieldCheck} />
+            <MetricCard label="Refunded" value={`£${(stats?.refundedAmount || 0).toFixed(0)}`} accent="text-primary" icon={Scale} />
+          </div>
+        )}
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Dispute inbox</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Investigate disputes, document decisions, and issue refunds when required.</p>
-            </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Dispute inbox</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Search by booking, customer, or provider and open a case to take action.</p>
+              </div>
             <div className="flex flex-col gap-3 lg:flex-row">
               <input
                 value={search}
@@ -258,63 +286,72 @@ export default function DisputesPage() {
               <div className="overflow-y-auto p-4">
                 {dispute && (
                   <div className="space-y-5">
-                    <div className="grid gap-2">
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setActionFeedback(null)
-                          try {
-                            await assignToMe.mutateAsync({ disputeId: dispute.id })
-                            setActionFeedback({ tone: 'success', message: 'Dispute assigned to you.' })
-                          } catch (error) {
-                            setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to assign dispute.' })
-                          }
-                        }}
-                        disabled={assignToMe.isPending}
-                        className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
-                      >
-                        Assign to me
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setActionFeedback(null)
-                          try {
-                            await updateStatus.mutateAsync({ disputeId: dispute.id, status: 'investigating' })
-                            setActionFeedback({ tone: 'success', message: 'Dispute marked investigating.' })
-                          } catch (error) {
-                            setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update dispute.' })
-                          }
-                        }}
-                        disabled={updateStatus.isPending}
-                        className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
-                      >
-                        Mark investigating
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setResolveDraft({ status: 'resolved', summary: '', refundAmount: '' })}
-                        disabled={updateStatus.isPending}
-                        className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
-                      >
-                        Resolve
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setResolveDraft({ status: 'refunded', summary: '', refundAmount: '' })}
-                        disabled={updateStatus.isPending}
-                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
-                      >
-                        Refund and close
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setResolveDraft({ status: 'rejected', summary: '', refundAmount: '' })}
-                        disabled={updateStatus.isPending}
-                        className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-900/60"
-                      >
-                        Reject
-                      </button>
+                    <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Case actions</h4>
+                      <div className="mt-3 grid gap-2">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setActionFeedback(null)
+                            try {
+                              await assignToMe.mutateAsync({ disputeId: dispute.id })
+                              setActionFeedback({ tone: 'success', message: 'Dispute assigned to you.' })
+                            } catch (error) {
+                              setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to assign dispute.' })
+                            }
+                          }}
+                          disabled={assignToMe.isPending}
+                          className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+                        >
+                          Assign to me
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setActionFeedback(null)
+                            try {
+                              await updateStatus.mutateAsync({ disputeId: dispute.id, status: 'investigating' })
+                              setActionFeedback({ tone: 'success', message: 'Dispute marked investigating.' })
+                            } catch (error) {
+                              setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to update dispute.' })
+                            }
+                          }}
+                          disabled={updateStatus.isPending}
+                          className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700"
+                        >
+                          Mark investigating
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Decision</h4>
+                      <div className="mt-3 grid gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setResolveDraft({ status: 'resolved', summary: '', refundAmount: '' })}
+                          disabled={updateStatus.isPending}
+                          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
+                        >
+                          Resolve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setResolveDraft({ status: 'refunded', summary: '', refundAmount: '' })}
+                          disabled={updateStatus.isPending}
+                          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+                        >
+                          Refund and close
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setResolveDraft({ status: 'rejected', summary: '', refundAmount: '' })}
+                          disabled={updateStatus.isPending}
+                          className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-900/60"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </div>
 
                     <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">

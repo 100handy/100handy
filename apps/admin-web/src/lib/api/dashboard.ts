@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireActiveAdmin, requireAdminPermission } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
+import type { Json } from '@/lib/database.types'
 
 export interface DashboardMetricCard {
   label: string
@@ -145,7 +146,7 @@ export function useSaveDashboardPreferences() {
           {
             setting_group: 'dashboard',
             setting_key: settingKey,
-            value_json: normalized,
+            value_json: normalized as unknown as Json,
             updated_by: user.id,
           },
           { onConflict: 'setting_key' },
@@ -157,7 +158,7 @@ export function useSaveDashboardPreferences() {
         entityType: 'dashboard_preference',
         entityId: settingKey,
         summary: 'Saved dashboard KPI preferences',
-        metadata: normalized,
+        metadata: normalized as unknown as Json,
       })
 
       return normalized

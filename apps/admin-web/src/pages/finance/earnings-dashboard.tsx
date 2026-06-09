@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { Search, Download, ChevronDown, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useHandyEarnings, type HandyEarningsFilters } from '@/lib/api/earnings'
+import Header from '@/components/header'
 
 const statusColors = {
   paid: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
@@ -20,6 +21,7 @@ const statusLabels = {
 type SortOption = HandyEarningsFilters['sortBy']
 
 export default function EarningsDashboardPage() {
+  const [activeView, setActiveView] = useState<'earnings' | 'filters'>('earnings')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('earnings_desc')
   const [page, setPage] = useState(1)
@@ -77,14 +79,31 @@ export default function EarningsDashboardPage() {
 
   return (
     <main className="flex-1">
-      <header className="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-800">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Earnings Dashboard (per Handy)
-        </h2>
-      </header>
+      <Header title="Provider Earnings" />
 
       <div className="p-6 space-y-6">
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+          {[
+            { id: 'earnings', label: 'Earnings list' },
+            { id: 'filters', label: 'Filters' },
+          ].map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              onClick={() => setActiveView(view.id as typeof activeView)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeView === view.id
+                  ? 'bg-primary text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {activeView === 'filters' ? (
           <div className="flex items-center gap-4">
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -111,6 +130,11 @@ export default function EarningsDashboardPage() {
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             </div>
           </div>
+          ) : (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+            Use <span className="font-medium">Filters</span> to search providers or change the sort order.
+          </div>
+          )}
           <button
             onClick={handleExport}
             disabled={!handyEarnings.length}
@@ -127,6 +151,7 @@ export default function EarningsDashboardPage() {
           </div>
         )}
 
+        {activeView === 'earnings' ? (
         <div className="overflow-x-auto">
           <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800">
             <table className="w-full min-w-[800px] text-sm text-left">
@@ -228,8 +253,9 @@ export default function EarningsDashboardPage() {
             </table>
           </div>
         </div>
+        ) : null}
 
-        {!isLoading && total > 0 && (
+        {activeView === 'earnings' && !isLoading && total > 0 && (
           <div className="flex justify-between items-center mt-4 text-sm text-gray-600 dark:text-gray-400">
             <p>
               Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} Handys

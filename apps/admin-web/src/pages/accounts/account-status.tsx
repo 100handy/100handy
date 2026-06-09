@@ -96,7 +96,7 @@ export default function AccountStatus() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header title="Account Status Filter" />
+      <Header title={activeFilter === 'location' ? 'Default Locations' : activeFilter === 'deleted' ? 'Deleted Accounts' : 'Paused Accounts'} />
 
       <main className="flex-1 p-8">
         <div className="max-w-6xl mx-auto">
@@ -120,7 +120,7 @@ export default function AccountStatus() {
 
           <div className="bg-background-light/50 dark:bg-background-dark/50 p-4 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
             <div className="flex items-center gap-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Filter by:</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Views</h3>
               <div className="flex items-center gap-2">
                 {(['deleted', 'paused', 'location'] as FilterType[]).map((filter) => (
                   <button
