@@ -165,31 +165,31 @@ export default function Header({ title }: HeaderProps) {
     sectionTabs.find((section) => section.match(location.pathname))?.items ?? []
 
   return (
-    <header className="bg-white dark:bg-background-dark border-b border-gray-200 dark:border-gray-800">
-      <div className="h-16 flex items-center justify-between px-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800">
-            <Bell className="w-6 h-6" />
+    <header className="min-w-0 overflow-x-hidden border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-background-dark">
+      <div className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <h2 className="min-w-0 flex-1 truncate text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">{title}</h2>
+        <div className="flex min-w-0 flex-none items-center gap-2 sm:gap-4">
+          <button className="flex-none rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-800">
+            <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative min-w-0" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg px-3 py-2 transition-colors"
+              className="flex max-w-full items-center gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 sm:gap-3 sm:px-3"
             >
               {avatarUrl ? (
-                <img alt={displayName} className="w-10 h-10 rounded-full object-cover" src={avatarUrl} />
+                <img alt={displayName} className="h-9 w-9 flex-none rounded-full object-cover sm:h-10 sm:w-10" src={avatarUrl} />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <UserIcon className="w-6 h-6 text-primary" />
+                <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-primary/10 sm:h-10 sm:w-10">
+                  <UserIcon className="h-5 w-5 text-primary sm:h-6 sm:w-6" />
                 </div>
               )}
-              <div className="text-left">
-                <p className="font-semibold text-gray-900 dark:text-white">{displayName}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{displayEmail}</p>
+              <div className="hidden min-w-0 text-left sm:block">
+                <p className="truncate font-semibold text-gray-900 dark:text-white">{displayName}</p>
+                <p className="max-w-48 truncate text-sm text-gray-500 dark:text-gray-400">{displayEmail}</p>
               </div>
               <ChevronDown
-                className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${
+                className={`hidden h-5 w-5 flex-none text-gray-500 transition-transform dark:text-gray-400 sm:block ${
                   isDropdownOpen ? 'rotate-180' : ''
                 }`}
               />
@@ -214,8 +214,8 @@ export default function Header({ title }: HeaderProps) {
         </div>
       </div>
       {currentSectionTabs.length > 0 ? (
-        <div className="border-t border-gray-200 px-6 py-3 dark:border-gray-800">
-          <div className="flex gap-2 overflow-x-auto">
+        <div className="min-w-0 overflow-x-hidden border-t border-gray-200 px-4 py-3 dark:border-gray-800 sm:px-6">
+          <div className="flex w-full max-w-full min-w-0 flex-wrap gap-2 overflow-x-hidden sm:flex-nowrap sm:overflow-x-auto">
             {currentSectionTabs.map((tab) => (
               <NavLink
                 key={tab.to}

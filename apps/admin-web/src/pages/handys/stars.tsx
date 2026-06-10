@@ -74,7 +74,7 @@ export default function HandyStarsPage() {
     <div className="flex-1 flex flex-col">
       <Header title="100 Handy Stars" />
 
-      <main className="flex-1 p-6 space-y-6">
+      <main className="min-w-0 flex-1 space-y-6 p-4 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -98,8 +98,8 @@ export default function HandyStarsPage() {
           </div>
         ) : null}
 
-        <div className="grid gap-6 xl:grid-cols-[1.05fr,1fr]">
-          <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.05fr),minmax(0,1fr)]">
+          <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-6">
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-primary/10 p-3 text-primary">
                 <Award className="h-6 w-6" />
@@ -133,7 +133,7 @@ export default function HandyStarsPage() {
 
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/60">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Promotion summary</h4>
                       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                         This is the copy you can save for the month and use across the website, app, and campaigns.
@@ -186,7 +186,7 @@ export default function HandyStarsPage() {
             )}
           </section>
 
-          <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+          <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-6">
             <div className="mb-4">
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Leaderboard</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -194,7 +194,7 @@ export default function HandyStarsPage() {
               </p>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="max-w-full overflow-x-auto">
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
                   <tr>
@@ -247,7 +247,7 @@ export default function HandyStarsPage() {
           </section>
         </div>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-6">
           <div className="mb-4">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Promotion history</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -255,7 +255,7 @@ export default function HandyStarsPage() {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="max-w-full overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
                 <tr>

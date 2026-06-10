@@ -85,7 +85,7 @@ export default function PaymentMethods() {
     <div className="flex-1 flex flex-col">
       <Header title="Payment Methods" />
 
-      <main className="flex-1 p-6 space-y-6">
+      <main className="min-w-0 flex-1 space-y-6 p-4 sm:p-6">
         {actionFeedback && (
           <div className={`rounded-xl px-4 py-3 text-sm ${
             actionFeedback.tone === 'success'
@@ -100,7 +100,7 @@ export default function PaymentMethods() {
             Your admin role can view payment method settings, but it cannot change them.
           </div>
         )}
-        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+        <div className="inline-flex max-w-full overflow-x-auto rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
           {[
             { id: 'library', label: 'Method list' },
             { id: 'editor', label: 'Method editor' },
@@ -127,11 +127,11 @@ export default function PaymentMethods() {
         </div>
         ) : null}
 
-        <div className="grid gap-6 xl:grid-cols-[1.1fr,0.9fr]">
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.1fr),minmax(0,0.9fr)]">
           {activeView === 'library' ? (
-          <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
+          <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/50 sm:p-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Configured payment methods</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Operational payment and payout methods used by web and mobile flows.</p>
               </div>
@@ -141,8 +141,8 @@ export default function PaymentMethods() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            <div className="max-w-full overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
                   <tr>
                     <th className="px-4 py-3">Name</th>
@@ -182,7 +182,7 @@ export default function PaymentMethods() {
           ) : null}
 
           {activeView === 'editor' ? (
-          <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/50 sm:p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{form.id ? 'Edit payment method' : 'Add payment method'}</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               This stores operational method status and references only. Keep live API secrets in server-side env or provider dashboards.
@@ -215,7 +215,7 @@ export default function PaymentMethods() {
                 <input type="checkbox" checked={form.public_enabled} onChange={(e) => setForm((prev) => ({ ...prev, public_enabled: e.target.checked }))} />
                 Enabled in public checkout
               </label>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button type="submit" disabled={!canManageFinance || saveMethod.isPending || !form.display_name.trim() || !form.provider_key.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
                   <Save className="h-4 w-4" />
                   Save method

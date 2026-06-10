@@ -15,6 +15,12 @@
   --radius-xl: 0.75rem;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   font-family: 'Inter', sans-serif;
 }

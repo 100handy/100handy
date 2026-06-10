@@ -329,8 +329,8 @@ export default function ServiceAreasPage() {
     <div className="flex flex-1 flex-col">
       <Header title="Locations & Service Areas" />
 
-      <main className="grid flex-1 gap-6 p-6 xl:grid-cols-[1.1fr,1fr]">
-        <section className="space-y-6">
+      <main className="grid min-w-0 flex-1 gap-6 p-4 sm:p-6 xl:grid-cols-[minmax(0,1.1fr),minmax(0,1fr)]">
+        <section className="min-w-0 space-y-6">
           {actionFeedback && (
             <div
               className={`rounded-xl border px-4 py-3 text-sm ${
@@ -342,14 +342,14 @@ export default function ServiceAreasPage() {
               {actionFeedback.message}
             </div>
           )}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
-            <div className="mb-4">
+          <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-5">
+            <div className="mb-4 min-w-0">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Location overview</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 Quick view of the areas you are actively managing right now.
               </p>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-4">
               {activePanel === 'service_areas' ? (
                 <>
                   <CoverageStat label="Service areas" value={String(locationOverview.serviceAreas)} />
@@ -368,7 +368,7 @@ export default function ServiceAreasPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-gray-900/50">
+          <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-5">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Needs attention</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">Enabled areas without active providers, or disabled areas still carrying assignments.</p>
@@ -387,8 +387,8 @@ export default function ServiceAreasPage() {
                     onClick={() => editArea(warning.serviceAreaId)}
                     className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-left dark:border-amber-900/60 dark:bg-amber-950/20"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
                         <div className="font-medium text-amber-900 dark:text-amber-200">
                           {warning.city} ({warning.postcodePrefix})
                         </div>
@@ -408,7 +408,7 @@ export default function ServiceAreasPage() {
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+          <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-6">
             <div className="mb-4 flex flex-wrap gap-2">
               <button
                 type="button"
@@ -437,7 +437,7 @@ export default function ServiceAreasPage() {
             {activePanel === 'uk_areas' ? (
               <>
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">UK areas</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Turn coverage on or off and maintain the location hierarchy.</p>
                   </div>
@@ -495,7 +495,7 @@ export default function ServiceAreasPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   {locationAreasLoading ? (
                     <div className="py-10 text-center">
                       <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
@@ -539,8 +539,8 @@ export default function ServiceAreasPage() {
               </>
             ) : (
               <>
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Service areas</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Start with one city, then manage its postcode prefixes and provider coverage.</p>
                     {serviceAreaCityScope === 'London' && currentScopedBorough ? (
@@ -619,7 +619,7 @@ export default function ServiceAreasPage() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="max-w-full overflow-x-auto">
                   <table className="w-full min-w-[760px] text-left text-sm">
                     <thead className="bg-slate-50 text-xs uppercase text-slate-600 dark:bg-slate-800/70 dark:text-slate-400">
                       <tr>
@@ -705,7 +705,7 @@ export default function ServiceAreasPage() {
 
           {activePanel === 'uk_areas' ? (
             <>
-              <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+              <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-6">
                 <div className="mb-4 flex items-center gap-3">
                   <MapPinned className="h-5 w-5 text-primary" />
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -768,7 +768,7 @@ export default function ServiceAreasPage() {
                 </button>
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+              <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-6">
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Bulk import location areas</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -851,7 +851,7 @@ export default function ServiceAreasPage() {
               </div>
             </>
           ) : (
-            <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
+            <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-gray-900/50 sm:p-6">
               <div className="mb-4 flex items-center gap-3">
                 <MapPinned className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -915,7 +915,7 @@ export default function ServiceAreasPage() {
         </section>
 
         {activePanel === 'service_areas' ? (
-          <section className="space-y-6">
+          <section className="min-w-0 space-y-6">
           <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Assigned providers</h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manually control which providers serve the selected area.</p>

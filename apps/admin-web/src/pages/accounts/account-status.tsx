@@ -98,8 +98,8 @@ export default function AccountStatus() {
     <div className="flex-1 flex flex-col">
       <Header title={activeFilter === 'location' ? 'Default Locations' : activeFilter === 'deleted' ? 'Deleted Accounts' : 'Paused Accounts'} />
 
-      <main className="flex-1 p-8">
-        <div className="max-w-6xl mx-auto">
+      <main className="min-w-0 flex-1 p-4 sm:p-8">
+        <div className="mx-auto max-w-6xl min-w-0">
           <header className="mb-8">
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               View and manage lifecycle status and default-location coverage for platform accounts.
@@ -118,10 +118,10 @@ export default function AccountStatus() {
             </div>
           )}
 
-          <div className="bg-background-light/50 dark:bg-background-dark/50 p-4 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
-            <div className="flex items-center gap-4">
+          <div className="rounded-lg border border-slate-200/50 bg-background-light/50 p-4 dark:border-slate-800/50 dark:bg-background-dark/50">
+            <div className="flex flex-wrap items-center gap-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Views</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex max-w-full flex-wrap items-center gap-2">
                 {(['deleted', 'paused', 'location'] as FilterType[]).map((filter) => (
                   <button
                     key={filter}
@@ -206,8 +206,8 @@ function StatusTable({
   return (
     <>
       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">{title}</h3>
-      <div className="overflow-x-auto bg-white dark:bg-background-dark rounded-lg border border-slate-200 dark:border-slate-800">
-        <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
+      <div className="max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark">
+        <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
           <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-400">
             <tr>
               <th className="px-6 py-3">User</th>
@@ -251,7 +251,7 @@ function StatusTable({
                     {format(new Date(user.deleted_at ?? user.status_updated_at), 'yyyy-MM-dd HH:mm')}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                       <button
                         onClick={() => onRestore(user)}
                         disabled={isMutating}
@@ -317,8 +317,8 @@ function LocationTable({
           </div>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white dark:bg-background-dark rounded-lg border border-slate-200 dark:border-slate-800">
-          <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
+        <div className="max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark">
+          <table className="w-full min-w-[720px] text-sm text-left text-slate-500 dark:text-slate-400">
             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-400">
               <tr>
                 <th className="px-6 py-3">User</th>

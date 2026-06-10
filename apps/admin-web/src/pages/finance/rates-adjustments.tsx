@@ -78,7 +78,7 @@ export default function RatesAdjustments() {
     <div className="flex-1 flex flex-col">
       <Header title="Rates & Adjustments" />
 
-      <main className="flex-1 p-6 space-y-6">
+      <main className="min-w-0 flex-1 space-y-6 p-4 sm:p-6">
         {actionFeedback && (
           <div className={`rounded-xl px-4 py-3 text-sm ${
             actionFeedback.tone === 'success'
@@ -93,7 +93,7 @@ export default function RatesAdjustments() {
             Your admin role can view pricing rules, but it cannot change them.
           </div>
         )}
-        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
+        <div className="inline-flex max-w-full overflow-x-auto rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
           {[
             { id: 'library', label: 'Pricing rules' },
             { id: 'editor', label: 'Rule editor' },
@@ -120,15 +120,15 @@ export default function RatesAdjustments() {
         </div>
         ) : null}
 
-        <div className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.2fr),minmax(0,0.8fr)]">
           {activeView === 'library' ? (
-          <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/50 sm:p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Pricing rules</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">Base pricing rules by category and optional UK area.</p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            <div className="max-w-full overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
                   <tr>
                     <th className="px-4 py-3">Category</th>
@@ -168,7 +168,7 @@ export default function RatesAdjustments() {
           ) : null}
 
           {activeView === 'editor' ? (
-          <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900/50">
+          <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/50 sm:p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{form.id ? 'Edit pricing rule' : 'Add pricing rule'}</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Use area-specific pricing only where rollout or supply makes it necessary. Leave area blank for global category pricing.</p>
 
@@ -207,7 +207,7 @@ export default function RatesAdjustments() {
                   <input type="checkbox" checked={form.active} onChange={(e) => setForm((prev) => ({ ...prev, active: e.target.checked }))} />
                   Active pricing rule
                 </label>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   <button type="submit" disabled={!canManageFinance || saveRule.isPending || !form.category_id || !form.base_rate.trim()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
                     <Save className="h-4 w-4" />
                     Save rule
