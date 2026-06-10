@@ -58,23 +58,20 @@ export default function AvailabilityManagement() {
   }, [handys, selectedHandyId])
 
   useEffect(() => {
-    if (!editingSlotId) {
-      setForm({
-        day_of_week: 1,
-        start_time: '09:00:00',
-        end_time: '17:00:00',
-        recurrence_type: 'weekly',
-        starts_on: new Date().toISOString().slice(0, 10),
-        ends_on: '',
-        timezone: 'Europe/London',
-        is_active: true,
-      })
+    if (editingSlotId) {
       return
     }
 
+    const nextForm = createDefaultAvailabilityForm()
+    setForm((prev) => (isSameAvailabilityForm(prev, nextForm) ? prev : nextForm))
+  }, [editingSlotId])
+
+  useEffect(() => {
+    if (!editingSlotId) return
+
     const slot = selectedSlots.find((item) => item.id === editingSlotId)
     if (!slot) return
-    setForm({
+    const nextForm = {
       day_of_week: slot.day_of_week,
       start_time: slot.start_time.slice(0, 8),
       end_time: slot.end_time.slice(0, 8),
@@ -83,7 +80,9 @@ export default function AvailabilityManagement() {
       ends_on: slot.ends_on ?? '',
       timezone: slot.timezone,
       is_active: slot.is_active,
-    })
+    }
+
+    setForm((prev) => (isSameAvailabilityForm(prev, nextForm) ? prev : nextForm))
   }, [editingSlotId, selectedSlots])
 
   const saveCurrentSlot = async () => {
@@ -544,6 +543,53 @@ function MetricCard({
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{helper}</p>
       </div>
     </div>
+  )
+}
+
+function createDefaultAvailabilityForm() {
+  return {
+    day_of_week: 1,
+    start_time: '09:00:00',
+    end_time: '17:00:00',
+    recurrence_type: 'weekly' as AdminAvailabilitySlot['recurrence_type'],
+    starts_on: new Date().toISOString().slice(0, 10),
+    ends_on: '',
+    timezone: 'Europe/London',
+    is_active: true,
+  }
+}
+
+function isSameAvailabilityForm(
+  a: {
+    day_of_week: number
+    start_time: string
+    end_time: string
+    recurrence_type: AdminAvailabilitySlot['recurrence_type']
+    starts_on: string
+    ends_on: string
+    timezone: string
+    is_active: boolean
+  },
+  b: {
+    day_of_week: number
+    start_time: string
+    end_time: string
+    recurrence_type: AdminAvailabilitySlot['recurrence_type']
+    starts_on: string
+    ends_on: string
+    timezone: string
+    is_active: boolean
+  },
+) {
+  return (
+    a.day_of_week === b.day_of_week &&
+    a.start_time === b.start_time &&
+    a.end_time === b.end_time &&
+    a.recurrence_type === b.recurrence_type &&
+    a.starts_on === b.starts_on &&
+    a.ends_on === b.ends_on &&
+    a.timezone === b.timezone &&
+    a.is_active === b.is_active
   )
 }
 

@@ -49,6 +49,7 @@ describe('admin route permission matrix', () => {
         '/tasks/reschedule/admin-e2e-task',
         '/tasks/cancel/admin-e2e-task',
         '/handys/admin-e2e',
+        '/handys/calendar-settings',
         '/content/pages/create',
         '/content/pages/home',
         '/accounts/location',

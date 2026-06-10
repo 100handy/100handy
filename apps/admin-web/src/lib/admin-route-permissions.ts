@@ -99,7 +99,7 @@ export const ADMIN_ROUTE_PERMISSIONS: Record<AdminRouteKey, AdminRoutePermission
   handyProfile: { path: '/handys/:userId', permissions: ['handys.manage'], section: 'handys', smokeTestPath: '/handys/admin-e2e' },
   handySelectionProcess: { path: '/handys/selection-process', permissions: ['handys.manage'], section: 'handys', smokeTestPath: '/handys/selection-process' },
   handyAvailability: { path: '/handys/availability', permissions: ['handys.manage'], section: 'handys', smokeTestPath: '/handys/availability' },
-  handyCalendarSettingsRedirect: { path: '/handys/calendar-settings', permissions: ['handys.manage'], section: 'handys' },
+  handyCalendarSettingsRedirect: { path: '/handys/calendar-settings', permissions: ['handys.manage'], section: 'handys', smokeTestPath: '/handys/calendar-settings' },
   financeEarnings: { path: '/finance/earnings', permissions: ['finance.view'], section: 'finance', smokeTestPath: '/finance/earnings' },
   financeTransactions: { path: '/finance/transactions', permissions: ['finance.view'], section: 'finance', smokeTestPath: '/finance/transactions' },
   financePayouts: { path: '/finance/payouts', permissions: ['finance.view'], section: 'finance', smokeTestPath: '/finance/payouts' },
