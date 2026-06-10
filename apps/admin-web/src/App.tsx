@@ -6,6 +6,7 @@ import { resolveInitialRoute } from '@/contexts/auth-routing'
 import DashboardLayout from '@/layouts/dashboard-layout'
 import AdminAnalyticsProvider from '@/components/analytics/AdminAnalyticsProvider'
 import { AdminErrorBoundary } from '@/components/AdminErrorBoundary'
+import { ADMIN_ROUTE_PERMISSIONS as routePermissions } from '@/lib/admin-route-permissions'
 
 const LoginPage = lazy(() => import('@/pages/login'))
 const ForgotPasswordPage = lazy(() => import('@/pages/forgot-password'))
@@ -136,22 +137,21 @@ function AdminRoutes() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
-                <Route path="/users/add" element={<Navigate to="/users?mode=add" replace />} />
-                <Route path="/users/remove" element={<Navigate to="/users" replace />} />
-                <Route path="/tasks/reschedule/:id" element={<TaskDetailsRedirect />} />
-                <Route path="/tasks/cancel/:id" element={<TaskDetailsRedirect />} />
-                <Route path="/accounts/location" element={<Navigate to="/accounts/service-areas" replace />} />
-                <Route element={<ProtectedRoute permissions={['dashboard.view']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.dashboard.permissions} />}>
                   <Route path="/dashboard" element={<DashboardPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['notifications.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.dashboardAnnouncements.permissions} />}>
                   <Route path="/dashboard/announcements" element={<AnnouncementsPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['users.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.users.permissions} />}>
                   <Route path="/users" element={<UsersPage />} />
                   <Route path="/users/profiles" element={<UserProfilePage />} />
+                  <Route path="/users/add" element={<Navigate to="/users?mode=add" replace />} />
+                  <Route path="/users/remove" element={<Navigate to="/users" replace />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['tasks.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.taskList.permissions} />}>
+                  <Route path="/tasks/reschedule/:id" element={<TaskDetailsRedirect />} />
+                  <Route path="/tasks/cancel/:id" element={<TaskDetailsRedirect />} />
                   <Route path="/tasks/categories" element={<BrowseCategoriesPage />} />
                   <Route path="/tasks/rollouts" element={<RolloutPlannerPage />} />
                   <Route path="/tasks/categories/edit" element={<EditCategoriesPage />} />
@@ -165,7 +165,7 @@ function AdminRoutes() {
                   <Route path="/tasks/cancelled" element={<TaskListPage pageTitle="Cancelled Bookings" forcedStatus="cancelled" />} />
                   <Route path="/tasks/questions" element={<TaskQuestionsPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['handys.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.handys.permissions} />}>
                   <Route path="/handys" element={<HandysPage />} />
                   <Route path="/handys/stars" element={<HandyStarsPage />} />
                   <Route path="/handys/:userId" element={<ProviderProfilePage />} />
@@ -173,7 +173,7 @@ function AdminRoutes() {
                   <Route path="/handys/availability" element={<AvailabilityManagement />} />
                   <Route path="/handys/calendar-settings" element={<Navigate to="/handys/availability" replace />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['finance.view']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.financeEarnings.permissions} />}>
                   <Route path="/finance/earnings" element={<EarningsDashboardPage />} />
                   <Route path="/finance/transactions" element={<TransactionsRefundsPage />} />
                   <Route path="/finance/payouts" element={<PayoutOperationsPage />} />
@@ -183,19 +183,19 @@ function AdminRoutes() {
                   <Route path="/finance/balances" element={<AccountBalances />} />
                   <Route path="/finance/invoices" element={<Invoices />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['insights.view']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.insightsAnalytics.permissions} />}>
                   <Route path="/insights/analytics" element={<DataAnalyticsPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['reports.view']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.insightsReports.permissions} />}>
                   <Route path="/insights/reports" element={<MarketplaceReportsPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['promotions.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.promotionsManagement.permissions} />}>
                   <Route path="/promotions/management" element={<PromotionsManagementPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['outreach.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.outreachLeads.permissions} />}>
                   <Route path="/outreach/leads" element={<OutreachLeadsPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['content.manage', 'seo.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.contentPages.permissions} />}>
                   <Route path="/content/pages" element={<ContentPagesPage />} />
                   <Route path="/content/pages/create" element={<Navigate to="/content/pages" replace />} />
                   <Route path="/content/pages/:pageKey" element={<PageEditorPage />} />
@@ -207,31 +207,32 @@ function AdminRoutes() {
                   <Route path="/content/navigation" element={<NavigationPage />} />
                   <Route path="/content/app-content" element={<AppContentPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['accounts.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.accounts.permissions} />}>
                   <Route path="/accounts" element={<AccountsOverviewPage />} />
                   <Route path="/accounts/security" element={<SecurityOptions />} />
                   <Route path="/accounts/verification" element={<VerificationOptions />} />
                   <Route path="/accounts/deleted" element={<AccountStatus />} />
                   <Route path="/accounts/paused" element={<AccountStatus />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['locations.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.accountsServiceAreas.permissions} />}>
+                  <Route path="/accounts/location" element={<Navigate to="/accounts/service-areas" replace />} />
                   <Route path="/accounts/service-areas" element={<ServiceAreasPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['audit.view']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.accountsAuditLog.permissions} />}>
                   <Route path="/accounts/audit-log" element={<AuditLogPage />} />
                   <Route path="/accounts/timeline" element={<AdminTimelinePage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['notifications.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.notifications.permissions} />}>
                   <Route path="/notifications" element={<NotificationsOverviewPage />} />
                   <Route path="/notifications/email" element={<EmailNotifications />} />
                   <Route path="/notifications/push" element={<PushNotificationsPage />} />
                   <Route path="/notifications/popups" element={<PopupsPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['support.view']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.supportCentre.permissions} />}>
                   <Route path="/support/centre" element={<SupportCentre />} />
                   <Route path="/support/reviews" element={<ReviewsModerationPage />} />
                 </Route>
-                <Route element={<ProtectedRoute permissions={['disputes.manage']} />}>
+                <Route element={<ProtectedRoute permissions={routePermissions.supportDisputes.permissions} />}>
                   <Route path="/support/disputes" element={<DisputesPage />} />
                 </Route>
                 {isE2EAdmin ? (
