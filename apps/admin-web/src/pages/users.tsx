@@ -2,6 +2,8 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Search, Plus, Trash2, User } from 'lucide-react'
 import Header from '@/components/header'
+import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '@/components/admin/AdminState'
+import { AdminTableBody, AdminTableHead, AdminTableShell } from '@/components/admin/AdminTable'
 import { useCreateUser, useUsers, useDeleteUsers } from '@/lib/api/users'
 import type { UserRole } from '@/lib/database.types'
 
@@ -26,7 +28,7 @@ export default function UsersPage() {
   })
 
   // Fetch users with search filter
-  const { data: users, isLoading, error } = useUsers({
+  const { data: users, isLoading, error, refetch } = useUsers({
     search: searchQuery,
     role: 'customer', // Only show customers by default
     accountStatus: accountStatus || undefined,
@@ -144,12 +146,15 @@ export default function UsersPage() {
               {actionFeedback.message}
             </div>
           )}
-          {/* Error State */}
-          {error && (
-            <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-              <p className="text-sm text-red-500">Failed to load users. Please try refreshing the page.</p>
+          {error ? (
+            <div className="mb-6">
+              <AdminErrorState
+                title="Failed to load customers"
+                description={error instanceof Error ? error.message : 'Please try again.'}
+                onRetry={() => void refetch()}
+              />
             </div>
-          )}
+          ) : null}
 
           <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
             {[
@@ -239,15 +244,12 @@ export default function UsersPage() {
             </select>
           </div>
 
-          <div className="overflow-x-auto bg-white dark:bg-background-dark rounded-lg border border-slate-200 dark:border-slate-800">
+          <div>
             {isLoading ? (
-              <div className="p-12 text-center">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Loading users...</p>
-              </div>
+              <AdminLoadingState label="Loading customers..." />
             ) : users && users.length > 0 ? (
-              <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
-                <thead className="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-900/50">
+              <AdminTableShell minWidth={900}>
+                <AdminTableHead>
                   <tr>
                     <th scope="col" className="px-6 py-3 font-medium w-12">
                       <input
@@ -276,8 +278,8 @@ export default function UsersPage() {
                       Actions
                     </th>
                   </tr>
-                </thead>
-                <tbody>
+                </AdminTableHead>
+                <AdminTableBody>
                   {users.map((user) => (
                     <tr
                       key={user.user_id}
@@ -336,22 +338,22 @@ export default function UsersPage() {
                       </td>
                     </tr>
                   ))}
-                </tbody>
-              </table>
+                </AdminTableBody>
+              </AdminTableShell>
             ) : (
-              <div className="p-12 text-center">
-                <User className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-700 mb-4" />
-                <p className="text-slate-500 dark:text-slate-400">
-                  {searchQuery ? 'No users found matching your search.' : 'No users yet.'}
-                </p>
-                <button
-                  type="button"
-                  onClick={openCreateModal}
-                  className="inline-block mt-4 text-primary hover:underline font-medium"
-                >
-                  Add your first user
-                </button>
-              </div>
+              <AdminEmptyState
+                title="No customers found"
+                description={searchQuery ? 'No customers match your search.' : 'Customers will appear here after signup.'}
+                action={
+                  <button
+                    type="button"
+                    onClick={openCreateModal}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    Add your first user
+                  </button>
+                }
+              />
             )}
           </div>
 

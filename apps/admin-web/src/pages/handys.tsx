@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Search, Loader2 } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Header from '@/components/header'
+import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '@/components/admin/AdminState'
+import { AdminTableBody, AdminTableHead, AdminTableShell } from '@/components/admin/AdminTable'
 import { useHandys } from '@/lib/api/handys'
 
 const statusColors = {
@@ -33,6 +35,7 @@ export default function HandysPage() {
     data: handys,
     isLoading,
     error,
+    refetch,
   } = useHandys({
     search: debouncedSearch || undefined,
     limit: ITEMS_PER_PAGE,
@@ -116,38 +119,28 @@ export default function HandysPage() {
             </div>
           </div>
 
-          {/* Loading state */}
           {isLoading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <span className="ml-2 text-gray-500">Loading handys...</span>
-            </div>
+            <AdminLoadingState label="Loading providers..." />
           )}
 
-          {/* Error state */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
-              Failed to load handys: {error.message}
-            </div>
+            <AdminErrorState
+              title="Failed to load providers"
+              description={error.message}
+              onRetry={() => void refetch()}
+            />
           )}
 
-          {/* Empty state */}
           {!isLoading && !error && handys?.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">No handys found</p>
-              {searchQuery && (
-                <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                  Try adjusting your search
-                </p>
-              )}
-            </div>
+            <AdminEmptyState
+              title="No providers found"
+              description={searchQuery ? 'Try adjusting your search.' : 'Providers will appear here after onboarding.'}
+            />
           )}
 
-          {/* Handys table */}
           {activeView === 'providers' && !isLoading && !error && handys && handys.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800/50">
+            <AdminTableShell minWidth={900}>
+                <AdminTableHead>
                   <tr>
                     <th
                       scope="col"
@@ -189,8 +182,8 @@ export default function HandysPage() {
                       <span className="sr-only">Actions</span>
                     </th>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-background-dark">
+                </AdminTableHead>
+                <AdminTableBody>
                   {handys.map((handy) => {
                     const verificationStatus = (handy.handy_profile as { verification_status?: string | null } | null)?.verification_status
                     const isVerified = handy.handy_profile?.verified ?? false
@@ -244,9 +237,8 @@ export default function HandysPage() {
                       </tr>
                     )
                   })}
-                </tbody>
-              </table>
-            </div>
+                </AdminTableBody>
+            </AdminTableShell>
           )}
 
           {/* Pagination */}
