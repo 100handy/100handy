@@ -320,11 +320,11 @@ export function useBulkUpdateCategories() {
       categoryIds: string[]
       updates: Pick<CategoryUpdate, 'active'>
     }) => {
-      await requireAdminPermission('tasks.manage')
-
       if (categoryIds.length === 0) {
         throw new Error('Select at least one category')
       }
+
+      await requireAdminPermission('tasks.manage')
 
       const { error } = await supabase
         .from('categories')
