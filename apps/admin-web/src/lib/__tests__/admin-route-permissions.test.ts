@@ -35,5 +35,24 @@ describe('admin route permission matrix', () => {
     expect(ADMIN_ROUTE_PERMISSIONS.taskRescheduleRedirect.permissions).toEqual(['tasks.manage'])
     expect(ADMIN_ROUTE_PERMISSIONS.taskCancelRedirect.permissions).toEqual(['tasks.manage'])
     expect(ADMIN_ROUTE_PERMISSIONS.accountsLocationRedirect.permissions).toEqual(['locations.manage'])
+    expect(ADMIN_ROUTE_PERMISSIONS.handyCalendarSettingsRedirect.permissions).toEqual(['handys.manage'])
+    expect(ADMIN_ROUTE_PERMISSIONS.contentPagesCreateRedirect.permissions).toEqual(['content.manage', 'seo.manage'])
+  })
+
+  it('covers the currently untested dynamic admin screens in the smoke matrix', () => {
+    expect(ADMIN_ROUTE_SMOKE_TEST_PATHS).toEqual(
+      expect.arrayContaining([
+        '/users/add',
+        '/users/remove',
+        '/tasks/details/admin-e2e-task',
+        '/tasks/edit/admin-e2e-task',
+        '/tasks/reschedule/admin-e2e-task',
+        '/tasks/cancel/admin-e2e-task',
+        '/handys/admin-e2e',
+        '/content/pages/create',
+        '/content/pages/home',
+        '/accounts/location',
+      ]),
+    )
   })
 })
