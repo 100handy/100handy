@@ -1,7 +1,7 @@
 import type { Page, Route } from '@playwright/test'
 
 const authUser = {
-  id: 'admin_e2e',
+  id: process.env.ADMIN_E2E_USER_ID ?? 'admin_e2e',
   aud: 'authenticated',
   role: 'authenticated',
   email: 'admin-e2e@100handy.test',
@@ -11,7 +11,7 @@ const authUser = {
 }
 
 const adminProfile = {
-  user_id: 'admin_e2e',
+  user_id: authUser.id,
   role: 'admin',
   admin_role: 'super_admin',
   first_name: 'E2E',
@@ -23,11 +23,21 @@ const adminProfile = {
 }
 
 export async function installSupabaseMocks(page: Page) {
-  await page.route('**/__e2e_supabase/auth/v1/user**', async (route) => {
+  await installSupabaseAuthMocks(page)
+
+  if (process.env.ADMIN_E2E_SUPABASE_MODE === 'local') {
+    return
+  }
+
+  await installSupabaseDataMocks(page)
+}
+
+async function installSupabaseAuthMocks(page: Page) {
+  await page.route('**/auth/v1/user**', async (route) => {
     await route.fulfill({ json: authUser })
   })
 
-  await page.route('**/__e2e_supabase/auth/v1/token**', async (route) => {
+  await page.route('**/auth/v1/token**', async (route) => {
     await route.fulfill({
       json: {
         access_token: 'admin-e2e-token',
@@ -38,7 +48,9 @@ export async function installSupabaseMocks(page: Page) {
       },
     })
   })
+}
 
+async function installSupabaseDataMocks(page: Page) {
   await page.route('**/__e2e_supabase/rest/v1/rpc/admin_dashboard_overview**', async (route) => {
     await route.fulfill({
       json: {

@@ -1,6 +1,18 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const port = Number(process.env.ADMIN_E2E_PORT ?? 5177)
+const supabaseMode = process.env.ADMIN_E2E_SUPABASE_MODE ?? 'mock'
+const isLocalSupabase = supabaseMode === 'local'
+const localSupabaseUrl = process.env.ADMIN_E2E_SUPABASE_URL ?? 'http://127.0.0.1:54321'
+const localSupabaseKey = process.env.ADMIN_E2E_SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY
+const e2eAdminUserId = process.env.ADMIN_E2E_USER_ID ?? 'admin_e2e'
+
+if (isLocalSupabase && !localSupabaseKey) {
+  throw new Error('ADMIN_E2E_SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_ROLE_KEY is required for local Supabase E2E.')
+}
+
+const supabaseUrl = isLocalSupabase ? localSupabaseUrl : `http://127.0.0.1:${port}/__e2e_supabase`
+const supabaseKey = isLocalSupabase ? localSupabaseKey : 'e2e-anon-key'
 
 export default defineConfig({
   testDir: './e2e',
@@ -18,7 +30,7 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: `VITE_ADMIN_E2E_AUTH=true VITE_SUPABASE_URL=http://127.0.0.1:${port}/__e2e_supabase VITE_SUPABASE_ANON_KEY=e2e-anon-key pnpm exec vite --host 127.0.0.1 --port ${port}`,
+    command: `VITE_ADMIN_E2E_AUTH=true VITE_ADMIN_E2E_USER_ID=${e2eAdminUserId} VITE_SUPABASE_URL=${supabaseUrl} VITE_SUPABASE_ANON_KEY=${supabaseKey} pnpm exec vite --host 127.0.0.1 --port ${port}`,
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

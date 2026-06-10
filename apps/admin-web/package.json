@@ -10,6 +10,7 @@
     "check-types": "tsc --noEmit",
     "test:unit": "vitest run src",
     "test:e2e": "playwright test",
+    "test:e2e:local": "ADMIN_E2E_SUPABASE_MODE=local ADMIN_E2E_USER_ID=00000000-0000-4000-8000-000000000001 playwright test e2e/admin-routes.spec.ts",
     "test:e2e:install": "playwright install chromium",
     "preview": "vite preview"
   },

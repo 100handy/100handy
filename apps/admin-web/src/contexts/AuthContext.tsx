@@ -68,8 +68,9 @@ const PROFILE_FETCH_TIMEOUT_MS = 10000;
 const SESSION_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
 function E2EAuthProvider({ children }: AuthProviderProps) {
+  const e2eAdminUserId = import.meta.env.VITE_ADMIN_E2E_USER_ID || "admin_e2e";
   const mockUser = {
-    id: "admin_e2e",
+    id: e2eAdminUserId,
     email: "admin-e2e@100handy.test",
     app_metadata: { role: "admin" },
     user_metadata: {},

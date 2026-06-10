@@ -1,11 +1,13 @@
 import { expect, test } from '@playwright/test'
 import { installSupabaseMocks } from './support/supabase-mocks'
 
+const e2eAdminUserId = process.env.ADMIN_E2E_USER_ID ?? 'admin_e2e'
+
 const adminRoutes = [
   '/dashboard',
   '/dashboard/announcements',
   '/users',
-  '/users/profiles?id=admin_e2e',
+  `/users/profiles?id=${e2eAdminUserId}`,
   '/tasks/categories',
   '/tasks/rollouts',
   '/tasks/categories/edit',

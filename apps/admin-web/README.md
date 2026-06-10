@@ -27,6 +27,27 @@ pnpm build
 pnpm preview
 ```
 
+## Testing
+
+```bash
+# Fast mocked admin route/workflow smoke tests
+pnpm test:e2e
+
+# Unit-level mutation safety tests
+pnpm test:unit
+```
+
+For local Supabase-backed route smoke tests:
+
+```bash
+pnpm dlx supabase start
+pnpm dlx supabase db reset
+psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -f apps/admin-web/e2e/support/local-supabase-seed.sql
+SUPABASE_SERVICE_ROLE_KEY=<local-service-role-key> pnpm --dir apps/admin-web test:e2e:local
+```
+
+The local-backed suite requires Docker Desktop. It still mocks Supabase Auth for a fixed E2E admin, but all PostgREST/RPC reads go to the local Supabase API.
+
 ## Project Structure
 
 ```
