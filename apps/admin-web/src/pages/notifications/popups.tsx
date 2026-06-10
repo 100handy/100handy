@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { Check, Loader2, Plus, Rocket, Save, Search, Trash2 } from 'lucide-react'
+import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '@/components/admin/AdminState'
+import { AdminTableBody, AdminTableHead, AdminTableShell } from '@/components/admin/AdminTable'
 import Header from '@/components/header'
 import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
 import { useAuth } from '@/contexts/AuthContext'
@@ -35,7 +37,7 @@ export default function PopupsPage() {
   const { hasPermission } = useAuth()
   const canManageNotifications = hasPermission('notifications.manage')
   const [activeView, setActiveView] = useState<'library' | 'editor' | 'history'>('library')
-  const { data: popups = [], isLoading } = useAnnouncements()
+  const { data: popups = [], isLoading, error, refetch } = useAnnouncements()
   const saveDraft = useSaveAnnouncementDraft()
   const publishDraft = usePublishAnnouncementDraft()
   const restoreRevision = useRestoreAnnouncementRevision()
@@ -222,35 +224,35 @@ export default function PopupsPage() {
         </div>
 
         {activeView === 'library' ? (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
-          <table className="w-full min-w-[800px] text-left text-sm">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
-              <tr>
-                <th className="px-6 py-3">Pop-up Title</th>
-                <th className="px-6 py-3">Audience</th>
-                <th className="px-6 py-3">Placement</th>
-                <th className="px-6 py-3">Channel</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Schedule</th>
-                <th className="px-6 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
+          isLoading ? (
+            <AdminLoadingState label="Loading pop-ups..." />
+          ) : error ? (
+            <AdminErrorState
+              title="Failed to load pop-ups"
+              description={error instanceof Error ? error.message : 'Please try again.'}
+              onRetry={() => void refetch()}
+            />
+          ) : filtered.length === 0 ? (
+            <AdminEmptyState
+              title="No pop-ups found"
+              description={search ? 'No pop-ups match your search.' : 'Pop-ups will appear here after they are created.'}
+            />
+          ) : (
+            <AdminTableShell minWidth={900}>
+              <AdminTableHead>
                 <tr>
-                  <td className="px-6 py-6" colSpan={7}>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  </td>
+                  <th className="px-6 py-3">Pop-up Title</th>
+                  <th className="px-6 py-3">Audience</th>
+                  <th className="px-6 py-3">Placement</th>
+                  <th className="px-6 py-3">Channel</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Schedule</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td className="px-6 py-6 text-center text-gray-500" colSpan={7}>
-                    No pop-ups found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((popup) => (
-                  <tr key={popup.id} className="border-t border-gray-100 dark:border-gray-800">
+              </AdminTableHead>
+              <AdminTableBody>
+                {filtered.map((popup) => (
+                  <tr key={popup.id}>
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{popup.title}</td>
                     <td className="px-6 py-4">{popup.audience}</td>
                     <td className="px-6 py-4">{popup.placement}</td>
@@ -269,11 +271,10 @@ export default function PopupsPage() {
                       </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </AdminTableBody>
+            </AdminTableShell>
+          )
         ) : null}
 
         {activeView === 'editor' ? (

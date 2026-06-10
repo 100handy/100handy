@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { Check, Loader2, Plus, Rocket, Save, Search, Trash2 } from 'lucide-react'
+import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '@/components/admin/AdminState'
+import { AdminTableBody, AdminTableHead, AdminTableShell } from '@/components/admin/AdminTable'
 import Header from '@/components/header'
 import { UnsavedChangesBanner } from '@/components/editor/UnsavedChangesBanner'
 import { useAuth } from '@/contexts/AuthContext'
@@ -34,7 +36,7 @@ export default function AnnouncementsPage() {
   const { hasPermission } = useAuth()
   const canManageNotifications = hasPermission('notifications.manage')
   const [activeView, setActiveView] = useState<'library' | 'editor' | 'history'>('library')
-  const { data: announcements = [], isLoading } = useAnnouncements()
+  const { data: announcements = [], isLoading, error, refetch } = useAnnouncements()
   const saveDraft = useSaveAnnouncementDraft()
   const publishDraft = usePublishAnnouncementDraft()
   const restoreRevision = useRestoreAnnouncementRevision()
@@ -228,35 +230,35 @@ export default function AnnouncementsPage() {
         </div>
 
         {activeView === 'library' ? (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
-              <tr>
-                <th className="px-6 py-3">Title</th>
-                <th className="px-6 py-3">Audience</th>
-                <th className="px-6 py-3">Placement</th>
-                <th className="px-6 py-3">Channel</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Updated</th>
-                <th className="px-6 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
+          isLoading ? (
+            <AdminLoadingState label="Loading announcements..." />
+          ) : error ? (
+            <AdminErrorState
+              title="Failed to load announcements"
+              description={error instanceof Error ? error.message : 'Please try again.'}
+              onRetry={() => void refetch()}
+            />
+          ) : filtered.length === 0 ? (
+            <AdminEmptyState
+              title="No announcements found"
+              description={search ? 'No announcements match your search.' : 'Announcements will appear here after they are created.'}
+            />
+          ) : (
+            <AdminTableShell minWidth={900}>
+              <AdminTableHead>
                 <tr>
-                  <td className="px-6 py-6" colSpan={7}>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  </td>
+                  <th className="px-6 py-3">Title</th>
+                  <th className="px-6 py-3">Audience</th>
+                  <th className="px-6 py-3">Placement</th>
+                  <th className="px-6 py-3">Channel</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Updated</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td className="px-6 py-6 text-center text-gray-500" colSpan={7}>
-                    No announcements found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((item) => (
-                  <tr key={item.id} className="border-t border-gray-100 dark:border-gray-800">
+              </AdminTableHead>
+              <AdminTableBody>
+                {filtered.map((item) => (
+                  <tr key={item.id}>
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{item.title}</td>
                     <td className="px-6 py-4">{item.audience}</td>
                     <td className="px-6 py-4">{item.placement}</td>
@@ -272,11 +274,10 @@ export default function AnnouncementsPage() {
                       </button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </AdminTableBody>
+            </AdminTableShell>
+          )
         ) : null}
 
         {activeView === 'editor' ? (

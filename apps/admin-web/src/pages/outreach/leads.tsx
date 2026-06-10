@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { CalendarPlus, CheckCircle2, Loader2, MailPlus, Plus, Send, Sparkles, XCircle } from 'lucide-react'
+import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '@/components/admin/AdminState'
 import Header from '@/components/header'
 import {
   useCreateOutreachFollowUp,
@@ -59,7 +60,7 @@ export default function OutreachLeadsPage() {
   const [agentBatchText, setAgentBatchText] = useState('')
 
   const filters = useMemo(() => ({ leadType, status, approvalStatus, search }), [leadType, status, approvalStatus, search])
-  const { data: leads = [], isLoading } = useOutreachLeads(filters)
+  const { data: leads = [], isLoading, error, refetch } = useOutreachLeads(filters)
   const { data: summary } = useOutreachSummary()
   const createLead = useCreateOutreachLead()
   const updateLead = useUpdateOutreachLead()
@@ -294,13 +295,18 @@ export default function OutreachLeadsPage() {
 
                 <div className="mt-4 max-h-[680px] space-y-3 overflow-y-auto pr-1">
                   {isLoading ? (
-                    <div className="py-10 text-center">
-                      <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-                    </div>
+                    <AdminLoadingState label="Loading outreach leads..." />
+                  ) : error ? (
+                    <AdminErrorState
+                      title="Failed to load outreach leads"
+                      description={error instanceof Error ? error.message : 'Please try again.'}
+                      onRetry={() => void refetch()}
+                    />
                   ) : leads.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                      No outreach leads found.
-                    </div>
+                    <AdminEmptyState
+                      title="No outreach leads found"
+                      description="Leads will appear here after they are created or imported."
+                    />
                   ) : (
                     leads.map((lead) => (
                       <button
