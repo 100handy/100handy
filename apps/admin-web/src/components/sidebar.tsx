@@ -135,7 +135,7 @@ export default function Sidebar() {
   }, [normalizedQuery, visibleGroups])
 
   return (
-    <aside className="sticky top-0 z-20 flex max-h-[48vh] w-full flex-shrink-0 flex-col border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark lg:h-screen lg:w-72 lg:border-b-0 lg:border-r">
+    <aside className="z-20 flex max-h-[48vh] w-full flex-shrink-0 flex-col border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-background-dark lg:fixed lg:inset-y-0 lg:left-0 lg:h-screen lg:max-h-none lg:w-72 lg:border-b-0 lg:border-r lg:overflow-hidden">
       <div className="border-b border-slate-200 px-4 py-4 dark:border-slate-800">
         <div className="flex items-center gap-4 px-2">
           <div className="size-8 text-primary">

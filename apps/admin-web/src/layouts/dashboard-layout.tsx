@@ -3,9 +3,9 @@ import Sidebar from '@/components/sidebar'
 
 export default function DashboardLayout() {
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row">
+    <div className="min-h-screen lg:pl-72">
       <Sidebar />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0">
         <Outlet />
       </div>
     </div>
