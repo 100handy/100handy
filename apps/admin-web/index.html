@@ -2,11 +2,21 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>100 Handy Admin</title>
+    <script>
+      ;(() => {
+        const redirectPath = sessionStorage.getItem('gh-pages-redirect')
+
+        if (!redirectPath) return
+
+        sessionStorage.removeItem('gh-pages-redirect')
+        window.history.replaceState(null, '', redirectPath)
+      })()
+    </script>
   </head>
-  <body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white"></body>
+  <body class="bg-background-light text-gray-900 dark:bg-background-dark dark:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
