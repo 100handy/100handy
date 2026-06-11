@@ -165,14 +165,14 @@ export default function Header({ title }: HeaderProps) {
     sectionTabs.find((section) => section.match(location.pathname))?.items ?? []
 
   return (
-    <header className="min-w-0 overflow-x-hidden border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-background-dark">
+    <header className="relative z-30 min-w-0 overflow-visible border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-background-dark">
       <div className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <h2 className="min-w-0 flex-1 truncate text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">{title}</h2>
         <div className="flex min-w-0 flex-none items-center gap-2 sm:gap-4">
           <button className="flex-none rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-800">
             <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
-          <div className="relative min-w-0" ref={dropdownRef}>
+          <div className="relative min-w-0 flex-none" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex max-w-full items-center gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 sm:gap-3 sm:px-3"
@@ -196,7 +196,7 @@ export default function Header({ title }: HeaderProps) {
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50">
+              <div className="absolute right-0 top-full z-[80] mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-xl dark:border-gray-800 dark:bg-gray-900">
                 <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{displayName}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{displayEmail}</p>
