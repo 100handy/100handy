@@ -1,5 +1,5 @@
 // Security and two-factor authentication functions
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 
 /**
  * Enable two-factor authentication via email
@@ -106,4 +106,3 @@ export async function disableTwoFactor(): Promise<void> {
     throw error;
   }
 }
-

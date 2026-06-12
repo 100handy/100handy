@@ -1,5 +1,5 @@
 // Account balance and promo code management functions
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 import type { PromoCode, PromoCodeRedemption } from './types';
 
 /**
@@ -204,4 +204,3 @@ export async function applyPromoCode(code: string): Promise<{
     };
   }
 }
-

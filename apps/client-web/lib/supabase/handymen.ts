@@ -1,4 +1,4 @@
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 
 export interface HandymanProfile {
   user_id: string;

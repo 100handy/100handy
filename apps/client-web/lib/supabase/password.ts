@@ -1,5 +1,5 @@
 // Password management functions
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 
 /**
  * Update user's password
@@ -81,4 +81,3 @@ export async function updatePasswordWithVerification(
     throw error;
   }
 }
-

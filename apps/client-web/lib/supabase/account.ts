@@ -1,5 +1,5 @@
 // Account deletion functions
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 
 /**
  * Request account deletion
@@ -34,4 +34,3 @@ export async function requestAccountDeletion(): Promise<void> {
     throw error;
   }
 }
-

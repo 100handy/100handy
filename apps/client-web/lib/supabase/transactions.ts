@@ -1,5 +1,5 @@
 // Transaction history and download functions
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 import type { Transaction } from './types';
 
 /**
@@ -227,4 +227,3 @@ export async function downloadTransactionsPDF(
     throw new Error('Failed to download PDF');
   }
 }
-

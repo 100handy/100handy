@@ -1,4 +1,4 @@
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 import type { Category, CategoryWithChildren } from './types';
 
 /**

@@ -1,4 +1,4 @@
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 
 export interface Address {
   id: string;

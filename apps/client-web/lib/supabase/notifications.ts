@@ -1,5 +1,5 @@
 // Notification settings management functions
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 import type { NotificationSettings } from './types';
 
 /**
@@ -107,4 +107,3 @@ export async function updateNotificationSettings(
     throw error;
   }
 }
-

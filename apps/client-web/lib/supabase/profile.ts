@@ -1,5 +1,5 @@
 // Profile management functions
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 import type { ProfileWithAuth, UpdateProfileData } from './types';
 
 /**
@@ -158,4 +158,3 @@ export async function deleteAvatar(): Promise<void> {
     throw error;
   }
 }
-

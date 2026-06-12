@@ -1,5 +1,5 @@
 // Business information and VAT management functions
-import { createClient } from '../supabase';
+import { createClient } from '@/lib/supabase';
 import type { BusinessInfo } from './types';
 
 /**
@@ -138,4 +138,3 @@ export async function deleteBusinessInfo(): Promise<void> {
     throw error;
   }
 }
-
