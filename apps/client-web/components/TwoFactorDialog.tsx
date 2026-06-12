@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { enableTwoFactor, verifyTwoFactor } from "@/lib/supabase/security";
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 import { toast } from "sonner";
 
 interface TwoFactorDialogProps {

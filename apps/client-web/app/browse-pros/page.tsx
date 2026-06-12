@@ -19,7 +19,7 @@ import { Footer } from "@/components/marketing/footer";
 import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store'; import { useCategoriesByNames, useHandymenByCategory, useAvailabilityByUserIds, type HandymanProfile } from '@shared/query';
 import { getServiceAreaCoverage, logServiceAreaCoverageAttempt } from '@shared/supabase';
 import { useServiceAreaCoverage } from '@shared/query';
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 import { createAddress } from "@/lib/supabase/addresses";
 import { createBooking } from "@/lib/supabase/bookings";
 import { cancelPaymentIntent, createPaymentIntent } from "@/lib/stripe/payment";

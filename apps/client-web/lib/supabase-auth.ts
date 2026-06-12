@@ -1,5 +1,5 @@
 // apps/client-web/lib/supabase-auth.ts
-import { createClient } from './supabase';
+import { createClient } from './supabase-client';
 
 /**
  * Supabase Auth wrapper for client-web

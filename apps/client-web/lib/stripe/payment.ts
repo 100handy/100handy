@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 
 /**
  * Create a payment intent with authorization hold (manual capture)

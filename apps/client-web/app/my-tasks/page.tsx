@@ -8,7 +8,7 @@ import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
 import { BookingCard } from "@/components/my-tasks/booking-card";
 import { getUserBookings, type Booking } from "@/lib/supabase/bookings";
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 
 export default function MyTasksPage() {
   const router = useRouter();

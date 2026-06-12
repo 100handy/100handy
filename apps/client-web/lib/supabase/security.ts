@@ -1,5 +1,5 @@
 // Security and two-factor authentication functions
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 
 /**
  * Enable two-factor authentication via email

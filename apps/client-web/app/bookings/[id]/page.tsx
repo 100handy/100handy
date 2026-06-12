@@ -6,7 +6,7 @@ import Header from "@/components/layout/Header";
 import { Footer } from "@/components/marketing/footer";
 import Link from "next/link";
 import { getBooking, cancelBooking, type Booking } from "@/lib/supabase/bookings";
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 import {
   Dialog,
   DialogContent,

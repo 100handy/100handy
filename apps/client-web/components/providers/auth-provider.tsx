@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 import type { User } from '@supabase/supabase-js';
 import { useSessionMonitor } from '@/hooks/use-session-monitor';
 

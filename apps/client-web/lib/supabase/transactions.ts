@@ -1,5 +1,5 @@
 // Transaction history and download functions
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 import type { Transaction } from './types';
 
 /**

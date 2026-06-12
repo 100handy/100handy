@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 
 export function usePublicSiteSetting<T extends Record<string, unknown>>(settingKey: string, fallback: T) {
   const [value, setValue] = useState<T>(fallback);

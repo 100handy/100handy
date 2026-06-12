@@ -1,5 +1,5 @@
 // Profile management functions
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 import type { ProfileWithAuth, UpdateProfileData } from './types';
 
 /**

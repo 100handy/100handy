@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -37,4 +37,3 @@ export function useSessionMonitor() {
     };
   }, [router]);
 }
-

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 
 export function useClientPageContent(pageKey: string) {
   const [content, setContent] = useState<Record<string, string>>({});

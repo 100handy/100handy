@@ -1,5 +1,5 @@
 // Stripe payment methods helper functions
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 
 const SUPABASE_FUNCTIONS_URL = process.env.NEXT_PUBLIC_SUPABASE_URL + '/functions/v1';
 

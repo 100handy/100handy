@@ -7,7 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 
 const contactSchema = z.object({
   about: z.string().optional(),

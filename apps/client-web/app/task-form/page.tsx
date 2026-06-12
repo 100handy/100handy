@@ -19,7 +19,7 @@ import { DynamicFormRenderer } from "@/components/booking";
 import { findOrCreateAddress } from "@/lib/supabase/addresses";
 import { createBooking, getEstimatedHours, MINIMUM_BOOKING_HOURS } from "@/lib/supabase/bookings";
 import { createPaymentIntent, cancelPaymentIntent } from "@/lib/stripe/payment";
-import { createClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 import type { FormResponse } from "@shared/supabase";
 import { usePendingBookingStore, useLocationStore, type PendingBookingData } from '@shared/store';
 import { getServiceAreaCoverage, logServiceAreaCoverageAttempt } from '@shared/supabase';

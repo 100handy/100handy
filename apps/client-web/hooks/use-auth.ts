@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 import type { User } from '@supabase/supabase-js';
 
 export function useAuth() {
@@ -41,4 +41,3 @@ export function useAuth() {
     isAuthenticated: !!user,
   };
 }
-

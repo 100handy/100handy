@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 import type { FormResponse } from '@shared/supabase';
 import { cancelPaymentIntent as cancelStripePaymentIntent, capturePayment } from '../stripe/payment';
 

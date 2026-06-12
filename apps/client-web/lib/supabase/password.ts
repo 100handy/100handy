@@ -1,5 +1,5 @@
 // Password management functions
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-client';
 
 /**
  * Update user's password
