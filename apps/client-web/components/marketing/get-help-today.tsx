@@ -38,7 +38,7 @@ export function GetHelpToday({
             <Link
               key={index}
               href={service.href}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-[14px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[13px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
             >
               {service.name}
             </Link>

@@ -208,7 +208,7 @@ export function Services() {
                 <button
                   key={subCategory.id}
                   onClick={() => handleSubCategoryClick(subCategory)}
-                  className="flex min-h-[48px] w-full max-w-[260px] items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-center text-[14px] font-medium leading-snug text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta sm:w-auto sm:min-w-[200px]"
+                  className="flex min-h-[42px] w-full max-w-[240px] items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-center text-[13px] font-medium leading-snug text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta sm:w-auto sm:min-w-[180px]"
                 >
                   <span className="shrink-0">
                     <CategoryBadge category={subCategory} size={20} />
@@ -224,7 +224,7 @@ export function Services() {
                 <button
                   key={name}
                   onClick={() => router.push(`/task-form?category=${encodeURIComponent(name)}`)}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-[14px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[13px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
                 >
                   {name}
                 </button>
