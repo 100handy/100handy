@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -50,7 +51,9 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <PendingBookingProvider>
-              <AnalyticsProvider />
+              <Suspense fallback={null}>
+                <AnalyticsProvider />
+              </Suspense>
               <GlobalAnnouncementsHost />
               {children}
               <ScrollToTopButton />
