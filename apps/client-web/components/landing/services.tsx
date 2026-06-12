@@ -69,7 +69,7 @@ export function LandingServices(): React.JSX.Element {
           {subCategories.map((subCategory) => (
             <button
               key={subCategory}
-              className="rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-[16px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-[14px] font-medium text-brand-dark-alt transition-all hover:border-brand-terracotta hover:text-brand-terracotta"
             >
               {subCategory}
             </button>
@@ -86,4 +86,3 @@ export function LandingServices(): React.JSX.Element {
     </section>
   );
 }
-
