@@ -97,7 +97,7 @@ export function useCreateReviewModerationEvent() {
       action: 'flagged' | 'noted' | 'removed'
       reason?: string | null
     }) => {
-      await requireAdminPermission('support.view')
+      await requireAdminPermission('support.manage')
       const { user } = await requireActiveAdmin()
 
       const { error } = await supabase.from('review_moderation_events').insert({
@@ -130,7 +130,7 @@ export function useDeleteReview() {
 
   return useMutation({
     mutationFn: async ({ reviewId, reason }: { reviewId: string; reason: string }) => {
-      await requireAdminPermission('support.view')
+      await requireAdminPermission('support.manage')
       const { user } = await requireActiveAdmin()
 
       const { error: noteError } = await supabase.from('review_moderation_events').insert({

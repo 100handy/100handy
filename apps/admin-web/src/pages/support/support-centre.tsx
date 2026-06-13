@@ -13,7 +13,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function SupportCentre() {
-  const { user } = useAuth()
+  const { user, hasPermission } = useAuth()
+  const canManageSupport = hasPermission('support.manage')
   const [viewMode, setViewMode] = useState<'inbox' | 'performance'>('inbox')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<SupportFilters['status']>('all')
@@ -110,6 +111,11 @@ export default function SupportCentre() {
               : 'border border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300'
           }`}>
             {actionFeedback.message}
+          </div>
+        )}
+        {!canManageSupport && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+            You have read-only support access. Ticket replies, notes, assignments, and status changes require support management permission.
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -320,7 +326,7 @@ export default function SupportCentre() {
                       <button
                         type="button"
                         onClick={handleAssignToMe}
-                        disabled={updateStatus.isPending}
+                        disabled={!canManageSupport || updateStatus.isPending}
                         className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium dark:border-slate-700"
                       >
                         <UserCheck className="h-4 w-4" />
@@ -329,6 +335,7 @@ export default function SupportCentre() {
                       <button
                         type="button"
                         onClick={async () => {
+                          if (!canManageSupport) return
                           setActionFeedback(null)
                           try {
                             await updateStatus.mutateAsync({ ticketId: selectedTicket.id, status: 'resolved' })
@@ -337,7 +344,7 @@ export default function SupportCentre() {
                             setActionFeedback({ tone: 'error', message: error instanceof Error ? error.message : 'Failed to resolve ticket.' })
                           }
                         }}
-                        disabled={updateStatus.isPending}
+                        disabled={!canManageSupport || updateStatus.isPending}
                         className="rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-700 dark:border-emerald-900/60"
                       >
                         Mark resolved
@@ -345,7 +352,7 @@ export default function SupportCentre() {
                       <button
                         type="button"
                         onClick={() => setShowCloseModal(true)}
-                        disabled={updateStatus.isPending}
+                        disabled={!canManageSupport || updateStatus.isPending}
                         className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 dark:border-red-900/60"
                       >
                         Close ticket
@@ -367,7 +374,7 @@ export default function SupportCentre() {
                         />
                         <button
                           onClick={handleSendResponse}
-                          disabled={!responseText.trim() || createResponse.isPending}
+                          disabled={!canManageSupport || !responseText.trim() || createResponse.isPending}
                           className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50"
                         >
                           {createResponse.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -391,7 +398,7 @@ export default function SupportCentre() {
                         />
                         <button
                           onClick={handleInternalNote}
-                          disabled={!internalNote.trim() || createInternalNote.isPending}
+                          disabled={!canManageSupport || !internalNote.trim() || createInternalNote.isPending}
                           className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700 disabled:opacity-50"
                         >
                           {createInternalNote.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <StickyNote className="h-4 w-4" />}
@@ -444,7 +451,7 @@ export default function SupportCentre() {
               <button
                 type="button"
                 onClick={handleCloseTicket}
-                disabled={updateStatus.isPending}
+                disabled={!canManageSupport || updateStatus.isPending}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 Confirm close

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { createAdminAuditLog } from '@/lib/api/admin-audit'
 import { requireAdminPermissions } from '@/lib/api/admin-auth'
 import { supabase } from '@/lib/supabase'
 import type { FieldType } from '@/lib/cms/page-registry'
@@ -323,6 +324,19 @@ export function useSavePageContent() {
 
         if (error) throw error
       }
+
+      await createAdminAuditLog({
+        action: 'page.content.save',
+        entityType: 'page',
+        entityId: pageKey,
+        summary: `Saved admin-managed page content for ${pageKey}.`,
+        metadata: {
+          pageKey,
+          updatedFieldCount: rows.length,
+          clearedFieldCount: fieldsToDelete.length,
+          updatedBy: user.id,
+        },
+      })
     },
     onSuccess: (_, { pageKey }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'site-content', pageKey] })
@@ -395,6 +409,20 @@ export function useSavePageSettings() {
 
         if (deleteError) throw deleteError
       }
+
+      await createAdminAuditLog({
+        action: 'page.settings.save',
+        entityType: 'page',
+        entityId: pageKey,
+        summary: `Updated page settings for ${pageKey}.`,
+        metadata: {
+          pageKey,
+          slug: normalizedSlug,
+          status: page.status,
+          hasSeoValues,
+          updatedBy: user.id,
+        },
+      })
     },
     onSuccess: (_, { pageKey }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'site-pages', pageKey] })
@@ -457,6 +485,19 @@ export function useSavePageDraft() {
           .eq('id', latestDraft.id)
 
         if (error) throw error
+        await createAdminAuditLog({
+          action: 'page.draft.save',
+          entityType: 'page',
+          entityId: pageKey,
+          summary: `Updated draft revision for ${pageKey}.`,
+          metadata: {
+            pageKey,
+            revisionId: latestDraft.id,
+            mode: 'update',
+            fieldCount: Object.keys(contentJson).length,
+            updatedBy: user.id,
+          },
+        })
         return latestDraft.id
       }
 
@@ -476,6 +517,20 @@ export function useSavePageDraft() {
         .single()
 
       if (error) throw error
+      await createAdminAuditLog({
+        action: 'page.draft.save',
+        entityType: 'page',
+        entityId: pageKey,
+        summary: `Created draft revision for ${pageKey}.`,
+        metadata: {
+          pageKey,
+          revisionId: inserted.id,
+          versionNumber,
+          mode: 'create',
+          fieldCount: Object.keys(contentJson).length,
+          createdBy: user.id,
+        },
+      })
       return inserted.id
     },
     onSuccess: (_, { pageKey }) => {
@@ -612,6 +667,20 @@ export function usePublishPageDraft() {
         })
         .eq('id', draft.id)
       if (publishError) throw publishError
+
+      await createAdminAuditLog({
+        action: 'page.publish',
+        entityType: 'page',
+        entityId: pageKey,
+        summary: `Published page draft for ${pageKey}.`,
+        metadata: {
+          pageKey,
+          revisionId: draft.id,
+          publishedBy: user.id,
+          contentFieldCount: contentRows.length,
+          status: pageRow.status,
+        },
+      })
     },
     onSuccess: (_, pageKey) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'site-content', pageKey] })
@@ -659,6 +728,19 @@ export function useRestorePageRevision() {
           })
           .eq('id', existingDraft.id)
         if (updateError) throw updateError
+        await createAdminAuditLog({
+          action: 'page.revision.restore',
+          entityType: 'page',
+          entityId: pageKey,
+          summary: `Restored revision ${revisionId} into existing draft for ${pageKey}.`,
+          metadata: {
+            pageKey,
+            revisionId,
+            targetDraftId: existingDraft.id,
+            mode: 'update-existing-draft',
+            restoredBy: user.id,
+          },
+        })
         return
       }
 
@@ -675,6 +757,19 @@ export function useRestorePageRevision() {
           created_by: user.id,
         })
       if (insertError) throw insertError
+      await createAdminAuditLog({
+        action: 'page.revision.restore',
+        entityType: 'page',
+        entityId: pageKey,
+        summary: `Restored revision ${revisionId} into a new draft for ${pageKey}.`,
+        metadata: {
+          pageKey,
+          revisionId,
+          versionNumber,
+          mode: 'create-draft',
+          restoredBy: user.id,
+        },
+      })
     },
     onSuccess: (_, { pageKey }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'page-revisions', pageKey] })

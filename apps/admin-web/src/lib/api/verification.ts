@@ -126,6 +126,8 @@ export function useVerificationRequests(filter?: 'all' | 'pending' | 'submitted'
   return useQuery({
     queryKey: ['admin', 'verification-requests', filter],
     queryFn: async (): Promise<VerificationRequest[]> => {
+      await requireAdminPermission('accounts.manage')
+
       let query = supabase
         .from('handy_profiles')
         .select(`
@@ -216,6 +218,8 @@ export function useVerificationStats() {
   return useQuery({
     queryKey: ['admin', 'verification-stats'],
     queryFn: async (): Promise<VerificationStats> => {
+      await requireAdminPermission('accounts.manage')
+
       const { data, error } = await supabase
         .from('handy_profiles')
         .select('verification_status')

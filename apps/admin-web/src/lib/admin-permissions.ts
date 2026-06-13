@@ -18,6 +18,7 @@ export type AdminPermission =
   | 'reports.view'
   | 'promotions.manage'
   | 'support.view'
+  | 'support.manage'
 
 export type AdminRole =
   | 'super_admin'
@@ -48,6 +49,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
     'reports.view',
     'promotions.manage',
     'support.view',
+    'support.manage',
   ],
   content_admin: [
     'dashboard.view',
@@ -66,12 +68,14 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
     'locations.manage',
     'outreach.manage',
     'support.view',
+    'support.manage',
     'notifications.manage',
   ],
   support_admin: [
     'dashboard.view',
     'audit.view',
     'support.view',
+    'support.manage',
     'disputes.manage',
     'notifications.manage',
     'accounts.manage',

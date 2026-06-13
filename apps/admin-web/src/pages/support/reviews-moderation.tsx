@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { AlertTriangle, Search, Trash2 } from 'lucide-react'
 import Header from '@/components/header'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   useCreateReviewModerationEvent,
   useDeleteReview,
@@ -9,6 +10,8 @@ import {
 } from '@/lib/api/reviews'
 
 export default function ReviewsModerationPage() {
+  const { hasPermission } = useAuth()
+  const canManageSupport = hasPermission('support.manage')
   const [activeView, setActiveView] = useState<'queue' | 'detail'>('queue')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null)
@@ -121,6 +124,11 @@ export default function ReviewsModerationPage() {
             {actionFeedback.message}
           </div>
         )}
+        {!canManageSupport && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+            You have read-only review access. Flagging, moderation notes, and review removal require support management permission.
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[1.4fr,1fr]">
           {activeView === 'queue' ? (
@@ -166,7 +174,11 @@ export default function ReviewsModerationPage() {
                           <button onClick={() => setSelectedReviewId(review.id)} className="text-primary hover:underline">
                             Inspect
                           </button>
-                          <button onClick={() => { setSelectedReviewId(review.id); setActionMode('flag') }} className="text-amber-600 hover:underline">
+                          <button
+                            onClick={() => { if (!canManageSupport) return; setSelectedReviewId(review.id); setActionMode('flag') }}
+                            disabled={!canManageSupport}
+                            className="text-amber-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                          >
                             Flag
                           </button>
                         </div>
@@ -211,7 +223,7 @@ export default function ReviewsModerationPage() {
                     />
                     <button
                       type="button"
-                      disabled={!noteReason.trim() || createModerationEvent.isPending}
+                      disabled={!canManageSupport || !noteReason.trim() || createModerationEvent.isPending}
                       onClick={handleNote}
                       className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium dark:border-slate-700 disabled:opacity-50"
                     >
@@ -223,7 +235,8 @@ export default function ReviewsModerationPage() {
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setActionMode('flag')}
+                    onClick={() => { if (!canManageSupport) return; setActionMode('flag') }}
+                    disabled={!canManageSupport}
                     className="inline-flex items-center gap-2 rounded-lg border border-amber-300 px-4 py-2 text-sm font-medium text-amber-700 dark:border-amber-900/60"
                   >
                     <AlertTriangle className="h-4 w-4" />
@@ -231,7 +244,8 @@ export default function ReviewsModerationPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActionMode('remove')}
+                    onClick={() => { if (!canManageSupport) return; setActionMode('remove') }}
+                    disabled={!canManageSupport}
                     className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-900/60"
                   >
                     <Trash2 className="h-4 w-4" />

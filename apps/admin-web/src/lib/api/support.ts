@@ -268,7 +268,7 @@ export function useCreateTicketResponse() {
 
   return useMutation({
     mutationFn: async ({ ticketId, message }: { ticketId: string; message: string }) => {
-      await requireAdminPermission('support.view')
+      await requireAdminPermission('support.manage')
       const { user } = await requireActiveAdmin()
 
       const { error: messageError } = await supabase.from('support_messages').insert({
@@ -310,7 +310,7 @@ export function useCreateSupportInternalNote() {
 
   return useMutation({
     mutationFn: async ({ ticketId, note }: { ticketId: string; note: string }) => {
-      await requireAdminPermission('support.view')
+      await requireAdminPermission('support.manage')
       const { user } = await requireActiveAdmin()
 
       const { error } = await supabase.from('support_ticket_internal_notes').insert({
@@ -347,7 +347,7 @@ export function useUpdateTicketStatus() {
       status?: 'open' | 'in_progress' | 'resolved' | 'closed'
       assignedTo?: string | null
     }) => {
-      await requireAdminPermission('support.view')
+      await requireAdminPermission('support.manage')
       const updates: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       }
