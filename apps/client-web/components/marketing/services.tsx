@@ -155,13 +155,13 @@ export function Services() {
               <button
                 key={category.id}
                 onClick={() => handleMainCategoryClick(category as Category)}
-                className="group flex w-full max-w-[88px] flex-col items-center gap-2 sm:max-w-[120px]"
+                className="group flex w-full max-w-[84px] flex-col items-center gap-1.5 sm:max-w-[110px]"
               >
                 {/* Category Icon */}
                 {(() => {
                   return (
                     <div
-                      className={`flex h-14 w-14 items-center justify-center rounded-full transition-all sm:h-20 sm:w-20 ${
+                      className={`flex h-12 w-12 items-center justify-center rounded-full transition-all sm:h-[4.5rem] sm:w-[4.5rem] ${
                         activeCategory === category.name
                           ? "bg-brand-terracotta/10"
                           : "bg-gray-100 hover:bg-gray-200"
@@ -173,7 +173,7 @@ export function Services() {
                 })()}
                 {/* Category Name */}
                 <span
-                  className={`min-h-[2.5rem] text-center text-[13px] leading-tight transition-colors sm:min-h-[3rem] sm:text-[16px] ${
+                  className={`min-h-[2.25rem] text-center text-[12px] leading-tight transition-colors sm:min-h-[2.5rem] sm:text-[14px] ${
                     activeCategory === category.name
                       ? "font-bold text-brand-terracotta"
                       : "font-medium text-brand-dark-alt hover:text-brand-terracotta"
