@@ -5,7 +5,8 @@ into the existing AI outreach queue. This doc lists everything ops needs to turn
 
 ## 1. Supabase function secrets
 
-Set these (Dashboard → Project Settings → Edge Functions, or `supabase secrets set`):
+See `supabase/.env.example` for the full template (copy to `supabase/.env` for local
+runs). Set these (Dashboard → Project Settings → Edge Functions, or `supabase secrets set`):
 
 | Secret | Used by | Purpose |
 | --- | --- | --- |
