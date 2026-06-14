@@ -28,6 +28,8 @@ supabase secrets set APIFY_TOKEN=apify_xxx APIFY_WEBHOOK_SECRET=$(openssl rand -
 supabase functions deploy outreach-discovery-trigger
 supabase functions deploy outreach-discovery-webhook   # verify_jwt=false (config.toml)
 supabase functions deploy outreach-discovery-cron      # verify_jwt=false (config.toml)
+supabase functions deploy send-outreach-message
+supabase functions deploy outreach-follow-up-cron      # verify_jwt=false (config.toml)
 ```
 
 The webhook and cron functions are public (no Supabase JWT) but guarded by the HMAC
@@ -74,8 +76,23 @@ supabase functions deploy send-outreach-message
 
 Flow: **Outreach → Leads → (worker lead) → approve message → Send email**. The send is
 manual per message (one click), records `delivery_status='sent'`, marks the lead
-`contacted`, and auto-schedules a 3-day follow-up reminder. Every email includes the
+`contacted`, and starts the automatic follow-up sequence. Every email includes the
 100Handy identity and an opt-out line.
+
+## 6. Automatic follow-up sequences
+
+When a worker email is sent, an **automatic follow-up** (step 1, due +3 days) is scheduled.
+The `outreach-follow-up-cron` function (hourly via pg_cron, migration `20260614000022`)
+sends due follow-ups by email and schedules the next step, up to `FOLLOW_UP_MAX_STEPS` (2),
+with the second step +7 days later.
+
+Guardrails: follow-ups auto-send **only** to worker leads with a valid public email that are
+not `replied`/`closed`/`rejected`. **Marking a lead `replied` (or do-not-contact) stops the
+sequence** — that's the manual off-switch (there's no inbound-reply parsing yet). Each
+follow-up carries the same opt-out line.
+
+Scheduling uses the same GUCs as §3; after setting them, re-run the `cron.schedule(...)`
+block in migration `20260614000022` to register the `outreach-follow-up-dispatch` job.
 
 ## Compliance
 
