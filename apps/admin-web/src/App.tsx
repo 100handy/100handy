@@ -37,6 +37,8 @@ const DataAnalyticsPage = lazy(() => import('@/pages/insights/data-analytics'))
 const MarketplaceReportsPage = lazy(() => import('@/pages/insights/marketplace-reports'))
 const PromotionsManagementPage = lazy(() => import('@/pages/promotions/promotions-management'))
 const OutreachLeadsPage = lazy(() => import('@/pages/outreach/leads'))
+const OutreachSourcesPage = lazy(() => import('@/pages/outreach/sources'))
+const OutreachRunsPage = lazy(() => import('@/pages/outreach/runs'))
 const ContentPagesPage = lazy(() => import('@/pages/content/pages'))
 const PageEditorPage = lazy(() => import('@/pages/content/page-editor'))
 const PageSettingsPage = lazy(() => import('@/pages/content/page-settings'))
@@ -194,6 +196,8 @@ function AdminRoutes() {
                 </Route>
                 <Route element={<ProtectedRoute permissions={routePermissions.outreachLeads.permissions} />}>
                   <Route path="/outreach/leads" element={<OutreachLeadsPage />} />
+                  <Route path="/outreach/sources" element={<OutreachSourcesPage />} />
+                  <Route path="/outreach/runs" element={<OutreachRunsPage />} />
                 </Route>
                 <Route element={<ProtectedRoute permissions={routePermissions.contentPages.permissions} />}>
                   <Route path="/content/pages" element={<ContentPagesPage />} />

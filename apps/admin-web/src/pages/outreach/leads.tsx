@@ -1,7 +1,9 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { CalendarPlus, CheckCircle2, Loader2, MailPlus, Plus, Send, Sparkles, XCircle } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { CalendarPlus, CheckCircle2, Loader2, Mail, MailPlus, Plus, Send, Sparkles, XCircle } from 'lucide-react'
 import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '@/components/admin/AdminState'
 import Header from '@/components/header'
+import OutreachNav from '@/components/outreach/OutreachNav'
 import {
   useCreateOutreachFollowUp,
   useCreateOutreachLead,
@@ -10,6 +12,7 @@ import {
   useOutreachLeads,
   useOutreachSummary,
   useRunOutreachAgent,
+  useSendOutreachMessage,
   useUpdateOutreachFollowUp,
   useUpdateOutreachLead,
   useUpdateOutreachMessage,
@@ -59,8 +62,20 @@ export default function OutreachLeadsPage() {
   const [agentService, setAgentService] = useState('Handyman')
   const [agentBatchText, setAgentBatchText] = useState('')
 
+  const [searchParams] = useSearchParams()
+  const runId = searchParams.get('run')
+
   const filters = useMemo(() => ({ leadType, status, approvalStatus, search }), [leadType, status, approvalStatus, search])
-  const { data: leads = [], isLoading, error, refetch } = useOutreachLeads(filters)
+  const { data: allLeads = [], isLoading, error, refetch } = useOutreachLeads(filters)
+  const leads = useMemo(
+    () =>
+      runId
+        ? allLeads.filter(
+            (lead) => (lead.metadata as { discovery_run_id?: string } | null)?.discovery_run_id === runId,
+          )
+        : allLeads,
+    [allLeads, runId],
+  )
   const { data: summary } = useOutreachSummary()
   const createLead = useCreateOutreachLead()
   const updateLead = useUpdateOutreachLead()
@@ -70,6 +85,7 @@ export default function OutreachLeadsPage() {
   const createFollowUp = useCreateOutreachFollowUp()
   const updateFollowUp = useUpdateOutreachFollowUp()
   const runAgent = useRunOutreachAgent()
+  const sendMessage = useSendOutreachMessage()
 
   const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? leads[0] ?? null
 
@@ -189,6 +205,10 @@ export default function OutreachLeadsPage() {
     })
   }
 
+  async function sendEmail(messageId: string) {
+    await sendMessage.mutateAsync(messageId)
+  }
+
   async function markMessageSent(lead: OutreachLeadWithMessages, messageId: string) {
     await updateMessage.mutateAsync({
       id: messageId,
@@ -224,6 +244,15 @@ export default function OutreachLeadsPage() {
 
       <div className="flex-1 overflow-y-auto bg-background-light p-8 dark:bg-background-dark">
         <div className="mx-auto max-w-7xl space-y-6">
+          <OutreachNav />
+
+          {runId ? (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+              Showing leads from discovery run <span className="font-mono text-xs">{runId.slice(0, 8)}</span> ({leads.length}).{' '}
+              <a href="/outreach/leads" className="font-medium text-primary hover:underline">Clear filter</a>
+            </div>
+          ) : null}
+
           <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
             {[
               { id: 'queue', label: 'Lead queue' },
@@ -380,6 +409,7 @@ export default function OutreachLeadsPage() {
                   onGenerateDraft={() => handleGenerateDraft(selectedLead)}
                   onApproveMessage={approveMessage}
                   onMarkMessageSent={(messageId) => markMessageSent(selectedLead, messageId)}
+                  onSendEmail={sendEmail}
                   followUpDate={followUpDate}
                   setFollowUpDate={setFollowUpDate}
                   followUpNotes={followUpNotes}
@@ -392,7 +422,8 @@ export default function OutreachLeadsPage() {
                     updateMessage.isPending ||
                     generateDraft.isPending ||
                     createFollowUp.isPending ||
-                    updateFollowUp.isPending
+                    updateFollowUp.isPending ||
+                    sendMessage.isPending
                   }
                 />
               ) : activeView === 'detail' ? (
@@ -559,6 +590,7 @@ function LeadDetailPanel({
   onGenerateDraft,
   onApproveMessage,
   onMarkMessageSent,
+  onSendEmail,
   followUpDate,
   setFollowUpDate,
   followUpNotes,
@@ -576,6 +608,7 @@ function LeadDetailPanel({
   onGenerateDraft: () => void
   onApproveMessage: (messageId: string) => void
   onMarkMessageSent: (messageId: string) => void
+  onSendEmail: (messageId: string) => void
   followUpDate: string
   setFollowUpDate: (value: string) => void
   followUpNotes: string
@@ -584,6 +617,11 @@ function LeadDetailPanel({
   onCompleteFollowUp: (followUpId: string) => void
   busy: boolean
 }) {
+  const canEmail =
+    lead.lead_type === 'worker' &&
+    lead.public_contact_method === 'email' &&
+    isValidEmail(lead.contact_detail)
+
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-gray-900/50">
@@ -729,6 +767,18 @@ function LeadDetailPanel({
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Approve
                     </button>
+                    {canEmail ? (
+                      <button
+                        type="button"
+                        onClick={() => onSendEmail(message.id)}
+                        disabled={busy || message.delivery_status === 'sent' || message.approval_status !== 'approved'}
+                        className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                        title={`Send email to ${lead.contact_detail}`}
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        Send email
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => onMarkMessageSent(message.id)}
@@ -819,6 +869,10 @@ function StatusBadge({ value, muted = false }: { value: string; muted?: boolean 
         : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
 
   return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${classes}`}>{value.replaceAll('_', ' ')}</span>
+}
+
+function isValidEmail(email: string | null | undefined): email is string {
+  return Boolean(email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
 }
 
 function buildDuplicateKey(form: LeadFormState) {

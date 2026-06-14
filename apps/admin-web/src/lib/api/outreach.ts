@@ -386,6 +386,35 @@ export function useUpdateOutreachMessage() {
   })
 }
 
+export function useSendOutreachMessage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (messageId: string) => {
+      await requireAdminPermission('outreach.manage')
+
+      const { data, error } = await supabase.functions.invoke('send-outreach-message', {
+        body: { message_id: messageId },
+      })
+
+      if (error) throw error
+
+      await createAdminAuditLog({
+        action: 'outreach.message.send',
+        entityType: 'outreach_message',
+        entityId: messageId,
+        summary: `Sent outreach email for message ${messageId}`,
+        metadata: { channel: 'email', function: 'send-outreach-message' },
+      })
+
+      return data as { success: boolean; sent_to: string; message_id: string }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['outreach'] })
+    },
+  })
+}
+
 export function useCreateOutreachFollowUp() {
   const queryClient = useQueryClient()
 

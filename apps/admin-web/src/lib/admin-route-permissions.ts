@@ -39,6 +39,8 @@ export type AdminRouteKey =
   | 'insightsReports'
   | 'promotionsManagement'
   | 'outreachLeads'
+  | 'outreachSources'
+  | 'outreachRuns'
   | 'contentPages'
   | 'contentPagesCreateRedirect'
   | 'contentPageEditor'
@@ -112,6 +114,8 @@ export const ADMIN_ROUTE_PERMISSIONS: Record<AdminRouteKey, AdminRoutePermission
   insightsReports: { path: '/insights/reports', permissions: ['reports.view'], section: 'insights', smokeTestPath: '/insights/reports' },
   promotionsManagement: { path: '/promotions/management', permissions: ['promotions.manage'], section: 'promotions', smokeTestPath: '/promotions/management' },
   outreachLeads: { path: '/outreach/leads', permissions: ['outreach.manage'], section: 'outreach', smokeTestPath: '/outreach/leads' },
+  outreachSources: { path: '/outreach/sources', permissions: ['outreach.manage'], section: 'outreach', smokeTestPath: '/outreach/sources' },
+  outreachRuns: { path: '/outreach/runs', permissions: ['outreach.manage'], section: 'outreach', smokeTestPath: '/outreach/runs' },
   contentPages: { path: '/content/pages', permissions: ['content.manage', 'seo.manage'], section: 'content', smokeTestPath: '/content/pages' },
   contentPagesCreateRedirect: { path: '/content/pages/create', permissions: ['content.manage', 'seo.manage'], section: 'content', smokeTestPath: '/content/pages/create' },
   contentPageEditor: { path: '/content/pages/:pageKey', permissions: ['content.manage', 'seo.manage'], section: 'content', smokeTestPath: '/content/pages/home' },
