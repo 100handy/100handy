@@ -49,7 +49,7 @@ migration). The job `outreach-discovery-dispatch` then runs every 15 minutes, ca
 ## 4. Using it
 
 1. Admin → **Outreach → Sources → New source**, then **Apply preset…** to prefill one of:
-   Reddit / Facebook Groups / Nextdoor (customers), or Google Maps / Checkatrade / Yell / LinkedIn (workers).
+   Reddit / Facebook Groups / Nextdoor / X (customers), or Google Maps / Checkatrade / Yell / MyBuilder / LinkedIn (workers).
 2. Confirm the Apify actor id, input JSON, and field mapping (lead field → scraped field path).
    Preset actor ids are best-known defaults — verify them against your Apify account.
 3. **Run now** for an on-demand scrape, or set a cadence + enable scheduling.

@@ -27,10 +27,14 @@ describe('outreach-sources helpers', () => {
     expect((REDDIT_PRESET.field_mapping as Record<string, unknown>).raw_text).toBe('body')
   })
 
-  it('ships presets for both agents with unique keys and a raw_text mapping', () => {
-    expect(SOURCE_PRESETS.length).toBeGreaterThanOrEqual(6)
+  it('ships presets covering every platform from the goal for both agents', () => {
     const keys = SOURCE_PRESETS.map((p) => p.key)
     expect(new Set(keys).size).toBe(keys.length)
+    // All goal platforms: customers (Reddit, Facebook Groups, Nextdoor, X) + workers
+    // (Google Business, Checkatrade, Yell, MyBuilder, LinkedIn).
+    for (const key of ['reddit', 'facebook_groups', 'nextdoor', 'x', 'google_maps', 'checkatrade', 'yell', 'mybuilder', 'linkedin']) {
+      expect(keys).toContain(key)
+    }
     expect(SOURCE_PRESETS.some((p) => p.source_type === 'customer_finder')).toBe(true)
     expect(SOURCE_PRESETS.some((p) => p.source_type === 'worker_finder')).toBe(true)
     for (const preset of SOURCE_PRESETS) {
