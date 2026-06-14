@@ -155,3 +155,12 @@ enable_confirmations = false
 
 [functions.hello-world]
 verify_jwt = false
+
+# Apify completion webhook — called by Apify servers (no Supabase JWT); guarded by
+# an HMAC signature derived from APIFY_WEBHOOK_SECRET.
+[functions.outreach-discovery-webhook]
+verify_jwt = false
+
+# Scheduled dispatcher — called by pg_cron via pg_net; guarded by OUTREACH_CRON_SECRET.
+[functions.outreach-discovery-cron]
+verify_jwt = false
