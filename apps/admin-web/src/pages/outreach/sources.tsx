@@ -6,7 +6,7 @@ import OutreachNav from '@/components/outreach/OutreachNav'
 import { emitAdminToast } from '@/lib/admin-toast'
 import {
   CADENCE_OPTIONS,
-  REDDIT_PRESET,
+  SOURCE_PRESETS,
   buildSourceKey,
   cadenceLabel,
   useCreateOutreachSource,
@@ -18,6 +18,7 @@ import {
   type OutreachSource,
   type OutreachSourceFormInput,
   type OutreachSourceType,
+  type SourcePreset,
 } from '@/lib/api/outreach-sources'
 import type { Json } from '@/lib/database.types'
 
@@ -113,17 +114,20 @@ export default function OutreachSourcesPage() {
     setForm(sourceToForm(source))
   }
 
-  function applyRedditPreset() {
+  const [presetNote, setPresetNote] = useState<string | null>(null)
+
+  function applyPreset(preset: SourcePreset) {
     setForm((prev) => ({
       ...prev,
-      name: prev.name || 'Reddit – service requests',
-      platform: REDDIT_PRESET.platform,
-      sourceType: REDDIT_PRESET.source_type,
-      apifyActorId: REDDIT_PRESET.apify_actor_id,
-      apifyInputText: JSON.stringify(REDDIT_PRESET.apify_input, null, 2),
-      fieldMappingText: JSON.stringify(REDDIT_PRESET.field_mapping, null, 2),
-      defaultServiceType: prev.defaultServiceType || REDDIT_PRESET.default_service_type,
+      name: prev.name || preset.label,
+      platform: preset.platform,
+      sourceType: preset.source_type,
+      apifyActorId: preset.apify_actor_id,
+      apifyInputText: JSON.stringify(preset.apify_input, null, 2),
+      fieldMappingText: JSON.stringify(preset.field_mapping, null, 2),
+      defaultServiceType: prev.defaultServiceType || preset.default_service_type,
     }))
+    setPresetNote(preset.note ?? null)
   }
 
   async function handleSave() {
@@ -318,14 +322,29 @@ export default function OutreachSourcesPage() {
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">Configure the Apify actor and how results map to leads.</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={applyRedditPreset}
-                  className="inline-flex items-center gap-2 rounded-lg border border-primary/40 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10"
-                >
-                  <Sparkles className="h-4 w-4" /> Use Reddit preset
-                </button>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      const preset = SOURCE_PRESETS.find((p) => p.key === e.target.value)
+                      if (preset) applyPreset(preset)
+                    }}
+                    className="h-9 rounded-lg border border-primary/40 bg-white px-3 text-sm font-medium text-primary dark:bg-slate-900"
+                  >
+                    <option value="">Apply preset…</option>
+                    {SOURCE_PRESETS.map((preset) => (
+                      <option key={preset.key} value={preset.key}>{preset.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {presetNote ? (
+                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
+                  {presetNote}
+                </div>
+              ) : null}
 
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Name">

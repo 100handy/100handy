@@ -38,31 +38,111 @@ export function buildSourceKey(name: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-/**
- * Reddit (customers) preset. Uses a Reddit scraper actor; the input searches the
- * service keywords and the mapping pulls the post body/title, author, and permalink.
- * Admins can tweak subreddits/searches in the editor.
- */
-export const REDDIT_PRESET = {
-  platform: 'Reddit',
-  source_type: 'customer_finder' as OutreachSourceType,
-  apify_actor_id: 'trudax/reddit-scraper-lite',
-  apify_input: {
-    searches: ['recommend a cleaner', 'need a handyman', 'looking for a plumber'],
-    type: 'posts',
-    sort: 'new',
-    time: 'week',
-    maxItems: 50,
-  } as Json,
-  field_mapping: {
-    raw_text: 'body',
-    profile_name: 'username',
-    source_url: 'url',
-    external_id: 'id',
-    location: 'communityName',
-  } as Json,
-  default_service_type: 'Handyman',
+export interface SourcePreset {
+  key: string
+  label: string
+  platform: string
+  source_type: OutreachSourceType
+  apify_actor_id: string
+  apify_input: Json
+  field_mapping: Json
+  default_service_type: string
+  /** Notes shown in the editor — e.g. confirm the actor id against your Apify account. */
+  note?: string
 }
+
+/**
+ * Ready-to-use source presets. Each fills in a sensible Apify actor id, input shape,
+ * and field mapping (the tedious part). Actor ids are best-known defaults and remain
+ * editable — confirm them against your Apify account before the first run.
+ */
+export const SOURCE_PRESETS: SourcePreset[] = [
+  {
+    key: 'reddit',
+    label: 'Reddit — service requests (customers)',
+    platform: 'Reddit',
+    source_type: 'customer_finder',
+    apify_actor_id: 'trudax/reddit-scraper-lite',
+    apify_input: {
+      searches: ['recommend a cleaner', 'need a handyman', 'looking for a plumber'],
+      type: 'posts',
+      sort: 'new',
+      time: 'week',
+      maxItems: 50,
+    } as Json,
+    field_mapping: { raw_text: 'body', profile_name: 'username', source_url: 'url', external_id: 'id', location: 'communityName' } as Json,
+    default_service_type: 'Handyman',
+  },
+  {
+    key: 'facebook_groups',
+    label: 'Facebook Groups — posts (customers)',
+    platform: 'Facebook Groups',
+    source_type: 'customer_finder',
+    apify_actor_id: 'apify/facebook-groups-scraper',
+    apify_input: { groupUrls: [], maxPosts: 50 } as Json,
+    field_mapping: { raw_text: 'text', profile_name: 'user.name', source_url: 'url', external_id: 'postId' } as Json,
+    default_service_type: 'Cleaning',
+    note: 'Add the group URLs you have permission to monitor. Higher ToS sensitivity — keep approval gate on.',
+  },
+  {
+    key: 'nextdoor',
+    label: 'Nextdoor — posts (customers)',
+    platform: 'Nextdoor',
+    source_type: 'customer_finder',
+    apify_actor_id: 'apify/nextdoor-scraper',
+    apify_input: { searchQueries: ['cleaner', 'handyman', 'gardener'], maxItems: 50 } as Json,
+    field_mapping: { raw_text: 'body', profile_name: 'authorName', source_url: 'url', external_id: 'id', location: 'neighborhood' } as Json,
+    default_service_type: 'Gardening',
+    note: 'Confirm the actor id against your Apify account.',
+  },
+  {
+    key: 'google_maps',
+    label: 'Google Maps — local trades (workers)',
+    platform: 'Google Business',
+    source_type: 'worker_finder',
+    apify_actor_id: 'compass/crawler-google-places',
+    apify_input: { searchStringsArray: ['handyman', 'plumber', 'electrician'], locationQuery: 'Liverpool, UK', maxCrawledPlacesPerSearch: 50 } as Json,
+    field_mapping: { raw_text: 'title', business_name: 'title', source_url: 'url', location: 'address', external_id: 'placeId' } as Json,
+    default_service_type: 'Handyman',
+    note: 'Best worker source for the email auto-send path — listings often include a public email/phone.',
+  },
+  {
+    key: 'checkatrade',
+    label: 'Checkatrade — trade listings (workers)',
+    platform: 'Checkatrade',
+    source_type: 'worker_finder',
+    apify_actor_id: 'apify/web-scraper',
+    apify_input: { startUrls: [], maxItems: 50 } as Json,
+    field_mapping: { raw_text: 'description', business_name: 'name', source_url: 'url', location: 'area', external_id: 'id' } as Json,
+    default_service_type: 'Handyman',
+    note: 'Point startUrls at Checkatrade category/search pages. Verify the scraper output keys.',
+  },
+  {
+    key: 'yell',
+    label: 'Yell — directory listings (workers)',
+    platform: 'Yell',
+    source_type: 'worker_finder',
+    apify_actor_id: 'apify/web-scraper',
+    apify_input: { startUrls: [], maxItems: 50 } as Json,
+    field_mapping: { raw_text: 'description', business_name: 'businessName', source_url: 'url', location: 'location', external_id: 'id' } as Json,
+    default_service_type: 'Handyman',
+    note: 'Point startUrls at Yell category/search pages. Verify the scraper output keys.',
+  },
+  {
+    key: 'linkedin',
+    label: 'LinkedIn — local providers (workers)',
+    platform: 'LinkedIn',
+    source_type: 'worker_finder',
+    apify_actor_id: 'apify/linkedin-company-scraper',
+    apify_input: { searchQueries: ['handyman services', 'cleaning services'], maxItems: 25 } as Json,
+    field_mapping: { raw_text: 'description', business_name: 'name', profile_name: 'name', source_url: 'url', location: 'location', external_id: 'id' } as Json,
+    default_service_type: 'Handyman',
+    note: 'LinkedIn is ToS-sensitive — keep volumes low and the approval gate on.',
+  },
+]
+
+/** Backwards-compatible alias for the Reddit preset. */
+export const REDDIT_PRESET = SOURCE_PRESETS[0]
 
 export interface OutreachSourceFormInput {
   name: string
