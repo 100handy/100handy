@@ -164,3 +164,7 @@ verify_jwt = false
 # Scheduled dispatcher — called by pg_cron via pg_net; guarded by OUTREACH_CRON_SECRET.
 [functions.outreach-discovery-cron]
 verify_jwt = false
+
+# Automatic follow-up dispatcher — called by pg_cron via pg_net; guarded by OUTREACH_CRON_SECRET.
+[functions.outreach-follow-up-cron]
+verify_jwt = false

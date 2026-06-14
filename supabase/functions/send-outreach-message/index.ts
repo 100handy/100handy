@@ -1,22 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import { jsonResponse, requireOutreachAdmin } from "../_shared/outreach-auth.ts";
+import { FIRST_FOLLOW_UP_DAYS, isValidEmail, sendOutreachEmail } from "../_shared/outreach-email.ts";
 
 type SendPayload = { message_id?: string };
-
-function isValidEmail(email: string | null | undefined): email is string {
-  return Boolean(email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -62,46 +49,15 @@ serve(async (req) => {
       return jsonResponse({ error: "Lead has no valid public business email" }, 400);
     }
 
-    const host = Deno.env.get("SMTP_HOST");
-    const port = Number(Deno.env.get("SMTP_PORT") ?? "465");
-    const smtpUser = Deno.env.get("SMTP_USER");
-    const smtpPass = Deno.env.get("SMTP_PASSWORD");
-    if (!host || !smtpUser || !smtpPass) {
-      return jsonResponse({ error: "SMTP is not configured" }, 500);
-    }
-
     const recipient = lead.contact_detail;
-    const businessName = lead.business_name || lead.profile_name || "there";
-    const subject = `Local work opportunities with 100Handy`;
-    const optOut =
-      "If you'd prefer not to receive opportunities from 100Handy, just reply STOP and we won't contact you again.";
-    const signature = "100Handy — connecting trusted local professionals with nearby customers.";
-    const textBody = `${message.draft_text}\n\n—\n${signature}\n${optOut}`;
-    const htmlBody = `<div style="font-family:sans-serif;font-size:14px;line-height:1.5;color:#0f172a">
-<p>${escapeHtml(message.draft_text).replace(/\n/g, "<br/>")}</p>
-<hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0"/>
-<p style="color:#64748b;font-size:12px">${escapeHtml(signature)}<br/>${escapeHtml(optOut)}</p>
-</div>`;
-
-    const client = new SMTPClient({
-      connection: { hostname: host, port, tls: port === 465, auth: { username: smtpUser, password: smtpPass } },
-    });
 
     try {
-      await client.send({
-        from: `100 Handy <${smtpUser}>`,
+      await sendOutreachEmail({
         to: recipient,
-        subject,
-        content: textBody,
-        html: htmlBody,
+        subject: "Local work opportunities with 100Handy",
+        bodyText: message.draft_text,
       });
-      await client.close();
     } catch (sendError) {
-      try {
-        await client.close();
-      } catch (_) {
-        // ignore close failure
-      }
       const failure = sendError instanceof Error ? sendError.message : "SMTP send failed";
       await admin.serviceClient
         .from("outreach_messages")
@@ -125,25 +81,32 @@ serve(async (req) => {
 
     await admin.serviceClient.from("outreach_leads").update({ status: "contacted", updated_by: admin.user.id }).eq("id", lead.id);
 
-    // Auto-schedule a follow-up reminder if none pending.
-    const { data: pendingFollowUps } = await admin.serviceClient
-      .from("outreach_follow_ups")
-      .select("id")
-      .eq("lead_id", lead.id)
-      .eq("status", "pending")
-      .limit(1);
+    // Start the automatic follow-up sequence (step 1) if none pending. Best-effort:
+    // a scheduling failure must never fail an email that already went out.
+    try {
+      const { data: pendingFollowUps } = await admin.serviceClient
+        .from("outreach_follow_ups")
+        .select("id")
+        .eq("lead_id", lead.id)
+        .eq("status", "pending")
+        .limit(1);
 
-    if (!pendingFollowUps || pendingFollowUps.length === 0) {
-      const dueAt = new Date();
-      dueAt.setDate(dueAt.getDate() + 3);
-      dueAt.setHours(9, 0, 0, 0);
-      await admin.serviceClient.from("outreach_follow_ups").insert({
-        lead_id: lead.id,
-        message_id: message.id,
-        due_at: dueAt.toISOString(),
-        status: "pending",
-        notes: "Check for a reply to the outreach email before any manual follow-up.",
-      });
+      if (!pendingFollowUps || pendingFollowUps.length === 0) {
+        const dueAt = new Date();
+        dueAt.setDate(dueAt.getDate() + FIRST_FOLLOW_UP_DAYS);
+        dueAt.setHours(9, 0, 0, 0);
+        await admin.serviceClient.from("outreach_follow_ups").insert({
+          lead_id: lead.id,
+          message_id: message.id,
+          due_at: dueAt.toISOString(),
+          status: "pending",
+          auto_send: true,
+          step: 1,
+          notes: "Automatic follow-up #1 — sends by email unless the lead is marked replied/closed.",
+        });
+      }
+    } catch (followUpError) {
+      console.error("send-outreach-message: follow-up scheduling failed (email already sent):", followUpError);
     }
 
     return jsonResponse({ success: true, sent_to: recipient, message_id: message.id });

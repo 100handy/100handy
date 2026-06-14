@@ -441,6 +441,8 @@ export interface Database {
           due_at: string
           status: 'pending' | 'completed' | 'skipped' | 'cancelled'
           notes: string | null
+          auto_send: boolean
+          step: number
           completed_at: string | null
           completed_by: string | null
           created_at: string
@@ -453,6 +455,8 @@ export interface Database {
           due_at: string
           status?: 'pending' | 'completed' | 'skipped' | 'cancelled'
           notes?: string | null
+          auto_send?: boolean
+          step?: number
           completed_at?: string | null
           completed_by?: string | null
           created_at?: string
@@ -465,6 +469,8 @@ export interface Database {
           due_at?: string
           status?: 'pending' | 'completed' | 'skipped' | 'cancelled'
           notes?: string | null
+          auto_send?: boolean
+          step?: number
           completed_at?: string | null
           completed_by?: string | null
           created_at?: string
