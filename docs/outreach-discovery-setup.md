@@ -56,6 +56,26 @@ migration). The job `outreach-discovery-dispatch` then runs every 15 minutes, ca
 4. Results land in **Outreach → Leads** as `pending` for human approval. The **Runs** tab
    shows scrape counts, dedupes, and leads created.
 
+## 5. Sending (email channel)
+
+Approved messages can be emailed to **worker leads that have a valid public business email**
+(`public_contact_method = 'email'`). Customer leads and non-email channels stay manual
+("Mark sent"). Sending reuses the existing SMTP secrets:
+
+| Secret | Purpose |
+| --- | --- |
+| `SMTP_HOST` / `SMTP_PORT` | SMTP server (port 465 = TLS). |
+| `SMTP_USER` / `SMTP_PASSWORD` | SMTP credentials; the From address is `100 Handy <SMTP_USER>`. |
+
+```bash
+supabase functions deploy send-outreach-message
+```
+
+Flow: **Outreach → Leads → (worker lead) → approve message → Send email**. The send is
+manual per message (one click), records `delivery_status='sent'`, marks the lead
+`contacted`, and auto-schedules a 3-day follow-up reminder. Every email includes the
+100Handy identity and an opt-out line.
+
 ## Compliance
 
 Discovery never auto-contacts anyone — every lead is created `pending` and requires human
