@@ -93,6 +93,16 @@ export interface Database {
           service_type: string | null
           active: boolean
           notes: string | null
+          apify_actor_id: string | null
+          apify_input: Json
+          field_mapping: Json
+          default_service_type: string | null
+          max_items: number
+          schedule_cadence: 'off' | 'hourly' | 'every_6h' | 'every_12h' | 'daily' | 'weekly'
+          schedule_enabled: boolean
+          next_run_at: string | null
+          last_run_at: string | null
+          last_run_status: string | null
           created_at: string
           updated_at: string
           created_by: string | null
@@ -109,6 +119,16 @@ export interface Database {
           service_type?: string | null
           active?: boolean
           notes?: string | null
+          apify_actor_id?: string | null
+          apify_input?: Json
+          field_mapping?: Json
+          default_service_type?: string | null
+          max_items?: number
+          schedule_cadence?: 'off' | 'hourly' | 'every_6h' | 'every_12h' | 'daily' | 'weekly'
+          schedule_enabled?: boolean
+          next_run_at?: string | null
+          last_run_at?: string | null
+          last_run_status?: string | null
           created_at?: string
           updated_at?: string
           created_by?: string | null
@@ -125,10 +145,126 @@ export interface Database {
           service_type?: string | null
           active?: boolean
           notes?: string | null
+          apify_actor_id?: string | null
+          apify_input?: Json
+          field_mapping?: Json
+          default_service_type?: string | null
+          max_items?: number
+          schedule_cadence?: 'off' | 'hourly' | 'every_6h' | 'every_12h' | 'daily' | 'weekly'
+          schedule_enabled?: boolean
+          next_run_at?: string | null
+          last_run_at?: string | null
+          last_run_status?: string | null
           created_at?: string
           updated_at?: string
           created_by?: string | null
           updated_by?: string | null
+        }
+      }
+      outreach_discovery_runs: {
+        Row: {
+          id: string
+          source_id: string
+          apify_run_id: string | null
+          apify_dataset_id: string | null
+          status: 'queued' | 'running' | 'succeeded' | 'failed' | 'ingested' | 'aborted' | 'timed_out'
+          trigger: 'manual' | 'scheduled'
+          triggered_by: string | null
+          items_scraped: number
+          items_new: number
+          items_duplicate: number
+          items_skipped: number
+          leads_created: number
+          error: string | null
+          metadata: Json
+          started_at: string | null
+          finished_at: string | null
+          ingested_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          source_id: string
+          apify_run_id?: string | null
+          apify_dataset_id?: string | null
+          status?: 'queued' | 'running' | 'succeeded' | 'failed' | 'ingested' | 'aborted' | 'timed_out'
+          trigger?: 'manual' | 'scheduled'
+          triggered_by?: string | null
+          items_scraped?: number
+          items_new?: number
+          items_duplicate?: number
+          items_skipped?: number
+          leads_created?: number
+          error?: string | null
+          metadata?: Json
+          started_at?: string | null
+          finished_at?: string | null
+          ingested_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          source_id?: string
+          apify_run_id?: string | null
+          apify_dataset_id?: string | null
+          status?: 'queued' | 'running' | 'succeeded' | 'failed' | 'ingested' | 'aborted' | 'timed_out'
+          trigger?: 'manual' | 'scheduled'
+          triggered_by?: string | null
+          items_scraped?: number
+          items_new?: number
+          items_duplicate?: number
+          items_skipped?: number
+          leads_created?: number
+          error?: string | null
+          metadata?: Json
+          started_at?: string | null
+          finished_at?: string | null
+          ingested_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      outreach_raw_items: {
+        Row: {
+          id: string
+          run_id: string
+          source_id: string
+          external_id: string | null
+          raw_payload: Json
+          raw_text: string | null
+          source_url: string | null
+          dedup_key: string | null
+          status: 'new' | 'classified' | 'lead_created' | 'duplicate' | 'skipped' | 'error'
+          lead_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          run_id: string
+          source_id: string
+          external_id?: string | null
+          raw_payload?: Json
+          raw_text?: string | null
+          source_url?: string | null
+          dedup_key?: string | null
+          status?: 'new' | 'classified' | 'lead_created' | 'duplicate' | 'skipped' | 'error'
+          lead_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          run_id?: string
+          source_id?: string
+          external_id?: string | null
+          raw_payload?: Json
+          raw_text?: string | null
+          source_url?: string | null
+          dedup_key?: string | null
+          status?: 'new' | 'classified' | 'lead_created' | 'duplicate' | 'skipped' | 'error'
+          lead_id?: string | null
+          created_at?: string
         }
       }
       outreach_leads: {
