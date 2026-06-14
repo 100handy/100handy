@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import { jsonResponse, requireOutreachAdmin } from "../_shared/outreach-auth.ts";
+import { clampScore, safeChoice } from "../_shared/outreach-classify.ts";
 
 type GeneratePayload = {
   lead_id?: string;
@@ -40,23 +41,6 @@ type AiResult = {
   do_not_contact_reason: string | null;
 };
 
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
-function clampScore(value: unknown) {
-  const score = Number(value);
-  if (!Number.isFinite(score)) return 1;
-  return Math.max(1, Math.min(10, Math.round(score)));
-}
-
-function safeChoice<T extends string>(value: unknown, allowed: readonly T[], fallback: T): T {
-  return allowed.includes(value as T) ? (value as T) : fallback;
-}
-
 function fallbackDraft(lead: OutreachLead): AiResult {
   const name = lead.profile_name || lead.business_name || "there";
   const location = lead.location || lead.coverage_area;
@@ -83,40 +67,6 @@ function fallbackDraft(lead: OutreachLead): AiResult {
     contact_allowed: lead.contact_allowed,
     do_not_contact_reason: lead.contact_allowed === "no" ? "Contact is marked as not allowed on this lead." : null,
   };
-}
-
-async function requireAdmin(req: Request) {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const authHeader = req.headers.get("Authorization") ?? "";
-
-  const authClient = createClient(supabaseUrl, anonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-
-  const {
-    data: { user },
-    error: userError,
-  } = await authClient.auth.getUser();
-
-  if (userError || !user) {
-    return { error: jsonResponse({ error: "Unauthorized" }, 401) };
-  }
-
-  const serviceClient = createClient(supabaseUrl, serviceRoleKey);
-  const { data: profile, error: profileError } = await serviceClient
-    .from("profiles")
-    .select("role, admin_role, account_status")
-    .eq("user_id", user.id)
-    .single();
-
-  const canManageOutreach = profile?.admin_role === "super_admin" || profile?.admin_role === "ops_admin";
-  if (profileError || !profile || profile.role !== "admin" || profile.account_status !== "active" || !canManageOutreach) {
-    return { error: jsonResponse({ error: "Forbidden" }, 403) };
-  }
-
-  return { user, serviceClient };
 }
 
 async function generateWithOpenAI(lead: OutreachLead): Promise<AiResult> {
@@ -177,16 +127,20 @@ Rules:
 
   return {
     lead_type: safeChoice(parsed.lead_type, ["customer", "worker"] as const, lead.lead_type),
-    service_type: typeof parsed.service_type === "string" && parsed.service_type.trim() ? parsed.service_type.trim() : lead.service_type,
+    service_type:
+      typeof parsed.service_type === "string" && parsed.service_type.trim() ? parsed.service_type.trim() : lead.service_type,
     location: typeof parsed.location === "string" && parsed.location.trim() ? parsed.location.trim() : lead.location,
     urgency: safeChoice(parsed.urgency, ["low", "medium", "high"] as const, lead.urgency ?? "medium"),
     intent_strength: safeChoice(parsed.intent_strength, ["low", "medium", "high"] as const, "medium"),
     source_confidence: safeChoice(parsed.source_confidence, ["low", "medium", "high"] as const, "medium"),
     ai_score: clampScore(parsed.ai_score),
     ai_summary: typeof parsed.ai_summary === "string" ? parsed.ai_summary.trim() : fallbackDraft(lead).ai_summary,
-    draft_text: typeof parsed.draft_text === "string" && parsed.draft_text.trim() ? parsed.draft_text.trim() : fallbackDraft(lead).draft_text,
-    personalised_reason: typeof parsed.personalised_reason === "string" ? parsed.personalised_reason.trim() : "Generated from lead context.",
-    evidence_text: typeof parsed.evidence_text === "string" && parsed.evidence_text.trim() ? parsed.evidence_text.trim() : lead.evidence_text,
+    draft_text:
+      typeof parsed.draft_text === "string" && parsed.draft_text.trim() ? parsed.draft_text.trim() : fallbackDraft(lead).draft_text,
+    personalised_reason:
+      typeof parsed.personalised_reason === "string" ? parsed.personalised_reason.trim() : "Generated from lead context.",
+    evidence_text:
+      typeof parsed.evidence_text === "string" && parsed.evidence_text.trim() ? parsed.evidence_text.trim() : lead.evidence_text,
     public_contact_method: safeChoice(
       parsed.public_contact_method,
       ["website", "email", "phone", "social_profile", "profile_only", "unknown"] as const,
@@ -211,7 +165,7 @@ serve(async (req) => {
       return jsonResponse({ error: "Method not allowed" }, 405);
     }
 
-    const admin = await requireAdmin(req);
+    const admin = await requireOutreachAdmin(req);
     if ("error" in admin) return admin.error;
 
     const body = (await req.json()) as GeneratePayload;
