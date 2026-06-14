@@ -1,7 +1,9 @@
 import { useMemo, useState, type ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CalendarPlus, CheckCircle2, Loader2, MailPlus, Plus, Send, Sparkles, XCircle } from 'lucide-react'
 import { AdminEmptyState, AdminErrorState, AdminLoadingState } from '@/components/admin/AdminState'
 import Header from '@/components/header'
+import OutreachNav from '@/components/outreach/OutreachNav'
 import {
   useCreateOutreachFollowUp,
   useCreateOutreachLead,
@@ -59,8 +61,20 @@ export default function OutreachLeadsPage() {
   const [agentService, setAgentService] = useState('Handyman')
   const [agentBatchText, setAgentBatchText] = useState('')
 
+  const [searchParams] = useSearchParams()
+  const runId = searchParams.get('run')
+
   const filters = useMemo(() => ({ leadType, status, approvalStatus, search }), [leadType, status, approvalStatus, search])
-  const { data: leads = [], isLoading, error, refetch } = useOutreachLeads(filters)
+  const { data: allLeads = [], isLoading, error, refetch } = useOutreachLeads(filters)
+  const leads = useMemo(
+    () =>
+      runId
+        ? allLeads.filter(
+            (lead) => (lead.metadata as { discovery_run_id?: string } | null)?.discovery_run_id === runId,
+          )
+        : allLeads,
+    [allLeads, runId],
+  )
   const { data: summary } = useOutreachSummary()
   const createLead = useCreateOutreachLead()
   const updateLead = useUpdateOutreachLead()
@@ -224,6 +238,15 @@ export default function OutreachLeadsPage() {
 
       <div className="flex-1 overflow-y-auto bg-background-light p-8 dark:bg-background-dark">
         <div className="mx-auto max-w-7xl space-y-6">
+          <OutreachNav />
+
+          {runId ? (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+              Showing leads from discovery run <span className="font-mono text-xs">{runId.slice(0, 8)}</span> ({leads.length}).{' '}
+              <a href="/outreach/leads" className="font-medium text-primary hover:underline">Clear filter</a>
+            </div>
+          ) : null}
+
           <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">
             {[
               { id: 'queue', label: 'Lead queue' },
